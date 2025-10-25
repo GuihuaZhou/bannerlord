@@ -1,0 +1,36 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module>
+	<Name value = "ModifiedTroops"/>
+	<Id value = "ModifiedTroops"/>
+	<Version value = "v1.0.0"/>
+	<DefaultModule value="false"/>
+	<ModuleCategory value="Singleplayer"/>
+  <ModuleType value ="Community" />
+  <DependedModules>
+  		<DependedModule Id="Native" DependentVersion="v1.3.1" Optional="false"/>
+		<DependedModule Id="SandBoxCore" DependentVersion="v1.3.1" Optional="false"/>
+		<DependedModule Id="Sandbox" DependentVersion="v1.3.1" Optional="false"/>
+		<DependedModule Id="CustomBattle" DependentVersion="v1.3.1" Optional="false"/>
+		<DependedModule Id="StoryMode" DependentVersion="v1.3.1" Optional="false"/>
+	</DependedModules>
+	<SubModules>
+	</SubModules>
+	<Xmls> 
+		<XmlNode>   
+			<XmlName id="partyTemplates" path="partyTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+			</IncludedGameTypes>
+		</XmlNode>    
+		<XmlNode>   
+			<XmlName id="NPCCharacters" path="troops" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>     
+	</Xmls>
+</Module>
