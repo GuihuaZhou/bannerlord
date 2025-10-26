@@ -5,7 +5,7 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="1"
-				max_value="3"
+				max_value="10"
 				troop="NPCCharacter.looter" />
 		</stacks>
 	</MBPartyTemplate>
@@ -15,7 +15,7 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="1"
-				max_value="3"
+				max_value="10"
 				troop="NPCCharacter.looter" />
 		</stacks>
 	</MBPartyTemplate>
@@ -24,15 +24,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.sea_raiders_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.sea_raiders_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.sea_raiders_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -41,15 +41,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.sea_raiders_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.sea_raiders_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.sea_raiders_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -58,15 +58,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.mountain_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.mountain_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.mountain_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -75,15 +75,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.mountain_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.mountain_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.mountain_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -92,15 +92,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.forest_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.forest_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.forest_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -109,15 +109,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.forest_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.forest_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.forest_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -126,15 +126,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.desert_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.desert_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.desert_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -143,15 +143,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.desert_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.desert_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.desert_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -160,15 +160,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.steppe_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.steppe_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.steppe_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -177,15 +177,15 @@
 		<stacks>
 			<PartyTemplateStack
 				min_value="2"
-				max_value="4"
+				max_value="10"
 				troop="NPCCharacter.steppe_bandits_raider" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.steppe_bandits_chief" />
 			<PartyTemplateStack
 				min_value="1"
-				max_value="1"
+				max_value="3"
 				troop="NPCCharacter.steppe_bandits_boss" />
 		</stacks>
 	</MBPartyTemplate>
@@ -206,12 +206,12 @@
 				max_value="10"
 				troop="NPCCharacter.imperial_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.imperial_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.imperial_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>
@@ -231,12 +231,12 @@
 				max_value="10"
 				troop="NPCCharacter.aserai_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.aserai_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.aserai_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>
@@ -256,12 +256,12 @@
 				max_value="10"
 				troop="NPCCharacter.sturgian_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.sturgian_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.sturgian_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>
@@ -281,12 +281,12 @@
 				max_value="10"
 				troop="NPCCharacter.vlandian_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.vlandian_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.vlandian_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>
@@ -306,12 +306,12 @@
 				max_value="10"
 				troop="NPCCharacter.battanian_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.battanian_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.battanian_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>
@@ -331,12 +331,12 @@
 				max_value="10"
 				troop="NPCCharacter.khuzait_militia_archer" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.khuzait_militia_veteran_spearman" />
 			<PartyTemplateStack
-				min_value="2"
-				max_value="5"
+				min_value="5"
+				max_value="10"
 				troop="NPCCharacter.khuzait_militia_veteran_archer" />
 		</stacks>
 	</MBPartyTemplate>

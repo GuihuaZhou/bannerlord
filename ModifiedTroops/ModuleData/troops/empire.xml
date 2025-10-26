@@ -181,7 +181,7 @@
 					id="Item.battered_kite_shield" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_leather" />
+					id="Item.imperial_open_mail_coif" />
 				<equipment
 					slot="Body"
 					id="Item.empire_warrior_padded_armor_a" />
@@ -358,7 +358,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.spiked_kettle_over_imperial_mail" />
+					id="Item.roundkettle_over_laced_cloth" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
