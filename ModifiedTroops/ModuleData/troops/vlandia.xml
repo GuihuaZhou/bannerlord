@@ -1157,7 +1157,7 @@
 					id="Item.billhook_polearm_t2" />
 				<equipment
 					slot="Body"
-					id="Item.coat_of_plates_over_mail" />
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
@@ -1183,7 +1183,7 @@
 					id="Item.billhook_polearm_t2" />
 				<equipment
 					slot="Body"
-					id="Item.coat_of_plates_over_mail" />
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
@@ -1209,7 +1209,7 @@
 					id="Item.vlandia_2haxe_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.coat_of_plates_over_mail" />
+					id="Item.white_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />

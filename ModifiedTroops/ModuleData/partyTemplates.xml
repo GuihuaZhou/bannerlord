@@ -1,5 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <partyTemplates>
+	<!-- <MBPartyTemplate
+		id="main_hero_party_template">
+		<stacks>
+			<PartyTemplateStack
+				min_value="1"
+				max_value="1"
+				troop="NPCCharacter.main_hero" />
+		</stacks>
+	</MBPartyTemplate> -->
 	<MBPartyTemplate
 		id="looters_quest_template">
 		<stacks>

@@ -25,10 +25,10 @@ namespace ModifiedArmy.Patches
                     num = 2;
                     break;
                 case 2:
-                    num = 4; // 原来3
+                    num = 3;
                     break;
                 case 3:
-                    num = 8; // 原来5
+                    num = 5;
                     break;
                 case 4:
                     num = 16; // 原来8
@@ -66,19 +66,19 @@ namespace ModifiedArmy.Patches
             ExplainedNumber result;
             if (troop.Level <= 1)
             {
-                result = new ExplainedNumber(20f, false, null);        // 原：10
+                result = new ExplainedNumber(10f, false, null);        // 原：10
             }
             else if (troop.Level <= 6)
             {
-                result = new ExplainedNumber(40f, false, null);        // 原：20
+                result = new ExplainedNumber(20f, false, null);        // 原：20
             }
             else if (troop.Level <= 11)
             {
-                result = new ExplainedNumber(80f, false, null);        // 原：50
+                result = new ExplainedNumber(50f, false, null);        // 原：50
             }
             else if (troop.Level <= 16)
             {
-                result = new ExplainedNumber(160f, false, null);       // 原：100
+                result = new ExplainedNumber(100f, false, null);       // 原：100
             }
             else if (troop.Level <= 21)
             {

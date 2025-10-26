@@ -294,7 +294,7 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Body"
-					id="Item.empire_warrior_padded_armor_g" />
+					id="Item.imperial_mail_vest" />
 				<equipment
 					slot="Cape"
 					id="Item.empire_warrior_padded_armor_shoulder" />
@@ -320,7 +320,7 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Body"
-					id="Item.padded_cloth_with_strips" />
+					id="Item.mail_shirt" />
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
@@ -346,7 +346,7 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Body"
-					id="Item.empire_warrior_padded_armor_c" />
+					id="Item.nordic_hauberk" />
 				<equipment
 					slot="Cape"
 					id="Item.empire_warrior_padded_armor_shoulder" />
