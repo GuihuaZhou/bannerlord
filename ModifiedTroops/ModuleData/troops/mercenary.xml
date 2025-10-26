@@ -269,10 +269,6 @@
 				id="Throwing"
 				value="80" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.vlandian_banner_knight" /> -->
-		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -357,7 +353,7 @@
 				civilian="true" />
 			<equipment
 				slot="Horse"
-				id="Item.t3_vlandia_horse" />
+				id="Item.t3_empire_horse" />
 			<equipment
 				slot="HorseHarness"
 				id="Item.chain_barding" />

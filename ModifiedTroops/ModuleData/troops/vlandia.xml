@@ -53,71 +53,108 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_mace_1_t2" />
+					id="Item.western_spear_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
 				<equipment
 					slot="Head"
 					id="Item.leather_cap" />
 				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
 					slot="Body"
-					id="Item.sackcloth_tunic" />
+					id="Item.bandit_leather_water_flask" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
 				<equipment
 					slot="Cape"
 					id="Item.hood" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
 					id="Item.peasant_pitchfork_1_t1" />
 				<equipment
+					slot="Item1"
+					id="Item.peasant_pickaxe_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.heavy_heater_shield" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
 					slot="Body"
 					id="Item.bandit_leather_water_flask" />
 				<equipment
 					slot="Leg"
-					id="Item.empire_horseman_boots" />
-				<equipment
-					slot="Head"
-					id="Item.padded_cap" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
+					id="Item.leather_shoes" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
+					id="Item.western_spear_1_t2" />
+				<equipment
+					slot="Item1"
 					id="Item.peasant_hammer_1_t1" />
 				<equipment
-					slot="Body"
-					id="Item.bandit_leather_water_flask" />
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
 				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
+					slot="Item3"
+					id="Item.peasant_hammer_2_t1" />
 				<equipment
 					slot="Head"
 					id="Item.leather_cap" />
-			</EquipmentRoster>
-			<EquipmentRoster>
 				<equipment
-					slot="Item0"
-					id="Item.peasant_pickaxe_1_t1" />
-				<equipment
-					slot="Body"
-					id="Item.sackcloth_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
-				<equipment
-					slot="Head"
-					id="Item.padded_cap" />
+					slot="Gloves"
+					id="Item.leather_gloves" />
 				<equipment
 					slot="Cape"
 					id="Item.hood" />
+				<equipment
+					slot="Body"
+					id="Item.long_woolen_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
 			</EquipmentRoster>
-			<EquipmentSet
-				id="vlandia_troop_civilian_template_t1"
-				civilian="true" />
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
+				<equipment
+					slot="Item3"
+					id="Item.falchion_sword_t2" />
+				<equipment
+					slot="Head"
+					id="Item.leather_cap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+				<equipment
+					slot="Body"
+					id="Item.long_woolen_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	<!-- 禁止升级到轻骑兵 -->
@@ -277,12 +314,12 @@
 				id="Throwing"
 				value="30" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
+		<!-- <upgrade_targets>
+			<upgrade_target
 				id="NPCCharacter.vlandian_billman" />
 			<upgrade_target
-				id="NPCCharacter.vlandian_swordsman" /> -->
-		</upgrade_targets>
+				id="NPCCharacter.vlandian_swordsman" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -521,10 +558,10 @@
 				id="Throwing"
 				value="30" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.vlandian_hardened_crossbowman" /> -->
-		</upgrade_targets>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.vlandian_hardened_crossbowman" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment

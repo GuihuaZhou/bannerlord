@@ -53,68 +53,84 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.aserai_sword_2_t2" />
+					id="Item.eastern_spear_1_t2" />
 				<equipment
-					slot="Head"
-					id="Item.aserai_civil_e_hscarf" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_e" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.aserai_civil_c_head" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_c" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.peasant_hammer_2_t1" />
-				<equipment
-					slot="Head"
-					id="Item.aserai_civil_e_hscarf" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_e" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
+					slot="Item1"
 					id="Item.peasant_hatchet_1_t1" />
 				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
 					slot="Head"
-					id="Item.aserai_civil_c_head" />
+					id="Item.aserai_civil_hscarf_a" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_civil_a" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.aserai_civil_hscarf_b" />
+				<equipment
+					slot="Body"
+					id="Item.layered_robe" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.aserai_civil_hscarf_a" />
 				<equipment
 					slot="Body"
 					id="Item.aserai_civil_e" />
 				<equipment
 					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
+					id="Item.khuzait_curved_boots" />
 			</EquipmentRoster>
-			<EquipmentSet
-				id="aserai_troop_civilian_template_t1"
-				civilian="true" />
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.open_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_civil_e" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	<NPCCharacter
@@ -283,10 +299,10 @@
 				id="Throwing"
 				value="40" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.aserai_infantry" /> -->
-		</upgrade_targets>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.aserai_infantry" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -409,10 +425,10 @@
 				id="Throwing"
 				value="40" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.aserai_archer" /> -->
-		</upgrade_targets>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.aserai_archer" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -1822,13 +1838,153 @@
 	
 	<!-- 设置为elite_basic_troop -->
 	<NPCCharacter
+		id="aserai_tribal_horseman"
+		default_group="Cavalry"
+		level="16"
+		name="{=dfv7E49q}Aserai Tribal Horseman"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.aserai">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_aserai" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="30" />
+			<skill
+				id="Riding"
+				value="80" />
+			<skill
+				id="OneHanded"
+				value="30" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="70" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="70" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.aserai_faris" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.aserai_sword_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.bound_adarga" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.trailed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_horseman_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.aserai_mace_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.bound_adarga" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.trailed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_horseman_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.aserai_mace_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.bound_adarga" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.trailed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_horseman_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="aserai_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.aserai_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.aseran_village_harness" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
 		id="aserai_faris"
 		default_group="Cavalry"
 		level="21"
 		name="{=jaK1A7CI}Aserai Faris"
 		upgrade_requires="ItemCategory.war_horse"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.aserai">
 		<face>
 			<face_key_template
@@ -2469,147 +2625,6 @@
 				<equipment
 					slot="Cape"
 					id="Item.wrapped_scarf" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="aserai_troop_civilian_template_t2"
-				civilian="true" />
-			<equipment
-				slot="Horse"
-				id="Item.aserai_horse" />
-			<equipment
-				slot="HorseHarness"
-				id="Item.aseran_village_harness" />
-		</Equipments>
-	</NPCCharacter>
-	<!-- 弃用马穆鲁克部落骑手，禁止升级 -->
-	<NPCCharacter
-		id="aserai_tribal_horseman"
-		default_group="Cavalry"
-		level="16"
-		name="{=dfv7E49q}Aserai Tribal Horseman"
-		occupation="Soldier"
-		culture="Culture.aserai">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_aserai" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="30" />
-			<skill
-				id="Riding"
-				value="80" />
-			<skill
-				id="OneHanded"
-				value="30" />
-			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="70" />
-			<skill
-				id="Bow"
-				value="30" />
-			<skill
-				id="Crossbow"
-				value="10" />
-			<skill
-				id="Throwing"
-				value="70" />
-		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.aserai_faris" /> -->
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.aserai_sword_3_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.bound_adarga" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.trailed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_horseman_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.aserai_mace_3_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.bound_adarga" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.trailed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_horseman_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Gloves"
-					id="Item.studded_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.aserai_mace_3_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.bound_adarga" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.trailed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_horseman_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Gloves"
-					id="Item.studded_leather_vambraces" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="aserai_troop_civilian_template_t2"

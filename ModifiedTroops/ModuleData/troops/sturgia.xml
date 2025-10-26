@@ -53,56 +53,102 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.sturgia_axe_2_t2" />
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hammer_2_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_leather_cap" />
 				<equipment
 					slot="Body"
-					id="Item.tundra_tunic" />
+					id="Item.northern_tunic" />
 				<equipment
 					slot="Leg"
-					id="Item.highland_leg_wrappings" />
+					id="Item.battania_fur_boots" />
 				<equipment
-					slot="Cape"
-					id="Item.scarf" />
+					slot="Gloves"
+					id="Item.highland_gloves" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.peasant_hammer_1_t1" />
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.northern_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.padded_leather_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_fur_cap" />
 				<equipment
 					slot="Body"
 					id="Item.tundra_tunic" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_leg_wrappings" />
 				<equipment
 					slot="Gloves"
-					id="Item.ragged_armwraps" />
+					id="Item.highland_gloves" />
 			</EquipmentRoster>
-			<EquipmentRoster>
+			<EquipmentRoster
+				civilian="true">
 				<equipment
 					slot="Item0"
-					id="Item.peasant_hammer_2_t1" />
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_leather_cap" />
 				<equipment
 					slot="Body"
-					id="Item.tundra_tunic" />
+					id="Item.roughcloth_shortcoat" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_leg_wrappings" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
 			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.peasant_sickle_1_t1" />
-				<equipment
-					slot="Body"
-					id="Item.tundra_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_leg_wrappings" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t1"
-				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
 	<NPCCharacter
@@ -253,12 +299,12 @@
 				id="Throwing"
 				value="40" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
+		<!-- <upgrade_targets>
+			<upgrade_target
 				id="NPCCharacter.sturgian_spearman" />
 			<upgrade_target
-				id="NPCCharacter.sturgian_berzerker" /> -->
-		</upgrade_targets>
+				id="NPCCharacter.sturgian_berzerker" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -487,10 +533,10 @@
 				id="Throwing"
 				value="70" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.sturgian_hardened_brigand" /> -->
-		</upgrade_targets>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.sturgian_hardened_brigand" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -619,10 +665,10 @@
 				id="Throwing"
 				value="30" />
 		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.sturgian_archer" /> -->
-		</upgrade_targets>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.sturgian_archer" />
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -1903,7 +1949,7 @@
 					id="Item.sturgia_sword_5_t4" />
 				<equipment
 					slot="Head"
-					id="Item.mp_goggled_helmet_over_mail" />
+					id="Item.northern_goggled_helmet" />
 				<equipment
 					slot="Body"
 					id="Item.sturgian_lamellar_base" />
@@ -2284,7 +2330,7 @@
 					id="Item.brass_lamellar_shoulder_white" />
 				<equipment
 					slot="Head"
-					id="Item.mp_goggled_helmet_over_mail" />
+					id="Item.northern_goggled_helmet" />
 				<equipment
 					slot="Body"
 					id="Item.sturgian_lamellar_base" />

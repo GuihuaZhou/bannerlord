@@ -7,7 +7,7 @@
 		color="0xff793191"
 		color2="0xffFCDE90"
 
-		elite_basic_troop="NPCCharacter.imperial_heavy_horseman"
+		elite_basic_troop="NPCCharacter.imperial_equite"
 		basic_troop="NPCCharacter.imperial_recruit"
 
 		infantry_basic_troop="NPCCharacter.imperial_veteran_infantryman"
@@ -867,7 +867,7 @@
 		color="0xffB57A1E"
 		color2="0xff4E1A13"
 
-		elite_basic_troop="NPCCharacter.aserai_faris"
+		elite_basic_troop="NPCCharacter.aserai_tribal_horseman"
 		basic_troop="NPCCharacter.aserai_recruit"
 
 		infantry_basic_troop="NPCCharacter.aserai_infantry"
