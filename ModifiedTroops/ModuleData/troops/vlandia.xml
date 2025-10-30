@@ -648,7 +648,7 @@
 	
 	
 	
-	<!-- 设置为spearman_basic_troop -->
+	<!-- 设置为twohand_basic_troop -->
 	<NPCCharacter
 		id="vlandian_billman"
 		default_group="Infantry"

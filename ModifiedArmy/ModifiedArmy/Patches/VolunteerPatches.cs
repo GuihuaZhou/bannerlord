@@ -13,83 +13,146 @@ using TaleWorlds.ObjectSystem;
 
 namespace ModifiedArmy.Patches
 {
-    // =============== 扩展 CultureObject 读取 troop + 权重 ===============
-    [HarmonyPatch(typeof(CultureObject), "Deserialize")]
-    public class Patch_CultureObject_Deserialize
+    /// <summary>
+    /// 为每个 CultureObject 存储自定义基础兵种（按类型分类）
+    /// </summary>
+    public static class CultureBasicTroopManager
     {
-        // Troop 字段
-        public static Dictionary<CultureObject, CharacterObject> InfantryTroop = new Dictionary<CultureObject, CharacterObject>();
-        public static Dictionary<CultureObject, CharacterObject> TwoHandedTroop = new Dictionary<CultureObject, CharacterObject>();
-        public static Dictionary<CultureObject, CharacterObject> RangedTroop = new Dictionary<CultureObject, CharacterObject>();
-        public static Dictionary<CultureObject, CharacterObject> CavalryTroop = new Dictionary<CultureObject, CharacterObject>();
-        public static Dictionary<CultureObject, CharacterObject> HorseArcherTroop = new Dictionary<CultureObject, CharacterObject>();
-
-        // 权重字段（默认 0）
-        public static Dictionary<CultureObject, int> InfantryWeight = new Dictionary<CultureObject, int>();
-        public static Dictionary<CultureObject, int> TwoHandedWeight = new Dictionary<CultureObject, int>();
-        public static Dictionary<CultureObject, int> RangedWeight = new Dictionary<CultureObject, int>();
-        public static Dictionary<CultureObject, int> CavalryWeight = new Dictionary<CultureObject, int>();
-        public static Dictionary<CultureObject, int> HorseArcherWeight = new Dictionary<CultureObject, int>();
-
-        public static void Postfix(CultureObject __instance, MBObjectManager objectManager, XmlNode node)
+        public struct TroopEntry
         {
-            var culture = __instance;
+            public CharacterObject Troop;
+            public int Weight;
 
-            // 清理旧值
-            InfantryTroop.Remove(culture); TwoHandedTroop.Remove(culture);
-            RangedTroop.Remove(culture); CavalryTroop.Remove(culture); HorseArcherTroop.Remove(culture);
-            InfantryWeight.Remove(culture); TwoHandedWeight.Remove(culture);
-            RangedWeight.Remove(culture); CavalryWeight.Remove(culture); HorseArcherWeight.Remove(culture);
-
-            // 读取 troop
-            var inf = objectManager.ReadObjectReferenceFromXml<CharacterObject>("infantry_basic_troop", node);
-            var two = objectManager.ReadObjectReferenceFromXml<CharacterObject>("twohanded_basic_troop", node);
-            var ran = objectManager.ReadObjectReferenceFromXml<CharacterObject>("ranged_basic_troop", node);
-            var cav = objectManager.ReadObjectReferenceFromXml<CharacterObject>("cavalry_basic_troop", node);
-            var har = objectManager.ReadObjectReferenceFromXml<CharacterObject>("horseArcher_basic_troop", node);
-
-            if (inf != null) InfantryTroop[culture] = inf;
-            if (two != null) TwoHandedTroop[culture] = two;
-            if (ran != null) RangedTroop[culture] = ran;
-            if (cav != null) CavalryTroop[culture] = cav;
-            if (har != null) HorseArcherTroop[culture] = har;
-
-            // 读取权重（默认 0）
-            InfantryWeight[culture] = ReadIntAttr(node, "infantry_basic_troop_weight", 0);
-            TwoHandedWeight[culture] = ReadIntAttr(node, "twohanded_basic_troop_weight", 0);
-            RangedWeight[culture] = ReadIntAttr(node, "ranged_basic_troop_weight", 0);
-            CavalryWeight[culture] = ReadIntAttr(node, "cavalry_basic_troop_weight", 0);
-            HorseArcherWeight[culture] = ReadIntAttr(node, "horseArcher_basic_troop_weight", 0);
+            public TroopEntry(CharacterObject troop, int weight)
+            {
+                Troop = troop ?? throw new ArgumentNullException(nameof(troop));
+                Weight = Math.Max(1, weight); // 权重至少为1，避免无效概率
+            }
         }
 
-        private static int ReadIntAttr(XmlNode node, string attrName, int defaultValue)
-        {
-            var attr = node.Attributes?[attrName];
-            if (attr != null && int.TryParse(attr.Value, out int result))
-                return Math.Max(0, result);
-            return defaultValue;
-        }
+        /// <summary>
+        /// CultureObject → (type → TroopEntry)
+        /// 例如：type 可为 "basic", "elite", "infantry", "ranged", "cavalry", "horsearcher", "twohanded" 等
+        /// </summary>
+        public static readonly Dictionary<CultureObject, Dictionary<string, TroopEntry>> Data =
+            new Dictionary<CultureObject, Dictionary<string, TroopEntry>>();
     }
 
-    // =============== GetBasicVolunteer 按权重选择基础troop ===============
+    [HarmonyPatch(typeof(CultureObject), "Deserialize")]
+    public static class Patch_CultureObject_Deserialize
+    {
+        public static void Postfix(CultureObject __instance, MBObjectManager objectManager, XmlNode node)
+        {
+            var entries = new Dictionary<string, CultureBasicTroopManager.TroopEntry>();
+
+            XmlNode basicTroopsNode = node.SelectSingleNode("basic_troop_weight");
+            if (basicTroopsNode != null)
+            {
+                foreach (XmlNode troopNode in basicTroopsNode.SelectNodes("Troop"))
+                {
+                    string id = GetAttr(troopNode, "id");
+                    string type = GetAttr(troopNode, "type")?.ToLowerInvariant();
+                    int weight = ParseInt(GetAttr(troopNode, "weight"), 100);
+
+                    if (string.IsNullOrEmpty(id) || string.IsNullOrEmpty(type))
+                        continue;
+
+                    CharacterObject troop = objectManager.GetObject<CharacterObject>(id);
+                    if (troop != null)
+                    {
+                        entries[type] = new CultureBasicTroopManager.TroopEntry(troop, weight);
+                    }
+                }
+            }
+
+            // 绑定到当前 CultureObject 实例
+            CultureBasicTroopManager.Data[__instance] = entries;
+        }
+
+        private static string GetAttr(XmlNode node, string name) =>
+            node?.Attributes?[name]?.Value;
+
+        private static int ParseInt(string s, int defaultValue) =>
+            string.IsNullOrEmpty(s) || !int.TryParse(s, out int result) ? defaultValue : result;
+    }
+
+    //// =============== 扩展 CultureObject 读取 troop + 权重 ===============
+    //[HarmonyPatch(typeof(CultureObject), "Deserialize")]
+    //public class Patch_CultureObject_Deserialize
+    //{
+    //    // Troop 字段
+    //    public static Dictionary<CultureObject, CharacterObject> InfantryTroop = new Dictionary<CultureObject, CharacterObject>();
+    //    public static Dictionary<CultureObject, CharacterObject> TwoHandedTroop = new Dictionary<CultureObject, CharacterObject>();
+    //    public static Dictionary<CultureObject, CharacterObject> RangedTroop = new Dictionary<CultureObject, CharacterObject>();
+    //    public static Dictionary<CultureObject, CharacterObject> CavalryTroop = new Dictionary<CultureObject, CharacterObject>();
+    //    public static Dictionary<CultureObject, CharacterObject> HorseArcherTroop = new Dictionary<CultureObject, CharacterObject>();
+
+    //    // 权重字段（默认 0）
+    //    public static Dictionary<CultureObject, int> InfantryWeight = new Dictionary<CultureObject, int>();
+    //    public static Dictionary<CultureObject, int> TwoHandedWeight = new Dictionary<CultureObject, int>();
+    //    public static Dictionary<CultureObject, int> RangedWeight = new Dictionary<CultureObject, int>();
+    //    public static Dictionary<CultureObject, int> CavalryWeight = new Dictionary<CultureObject, int>();
+    //    public static Dictionary<CultureObject, int> HorseArcherWeight = new Dictionary<CultureObject, int>();
+
+    //    public static void Postfix(CultureObject __instance, MBObjectManager objectManager, XmlNode node)
+    //    {
+    //        var culture = __instance;
+
+    //        // 清理旧值
+    //        InfantryTroop.Remove(culture); TwoHandedTroop.Remove(culture);
+    //        RangedTroop.Remove(culture); CavalryTroop.Remove(culture); HorseArcherTroop.Remove(culture);
+    //        InfantryWeight.Remove(culture); TwoHandedWeight.Remove(culture);
+    //        RangedWeight.Remove(culture); CavalryWeight.Remove(culture); HorseArcherWeight.Remove(culture);
+
+    //        // 读取 troop
+    //        var inf = objectManager.ReadObjectReferenceFromXml<CharacterObject>("infantry_basic_troop", node);
+    //        var two = objectManager.ReadObjectReferenceFromXml<CharacterObject>("twohanded_basic_troop", node);
+    //        var ran = objectManager.ReadObjectReferenceFromXml<CharacterObject>("ranged_basic_troop", node);
+    //        var cav = objectManager.ReadObjectReferenceFromXml<CharacterObject>("cavalry_basic_troop", node);
+    //        var har = objectManager.ReadObjectReferenceFromXml<CharacterObject>("horseArcher_basic_troop", node);
+
+    //        if (inf != null) InfantryTroop[culture] = inf;
+    //        if (two != null) TwoHandedTroop[culture] = two;
+    //        if (ran != null) RangedTroop[culture] = ran;
+    //        if (cav != null) CavalryTroop[culture] = cav;
+    //        if (har != null) HorseArcherTroop[culture] = har;
+
+    //        // 读取权重（默认 0）
+    //        InfantryWeight[culture] = ReadIntAttr(node, "infantry_basic_troop_weight", 0);
+    //        TwoHandedWeight[culture] = ReadIntAttr(node, "twohanded_basic_troop_weight", 0);
+    //        RangedWeight[culture] = ReadIntAttr(node, "ranged_basic_troop_weight", 0);
+    //        CavalryWeight[culture] = ReadIntAttr(node, "cavalry_basic_troop_weight", 0);
+    //        HorseArcherWeight[culture] = ReadIntAttr(node, "horseArcher_basic_troop_weight", 0);
+    //    }
+
+    //    private static int ReadIntAttr(XmlNode node, string attrName, int defaultValue)
+    //    {
+    //        var attr = node.Attributes?[attrName];
+    //        if (attr != null && int.TryParse(attr.Value, out int result))
+    //            return Math.Max(0, result);
+    //        return defaultValue;
+    //    }
+    //}
+
     [HarmonyPatch(typeof(DefaultVolunteerModel), "GetBasicVolunteer")]
     public class Patch_GetBasicVolunteer
     {
-        private static void TryAddTroop(
-            Dictionary<CultureObject, CharacterObject> troopDict,
-            Dictionary<CultureObject, int> weightDict,
+        /// <summary>
+        /// 尝试从 CultureBasicTroopManager 中获取指定类型的兵种，并加入候选列表
+        /// </summary>
+        private static void TryAddTroopByType(
             CultureObject culture,
+            string type,
             List<CharacterObject> troops,
             List<int> weights)
         {
-            if (!troopDict.TryGetValue(culture, out CharacterObject troop) || troop == null)
+            if (!CultureBasicTroopManager.Data.TryGetValue(culture, out var typeDict))
                 return;
-            int weight = 0;
-            weightDict.TryGetValue(culture, out weight);
-            if (weight > 0)
+
+            if (typeDict.TryGetValue(type, out var entry))
             {
-                troops.Add(troop);
-                weights.Add(weight);
+                troops.Add(entry.Troop);
+                weights.Add(entry.Weight);
             }
         }
 
@@ -107,7 +170,7 @@ namespace ModifiedArmy.Patches
                 if (rand < sum)
                     return troops[i];
             }
-            return troops[troops.Count - 1]; // ✅ 修复：兼容 .NET Framework
+            return troops[troops.Count - 1];
         }
 
         public static bool Prefix(Hero sellerHero, ref CharacterObject __result)
@@ -123,70 +186,178 @@ namespace ModifiedArmy.Patches
 
             if (settlement.IsTown || (settlement.IsVillage && settlement.Village.Bound.IsTown))
             {
-                // Town / Village→Town: infantry, twohanded, ranged + basic_troop (weight=100)
-                TryAddTroop(Patch_CultureObject_Deserialize.InfantryTroop,
-                            Patch_CultureObject_Deserialize.InfantryWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.TwoHandedTroop,
-                            Patch_CultureObject_Deserialize.TwoHandedWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.RangedTroop,
-                            Patch_CultureObject_Deserialize.RangedWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.CavalryTroop,
-                            Patch_CultureObject_Deserialize.CavalryWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.HorseArcherTroop,
-                            Patch_CultureObject_Deserialize.HorseArcherWeight, culture, candidates, weights);
+                // Town / Village→Town: infantry, twohanded, ranged, cavalry, horsearcher + basic_troop (fallback)
+                TryAddTroopByType(culture, "infantry", candidates, weights);
+                TryAddTroopByType(culture, "twohanded", candidates, weights);
+                TryAddTroopByType(culture, "ranged", candidates, weights);
+                TryAddTroopByType(culture, "cavalry", candidates, weights);
+                TryAddTroopByType(culture, "horsearcher", candidates, weights);
 
-                if (culture.BasicTroop != null)
+                // Fallback: 如果 XML 中定义了 type="basic"，也会被包含；否则用原版 BasicTroop
+                if (candidates.Count == 0 && culture.BasicTroop != null)
                 {
                     candidates.Add(culture.BasicTroop);
-                    weights.Add(100); // 
+                    weights.Add(100);
                 }
             }
             else if (settlement.IsVillage && settlement.Village.Bound.IsCastle)
             {
-                // Village→Castle: infantry, twohanded, ranged, cavalry, horseArcher + elite_basic_troop (weight=25)
-                TryAddTroop(Patch_CultureObject_Deserialize.InfantryTroop,
-                            Patch_CultureObject_Deserialize.InfantryWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.TwoHandedTroop,
-                            Patch_CultureObject_Deserialize.TwoHandedWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.RangedTroop,
-                            Patch_CultureObject_Deserialize.RangedWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.CavalryTroop,
-                            Patch_CultureObject_Deserialize.CavalryWeight, culture, candidates, weights);
-                TryAddTroop(Patch_CultureObject_Deserialize.HorseArcherTroop,
-                            Patch_CultureObject_Deserialize.HorseArcherWeight, culture, candidates, weights);
+                // Village→Castle: 同上，但可额外加入 elite（如果 XML 有 type="elite"）
+                TryAddTroopByType(culture, "infantry", candidates, weights);
+                TryAddTroopByType(culture, "twohanded", candidates, weights);
+                TryAddTroopByType(culture, "ranged", candidates, weights);
+                TryAddTroopByType(culture, "cavalry", candidates, weights);
+                TryAddTroopByType(culture, "horsearcher", candidates, weights);
+                TryAddTroopByType(culture, "elite", candidates, weights); // 新增：支持 elite 类型
 
-                var elite = culture.EliteBasicTroop;
-                if (elite != null)
+                // 如果没有自定义 elite，但原版有 EliteBasicTroop，也可加入（可选）
+                if (!CultureBasicTroopManager.Data.TryGetValue(culture, out var dict) ||
+                    !dict.ContainsKey("elite"))
                 {
-                    candidates.Add(elite);
-                    weights.Add(25); // 
+                    var elite = culture.EliteBasicTroop;
+                    if (elite != null)
+                    {
+                        candidates.Add(elite);
+                        weights.Add(25); // 权重可调
+                    }
                 }
-                else if (culture.BasicTroop != null)
+
+                // 最终 fallback
+                if (candidates.Count == 0 && culture.BasicTroop != null)
                 {
-                    // fallback to basic_troop if elite is missing
                     candidates.Add(culture.BasicTroop);
                     weights.Add(100);
                 }
             }
             else
             {
+                // 其他情况（如野外营地）：直接用 BasicTroop
                 __result = culture.BasicTroop;
                 return false;
             }
 
-            if (candidates.Count == 0)
-            {
-                __result = culture.BasicTroop;
-            }
-            else
-            {
-                __result = WeightedRandomSelect(candidates, weights);
-                if (__result == null) __result = culture.BasicTroop;
-            }
-
+            // 执行加权随机选择
+            __result = WeightedRandomSelect(candidates, weights) ?? culture.BasicTroop;
             return false;
         }
     }
+
+    //// =============== GetBasicVolunteer 按权重选择基础troop ===============
+    //[HarmonyPatch(typeof(DefaultVolunteerModel), "GetBasicVolunteer")]
+    //public class Patch_GetBasicVolunteer
+    //{
+    //    private static void TryAddTroop(
+    //        Dictionary<CultureObject, CharacterObject> troopDict,
+    //        Dictionary<CultureObject, int> weightDict,
+    //        CultureObject culture,
+    //        List<CharacterObject> troops,
+    //        List<int> weights)
+    //    {
+    //        if (!troopDict.TryGetValue(culture, out CharacterObject troop) || troop == null)
+    //            return;
+    //        int weight = 0;
+    //        weightDict.TryGetValue(culture, out weight);
+    //        if (weight > 0)
+    //        {
+    //            troops.Add(troop);
+    //            weights.Add(weight);
+    //        }
+    //    }
+
+    //    private static CharacterObject WeightedRandomSelect(List<CharacterObject> troops, List<int> weights)
+    //    {
+    //        if (troops.Count == 0) return null;
+    //        int total = 0;
+    //        foreach (int w in weights) total += w;
+    //        if (total <= 0) return troops[0];
+    //        int rand = MBRandom.RandomInt(total);
+    //        int sum = 0;
+    //        for (int i = 0; i < troops.Count; i++)
+    //        {
+    //            sum += weights[i];
+    //            if (rand < sum)
+    //                return troops[i];
+    //        }
+    //        return troops[troops.Count - 1]; // ✅ 修复：兼容 .NET Framework
+    //    }
+
+    //    public static bool Prefix(Hero sellerHero, ref CharacterObject __result)
+    //    {
+    //        if (!CampaignState.IsReady || sellerHero?.Culture == null || sellerHero.CurrentSettlement == null)
+    //            return true;
+
+    //        var culture = sellerHero.Culture;
+    //        var settlement = sellerHero.CurrentSettlement;
+
+    //        List<CharacterObject> candidates = new List<CharacterObject>();
+    //        List<int> weights = new List<int>();
+
+    //        if (settlement.IsTown || (settlement.IsVillage && settlement.Village.Bound.IsTown))
+    //        {
+    //            // Town / Village→Town: infantry, twohanded, ranged + basic_troop (weight=100)
+    //            TryAddTroop(Patch_CultureObject_Deserialize.InfantryTroop,
+    //                        Patch_CultureObject_Deserialize.InfantryWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.TwoHandedTroop,
+    //                        Patch_CultureObject_Deserialize.TwoHandedWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.RangedTroop,
+    //                        Patch_CultureObject_Deserialize.RangedWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.CavalryTroop,
+    //                        Patch_CultureObject_Deserialize.CavalryWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.HorseArcherTroop,
+    //                        Patch_CultureObject_Deserialize.HorseArcherWeight, culture, candidates, weights);
+
+    //            if (culture.BasicTroop != null)
+    //            {
+    //                candidates.Add(culture.BasicTroop);
+    //                weights.Add(100); // 
+    //            }
+    //        }
+    //        else if (settlement.IsVillage && settlement.Village.Bound.IsCastle)
+    //        {
+    //            // Village→Castle: infantry, twohanded, ranged, cavalry, horseArcher + elite_basic_troop (weight=25)
+    //            TryAddTroop(Patch_CultureObject_Deserialize.InfantryTroop,
+    //                        Patch_CultureObject_Deserialize.InfantryWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.TwoHandedTroop,
+    //                        Patch_CultureObject_Deserialize.TwoHandedWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.RangedTroop,
+    //                        Patch_CultureObject_Deserialize.RangedWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.CavalryTroop,
+    //                        Patch_CultureObject_Deserialize.CavalryWeight, culture, candidates, weights);
+    //            TryAddTroop(Patch_CultureObject_Deserialize.HorseArcherTroop,
+    //                        Patch_CultureObject_Deserialize.HorseArcherWeight, culture, candidates, weights);
+
+    //            var elite = culture.EliteBasicTroop;
+    //            if (elite != null)
+    //            {
+    //                candidates.Add(elite);
+    //                weights.Add(25); // 
+    //            }
+    //            else if (culture.BasicTroop != null)
+    //            {
+    //                // fallback to basic_troop if elite is missing
+    //                candidates.Add(culture.BasicTroop);
+    //                weights.Add(100);
+    //            }
+    //        }
+    //        else
+    //        {
+    //            __result = culture.BasicTroop;
+    //            return false;
+    //        }
+
+    //        if (candidates.Count == 0)
+    //        {
+    //            __result = culture.BasicTroop;
+    //        }
+    //        else
+    //        {
+    //            __result = WeightedRandomSelect(candidates, weights);
+    //            if (__result == null) __result = culture.BasicTroop;
+    //        }
+
+    //        return false;
+    //    }
+    //}
 
     // =============== 限制志愿兵招募 ===============
     [HarmonyPatch(typeof(DefaultVolunteerModel), "MaximumIndexHeroCanRecruitFromHero")]

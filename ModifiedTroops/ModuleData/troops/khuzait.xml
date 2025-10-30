@@ -1163,150 +1163,13 @@
 
 	<!-- 设置为elite_basic_troop -->
 	<NPCCharacter
-		id="khuzait_qanqli"
-		default_group="HorseArcher"
-		level="16"
-		name="{=UYPaQP2j}Khuzait Qanqli"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.khuzait">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_khuzait_noble" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="40" />
-			<skill
-				id="Riding"
-				value="70" />
-			<skill
-				id="OneHanded"
-				value="45" />
-			<skill
-				id="TwoHanded"
-				value="30" />
-			<skill
-				id="Polearm"
-				value="70" />
-			<skill
-				id="Bow"
-				value="70" />
-			<skill
-				id="Crossbow"
-				value="10" />
-			<skill
-				id="Throwing"
-				value="25" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.khuzait_torguud" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.composite_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_sword_1_t2" />
-				<equipment
-					slot="Body"
-					id="Item.khuzait_sturdy_armor" />
-				<equipment
-					slot="Head"
-					id="Item.peaked_fur_hood" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.composite_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_sword_1_t2" />
-				<equipment
-					slot="Body"
-					id="Item.khuzait_sturdy_armor" />
-				<equipment
-					slot="Head"
-					id="Item.fur_hood" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.composite_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_sword_1_t2" />
-				<equipment
-					slot="Body"
-					id="Item.khuzait_sturdy_armor" />
-				<equipment
-					slot="Cape"
-					id="Item.steppe_leather_shoulders" />
-				<equipment
-					slot="Head"
-					id="Item.fur_hood" />
-				<equipment
-					slot="Leg"
-					id="Item.eastern_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.buttoned_leather_bracers" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="khuzait_troop_civilian_template_t2"
-				civilian="true" />
-			<equipment
-				slot="Horse"
-				id="Item.khuzait_horse" />
-			<equipment
-				slot="HorseHarness"
-				id="Item.steppe_harness" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
 		id="khuzait_torguud"
 		default_group="HorseArcher"
 		level="21"
 		name="{=QhNpvW0Y}Khuzait Torguud"
 		upgrade_requires="ItemCategory.war_horse"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.khuzait">
 		<face>
 			<face_key_template
@@ -2648,6 +2511,143 @@
 			<equipment
 				slot="HorseHarness"
 				id="Item.steppe_fur_harness" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="khuzait_qanqli"
+		default_group="HorseArcher"
+		level="16"
+		name="{=UYPaQP2j}Khuzait Qanqli"
+		occupation="Soldier"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_noble" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="40" />
+			<skill
+				id="Riding"
+				value="70" />
+			<skill
+				id="OneHanded"
+				value="45" />
+			<skill
+				id="TwoHanded"
+				value="30" />
+			<skill
+				id="Polearm"
+				value="70" />
+			<skill
+				id="Bow"
+				value="70" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="25" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.khuzait_torguud" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.khuzait_sturdy_armor" />
+				<equipment
+					slot="Head"
+					id="Item.peaked_fur_hood" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.khuzait_sturdy_armor" />
+				<equipment
+					slot="Head"
+					id="Item.fur_hood" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.eastern_studded_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.khuzait_sturdy_armor" />
+				<equipment
+					slot="Cape"
+					id="Item.steppe_leather_shoulders" />
+				<equipment
+					slot="Head"
+					id="Item.fur_hood" />
+				<equipment
+					slot="Leg"
+					id="Item.eastern_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_harness" />
 		</Equipments>
 	</NPCCharacter>
 	<!-- #endregion -->
