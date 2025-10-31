@@ -843,9 +843,11 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.mercenary_khuzait_hostarcher_t4" />
+				name="NPCCharacter.hire_steppe_guard" />
 			<template
-				name="NPCCharacter.mercenary_vlandian_gallant" />
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 		<basic_troop_weight>
 			<Troop id="NPCCharacter.imperial_recruit"          type="basic"      weight="15"/>
@@ -1393,11 +1395,15 @@
 		</tournament_team_templates_four_participant>
 		<basic_mercenary_troops>
 			<template
-				name="NPCCharacter.mercenary_vlandian_gallant" />
-			<template
 				name="NPCCharacter.eastern_mercenary" />
 			<template
-				name="NPCCharacter.mercenary_khuzait_hostarcher_t4" />
+				name="NPCCharacter.western_mercenary" />
+			<template
+				name="NPCCharacter.hire_steppe_guard" />
+			<template
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 		<basic_troop_weight>
 			<Troop id="NPCCharacter.aserai_recruit"          type="basic"      weight="20"/>
@@ -2016,9 +2022,11 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.mercenary_khuzait_hostarcher_t4" />
+				name="NPCCharacter.hire_steppe_guard" />
 			<template
-				name="NPCCharacter.mercenary_vlandian_gallant" />
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 		<basic_troop_weight>
 			<Troop id="NPCCharacter.sturgian_recruit"          type="basic"      weight="20"/>
@@ -2613,9 +2621,15 @@
 		</tournament_team_templates_four_participant>
 		<basic_mercenary_troops>
 			<template
+				name="NPCCharacter.eastern_mercenary" />
+			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.mercenary_khuzait_hostarcher_t4" />
+				name="NPCCharacter.hire_steppe_guard" />
+			<template
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 		<basic_troop_weight>
 			<Troop id="NPCCharacter.vlandian_recruit"          type="basic"      weight="20"/>
@@ -3083,9 +3097,15 @@
 		</tournament_team_templates_four_participant>
 		<basic_mercenary_troops>
 			<template
+				name="NPCCharacter.eastern_mercenary" />
+			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.sword_sisters_sister_t3" />
+				name="NPCCharacter.hire_steppe_guard" />
+			<template
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 	</Culture>
 	<Culture
@@ -3586,9 +3606,13 @@
 			<template
 				name="NPCCharacter.eastern_mercenary" />
 			<template
-				name="NPCCharacter.sword_sisters_sister_t3" />
+				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.mercenary_vlandian_gallant" />
+				name="NPCCharacter.hire_steppe_guard" />
+			<template
+				name="NPCCharacter.hire_squire" />
+			<template
+				name="NPCCharacter.hire_northern_light_infantry" />
 		</basic_mercenary_troops>
 		<basic_troop_weight>
 			<Troop id="NPCCharacter.khuzait_nomad"          type="basic"      weight="20"/>

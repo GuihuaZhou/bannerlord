@@ -765,15 +765,16 @@
 	<!-- 设置为elite_basic_troop -->
 	<NPCCharacter
 		id="varyag_veteran"
-		default_group="Infantry"
+		default_group="Cavalry"
 		level="21"
 		name="{=QGPAEtj7}Varyag Veteran"
+		upgrade_requires="ItemCategory.horse"
 		occupation="Soldier"
 		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
+				value="BodyProperty.fighter_sturgia_elite" />
 		</face>
 		<skills>
 			<skill
@@ -834,6 +835,12 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_leather_vambraces" />
+				<equipment
+					slot="Horse"
+					id="Item.hunter" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.celtic_frost" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -860,6 +867,12 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_leather_vambraces" />
+				<equipment
+					slot="Horse"
+					id="Item.hunter" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.bandit_saddle_highland" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -889,6 +902,12 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_leather_vambraces" />
+				<equipment
+					slot="Horse"
+					id="Item.hunter" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.northern_noble_harness" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="sturgia_troop_civilian_template_t3"
