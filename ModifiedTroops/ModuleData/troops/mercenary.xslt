@@ -10,4 +10,7 @@
     <xsl:template match="NPCCharacter[@id='eastern_mercenary_t4']"/>
     <xsl:template match="NPCCharacter[@id='eastern_mercenary_t5']"/>
 
+    <xsl:template match="NPCCharacter[@id='western_crossbow_t4']"/>
+    <xsl:template match="NPCCharacter[@id='western_crossbow_t5']"/>
+
 </xsl:stylesheet>

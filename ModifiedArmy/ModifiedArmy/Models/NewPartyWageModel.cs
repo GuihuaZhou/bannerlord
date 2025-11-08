@@ -1,41 +1,39 @@
-﻿using HarmonyLib;
-using System.Reflection;
-using System.Xml;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.ComponentInterfaces;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.ObjectSystem;
 
-namespace ModifiedArmy.Patches
+namespace ModifiedArmy.Models
 {
-    [HarmonyPatch(typeof(DefaultPartyWageModel), "GetTroopRecruitmentCost")]
-    public class RecruitmentCostPatch
+    public class NewPartyWageModel : DefaultPartyWageModel
     {
-        public static bool Prefix(
-            CharacterObject troop,
-            Hero buyerHero,
-            bool withoutItemCost,
-            ref ExplainedNumber __result)
+        // 增加tier4-6 troop的招募费用
+        public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
         {
-            // ========== 自定义基础成本 ==========
+
+            //InformationManager.DisplayMessage(new InformationMessage($"[MOD] Call NewPartyWageModel::GetTroopRecruitmentCost"));
+
             ExplainedNumber result;
             if (troop.Level <= 1)
             {
-                result = new ExplainedNumber(10f, false, null);        // 原：10
+                result = new ExplainedNumber(10f, false, null);
             }
             else if (troop.Level <= 6)
             {
-                result = new ExplainedNumber(20f, false, null);        // 原：20
+                result = new ExplainedNumber(20f, false, null);
             }
             else if (troop.Level <= 11)
             {
-                result = new ExplainedNumber(50f, false, null);        // 原：50
+                result = new ExplainedNumber(50f, false, null);
             }
             else if (troop.Level <= 16)
             {
-                result = new ExplainedNumber(100f, false, null);       // 原：100
+                result = new ExplainedNumber(100f, false, null);
             }
             else if (troop.Level <= 21)
             {
@@ -51,36 +49,28 @@ namespace ModifiedArmy.Patches
             }
             else if (troop.Level <= 36)
             {
-                result = new ExplainedNumber(3000f, false, null);      // 原：1000
+                result = new ExplainedNumber(2800f, false, null);      // 原：1000
             }
             else
             {
-                result = new ExplainedNumber(5000f, false, null);      // 原：1500
+                result = new ExplainedNumber(4000f, false, null);      // 原：1500
             }
-
-            // ========== 马匹成本 ==========
             if (troop.Equipment.Horse.Item != null && !withoutItemCost)
             {
                 if (troop.Level < 26)
                 {
-                    result.Add(1500f, null, null);  // 原：150
+                    result.Add(1000f, null, null);  // 原：150
                 }
                 else
                 {
-                    result.Add(5000f, null, null);  // 原：500
+                    result.Add(2500f, null, null);  // 原：500
                 }
             }
-
-            // ========== 职业 ×2 ==========
-            bool flag = troop.Occupation == Occupation.Mercenary ||
-                        troop.Occupation == Occupation.Gangster ||
-                        troop.Occupation == Occupation.CaravanGuard;
+            bool flag = troop.Occupation == Occupation.Mercenary || troop.Occupation == Occupation.Gangster || troop.Occupation == Occupation.CaravanGuard;
             if (flag)
             {
                 result.AddFactor(2f, null);
             }
-
-            // ========== 完整保留 buyerHero 所有 perk 逻辑 ==========
             if (buyerHero != null)
             {
                 if (troop.Tier >= 2 && buyerHero.GetPerkValue(DefaultPerks.Throwing.HeadHunter))
@@ -134,9 +124,47 @@ namespace ModifiedArmy.Patches
                 }
                 result.LimitMin(1f);
             }
+            return result;
+        }
 
-            __result = result;
-            return false; 
+
+        // 增加tier4-6 troop的工资
+        public override int GetCharacterWage(CharacterObject character)
+        {
+            //InformationManager.DisplayMessage(new InformationMessage($"[MOD] Call NewPartyWageModel::GetCharacterWage"));
+            int num;
+            switch (character.Tier)
+            {
+                case 0:
+                    num = 1;
+                    break;
+                case 1:
+                    num = 2;
+                    break;
+                case 2:
+                    num = 3;
+                    break;
+                case 3:
+                    num = 5;
+                    break;
+                case 4:
+                    num = 16; // 原来8
+                    break;
+                case 5:
+                    num = 24; // 原来12
+                    break;
+                case 6:
+                    num = 34; // 原来17
+                    break;
+                default:
+                    num = 46; // 原来23
+                    break;
+            }
+            if (character.Occupation == Occupation.Mercenary)
+            {
+                num = (int)((float)num * 1.5f);
+            }
+            return num;
         }
     }
 }

@@ -619,7 +619,7 @@
 					id="Item.woven_leather_shoulders" />
 				<equipment
 					slot="Body"
-					id="Item.empire_horseman_armor" />
+					id="Item.nordic_lamellar_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -645,7 +645,33 @@
 					id="Item.woven_leather_shoulders" />
 				<equipment
 					slot="Body"
-					id="Item.empire_horseman_armor" />
+					id="Item.imperial_lamellar_over_leather" />
+				<equipment
+					slot="Gloves"
+					id="Item.padded_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.light_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Head"
+					id="Item.leatherlame_feathered_spangenhelm_over_leather" />
+				<equipment
+					slot="Cape"
+					id="Item.woven_leather_shoulders" />
+				<equipment
+					slot="Body"
+					id="Item.southern_lamellar_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -875,12 +901,143 @@
 
 	<!-- 设置为infantry_basic_troop -->
 	<NPCCharacter
+		id="imperial_legion_recruit"
+		default_group="Infantry"
+		level="16"
+		name="{=imperial_legion_recruitJ}Imperial Legion Recruit"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="10" />
+			<skill
+				id="OneHanded"
+				value="90" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="30" />
+			<skill
+				id="Throwing"
+				value="80" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.imperial_veteran_infantryman" />
+			<upgrade_target
+				id="NPCCharacter.imperial_menavliaton" />
+			<upgrade_target
+				id="NPCCharacter.imperial_veteran_archer" />
+			<upgrade_target
+				id="NPCCharacter.imperial_crossbowman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.studded_bound_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.imperial_mail_vest" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.padded_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_laced_cloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.studded_bound_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.mail_shirt" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				<equipment
+					slot="Gloves"
+					id="Item.padded_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_laced_cloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.reinforced_flat_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.nordic_hauberk" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.padded_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_laced_cloth" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
 		id="imperial_veteran_infantryman"
 		default_group="Infantry"
 		level="21"
-		name="{=yrGYZsQ7}Imperial Veteran Infantryman"
+		name="{=yrGYZsQ7}Imperial Legionary"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -931,7 +1088,7 @@
 					id="Item.imperial_throwing_spear_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.empire_legion_b" />
+					id="Item.empire_plate_vest_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -957,7 +1114,7 @@
 					id="Item.imperial_throwing_spear_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.empire_legion_b" />
+					id="Item.empire_legion_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -1010,7 +1167,7 @@
 		id="imperial_guard_infantry"
 		default_group="Infantry"
 		level="26"
-		name="帝国禁卫步兵"
+		name="{=imperial_guard_infantry}Imperial Guard Infantry"
 		occupation="Soldier"
 		culture="Culture.empire">
 		<face>
@@ -1141,7 +1298,7 @@
 		id="imperial_legionary"
 		default_group="Infantry"
 		level="26"
-		name="{=JGsUtBT3}Imperial Legionary"
+		name="{=JGsUtBT3}Imperial Veteran Legionary"
 		occupation="Soldier"
 		culture="Culture.empire">
 		<face>
@@ -1268,16 +1425,12 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-
-
-	<!-- 设置为twohand_basic_troop -->
 	<NPCCharacter
 		id="imperial_menavliaton"
 		default_group="Infantry"
 		level="21"
 		name="{=e8qbF7Ey}Imperial Menavliaton"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -1323,7 +1476,7 @@
 					id="Item.empire_sword_4_t4" />
 				<equipment
 					slot="Body"
-					id="Item.imperial_mail_over_leather" />
+					id="Item.empire_legion_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.mail_mitten" />
@@ -1395,7 +1548,7 @@
 		id="imperial_elite_menavliaton"
 		default_group="Infantry"
 		level="26"
-		name="{=qAsnj7vU}Imperial Elite Menavliaton"
+		name="{=qAsnj7vU}Imperial Veteran Menavliaton"
 		occupation="Soldier"
 		culture="Culture.empire">
 		<face>
@@ -1442,7 +1595,7 @@
 					id="Item.imperial_throwing_spear_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.imperial_lamellar_over_leather" />
+					id="Item.empire_plate_vest_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
@@ -1468,7 +1621,7 @@
 					id="Item.imperial_throwing_spear_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.imperial_lamellar_over_leather" />
+					id="Item.empire_legion_b" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -1513,16 +1666,12 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
-
-	<!-- 设置为ranged_basic_troop -->
 	<NPCCharacter
 		id="imperial_veteran_archer"
 		default_group="Ranged"
 		level="21"
 		name="{=8bA4PvdG}Imperial Veteran Archer"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -1557,8 +1706,6 @@
 		<upgrade_targets>
 			<upgrade_target
 				id="NPCCharacter.imperial_palatine_guard" />
-			<upgrade_target
-				id="NPCCharacter.imperial_sergeant_crossbowman" />
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
@@ -1636,12 +1783,142 @@
 		</Equipments>
 	</NPCCharacter>
 	<NPCCharacter
+		id="imperial_crossbowman"
+		default_group="Ranged"
+		level="21"
+		name="{=UdTc1PGo}Imperial Crossbowman"
+		occupation="Soldier"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="15" />
+			<skill
+				id="OneHanded"
+				value="100" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="60" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="100" />
+			<skill
+				id="Throwing"
+				value="45" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.imperial_sergeant_crossbowman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_e" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Body"
+					id="Item.imperial_mail_vest" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leatherlame_roundkettle_over_imperial_leather" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_e" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Body"
+					id="Item.imperial_mail_vest" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_imperial_leather" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_e" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_e" />
+				<equipment
+					slot="Body"
+					id="Item.imperial_mail_vest" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_roundkettle_over_imperial_leather" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
 		id="imperial_sergeant_crossbowman"
 		default_group="Ranged"
 		level="26"
 		name="{=THyv3q9f}Imperial Sergeant Crossbowman"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -1687,7 +1964,7 @@
 					id="Item.empire_mace_2_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.reinforced_kite_shield" />
+					id="Item.bolt_d" />
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
@@ -1716,7 +1993,7 @@
 					id="Item.empire_sword_5_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.reinforced_kite_shield" />
+					id="Item.bolt_d" />
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
@@ -1745,7 +2022,7 @@
 					id="Item.empire_mace_2_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.western_kite_shield" />
+					id="Item.bolt_d" />
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
@@ -1890,6 +2167,12 @@
 		</Equipments>
 	</NPCCharacter>
 
+
+
+
+
+
+
 	<!-- 废弃兵种 -->
 	<!-- 废弃禁卫新兵 -->
 	<NPCCharacter
@@ -1898,7 +2181,7 @@
 		level="11"
 		name="{=n41jlEa3}Imperial Vigla Recruit"
 		occupation="Soldier"
-		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -2020,6 +2303,7 @@
 		name="{=1PsLlMaQ}Imperial Equite"
 		upgrade_requires="ItemCategory.horse"
 		occupation="Soldier"
+		is_hidden_encyclopedia="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -2146,134 +2430,13 @@
 		</Equipments>
 	</NPCCharacter>
 	<NPCCharacter
-		id="imperial_crossbowman"
-		default_group="Ranged"
-		level="21"
-		name="{=UdTc1PGo}Imperial Crossbowman"
-		occupation="Soldier"
-		culture="Culture.empire">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="100" />
-			<skill
-				id="Riding"
-				value="15" />
-			<skill
-				id="OneHanded"
-				value="100" />
-			<skill
-				id="TwoHanded"
-				value="45" />
-			<skill
-				id="Polearm"
-				value="60" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="100" />
-			<skill
-				id="Throwing"
-				value="45" />
-		</skills>
-		<!-- <upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.imperial_sergeant_crossbowman" />
-		</upgrade_targets> -->
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_e" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_e" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_3_t3" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_mail_vest" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.leatherlame_roundkettle_over_imperial_leather" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_e" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_e" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_3_t3" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_mail_vest" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.roundkettle_over_imperial_leather" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_e" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_e" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_3_t3" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_mail_vest" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_roundkettle_over_imperial_leather" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
 		id="bucellarii"
 		default_group="HorseArcher"
 		level="26"
 		name="{=pRbbJHkU}Imperial Bucellarii"
 		upgrade_requires="ItemCategory.war_horse"
 		occupation="Soldier"
+		is_hidden_encyclopedia="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template

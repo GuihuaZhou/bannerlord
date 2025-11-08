@@ -1,0 +1,683 @@
+我在做bannerlord的mod，版本是1.3.1，我希望在创建characterobject时，可以读取我添加的字段
+通过dnspy解析CultureObject的Deserialize函数如下，用于从xml文件中读取字段并初始化
+
+namespace TaleWorlds.CampaignSystem
+{
+	// Token: 0x02000065 RID: 101
+	public sealed class CultureObject : BasicCultureObject
+    {
+        public override void Deserialize(MBObjectManager objectManager, XmlNode node)
+		{
+			base.Deserialize(objectManager, node);
+            ......
+			this.EliteBasicTroop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("elite_basic_troop", node);
+			this.BasicTroop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("basic_troop", node);
+		}
+    }
+}
+
+
+默认的xml文件如下
+<SPCultures>
+	<Culture
+		id="empire"
+		
+		elite_basic_troop="NPCCharacter.imperial_heavy_horseman"
+		basic_troop="NPCCharacter.imperial_recruit"=
+    </Culture>
+</SPCultures>
+
+xml定义了2个basic troop；游戏中troop分tier1到tier6；我将tier3到tier4的升级切断；因此有更多的troop做为basic_troop需要加到配置中，并且需要配置troop的权重（weight）如下所示
+
+<SPCultures>
+	<Culture
+		id="empire"
+		
+		elite_basic_troop="NPCCharacter.imperial_heavy_horseman"
+		basic_troop="NPCCharacter.imperial_recruit"
+
+		infantry_basic_troop="NPCCharacter.imperial_veteran_infantryman"
+		infantry_basic_troop_weight="75"
+
+		twohanded_basic_troop="NPCCharacter.imperial_menavliaton"
+		twohanded_basic_troop_weight="75"
+
+		ranged_basic_troop="NPCCharacter.imperial_trained_archer"
+		ranged_basic_troop_weight="50"
+    </Culture>
+</SPCultures>
+
+背景：
+
+请你帮我
+1、优化xml中troop和weight的组织形式（不要使用扁平化结构），需要支持原来的elite_basic_troop和basic_troop也配置weight
+2、给出mod的代码，可以读取修改后的xml文件，
+
+
+
+
+有个新的疑问
+游戏会创建多个CultureObject对象，补丁中的Troops和weight也应该是多个，且和1个CultureObject对象绑定
+
+
+<SPCultures>
+	<Culture
+		id="aserai"
+		name="{=aseraifaction}Aserai"
+		is_main_culture="true"
+		color="0xffB57A1E"
+		color2="0xff4E1A13"
+
+		elite_basic_troop="NPCCharacter.aserai_faris"
+		basic_troop="NPCCharacter.aserai_recruit"
+
+		<BasicTroops>
+			<Troop id="NPCCharacter.imperial_recruit"          type="basic"      weight="100"/>
+			<Troop id="NPCCharacter.imperial_heavy_horseman"   type="elite"      weight="90"/>
+			<Troop id="NPCCharacter.imperial_veteran_infantryman" type="infantry" weight="75"/>
+			<Troop id="NPCCharacter.imperial_menavliaton"      type="twohanded"  weight="75"/>
+			<Troop id="NPCCharacter.imperial_trained_archer"   type="ranged"     weight="50"/>
+			<Troop id="NPCCharacter.imperial_lancer"           type="cavalry"    weight="60"/>
+			<Troop id="NPCCharacter.imperial_horse_archer"     type="horsearcher" weight="40"/>
+		</BasicTroops>
+
+
+
+
+希望修改兵种的装备，mod创建了新的xml，从spcultures.xml复制已有的配置并修改，预期要覆盖原来的配置；但实际上，游戏执行了合并，而不是覆盖
+
+这是一个常见的troop定义，我一般会修改upgrade_targets、Equipments
+<NPCCharacter
+	id="khuzait_torguud"
+	default_group="HorseArcher"
+	level="21"
+	name="{=QhNpvW0Y}Khuzait Torguud"
+	upgrade_requires="ItemCategory.war_horse"
+	occupation="Soldier"
+	is_basic_troop="true"
+	culture="Culture.khuzait">
+	<face>
+		<face_key_template
+			value="BodyProperty.fighter_khuzait_noble" />
+	</face>
+	<skills>
+		<skill
+			id="Athletics"
+			value="45" />
+		<skill
+			id="Riding"
+			value="100" />
+		<skill
+			id="OneHanded"
+			value="55" />
+		<skill
+			id="TwoHanded"
+			value="45" />
+		<skill
+			id="Polearm"
+			value="100" />
+		<skill
+			id="Bow"
+			value="100" />
+		<skill
+			id="Crossbow"
+			value="15" />
+		<skill
+			id="Throwing"
+			value="25" />
+	</skills>
+	<upgrade_targets>
+		<upgrade_target
+			id="NPCCharacter.khuzait_kheshig" />
+	</upgrade_targets>
+	<Equipments>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.plumed_nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.plumed_nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentSet
+			id="khuzait_troop_civilian_template_t2"
+			civilian="true" />
+		<equipment
+			slot="Horse"
+			id="Item.t2_khuzait_horse" />
+		<equipment
+			slot="HorseHarness"
+			id="Item.steppe_half_barding" />
+	</Equipments>
+</NPCCharacter>
+
+这是我认为游戏相关的代码，
+namespace TaleWorlds.Core
+{
+	// Token: 0x0200001A RID: 26
+	public class BasicCharacterObject : MBObjectBase
+	{
+		public override void Deserialize(MBObjectManager objectManager, XmlNode node)
+		{
+			base.Deserialize(objectManager, node);
+			XmlAttribute xmlAttribute = node.Attributes["name"];
+			if (xmlAttribute != null)
+			{
+				this.SetName(new TextObject(xmlAttribute.Value, null));
+			}
+			this.Race = 0;
+			XmlAttribute xmlAttribute2 = node.Attributes["race"];
+			if (xmlAttribute2 != null)
+			{
+				this.Race = FaceGen.GetRaceOrDefault(xmlAttribute2.Value);
+			}
+			XmlNode xmlNode = node.Attributes["occupation"];
+			if (xmlNode != null)
+			{
+				this.IsSoldier = (xmlNode.InnerText.IndexOf("soldier", StringComparison.OrdinalIgnoreCase) >= 0);
+			}
+			this._isBasicHero = XmlHelper.ReadBool(node, "is_hero");
+			this.FaceMeshCache = XmlHelper.ReadBool(node, "face_mesh_cache");
+			this.IsObsolete = XmlHelper.ReadBool(node, "is_obsolete");
+			MBCharacterSkills mbcharacterSkills = objectManager.ReadObjectReferenceFromXml("skill_template", typeof(MBCharacterSkills), node) as MBCharacterSkills;
+			if (mbcharacterSkills != null)
+			{
+				this.DefaultCharacterSkills = mbcharacterSkills;
+			}
+			else
+			{
+				this.DefaultCharacterSkills = MBObjectManager.Instance.CreateObject<MBCharacterSkills>(base.StringId);
+			}
+			BodyProperties bodyPropertyMin = default(BodyProperties);
+			BodyProperties bodyProperties = default(BodyProperties);
+			string text = "";
+			string text2 = "";
+			string text3 = "";
+			foreach (object obj in node.ChildNodes)
+			{
+				XmlNode xmlNode2 = (XmlNode)obj;
+				if (xmlNode2.Name == "Skills" || xmlNode2.Name == "skills")
+				{
+					if (mbcharacterSkills == null)
+					{
+						this.DefaultCharacterSkills.Init(objectManager, xmlNode2);
+					}
+				}
+				else if (xmlNode2.Name == "Equipments" || xmlNode2.Name == "equipments")
+				{
+					List<XmlNode> list = new List<XmlNode>();
+					foreach (object obj2 in xmlNode2.ChildNodes)
+					{
+						XmlNode xmlNode3 = (XmlNode)obj2;
+						if (xmlNode3.Name == "equipment")
+						{
+							list.Add(xmlNode3);
+						}
+					}
+					foreach (object obj3 in xmlNode2.ChildNodes)
+					{
+						XmlNode xmlNode4 = (XmlNode)obj3;
+						if (xmlNode4.Name == "EquipmentRoster" || xmlNode4.Name == "equipmentRoster")
+						{
+							if (this._equipmentRoster == null)
+							{
+								this._equipmentRoster = MBObjectManager.Instance.CreateObject<MBEquipmentRoster>(base.StringId);
+							}
+							this._equipmentRoster.Init(objectManager, xmlNode4);
+						}
+						else if (xmlNode4.Name == "EquipmentSet" || xmlNode4.Name == "equipmentSet")
+						{
+							string innerText = xmlNode4.Attributes["id"].InnerText;
+							Equipment.EquipmentType equipmentType = Equipment.EquipmentType.Battle;
+							if (xmlNode4.Attributes["equipmentType"] != null)
+							{
+								if (!Enum.TryParse<Equipment.EquipmentType>(xmlNode4.Attributes["equipmentType"].Value, out equipmentType))
+								{
+									Debug.FailedAssert("This equipment definition is wrong", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 450);
+								}
+							}
+							else if (xmlNode4.Attributes["civilian"] != null && bool.Parse(xmlNode4.Attributes["civilian"].InnerText))
+							{
+								equipmentType = Equipment.EquipmentType.Civilian;
+							}
+							if (this._equipmentRoster == null)
+							{
+								this._equipmentRoster = MBObjectManager.Instance.CreateObject<MBEquipmentRoster>(base.StringId);
+							}
+							this._equipmentRoster.AddEquipmentRoster(MBObjectManager.Instance.GetObject<MBEquipmentRoster>(innerText), equipmentType);
+						}
+					}
+					if (list.Count > 0)
+					{
+						this._equipmentRoster.AddOverridenEquipments(objectManager, list);
+					}
+				}
+				else
+				{
+					if (xmlNode2.Name == "face")
+					{
+						using (IEnumerator enumerator2 = xmlNode2.ChildNodes.GetEnumerator())
+						{
+							while (enumerator2.MoveNext())
+							{
+								object obj4 = enumerator2.Current;
+								XmlNode xmlNode5 = (XmlNode)obj4;
+								if (xmlNode5.Name == "hair_tags")
+								{
+									using (IEnumerator enumerator3 = xmlNode5.ChildNodes.GetEnumerator())
+									{
+										while (enumerator3.MoveNext())
+										{
+											object obj5 = enumerator3.Current;
+											XmlNode xmlNode6 = (XmlNode)obj5;
+											text = text + xmlNode6.Attributes["name"].Value + ",";
+										}
+										continue;
+									}
+								}
+								if (xmlNode5.Name == "beard_tags")
+								{
+									using (IEnumerator enumerator3 = xmlNode5.ChildNodes.GetEnumerator())
+									{
+										while (enumerator3.MoveNext())
+										{
+											object obj6 = enumerator3.Current;
+											XmlNode xmlNode7 = (XmlNode)obj6;
+											text2 = text2 + xmlNode7.Attributes["name"].Value + ",";
+										}
+										continue;
+									}
+								}
+								if (xmlNode5.Name == "tattoo_tags")
+								{
+									using (IEnumerator enumerator3 = xmlNode5.ChildNodes.GetEnumerator())
+									{
+										while (enumerator3.MoveNext())
+										{
+											object obj7 = enumerator3.Current;
+											XmlNode xmlNode8 = (XmlNode)obj7;
+											text3 = text3 + xmlNode8.Attributes["name"].Value + ",";
+										}
+										continue;
+									}
+								}
+								if (xmlNode5.Name == "BodyProperties")
+								{
+									if (!BodyProperties.FromXmlNode(xmlNode5, out bodyPropertyMin))
+									{
+										Debug.FailedAssert("cannot read body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 509);
+									}
+								}
+								else if (xmlNode5.Name == "BodyPropertiesMax")
+								{
+									if (!BodyProperties.FromXmlNode(xmlNode5, out bodyProperties))
+									{
+										bodyPropertyMin = bodyProperties;
+										Debug.FailedAssert("cannot read max body properties", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.Core\\BasicCharacterObject.cs", "Deserialize", 518);
+									}
+								}
+								else if (xmlNode5.Name == "face_key_template")
+								{
+									MBBodyProperty bodyPropertyRange = objectManager.ReadObjectReferenceFromXml<MBBodyProperty>("value", xmlNode5);
+									this.BodyPropertyRange = bodyPropertyRange;
+								}
+							}
+							continue;
+						}
+					}
+					if (xmlNode2.Name == "Resistances" || xmlNode2.Name == "resistances")
+					{
+						this.KnockbackResistance = XmlHelper.ReadFloat(xmlNode2, "knockback", 25f) * 0.01f;
+						this.KnockbackResistance = MBMath.ClampFloat(this.KnockbackResistance, 0f, 1f);
+						this.KnockdownResistance = XmlHelper.ReadFloat(xmlNode2, "knockdown", 50f) * 0.01f;
+						this.KnockdownResistance = MBMath.ClampFloat(this.KnockdownResistance, 0f, 1f);
+						this.DismountResistance = XmlHelper.ReadFloat(xmlNode2, "dismount", 50f) * 0.01f;
+						this.DismountResistance = MBMath.ClampFloat(this.DismountResistance, 0f, 1f);
+					}
+				}
+			}
+			if (this.BodyPropertyRange == null)
+			{
+				this.BodyPropertyRange = MBObjectManager.Instance.RegisterPresumedObject<MBBodyProperty>(new MBBodyProperty(base.StringId));
+				this.BodyPropertyRange.Init(bodyPropertyMin, bodyProperties);
+			}
+			this.IsFemale = false;
+			this.DefaultFormationGroup = 0;
+			XmlNode xmlNode9 = node.Attributes["is_female"];
+			if (xmlNode9 != null)
+			{
+				this.IsFemale = Convert.ToBoolean(xmlNode9.InnerText);
+			}
+			this.Culture = objectManager.ReadObjectReferenceFromXml<BasicCultureObject>("culture", node);
+			XmlNode xmlNode10 = node.Attributes["age"];
+			this.Age = ((xmlNode10 == null) ? MathF.Max(20f, this.BodyPropertyRange.BodyPropertyMax.Age) : ((float)Convert.ToInt32(xmlNode10.InnerText)));
+			XmlNode xmlNode11 = node.Attributes["level"];
+			this.Level = ((xmlNode11 != null) ? Convert.ToInt32(xmlNode11.InnerText) : 1);
+			XmlNode xmlNode12 = node.Attributes["default_group"];
+			if (xmlNode12 != null)
+			{
+				this.DefaultFormationGroup = this.FetchDefaultFormationGroup(xmlNode12.InnerText);
+			}
+			this.DefaultFormationClass = (FormationClass)this.DefaultFormationGroup;
+			this._isRanged = this.DefaultFormationClass.IsRanged();
+			this._isMounted = this.DefaultFormationClass.IsMounted();
+			XmlNode xmlNode13 = node.Attributes["formation_position_preference"];
+			this.FormationPositionPreference = ((xmlNode13 != null) ? ((FormationPositionPreference)Enum.Parse(typeof(FormationPositionPreference), xmlNode13.InnerText)) : FormationPositionPreference.Middle);
+			bool flag = !string.IsNullOrEmpty(text);
+			bool flag2 = !string.IsNullOrEmpty(text2);
+			bool flag3 = !string.IsNullOrEmpty(text3);
+			if (flag || flag2 || flag3)
+			{
+				if (this.BodyPropertyRange.HairTags != text || this.BodyPropertyRange.BeardTags != text2 || this.BodyPropertyRange.TattooTags != text3)
+				{
+					this.BodyPropertyRange = MBBodyProperty.CreateFrom(this.BodyPropertyRange);
+				}
+				if (flag)
+				{
+					this.BodyPropertyRange.HairTags = text;
+				}
+				if (flag2)
+				{
+					this.BodyPropertyRange.BeardTags = text2;
+				}
+				if (flag3)
+				{
+					this.BodyPropertyRange.TattooTags = text3;
+				}
+			}
+			XmlNode xmlNode14 = node.Attributes["default_equipment_set"];
+			if (xmlNode14 != null)
+			{
+				this._equipmentRoster.InitializeDefaultEquipment(xmlNode14.Value);
+			}
+			MBEquipmentRoster equipmentRoster = this._equipmentRoster;
+			if (equipmentRoster == null)
+			{
+				return;
+			}
+			equipmentRoster.OrderEquipments();
+		}
+	}
+}
+
+我认为需要的修改如下
+if (xmlNode4.Name == "EquipmentRoster" || xmlNode4.Name == "equipmentRoster")
+{
+	// 添加一段逻辑，如果this._equipmentRoster存在，需要通过MBObjectManager释放对象，重新创建，达到覆盖的目的
+	if (this._equipmentRoster == null)
+	{
+		this._equipmentRoster = MBObjectManager.Instance.CreateObject<MBEquipmentRoster>(base.StringId);
+	}
+	
+	this._equipmentRoster.Init(objectManager, xmlNode4);
+}
+
+帮我写一个mod实现读取xml时采用覆盖方式，而不是合并，需要给出完整的代码；我会给出BasicCharacterObject和MBObjectManager的代码
+
+
+原代码中有
+private MBEquipmentRoster _equipmentRoster;
+
+补丁代码提示找不到_equipmentRoster
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+希望修改兵种的装备，mod创建了新的xml，从spcultures.xml复制已有的配置并修改，预期要覆盖原来的配置；但实际上，游戏执行了合并，而不是覆盖
+
+这是一个常见的troop定义，我一般会修改upgrade_targets、Equipments
+<NPCCharacter
+	id="khuzait_torguud"
+	default_group="HorseArcher"
+	level="21"
+	name="{=QhNpvW0Y}Khuzait Torguud"
+	upgrade_requires="ItemCategory.war_horse"
+	occupation="Soldier"
+	is_basic_troop="true"
+	culture="Culture.khuzait">
+	<face>
+		<face_key_template
+			value="BodyProperty.fighter_khuzait_noble" />
+	</face>
+	<skills>
+		<skill
+			id="Athletics"
+			value="45" />
+		<skill
+			id="Riding"
+			value="100" />
+		<skill
+			id="OneHanded"
+			value="55" />
+		<skill
+			id="TwoHanded"
+			value="45" />
+		<skill
+			id="Polearm"
+			value="100" />
+		<skill
+			id="Bow"
+			value="100" />
+		<skill
+			id="Crossbow"
+			value="15" />
+		<skill
+			id="Throwing"
+			value="25" />
+	</skills>
+	<upgrade_targets>
+		<upgrade_target
+			id="NPCCharacter.khuzait_kheshig" />
+	</upgrade_targets>
+	<Equipments>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.plumed_nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.plumed_nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentRoster>
+			<equipment
+				slot="Item0"
+				id="Item.steppe_heavy_bow" />
+			<equipment
+				slot="Item1"
+				id="Item.steppe_arrows" />
+			<equipment
+				slot="Item2"
+				id="Item.khuzait_polearm_1_t4" />
+			<equipment
+				slot="Item3"
+				id="Item.khuzait_sword_2_t3" />
+			<equipment
+				slot="Body"
+				id="Item.leather_lamellar_armor" />
+			<equipment
+				slot="Head"
+				id="Item.nomad_helmet" />
+			<equipment
+				slot="Leg"
+				id="Item.khuzait_curved_boots" />
+			<equipment
+				slot="Gloves"
+				id="Item.studded_leather_vambraces" />
+			<equipment
+				slot="Cape"
+				id="Item.leather_lamellar_shoulders" />
+		</EquipmentRoster>
+		<EquipmentSet
+			id="khuzait_troop_civilian_template_t2"
+			civilian="true" />
+		<equipment
+			slot="Horse"
+			id="Item.t2_khuzait_horse" />
+		<equipment
+			slot="HorseHarness"
+			id="Item.steppe_half_barding" />
+	</Equipments>
+</NPCCharacter>
+
+
+
+从其他人那里看到如下方法可以实现覆盖，新建一个spcultures.xslt文件，内容如下
+<xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+<xsl:output omit-xml-declaration="yes"/>
+<xsl:template match="@*|node()">
+    <xsl:copy>
+        <xsl:apply-templates select="@*|node()"/>
+    </xsl:copy>
+</xsl:template>
+ 
+    <xsl:template match="NPCCharacter[@id='khuzait_torguud']"/>
+
+</xsl:stylesheet>
+
+
+帮我分析原因

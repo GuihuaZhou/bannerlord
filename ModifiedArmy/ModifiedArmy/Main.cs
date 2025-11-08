@@ -1,9 +1,17 @@
 ﻿using HarmonyLib;
+using ModifiedArmy.Models;
+using ModifiedArmy.Patches;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.ScreenSystem;
 
 namespace ModifiedArmy
 {
@@ -18,6 +26,7 @@ namespace ModifiedArmy
         {
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+            //CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
         }
 
         public override void SyncData(IDataStore dataStore) { }
@@ -31,6 +40,11 @@ namespace ModifiedArmy
         {
             CampaignState.IsReady = true;
         }
+
+        //private void OnWeeklyTick()
+        //{
+        //    MobilePartyPermissionManager.RebuildPermissions();
+        //}
     }
 
     public class Main : MBSubModuleBase
@@ -46,6 +60,12 @@ namespace ModifiedArmy
             {
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
+                campaignStarter.AddModel(new NewVolunteerModel());
+                campaignStarter.AddModel(new NewPartyWageModel());
+                campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
+
+                string msg = "[MOD] NewVolunteerModel: Initialization complete.";
+                InformationManager.DisplayMessage(new InformationMessage(msg));
             }
         }
     }

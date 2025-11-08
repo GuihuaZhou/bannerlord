@@ -1,0 +1,2706 @@
+<?xml version="1.0" encoding="utf-8"?>
+<NPCCharacters>
+	<!-- #endregion -->
+	<!-- #region Troops -->
+	<!-- #region Aserai Troops -->
+	
+	<!-- 设置为basic troop -->
+	<NPCCharacter
+		id="battanian_volunteer"
+		default_group="Infantry"
+		level="6"
+		name="{=GUQ3zfg2}Battanian Volunteer"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="5" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="5" />
+			<skill
+				id="Crossbow"
+				value="0" />
+			<skill
+				id="Throwing"
+				value="10" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_clanwarrior" />
+			<upgrade_target
+				id="NPCCharacter.battanian_woodrunner" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.peasant_maul_t1_2" />
+				<equipment
+					slot="Body"
+					id="Item.battania_civil_a" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_cloak" />
+				<equipment
+					slot="Body"
+					id="Item.battania_civil_a" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_cloak_furr" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_mace_2_t2" />
+				<equipment
+					slot="Body"
+					id="Item.battania_civil_b" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.peasant_pickaxe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.battania_civil_b" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.buttoned_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t1"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_clanwarrior"
+		default_group="Infantry"
+		level="11"
+		name="{=VtlvxEs7}Battanian Clan Warrior"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="40" />
+			<skill
+				id="Riding"
+				value="20" />
+			<skill
+				id="OneHanded"
+				value="40" />
+			<skill
+				id="TwoHanded"
+				value="15" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="15" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="20" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_trained_warrior" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.celtic_throwing_dagger" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+				<equipment
+					slot="Gloves"
+					id="Item.strapped_leather_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.ragged_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.celtic_throwing_dagger" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Gloves"
+					id="Item.strapped_leather_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.ragged_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.celtic_throwing_dagger" />
+				<equipment
+					slot="Gloves"
+					id="Item.roughtied_leather_bracers" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.ragged_boots" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t1"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- 禁止升级 -->
+	<NPCCharacter
+		id="battanian_trained_warrior"
+		default_group="Infantry"
+		level="16"
+		name="{=HMHzTNqJ}Battanian Trained Warrior"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="40" />
+			<skill
+				id="OneHanded"
+				value="70" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="70" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="30" />
+		</skills>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_picked_warrior" />
+			<upgrade_target
+				id="NPCCharacter.battanian_scout" />
+		</upgrade_targets> -->
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_2_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_d" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.tall_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.buckled_wildsman_armor" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm_over_headcloth" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_woodrunner"
+		default_group="Infantry"
+		level="11"
+		name="{=DNsbKR7B}Battanian Wood Runner"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_skirmisher" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="40" />
+			<skill
+				id="Riding"
+				value="15" />
+			<skill
+				id="OneHanded"
+				value="40" />
+			<skill
+				id="TwoHanded"
+				value="15" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="20" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="40" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.battanian_raider" /> -->
+			<upgrade_target
+				id="NPCCharacter.battanian_skirmisher" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item2"
+					id="Item.studded_round_shield" />
+				<equipment
+					slot="Body"
+					id="Item.battania_light_armor_b" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.roughtied_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item2"
+					id="Item.studded_round_shield" />
+				<equipment
+					slot="Body"
+					id="Item.battania_light_armor_c" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.roughtied_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item2"
+					id="Item.studded_round_shield" />
+				<equipment
+					slot="Body"
+					id="Item.battania_light_armor_e" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap_cloak" />
+				<equipment
+					slot="Gloves"
+					id="Item.roughtied_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item2"
+					id="Item.studded_round_shield" />
+				<equipment
+					slot="Body"
+					id="Item.battania_light_armor_d" />
+				<equipment
+					slot="Leg"
+					id="Item.rough_tied_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.roughtied_leather_bracers" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t1"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_skirmisher"
+		default_group="Infantry"
+		level="16"
+		name="{=q7VeZazL}Battanian Skirmisher"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_skirmisher" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="40" />
+			<skill
+				id="OneHanded"
+				value="70" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="50" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="50" />
+		</skills>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_veteran_skirmisher" />
+		</upgrade_targets> -->
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm_over_thinhide" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_cloak_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm_over_thinhide" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_cloak_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm_over_thinhide" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_cloak_furr" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
+
+
+
+	<NPCCharacter
+		id="battanian_young_infantry"
+		default_group="Infantry"
+		level="16"
+		name="{=battanian_young_infantry}Battanian Young Infantry"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="40" />
+			<skill
+				id="OneHanded"
+				value="90" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="90" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="30" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_veteran_skirmisher" />
+			<upgrade_target
+				id="NPCCharacter.battanian_falxman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_2_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_d" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.tall_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.buckled_wildsman_armor" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leather_studdedhelm_over_headcloth" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- ranged basic troop -->
+	<NPCCharacter
+		id="battanian_veteran_skirmisher"
+		default_group="Infantry"
+		level="21"
+		name="{=lxU4pWsS}Battanian Veteran Skirmisher"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_skirmisher" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="60" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="100" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="90" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_wildling" />
+			<!-- <upgrade_target
+				id="NPCCharacter.battanian_mounted_skirmisher" /> -->
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_axe_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Body"
+					id="Item.ranger_mail" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.rough_bearskin" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_axe_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Body"
+					id="Item.ranger_mail" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.rough_bearskin" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_axe_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.generic_javelin_1_t3" />
+				<equipment
+					slot="Body"
+					id="Item.ranger_mail" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.rough_bearskin" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_wildling"
+		default_group="Infantry"
+		level="26"
+		name="{=gyvXsXs8}Battanian Wildling"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_skirmisher" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="140" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="120" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="130" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.western_scale_mail" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_c" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_c" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_c" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- twohand basic troop -->
+	<NPCCharacter
+		id="battanian_falxman"
+		default_group="Infantry"
+		level="21"
+		name="{=X4GvzDdW}Battanian Falxman"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_falxman" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="45" />
+			<skill
+				id="OneHanded"
+				value="60" />
+			<skill
+				id="TwoHanded"
+				value="100" />
+			<skill
+				id="Polearm"
+				value="45" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="100" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_veteran_falxman" />
+			<upgrade_target
+				id="NPCCharacter.battanian_oathsworn" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_2hsword_6" />
+				<equipment
+					slot="Body"
+					id="Item.rough_fur_over_chain" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap_cloak" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_2hsword_6" />
+				<equipment
+					slot="Body"
+					id="Item.ranger_mail" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_2hsword_6" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_d" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap_cloak" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_veteran_falxman"
+		default_group="Infantry"
+		level="26"
+		name="{=yMqWnBfT}Battanian Veteran Falxman"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_falxman" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="70" />
+			<skill
+				id="TwoHanded"
+				value="100" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="120" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_2hsword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cape" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_2hsword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.western_scale_mail" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cape" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_oathsworn"
+		default_group="Infantry"
+		level="26"
+		name="{=bNZXcw3q}Battanian Oathsworn"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_heavy_infantry" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="80" />
+			<skill
+				id="OneHanded"
+				value="130" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.woodland_throwing_axe_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.battania_mercenary_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roughscale_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.battania_noble_bracers" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
+
+
+
+	<!-- elite basic troop -->
+	<NPCCharacter
+		id="battanian_highborn_warrior"
+		default_group="Ranged"
+		level="16"
+		name="{=IHczn7ti}Battanian Highborn Warrior"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_heavy_infantry" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="80" />
+			<skill
+				id="Riding"
+				value="10" />
+			<skill
+				id="OneHanded"
+				value="30" />
+			<skill
+				id="TwoHanded"
+				value="90" />
+			<skill
+				id="Polearm"
+				value="30" />
+			<skill
+				id="Bow"
+				value="100" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="10" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_hero" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_2_t3" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor_with_strap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_2_t3" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor_with_strap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_2_t3" />
+				<equipment
+					slot="Body"
+					id="Item.fur_armor_with_strap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_hero"
+		default_group="Ranged"
+		level="21"
+		name="{=ac8MZYne}Battanian Hero"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="25" />
+			<skill
+				id="OneHanded"
+				value="60" />
+			<skill
+				id="TwoHanded"
+				value="110" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="130" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="15" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_fian" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.lowland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_fian"
+		default_group="Ranged"
+		level="26"
+		name="{=Btb7p3mD}Battanian Fian"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="80" />
+			<skill
+				id="OneHanded"
+				value="80" />
+			<skill
+				id="TwoHanded"
+				value="130" />
+			<skill
+				id="Polearm"
+				value="60" />
+			<skill
+				id="Bow"
+				value="160" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="50" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_fian_champion" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_scale_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.battania_earmuff_helmet_c" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.armored_bearskin" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_scale_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.battania_earmuff_helmet_d" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.armored_bearskin" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_scale_armor_b" />
+				<equipment
+					slot="Head"
+					id="Item.battania_earmuff_helmet_c" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.armored_bearskin" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_fian_champion"
+		default_group="Ranged"
+		level="31"
+		name="{=1zObCG2o}Battanian Fian Champion"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="170" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="90" />
+			<skill
+				id="TwoHanded"
+				value="220" />
+			<skill
+				id="Polearm"
+				value="50" />
+			<skill
+				id="Bow"
+				value="260" />
+			<skill
+				id="Crossbow"
+				value="25" />
+			<skill
+				id="Throwing"
+				value="40" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_noble_armor" />
+				<equipment
+					slot="Head"
+					id="Item.battanian_crowned_helmet" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_noble_armor" />
+				<equipment
+					slot="Head"
+					id="Item.battanian_crowned_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.woodland_longbow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_5_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_noble_armor" />
+				<equipment
+					slot="Head"
+					id="Item.battanian_crowned_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	
+
+
+
+
+	<!-- 废弃 -->
+	<NPCCharacter
+		id="battanian_raider"
+		default_group="Infantry"
+		level="16"
+		name="{=IKvwsCaJ}Battanian Raider"
+		occupation="Soldier"
+		is_hidden_encyclopedia="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_falxman" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="30" />
+			<skill
+				id="OneHanded"
+				value="70" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="30" />
+			<skill
+				id="Bow"
+				value="40" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="70" />
+		</skills>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_falxman" />
+		</upgrade_targets> -->
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.highland_throwing_axe_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.tall_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cape" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.highland_throwing_axe_1_t2" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_civil_cape" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.western_spear_3_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.highland_throwing_axe_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.tall_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_outfit" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_highborn_youth"
+		default_group="Ranged"
+		level="11"
+		name="{=cZms8Ivb}Battanian Highborn Youth"
+		occupation="Soldier"
+		is_hidden_encyclopedia="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="40" />
+			<skill
+				id="Riding"
+				value="5" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="5" />
+		</skills>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_highborn_warrior" />
+		</upgrade_targets> -->
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_ranger_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.highland_cloth" />
+				<equipment
+					slot="Gloves"
+					id="Item.armwraps" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.thinhide_coif" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_ranger_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2haxe_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.highland_cloth" />
+				<equipment
+					slot="Gloves"
+					id="Item.armwraps" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.battania_civil_hood" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_ranger_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.barbed_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.battania_2hsword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.highland_cloth" />
+				<equipment
+					slot="Gloves"
+					id="Item.armwraps" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.thinhide_coif" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_picked_warrior"
+		default_group="Infantry"
+		level="21"
+		name="{=tSc0mHy7}Battanian Picked Warrior"
+		occupation="Soldier"
+		is_hidden_encyclopedia="true"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="30" />
+			<skill
+				id="OneHanded"
+				value="110" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="110" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="55" />
+		</skills>
+		<!-- <upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_oathsworn" />
+		</upgrade_targets> -->
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_chainmail" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap_cloak" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_chainmail" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_helmet" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_large_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_woodland_chainmail" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Head"
+					id="Item.tall_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_strap_cloak" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- 废弃骑兵线 -->
+	<NPCCharacter
+		id="battanian_scout"
+		default_group="Cavalry"
+		level="21"
+		name="{=6C3OMP1X}Battanian Scout"
+		upgrade_requires="ItemCategory.horse"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="45" />
+			<skill
+				id="Riding"
+				value="100" />
+			<skill
+				id="OneHanded"
+				value="100" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="100" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="30" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.battanian_horseman" />
+			<upgrade_target
+				id="NPCCharacter.battanian_mounted_skirmisher" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_c" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+				<equipment
+					slot="Horse"
+					id="Item.battania_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.battania_horse_harness" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_c" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Horse"
+					id="Item.battania_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.battania_horse_harness" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_3_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_targe_b" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_1_t2" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_chainmail_armor_c" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Cape"
+					id="Item.battania_shoulder_furr" />
+				<equipment
+					slot="Horse"
+					id="Item.battania_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.battania_horse_harness" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_mounted_skirmisher"
+		default_group="Cavalry"
+		level="26"
+		name="{=abFIj4ZW}Battanian Mounted Skirmisher"
+		upgrade_requires="ItemCategory.war_horse"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_skirmisher" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="80" />
+			<skill
+				id="Riding"
+				value="130" />
+			<skill
+				id="OneHanded"
+				value="130" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="15" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="150" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.western_scale_mail" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.western_scale_mail" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.western_scale_mail" />
+				<equipment
+					slot="Head"
+					id="Item.ridged_northernhelm" />
+				<equipment
+					slot="Gloves"
+					id="Item.rough_tied_bracers" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.fur_cloak_a" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t2_battania_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.battania_horse_harness_halfscaled" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="battanian_horseman"
+		default_group="Cavalry"
+		level="26"
+		name="{=2gUjKT5H}Battanian Horseman"
+		upgrade_requires="ItemCategory.war_horse"
+		occupation="Soldier"
+		culture="Culture.battania">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_battania_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="80" />
+			<skill
+				id="Riding"
+				value="130" />
+			<skill
+				id="OneHanded"
+				value="130" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_axe_2_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_warlord_armor" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.battanian_chainmail_shoulder_b" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_warlord_armor" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Cape"
+					id="Item.battanian_chainmail_shoulder_b" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.battania_shield_targe_a" />
+				<equipment
+					slot="Item2"
+					id="Item.battania_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.battania_warlord_armor" />
+				<equipment
+					slot="Head"
+					id="Item.battania_fur_helmet" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_warlord_boots" />
+				<equipment
+					slot="Head"
+					id="Item.helmet_with_faceguard" />
+				<equipment
+					slot="Cape"
+					id="Item.battanian_chainmail_shoulder_b" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="battania_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t2_battania_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.battania_horse_harness_halfscaled" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- #endregion -->
+	<!-- #endregion -->
+</NPCCharacters>

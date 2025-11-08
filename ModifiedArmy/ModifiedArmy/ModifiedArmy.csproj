@@ -25,5 +25,11 @@
 		<Reference Include="TaleWorlds.Localization">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Localization.dll</HintPath>
 		</Reference>
+		<Reference Include="TaleWorlds.ScreenSystem">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ScreenSystem.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.Engine">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 </Project>

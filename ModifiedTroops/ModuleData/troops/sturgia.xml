@@ -321,7 +321,7 @@
 					id="Item.sturgian_helmet_base" />
 				<equipment
 					slot="Body"
-					id="Item.leather_and_iron_plate_armor" />
+					id="Item.decorated_nordic_hauberk" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -344,7 +344,7 @@
 					id="Item.sturgian_helmet_base" />
 				<equipment
 					slot="Body"
-					id="Item.leather_and_iron_plate_armor" />
+					id="Item.decorated_nordic_hauberk" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -367,7 +367,7 @@
 					id="Item.sturgian_helmet_base" />
 				<equipment
 					slot="Body"
-					id="Item.leather_and_iron_plate_armor" />
+					id="Item.nordic_hauberk" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -439,7 +439,7 @@
 					id="Item.roughhide_cap" />
 				<equipment
 					slot="Body"
-					id="Item.heavy_nordic_tunic" />
+					id="Item.decorated_nordic_hauberk" />
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
@@ -462,7 +462,7 @@
 					id="Item.nordic_fur_cap" />
 				<equipment
 					slot="Body"
-					id="Item.heavy_nordic_tunic" />
+					id="Item.nordic_hauberk" />
 				<equipment
 					slot="Gloves"
 					id="Item.leather_gloves" />
@@ -1201,6 +1201,147 @@
 	</NPCCharacter>
 
 
+
+
+
+	<NPCCharacter
+		id="sturgian_young_infantry"
+		default_group="Infantry"
+		level="16"
+		name="{=sturgian_young_infantry}Sturgian Young Infantry"
+		occupation="Soldier"
+		is_basic_troop="true"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="80" />
+			<skill
+				id="Riding"
+				value="30" />
+			<skill
+				id="OneHanded"
+				value="90" />
+			<skill
+				id="TwoHanded"
+				value="40" />
+			<skill
+				id="Polearm"
+				value="30" />
+			<skill
+				id="Bow"
+				value="40" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="70" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.sturgian_archer" />
+			<upgrade_target
+				id="NPCCharacter.sturgian_hardened_brigand" />
+			<upgrade_target
+				id="NPCCharacter.sturgian_berzerker" />
+			<upgrade_target
+				id="NPCCharacter.sturgian_spearman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.reinforced_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.nasalhelm_over_leather" />
+				<equipment
+					slot="Body"
+					id="Item.northern_padded_cloth" />
+				<equipment
+					slot="Leg"
+					id="Item.highland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_armwraps" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_sword_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.reinforced_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.roughhide_cap" />
+				<equipment
+					slot="Body"
+					id="Item.northern_padded_cloth" />
+				<equipment
+					slot="Leg"
+					id="Item.highland_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_armwraps" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.bound_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.roughhide_cap" />
+				<equipment
+					slot="Body"
+					id="Item.northern_padded_gambeson" />
+				<equipment
+					slot="Leg"
+					id="Item.highland_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_armwraps" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
 	<!-- 设置为ranged_basic_troop -->
 	<NPCCharacter
 		id="sturgian_archer"
@@ -1208,7 +1349,6 @@
 		level="21"
 		name="{=1WfDVpya}Sturgian Archer"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -1456,9 +1596,6 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
-
-
 	<!-- 设置为cavalry_basic_troop -->
 	<NPCCharacter
 		id="sturgian_hardened_brigand"
@@ -1467,7 +1604,6 @@
 		name="{=VbWtdAWn}Sturgian Hardened Brigand"
 		upgrade_requires="ItemCategory.horse"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -1755,9 +1891,6 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
-	
-
 	<!-- 设置为axe_basic_troop -->
 	<NPCCharacter
 		id="sturgian_berzerker"
@@ -1765,7 +1898,6 @@
 		level="21"
 		name="{=Sc1d2lsH}Sturgian Line Breaker"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -1987,8 +2119,6 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
-	
 	<!-- 设置为infantry_basic_troop -->
 	<NPCCharacter
 		id="sturgian_spearman"
@@ -1996,7 +2126,6 @@
 		level="21"
 		name="{=CfO7eDsv}Sturgian Spearman"
 		occupation="Soldier"
-		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -2368,6 +2497,8 @@
 
 
 
+
+
 	<!-- 废弃兵种 -->
 	<NPCCharacter
 		id="sturgian_warrior_son"
@@ -2376,6 +2507,7 @@
 		name="{=HYx5NZSk}Sturgian Otrok"
 		occupation="Soldier"
 		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -2484,6 +2616,7 @@
 		level="16"
 		name="{=4C4WiTb2}Varyag"
 		occupation="Soldier"
+		is_hidden_encyclopedia="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
