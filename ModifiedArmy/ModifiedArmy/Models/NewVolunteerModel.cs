@@ -1,4 +1,5 @@
 ﻿using Helpers;
+using ModifiedArmy.Patches;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -21,7 +22,7 @@ namespace ModifiedArmy.Models
         // 降低volunteer troop生成的概率
         public override float GetDailyVolunteerProductionProbability(Hero hero, int index, Settlement settlement)
         {
-            float num = 0.35f; // 原0.7
+            float num = 0.7f; // 原0.7
             int num2 = 0;
             foreach (Town town in hero.CurrentSettlement.MapFaction.Fiefs)
             {
@@ -87,7 +88,7 @@ namespace ModifiedArmy.Models
             }
         IL_A8:
             return MathF.Min(6, MathF.Max(0, num + num2 + num3));
-        }
+        } 
         
         // 限制招募志愿troop
         // NPC只能在clan拥有的settlement招募
@@ -164,6 +165,72 @@ namespace ModifiedArmy.Models
                 num7 += (int)DefaultPerks.Engineering.EngineeringGuilds.PrimaryBonus;
             }
             return MathF.Min(6, num + num3 + num4 + num5 + num6 + num7);
+        }
+
+        // 按权重选择volunteer troops
+        private CharacterObject WeightedRandomSelect(List<CharacterObject> troops, List<int> weights)
+        {
+            if (troops.Count == 0 || weights.Count == 0 || troops.Count != weights.Count)
+            {
+                return null;
+            }
+
+            int total = weights.Sum();
+            if (total <= 0)
+            {
+                // 如果总权重 <= 0，返回列表中的第一个单位，或者 null
+                return troops.Count > 0 ? troops[0] : null;
+            }
+
+            int rand = MBRandom.RandomInt(total);
+            int sum = 0;
+            for (int i = 0; i < troops.Count; i++)
+            {
+                sum += weights[i];
+                if (rand < sum)
+                {
+                    return troops[i];
+                }
+            }
+
+            // 理论上不应该到达这里，但如果到达了，返回最后一个单位
+            return troops[troops.Count - 1];
+        }
+
+        // 按权重返回volunteer troops
+        public override CharacterObject GetBasicVolunteer(Hero sellerHero)
+        {
+            if (!CampaignState.IsReady || sellerHero?.Culture == null || sellerHero.CurrentSettlement == null)
+            {
+                return sellerHero?.Culture?.BasicTroop;
+            }
+
+            var culture = sellerHero.Culture;
+            var settlement = sellerHero.CurrentSettlement;
+
+            if (!settlement.IsTown &&
+                !(settlement.IsVillage && (settlement.Village.Bound.IsTown || settlement.Village.Bound.IsCastle)))
+            {
+                return culture.BasicTroop;
+            }
+
+            var characterWeightPairList = CultureVolunteerGroupsCache.Instance.GetVolunteerCandidateCache(culture);
+
+            if (characterWeightPairList != null && characterWeightPairList.Count > 0)
+            {
+                var troops = characterWeightPairList.Select(p => p.Character).ToList();
+                var weights = characterWeightPairList.Select(p => (int)Math.Round(p.Weight)).ToList(); 
+
+                // 使用加权随机选择算法
+                CharacterObject selectedTroop = WeightedRandomSelect(troops, weights);
+
+                return selectedTroop ?? culture.BasicTroop;
+            }
+            else
+            {
+                // 如果缓存中没有数据，返回 fallback
+                return culture.BasicTroop;
+            }
         }
     }
 }

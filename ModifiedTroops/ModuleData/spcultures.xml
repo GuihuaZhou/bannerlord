@@ -11,7 +11,7 @@
 		elite_basic_troop_weight="1"
 
 		basic_troop="NPCCharacter.imperial_recruit"
-		basic_troop_weight="8"
+		basic_troop_weight="6"
 
 		basic_infantry_troop="NPCCharacter.imperial_legion_recruit"
 		basic_infantry_troop_weight="3"
@@ -877,7 +877,7 @@
 		elite_basic_troop_weight="1"
 
 		basic_troop="NPCCharacter.aserai_recruit"
-		basic_troop_weight="8"
+		basic_troop_weight="6"
 
 		basic_infantry_troop="NPCCharacter.aserai_young_infantry"
 		basic_infantry_troop_weight="3"
@@ -1442,7 +1442,7 @@
 		elite_basic_troop_weight="1"
 
 		basic_troop="NPCCharacter.sturgian_recruit"
-		basic_troop_weight="8"
+		basic_troop_weight="6"
 
 		basic_infantry_troop="NPCCharacter.sturgian_young_infantry"
 		basic_infantry_troop_weight="3"
@@ -2070,7 +2070,7 @@
 		color2="0xffF7BF46"
 
 		elite_basic_troop="NPCCharacter.vlandian_gallant"
-		elite_basic_troop_weight="1"
+		elite_basic_troop_weight="3"
 
 		basic_troop="NPCCharacter.vlandian_recruit"
 		basic_troop_weight="14"
@@ -2687,7 +2687,7 @@
 		elite_basic_troop_weight="1"
 
 		basic_troop="NPCCharacter.battanian_volunteer"
-		basic_troop_weight="8"
+		basic_troop_weight="6"
 
 		basic_infantry_troop="NPCCharacter.battanian_young_infantry"
 		basic_infantry_troop_weight="3"
@@ -3168,7 +3168,7 @@
 		color2="0xffEFC990"
 
 		elite_basic_troop="NPCCharacter.khuzait_torguud"
-		elite_basic_troop_weight="1"
+		elite_basic_troop_weight="3"
 
 		basic_troop="NPCCharacter.khuzait_nomad"
 		basic_troop_weight="14"

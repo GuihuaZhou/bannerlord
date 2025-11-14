@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using ModifiedArmy.Models;
+using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Patches;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,15 @@ using TaleWorlds.ScreenSystem;
 
 namespace ModifiedArmy
 {
+
+    // 定义 Troop 的类型枚举
+    public enum TroopType
+    {
+        Basic,      // 征召兵 (basic_troop)
+        EliteBasic, // 贵族兵 (elite_basic_troop)
+        Professional // 职业军 (其他所有)
+    }
+
     public static class CampaignState
     {
         public static bool IsReady { get; set; } = false;
@@ -63,6 +73,9 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
+
+                campaignStarter.AddBehavior(new FiefMenuBehavior());
+                campaignStarter.AddBehavior(new FiefSquadManager()); // 注册新的采邑小队管理行为
 
                 string msg = "[MOD] NewVolunteerModel: Initialization complete.";
                 InformationManager.DisplayMessage(new InformationMessage(msg));

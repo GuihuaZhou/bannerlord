@@ -1,0 +1,159 @@
+using System;
+using SandBox.View.Map;
+using SandBox.View.Menu;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.TroopSelection;
+using TaleWorlds.Engine.GauntletUI;
+using TaleWorlds.InputSystem;
+using TaleWorlds.Library;
+using TaleWorlds.MountAndBlade.View;
+using TaleWorlds.ScreenSystem;
+
+namespace SandBox.GauntletUI.Menu
+{
+	// Token: 0x02000028 RID: 40
+	[OverrideView(typeof(MenuTroopSelectionView))]
+	public class GauntletMenuTroopSelectionView : MenuView
+	{
+		// Token: 0x060001F7 RID: 503 RVA: 0x0000C96F File Offset: 0x0000AB6F
+		public GauntletMenuTroopSelectionView(TroopRoster fullRoster, TroopRoster initialSelections, Func<CharacterObject, bool> changeChangeStatusOfTroop, Action<TroopRoster> onDone, int maxSelectableTroopCount, int minSelectableTroopCount)
+		{
+			this._onDone = onDone;
+			this._fullRoster = fullRoster;
+			this._initialSelections = initialSelections;
+			this._changeChangeStatusOfTroop = changeChangeStatusOfTroop;
+			this._maxSelectableTroopCount = maxSelectableTroopCount;
+			this._minSelectableTroopCount = minSelectableTroopCount;
+		}
+
+		// Token: 0x060001F8 RID: 504 RVA: 0x0000C9A4 File Offset: 0x0000ABA4
+		protected override void OnInitialize()
+		{
+			base.OnInitialize();
+			this._dataSource = new GameMenuTroopSelectionVM(this._fullRoster, this._initialSelections, this._changeChangeStatusOfTroop, new Action<TroopRoster>(this.OnDone), this._maxSelectableTroopCount, this._minSelectableTroopCount)
+			{
+				IsEnabled = true
+			};
+			this._dataSource.SetCancelInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Exit"));
+			this._dataSource.SetDoneInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Confirm"));
+			this._dataSource.SetResetInputKey(HotKeyManager.GetCategory("GenericPanelGameKeyCategory").GetHotKey("Reset"));
+			base.Layer = new GauntletLayer(206, "GauntletLayer", false)
+			{
+				Name = "MenuTroopSelection"
+			};
+			this._layerAsGauntletLayer = (base.Layer as GauntletLayer);
+			base.Layer.InputRestrictions.SetInputRestrictions(true, InputUsageMask.All);
+			base.Layer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericPanelGameKeyCategory"));
+			base.Layer.Input.RegisterHotKeyCategory(HotKeyManager.GetCategory("GenericCampaignPanelsGameKeyCategory"));
+			this._movie = this._layerAsGauntletLayer.LoadMovie("GameMenuTroopSelection", this._dataSource);
+			base.Layer.IsFocusLayer = true;
+			ScreenManager.TrySetFocus(this._layerAsGauntletLayer);
+			base.MenuViewContext.AddLayer(base.Layer);
+			MapScreen mapScreen;
+			if ((mapScreen = (ScreenManager.TopScreen as MapScreen)) != null)
+			{
+				mapScreen.SetIsInHideoutTroopManage(true);
+			}
+		}
+
+		// Token: 0x060001F9 RID: 505 RVA: 0x0000CB21 File Offset: 0x0000AD21
+		private void OnDone(TroopRoster obj)
+		{
+			MapScreen.Instance.SetIsInHideoutTroopManage(false);
+			base.MenuViewContext.CloseTroopSelection();
+			Action<TroopRoster> onDone = this._onDone;
+			if (onDone == null)
+			{
+				return;
+			}
+			onDone.DynamicInvokeWithLog(new object[]
+			{
+				obj
+			});
+		}
+
+		// Token: 0x060001FA RID: 506 RVA: 0x0000CB54 File Offset: 0x0000AD54
+		protected override void OnFinalize()
+		{
+			base.Layer.IsFocusLayer = false;
+			ScreenManager.TryLoseFocus(base.Layer);
+			this._dataSource.OnFinalize();
+			this._dataSource = null;
+			this._layerAsGauntletLayer.ReleaseMovie(this._movie);
+			base.MenuViewContext.RemoveLayer(base.Layer);
+			this._movie = null;
+			base.Layer = null;
+			this._layerAsGauntletLayer = null;
+			MapScreen.Instance.SetIsInHideoutTroopManage(false);
+			base.OnFinalize();
+		}
+
+		// Token: 0x060001FB RID: 507 RVA: 0x0000CBD4 File Offset: 0x0000ADD4
+		protected override void OnFrameTick(float dt)
+		{
+			base.OnFrameTick(dt);
+			if (this._dataSource != null)
+			{
+				this._dataSource.IsFiveStackModifierActive = base.Layer.Input.IsHotKeyDown("FiveStackModifier");
+				this._dataSource.IsEntireStackModifierActive = base.Layer.Input.IsHotKeyDown("EntireStackModifier");
+			}
+			ScreenLayer layer = base.Layer;
+			if (layer != null && layer.Input.IsHotKeyPressed("Exit"))
+			{
+				UISoundsHelper.PlayUISound("event:/ui/default");
+				this._dataSource.ExecuteCancel();
+			}
+			else
+			{
+				ScreenLayer layer2 = base.Layer;
+				if (layer2 != null && layer2.Input.IsHotKeyPressed("Confirm") && this._dataSource.IsDoneEnabled)
+				{
+					UISoundsHelper.PlayUISound("event:/ui/default");
+					this._dataSource.ExecuteDone();
+				}
+				else
+				{
+					ScreenLayer layer3 = base.Layer;
+					if (layer3 != null && layer3.Input.IsHotKeyPressed("Reset"))
+					{
+						UISoundsHelper.PlayUISound("event:/ui/default");
+						this._dataSource.ExecuteReset();
+					}
+				}
+			}
+			GameMenuTroopSelectionVM dataSource = this._dataSource;
+			if (dataSource != null && !dataSource.IsEnabled)
+			{
+				base.MenuViewContext.CloseTroopSelection();
+			}
+		}
+
+		// Token: 0x040000A6 RID: 166
+		private readonly Action<TroopRoster> _onDone;
+
+		// Token: 0x040000A7 RID: 167
+		private readonly TroopRoster _fullRoster;
+
+		// Token: 0x040000A8 RID: 168
+		private readonly TroopRoster _initialSelections;
+
+		// Token: 0x040000A9 RID: 169
+		private readonly Func<CharacterObject, bool> _changeChangeStatusOfTroop;
+
+		// Token: 0x040000AA RID: 170
+		private readonly int _maxSelectableTroopCount;
+
+		// Token: 0x040000AB RID: 171
+		private readonly int _minSelectableTroopCount;
+
+		// Token: 0x040000AC RID: 172
+		private GauntletLayer _layerAsGauntletLayer;
+
+		// Token: 0x040000AD RID: 173
+		private GameMenuTroopSelectionVM _dataSource;
+
+		// Token: 0x040000AE RID: 174
+		private GauntletMovieIdentifier _movie;
+	}
+}

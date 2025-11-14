@@ -587,7 +587,7 @@
 					id="Item.pointed_skullcap_over_laced_coif" />
 				<equipment
 					slot="Body"
-					id="Item.basic_imperial_leather_armor" />
+					id="Item.aserai_armor_02_b" />
 				<equipment
 					slot="Leg"
 					id="Item.steppe_leather_boots" />
@@ -613,7 +613,7 @@
 					id="Item.pointed_skullcap_over_laced_coif" />
 				<equipment
 					slot="Body"
-					id="Item.khuzait_lamellar_strapped" />
+					id="Item.aserai_armor_02_b" />
 				<equipment
 					slot="Leg"
 					id="Item.steppe_leather_boots" />
@@ -636,7 +636,7 @@
 					id="Item.southern_spear_3_t3" />
 				<equipment
 					slot="Body"
-					id="Item.ringed_desert_armor" />
+					id="Item.aserai_armor_02" />
 				<equipment
 					slot="Leg"
 					id="Item.steppe_leather_boots" />

@@ -1921,10 +1921,10 @@
 					id="Item.footmans_wicker_shield" />
 				<equipment
 					slot="Body"
-					id="Item.khuzait_belt_leather" />
+					id="Item.khuzait_lamellar_strapped" />
 				<equipment
 					slot="Head"
-					id="Item.fur_hat" />
+					id="Item.plumed_fur_lined_helmet" />
 				<equipment
 					slot="Leg"
 					id="Item.eastern_leather_boots" />
@@ -1941,13 +1941,13 @@
 					id="Item.footmans_wicker_shield" />
 				<equipment
 					slot="Body"
-					id="Item.khuzait_belt_leather" />
+					id="Item.leather_lamellar_armor" />
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
 				<equipment
 					slot="Head"
-					id="Item.fur_hat" />
+					id="Item.plumed_fur_lined_helmet" />
 				<equipment
 					slot="Leg"
 					id="Item.eastern_leather_boots" />
@@ -1964,10 +1964,10 @@
 					id="Item.footmans_wicker_shield" />
 				<equipment
 					slot="Body"
-					id="Item.khuzait_belt_leather" />
+					id="Item.leather_lamellar_armor" />
 				<equipment
 					slot="Head"
-					id="Item.fur_hat" />
+					id="Item.plumed_fur_lined_helmet" />
 				<equipment
 					slot="Leg"
 					id="Item.eastern_leather_boots" />

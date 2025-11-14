@@ -31,5 +31,30 @@
 		<Reference Include="TaleWorlds.Engine">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.dll</HintPath>
 		</Reference>
+		<Reference Include="TaleWorlds.Engine.GauntletUI">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.GauntletUI.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.InputSystem">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.InputSystem.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.CampaignSystem.ViewModelCollection">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.ViewModelCollection.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.Core.ViewModelCollection">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.ViewModelCollection.dll</HintPath>
+		</Reference>
+		
+		
+		<Reference Include="SandBox.View">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.View.dll</HintPath>
+		</Reference>
+		<Reference Include="SandBox.GauntletUI">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.GauntletUI.dll</HintPath>
+		</Reference>
+		
+		
+		<Reference Include="TaleWorlds.MountAndBlade.View">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\Native\bin\Win64_Shipping_Client\TaleWorlds.MountAndBlade.View.dll</HintPath>
+		</Reference>
 	</ItemGroup>
 </Project>

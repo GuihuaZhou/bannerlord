@@ -607,32 +607,6 @@
 					id="Item.western_spear_4_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.heavy_horsemans_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Head"
-					id="Item.feathered_spangenhelm_over_imperial_coif" />
-				<equipment
-					slot="Cape"
-					id="Item.woven_leather_shoulders" />
-				<equipment
-					slot="Body"
-					id="Item.nordic_lamellar_armor" />
-				<equipment
-					slot="Gloves"
-					id="Item.padded_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_4_t4" />
-				<equipment
-					slot="Item1"
 					id="Item.light_horsemans_kite_shield" />
 				<equipment
 					slot="Item2"
@@ -671,7 +645,7 @@
 					id="Item.woven_leather_shoulders" />
 				<equipment
 					slot="Body"
-					id="Item.southern_lamellar_armor" />
+					id="Item.imperial_lamellar_over_leather" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -973,7 +947,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_laced_cloth" />
+					id="Item.ironlame_feathered_spangenhelm" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -987,7 +961,7 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Body"
-					id="Item.mail_shirt" />
+					id="Item.imperial_mail_vest" />
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
@@ -999,7 +973,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_laced_cloth" />
+					id="Item.ironlame_feathered_spangenhelm" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1013,7 +987,7 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Body"
-					id="Item.nordic_hauberk" />
+					id="Item.imperial_mail_vest" />
 				<equipment
 					slot="Cape"
 					id="Item.empire_warrior_padded_armor_shoulder" />
@@ -1025,7 +999,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_laced_cloth" />
+					id="Item.ironlame_feathered_spangenhelm" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"

@@ -305,7 +305,7 @@
 					id="Item.battania_sword_2_t3" />
 				<equipment
 					slot="Body"
-					id="Item.battanian_chainmail_armor_d" />
+					id="Item.battanian_chainmail_armor_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.highland_gloves" />
@@ -314,7 +314,7 @@
 					id="Item.battania_leather_boots" />
 				<equipment
 					slot="Head"
-					id="Item.tall_helmet" />
+					id="Item.battania_fur_helmet" />
 				<equipment
 					slot="Cape"
 					id="Item.battania_shoulder_furr" />
@@ -340,7 +340,7 @@
 					id="Item.battania_leather_boots" />
 				<equipment
 					slot="Head"
-					id="Item.battania_fur_helmet" />
+					id="Item.tall_helmet" />
 				<equipment
 					slot="Cape"
 					id="Item.battania_shoulder_furr" />
@@ -715,7 +715,7 @@
 					id="Item.battania_leather_boots" />
 				<equipment
 					slot="Head"
-					id="Item.tall_helmet" />
+					id="Item.battania_earmuff_helmet_b" />
 				<equipment
 					slot="Cape"
 					id="Item.battania_shoulder_furr" />
@@ -732,7 +732,7 @@
 					id="Item.battania_sword_3_t3" />
 				<equipment
 					slot="Body"
-					id="Item.battanian_chainmail_armor_a" />
+					id="Item.battanian_chainmail_armor_c" />
 				<equipment
 					slot="Gloves"
 					id="Item.highland_gloves" />
@@ -741,7 +741,7 @@
 					id="Item.battania_leather_boots" />
 				<equipment
 					slot="Head"
-					id="Item.battania_fur_helmet" />
+					id="Item.battania_earmuff_helmet_b_brnz" />
 				<equipment
 					slot="Cape"
 					id="Item.battania_shoulder_furr" />
@@ -758,7 +758,7 @@
 					id="Item.battania_sword_3_t3" />
 				<equipment
 					slot="Body"
-					id="Item.buckled_wildsman_armor" />
+					id="Item.ranger_mail" />
 				<equipment
 					slot="Gloves"
 					id="Item.highland_gloves" />
@@ -767,7 +767,7 @@
 					id="Item.battania_leather_boots" />
 				<equipment
 					slot="Head"
-					id="Item.leather_studdedhelm_over_headcloth" />
+					id="Item.battania_earmuff_helmet_a_brnz" />
 				<equipment
 					slot="Cape"
 					id="Item.battania_shoulder_furr" />

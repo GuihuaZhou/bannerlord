@@ -1271,7 +1271,7 @@
 					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.northern_padded_cloth" />
+					id="Item.nordic_hauberk" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -1294,10 +1294,10 @@
 					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Head"
-					id="Item.roughhide_cap" />
+					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.northern_padded_cloth" />
+					id="Item.nordic_lamellar_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -1323,10 +1323,10 @@
 					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Head"
-					id="Item.roughhide_cap" />
+					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.northern_padded_gambeson" />
+					id="Item.mail_shirt" />
 				<equipment
 					slot="Leg"
 					id="Item.highland_boots" />
@@ -1946,7 +1946,7 @@
 					id="Item.sturgian_helmet_open" />
 				<equipment
 					slot="Body"
-					id="Item.nordic_lamellar_vest" />
+					id="Item.nordic_lamellar_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
@@ -1963,7 +1963,7 @@
 					id="Item.sturgian_helmet_open" />
 				<equipment
 					slot="Body"
-					id="Item.nordic_lamellar_vest" />
+					id="Item.nordic_lamellar_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
@@ -1983,7 +1983,7 @@
 					id="Item.sturgian_helmet_open" />
 				<equipment
 					slot="Body"
-					id="Item.nordic_lamellar_vest" />
+					id="Item.southern_lamellar_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
