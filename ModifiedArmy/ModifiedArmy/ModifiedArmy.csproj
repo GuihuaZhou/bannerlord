@@ -4,6 +4,26 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
+	  <PackageReference Include="Bannerlord.BuildResources" Version="1.1.0.129">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Bannerlord.UIExtenderEx" Version="2.13.0" />
+	  <PackageReference Include="BUTR.Harmony.Analyzer" Version="1.0.1.50">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Harmony.Extensions" Version="3.2.0.77">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="IsExternalInit" Version="1.0.3">
+	    <PrivateAssets>all</PrivateAssets>
+	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+	  </PackageReference>
+	  <PackageReference Include="Lib.Harmony" Version="2.4.2" />
+	</ItemGroup>
+	<ItemGroup>
 		<Reference Include="0Harmony">
 			<HintPath>..\..\harmony\0Harmony.dll</HintPath>
 		</Reference>
@@ -43,8 +63,10 @@
 		<Reference Include="TaleWorlds.Core.ViewModelCollection">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Core.ViewModelCollection.dll</HintPath>
 		</Reference>
-		
-		
+		<Reference Include="TaleWorlds.SaveSystem">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.SaveSystem.dll</HintPath>
+		</Reference>
+
 		<Reference Include="SandBox.View">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.View.dll</HintPath>
 		</Reference>
@@ -55,6 +77,6 @@
 		
 		<Reference Include="TaleWorlds.MountAndBlade.View">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\Native\bin\Win64_Shipping_Client\TaleWorlds.MountAndBlade.View.dll</HintPath>
-		</Reference>
+		</Reference>		
 	</ItemGroup>
 </Project>

@@ -4,6 +4,8 @@ using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.GameState;
+using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
@@ -11,6 +13,11 @@ using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Models.Fief
 {
+    public static class ManagingFiefTroop
+    {
+        public static bool IsManagingFiefTroops { get; set; } = false;
+    }
+
     /// <summary>
     /// 负责在村庄、城镇、城堡菜单中添加“采邑”按钮及其子菜单的 CampaignBehavior。
     /// 仅当访问定居点的 Hero 所属的 Clan 拥有该定居点时，才显示“采邑”按钮。
@@ -76,23 +83,11 @@ namespace ModifiedArmy.Models.Fief
                 GameMenu.SwitchToMenu(FIEF_MENU_ID); // 切换到“Your Fief”子菜单
             };
 
-            //// 3. 向 "village" 菜单添加 "Fief" 选项 (入口按钮)
-            //starter.AddGameMenuOption(
-            //    VILLAGE_MENU_ID,
-            //    FIEF_OPTION_ID,
-            //    "{=ModifiedArmy_FiefMenu_Entry}Fief", // 按钮显示的文本 - 使用本地化键
-            //    fiefCondition, // 使用通用条件委托
-            //    fiefConsequence, // 使用通用后果委托
-            //    isLeave: false,          // 不是离开选项 (因为后果是切换到子菜单)
-            //    index: -1,               // 添加到菜单末尾
-            //    isRepeatable: false      // 不可重复
-            //);
-
             // 4. 向 "town" 菜单添加 "Fief" 选项 (入口按钮)
             starter.AddGameMenuOption(
                 TOWN_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Fief", // 按钮显示的文本 - 使用本地化键
+                "{=ModifiedArmy_FiefMenu_Entry}Entry Fief", // 按钮显示的文本 - 使用本地化键
                 fiefCondition, // 使用通用条件委托
                 fiefConsequence, // 使用通用后果委托
                 isLeave: false,          // 不是离开选项 (因为后果是切换到子菜单)
@@ -104,7 +99,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 CASTLE_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Fief", // 按钮显示的文本 - 使用本地化键
+                "{=ModifiedArmy_FiefMenu_Entry}Entry Fief", // 按钮显示的文本 - 使用本地化键
                 fiefCondition, // 使用通用条件委托
                 fiefConsequence, // 使用通用后果委托
                 isLeave: false,          // 不是离开选项 (因为后果是切换到子菜单)
@@ -135,8 +130,13 @@ namespace ModifiedArmy.Models.Fief
                 },
                 (args) => {
                     // 实现“征召采邑军队”的逻辑
-                    InformationManager.DisplayMessage(new InformationMessage("{=ModifiedArmy_FiefMenu_Recruit_Msg}Recruit Fief Troops feature not yet implemented.")); // 也可以本地化消息
-                    // 例如: YourModLogic.RecruitFiefTroops();
+                    var manager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    var playerParty = MobileParty.MainParty;
+                    Settlement currentSettlement = Settlement.CurrentSettlement;
+                    if (currentSettlement == null)
+                        return;
+
+                    manager.RecruitFiefSquadsFromSettlement(currentSettlement, playerParty);
                 },
                 isLeave: false, -1, false // isLeave 为 false
             );
@@ -153,8 +153,14 @@ namespace ModifiedArmy.Models.Fief
                 },
                 (args) => {
                     // 实现“解散采邑军队”的逻辑
-                    InformationManager.DisplayMessage(new InformationMessage("{=ModifiedArmy_FiefMenu_Disband_Msg}Disband Fief Troops feature not yet implemented.")); // 也可以本地化消息
-                    // 例如: YourModLogic.DisbandFiefTroops();
+                    //InformationManager.DisplayMessage(new InformationMessage("{=ModifiedArmy_FiefMenu_Disband_Msg}Disband Fief Troops feature not yet implemented.")); // 也可以本地化消息
+                    var manager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    var playerParty = MobileParty.MainParty;
+                    Settlement currentSettlement = Settlement.CurrentSettlement;
+                    if (currentSettlement == null)
+                        return;
+
+                    manager.DisbandFiefSquadsFromSettlement(currentSettlement, playerParty);
                 },
                 isLeave: false, -1, false // isLeave 为 false
             );
@@ -171,15 +177,27 @@ namespace ModifiedArmy.Models.Fief
                 },
                 (args) =>
                 {
-                    // 实现“管理采邑军队”的逻辑
-                    //InformationManager.DisplayMessage(new InformationMessage("{=ModifiedArmy_FiefMenu_Manage_Msg}Manage Fief Troops feature not yet implemented.")); // 也可以本地化消息
-                    // 例如: YourModLogic.DisbandFiefTroops();
+                    Settlement currentSettlement = Settlement.CurrentSettlement;
+                    if (currentSettlement == null)
+                        return;
 
-                    //args.MenuContext.OpenRecruitVolunteers();
-                    //args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");
+                    // 获取 FiefSquadManager 实例
+                    var fiefManager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    if (fiefManager == null)
+                        return;
 
+                    // 调用实例方法获取 roster
+                    TroopRoster fiefRoster = fiefManager.GetFiefTroopRoster(currentSettlement);
 
-                    args.MenuContext.OpenRecruitVolunteers();
+                    args.MenuContext.OpenTroopSelection(
+                        fullRoster: fiefRoster,
+                        initialSelections: TroopRoster.CreateDummyTroopRoster(),
+                        canChangeStatusOfTroop: _ => false,
+                        onDone: _ => { },
+                        maxSelectableTroopCount: 0,
+                        minSelectableTroopCount: 0
+                    );
+
                     args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");
                 },
                 isLeave: false, -1, false // isLeave 为 false

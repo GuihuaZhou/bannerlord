@@ -1,4 +1,5 @@
-﻿using HarmonyLib;
+﻿using Bannerlord.UIExtenderEx;
+using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Patches;
@@ -12,7 +13,6 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
-using TaleWorlds.ScreenSystem;
 
 namespace ModifiedArmy
 {
@@ -36,7 +36,6 @@ namespace ModifiedArmy
         {
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
-            //CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
         }
 
         public override void SyncData(IDataStore dataStore) { }
@@ -50,11 +49,6 @@ namespace ModifiedArmy
         {
             CampaignState.IsReady = true;
         }
-
-        //private void OnWeeklyTick()
-        //{
-        //    MobilePartyPermissionManager.RebuildPermissions();
-        //}
     }
 
     public class Main : MBSubModuleBase
@@ -75,7 +69,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
 
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
-                campaignStarter.AddBehavior(new FiefSquadManager()); // 注册新的采邑小队管理行为
+                campaignStarter.AddBehavior(new FiefSquadManager()); 
 
                 string msg = "[MOD] NewVolunteerModel: Initialization complete.";
                 InformationManager.DisplayMessage(new InformationMessage(msg));
