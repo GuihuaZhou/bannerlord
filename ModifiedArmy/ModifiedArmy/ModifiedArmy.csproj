@@ -66,6 +66,13 @@
 		<Reference Include="TaleWorlds.SaveSystem">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.SaveSystem.dll</HintPath>
 		</Reference>
+		<Reference Include="TaleWorlds.GauntletUI.Data">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.GauntletUI.Data.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.Engine.GauntletUI">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.Engine.GauntletUI.dll</HintPath>
+		</Reference>
+
 
 		<Reference Include="SandBox.View">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\SandBox\bin\Win64_Shipping_Client\SandBox.View.dll</HintPath>

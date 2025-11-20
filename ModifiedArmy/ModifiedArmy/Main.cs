@@ -16,13 +16,15 @@ using TaleWorlds.MountAndBlade;
 
 namespace ModifiedArmy
 {
-
-    // 定义 Troop 的类型枚举
-    public enum TroopType
+    /// <summary>
+    /// 封邑军队类型：封邑扈从、封邑军士、封邑民兵
+    /// </summary>
+    public enum FiefTroopType
     {
-        Basic,      // 征召兵 (basic_troop)
-        EliteBasic, // 贵族兵 (elite_basic_troop)
-        Professional // 职业军 (其他所有)
+        Fief_Retinue,
+        Fief_Sergeant,
+        Fief_Militia,
+        Fief_Other
     }
 
     public static class CampaignState

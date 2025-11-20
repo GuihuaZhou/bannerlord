@@ -1,30 +1,27 @@
 ﻿using ModifiedArmy.Patches;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
-using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedArmy.Models.Fief
 {
-    // =============== 新增：SaveableTypeDefiner ===============
+    /// <summary>
+    /// Saveable type definer for Fief Squad system.
+    /// Ensures proper serialization of settlement and roster lists.
+    /// </summary>
     public class FiefSaveDefiner : SaveableTypeDefiner
     {
-        // 唯一 ID: CRC32("ModifiedArmy_FiefSquad") = 0x7A3F1B8E → 2051496846
         public FiefSaveDefiner() : base(20251116) { }
 
-        protected override void DefineClassTypes()
-        {
-            // 无需注册自定义类
-        }
+        protected override void DefineClassTypes() { }
 
         protected override void DefineContainerDefinitions()
         {
@@ -33,222 +30,374 @@ namespace ModifiedArmy.Models.Fief
         }
     }
 
-    // 预期的各个兵种最大数量
-    public static class FiefSquadTroopsMaxNum
+    /// <summary>
+    /// Represents the result of filling a fief squad with troops.
+    /// Tracks how many of each troop type were added.
+    /// </summary>
+    public class FillResult
     {
-        public static int _nobleTroopsMaxNum { get;} = 1;
-        public static int _professionalTroopsMaxNum { get; } = 3;
-        public static int _levyTroopsMaxNum { get; } = 6;
+        public Dictionary<CharacterObject, int> RetinueAdded { get; } = new();
+        public Dictionary<CharacterObject, int> SergeantsAdded { get; } = new();
+        public Dictionary<CharacterObject, int> MilitiaAdded { get; } = new();
+
+        /// <summary>
+        /// Total number of troops added across all categories.
+        /// </summary>
+        public int TotalAdded => RetinueAdded.Values.Sum() + SergeantsAdded.Values.Sum() + MilitiaAdded.Values.Sum();
     }
 
     /// <summary>
-    /// 定义一个采邑小队的组成：1个贵族兵，3个职业军，6个征召兵。使用 List<CharacterObject> 来分别存储这三类兵种。
+    /// Defines the composition rules for a fief squad.
+    /// Each squad has three troop types: Retinue (nobles), Sergeants (professionals), and Militia (levies).
+    /// Total capacity is fixed at 10 troops.
+    /// </summary>
+    public static class FiefSquadComposition
+    {
+        public static class Retinue { public const int Min = 1; public const int Max = 2; }
+        public static class Sergeant { public const int Min = 3; public const int Max = 4; }
+        public static class Militia { public const int Min = 4; public const int Max = 6; }
+
+        public const int TotalCapacity = 10;
+
+        /// <summary>
+        /// Validates that the composition rules are logically consistent:
+        /// - Minimum total ≤ capacity
+        /// - Maximum total ≥ capacity
+        /// </summary>
+        public static bool IsValid()
+        {
+            int minTotal = Retinue.Min + Sergeant.Min + Militia.Min;
+            int maxTotal = Retinue.Max + Sergeant.Max + Militia.Max;
+            return minTotal <= TotalCapacity && maxTotal >= TotalCapacity;
+        }
+    }
+
+    /// <summary>
+    /// Represents a fief squad, designed to be culturally agnostic and compatible with Western European,
+    /// Byzantine, Islamic, Slavic, Steppe, and other in-game cultures.
+    /// 
+    /// The composition is governed by <see cref="FiefSquadComposition"/>, which enforces:
+    /// - Minimum and maximum counts per troop type (Retinue, Sergeant, Militia)
+    /// - A fixed total capacity of 10 troops per squad.
+    /// 
+    /// Core behavioral rules:
+    /// - Once conscripted (<see cref="_isConscripted"/> = true), the squad cannot accept new troops.
+    /// - A fully filled squad (10 troops) cannot be filled further.
+    /// - An empty squad (0 troops) cannot be conscripted.
+    /// - Disbanding (via <see cref="ResetForRefill"/>) resets the conscription flag, allowing refilling.
+    /// 
+    /// Filling logic:
+    /// 1. **Guaranteed minimum phase**: Each troop type is filled up to its defined minimum count
+    ///    (in order: Retinue → Sergeant → Militia), using available candidates without randomness.
+    /// 2. **Random expansion phase**: After minima are satisfied, the squad attempts to fill remaining slots
+    ///    (up to total capacity of 10) by iterating through types in the same order (Retinue → Sergeant → Militia).
+    ///    For each potential addition:
+    ///    - A random check via <see cref="ShouldContinueAddingTroop"/> is performed (70% chance to continue).
+    ///    - If the check fails, filling stops immediately.
+    ///    - Filling also stops if any type reaches its maximum or the squad hits 10 total troops.
+    /// 
+    /// Cooldown mechanism (post-disband protection):
+    /// - When a squad is refilled after being disbanded (<paramref name="isRefillAfterDisband"/> = true),
+    ///   and at least one troop is added, it enters a cooldown period: <see cref="_waitCycle"/> is set to 2.
+    /// - During cooldown (<see cref="_waitCycle"/> > 0):
+    ///     • The squad **can still be filled** (e.g., to reach full strength).
+    ///     • The squad **cannot be conscripted** (player cannot recruit from it).
+    /// - <see cref="DecrementWaitCycle"/> must be called periodically (e.g., weekly) to reduce the cooldown.
+    /// - Once <see cref="_waitCycle"/> reaches 0, the squad becomes eligible for conscription again.
     /// </summary>
     public class FiefSquad
     {
-        private List<CharacterObject> _nobleTroops;
-        private List<CharacterObject> _professionalTroops;
-        private List<CharacterObject> _levyTroops;
-
-        public int NobleCount => _nobleTroops.Count;
-        public int ProfessionalCount => _professionalTroops.Count;
-        public int LevyCount => _levyTroops.Count;
-
-        // ====== 新增：征召状态标志 ======
         private bool _isConscripted = false;
-        public bool IsConscripted => _isConscripted;
-        public IReadOnlyList<CharacterObject> NobleTroops => _nobleTroops;
-        public IReadOnlyList<CharacterObject> ProfessionalTroops => _professionalTroops;
-        public IReadOnlyList<CharacterObject> LevyTroops => _levyTroops;
+        private int _waitCycle = 0;
+
+        private readonly List<CharacterObject> _retinueTroops = new();
+        private readonly List<CharacterObject> _sergeantTroops = new();
+        private readonly List<CharacterObject> _militiaTroops = new();
+
+        // ========== Public Read-Only Interfaces ==========
+        public IReadOnlyList<CharacterObject> RetinueTroops => _retinueTroops;
+        public IReadOnlyList<CharacterObject> SergeantTroops => _sergeantTroops;
+        public IReadOnlyList<CharacterObject> MilitiaTroops => _militiaTroops;
+
+        // ========== Derived Properties ==========
+        /// <summary>
+        /// Total number of troops in this squad.
+        /// </summary>
+        public int TotalTroopCount => _retinueTroops.Count + _sergeantTroops.Count + _militiaTroops.Count;
 
         /// <summary>
-        /// 获取小队总人数 (1 + 3 + 6 = 10)、是否满员
+        /// Indicates whether this squad can accept new troops.
+        /// Conditions:
+        /// - Not yet conscripted (<see cref="_isConscripted"/> is false)
+        /// - Total troop count is less than <see cref="FiefSquadComposition.TotalCapacity"/> (10)
+        /// Note: Being in a wait cycle (<see cref="_waitCycle"/> > 0) does NOT prevent filling.
         /// </summary>
-        public int TotalTroopCount => _nobleTroops.Count + _professionalTroops.Count + _levyTroops.Count;
-        public bool IsFilled => TotalTroopCount >= (FiefSquadTroopsMaxNum._nobleTroopsMaxNum +
-                                                  FiefSquadTroopsMaxNum._professionalTroopsMaxNum +
-                                                  FiefSquadTroopsMaxNum._levyTroopsMaxNum);
+        public bool CanBeFilled => !_isConscripted && TotalTroopCount < FiefSquadComposition.TotalCapacity;
 
-        public FiefSquad()
+        /// <summary>
+        /// Indicates whether this squad can be conscripted into a mobile party.
+        /// Conditions:
+        /// - Contains at least one troop (<see cref="TotalTroopCount"/> > 0)
+        /// - Not in post-disband cooldown (<see cref="_waitCycle"/> == 0)
+        /// Note: Once conscripted, <see cref="_isConscripted"/> becomes true and blocks further filling.
+        /// </summary>
+        public bool CanBeConscripted => TotalTroopCount > 0 && _waitCycle == 0;
+
+        /// <summary>
+        /// True if the squad is in the cooldown period after being refilled following a disband operation.
+        /// During this time, conscription is blocked to prevent immediate re-recruitment.
+        /// </summary>
+        public bool IsInWaitCycle => _waitCycle > 0;
+
+        /// <summary>
+        /// Initializes an empty fief squad.
+        /// </summary>
+        public FiefSquad() { }
+
+        /// <summary>
+        /// Initializes a fief squad with pre-defined troops.
+        /// </summary>
+        /// <param name="retinue">Initial retinue troops.</param>
+        /// <param name="sergeants">Initial sergeant troops.</param>
+        /// <param name="militia">Initial militia troops.</param>
+        public FiefSquad(List<CharacterObject> retinue, List<CharacterObject> sergeants, List<CharacterObject> militia)
         {
-            _nobleTroops = new List<CharacterObject>();
-            _professionalTroops = new List<CharacterObject>();
-            _levyTroops = new List<CharacterObject>();
-        }
-
-        public FiefSquad(List<CharacterObject> newNobleTroops, List<CharacterObject> newProfTroops, List<CharacterObject> newLevyTroops)
-        {
-            _nobleTroops = new List<CharacterObject>();
-            _professionalTroops = new List<CharacterObject>();
-            _levyTroops = new List<CharacterObject>();
-
-            FillSquad(newNobleTroops, newProfTroops, newLevyTroops);
+            FillSquad(retinue, sergeants, militia, isRefillAfterDisband: false);
         }
 
         /// <summary>
-        /// 填充小队。如果小队已满员，则直接返回。
+        /// Fills the squad using available troop pools.
+        /// First ensures minimum counts per type, then randomly fills up to capacity.
         /// </summary>
-        /// 
-        private void FillTroopList(
-                ref List<CharacterObject> currentList,
-                List<CharacterObject> newTroops,
-                int maxCount)
+        /// <param name="availableRetinue">Available retinue candidates.</param>
+        /// <param name="availableSergeants">Available sergeant candidates.</param>
+        /// <param name="availableMilitia">Available militia candidates.</param>
+        /// <param name="isRefillAfterDisband">
+        /// If true and any troops are added, activates a 2-cycle cooldown (<see cref="_waitCycle"/> = 2)
+        /// to prevent immediate re-conscription.
+        /// </param>
+        /// <returns>A <see cref="FillResult"/> detailing which troops were added.</returns>
+        public FillResult FillSquad(
+            List<CharacterObject> availableRetinue,
+            List<CharacterObject> availableSergeants,
+            List<CharacterObject> availableMilitia,
+            bool isRefillAfterDisband = false)
         {
-            if (newTroops == null || currentList.Count >= maxCount)
-                return;
+            var result = new FillResult();
+            if (!CanBeFilled) return result;
 
-            int remainingSlots = maxCount - currentList.Count;
-            int takeCount = Math.Min(remainingSlots, newTroops.Count);
+            var addedDicts = new Dictionary<List<CharacterObject>, Dictionary<CharacterObject, int>>
+        {
+            { _retinueTroops, result.RetinueAdded },
+            { _sergeantTroops, result.SergeantsAdded },
+            { _militiaTroops, result.MilitiaAdded }
+        };
 
-            var filledNames = new List<string>(); // 用于收集本次填充的兵种名
-
-            for (int i = 0; i < takeCount; i++)
+            var sources = new (List<CharacterObject> Available, List<CharacterObject> Current, int Min, int Max)[]
             {
-                var troop = newTroops[i];
-                if (troop != null && !troop.IsPlayerCharacter)
+            (availableRetinue, _retinueTroops, FiefSquadComposition.Retinue.Min, FiefSquadComposition.Retinue.Max),
+            (availableSergeants, _sergeantTroops, FiefSquadComposition.Sergeant.Min, FiefSquadComposition.Sergeant.Max),
+            (availableMilitia, _militiaTroops, FiefSquadComposition.Militia.Min, FiefSquadComposition.Militia.Max)
+            };
+
+            // Step 1: Ensure minimum required troops per category
+            foreach (var (available, current, min, _) in sources)
+            {
+                if (available == null || current.Count >= min) continue;
+                int need = Math.Min(min - current.Count, available.Count);
+                for (int i = 0; i < need && TotalTroopCount < FiefSquadComposition.TotalCapacity; i++)
                 {
-                    currentList.Add(troop);
-                    filledNames.Add(troop.Name.ToString()); // 收集名称（ToString() 确保安全）
+                    var troop = available.FirstOrDefault(t => t != null && !t.IsPlayerCharacter);
+                    if (troop == null) break;
+                    current.Add(troop);
+                    available.Remove(troop);
+                    var dict = addedDicts[current];
+                    if (dict.ContainsKey(troop)) dict[troop]++;
+                    else dict[troop] = 1;
                 }
             }
 
-            if (filledNames.Count > 0)
+            // Step 2: Randomly fill remaining slots (order: Retinue → Sergeant → Militia)
+            while (TotalTroopCount < FiefSquadComposition.TotalCapacity)
             {
-                string logMessage = $"[Fief] 填充了 {filledNames.Count} troops: {string.Join(", ", filledNames)}";
-                InformationManager.DisplayMessage(new InformationMessage(logMessage));
+                bool added = false;
+                foreach (var (available, current, _, max) in sources)
+                {
+                    if (current.Count >= max || available == null || available.Count == 0) continue;
+                    if (!ShouldContinueAddingTroop()) continue;
+                    var troop = available.FirstOrDefault(t => t != null && !t.IsPlayerCharacter);
+                    if (troop != null)
+                    {
+                        current.Add(troop);
+                        available.Remove(troop);
+                        var dict = addedDicts[current];
+                        if (dict.ContainsKey(troop)) dict[troop]++;
+                        else dict[troop] = 1;
+                        added = true;
+                        break;
+                    }
+                }
+                if (!added) break;
             }
+
+            // Set cooldown if this is a post-disband refill and troops were added
+            if (TotalTroopCount > 0 && isRefillAfterDisband)
+            {
+                _waitCycle = 2;
+            }
+
+            return result;
         }
 
-        public void FillSquad(List<CharacterObject> newNobleTroops, List<CharacterObject> newProfessionalTroops, List<CharacterObject> newLevyTroops)
-        {
-            if (IsFilled)
-            {
-                //InformationManager.DisplayMessage(new InformationMessage("Squad already filled, skipping FillSquad."));
-                return;
-            }
-
-            FillTroopList(ref _nobleTroops, newNobleTroops, FiefSquadTroopsMaxNum._nobleTroopsMaxNum);
-            FillTroopList(ref _professionalTroops, newProfessionalTroops, FiefSquadTroopsMaxNum._professionalTroopsMaxNum);
-            FillTroopList(ref _levyTroops, newLevyTroops, FiefSquadTroopsMaxNum._levyTroopsMaxNum);
-        }
+        private static bool ShouldContinueAddingTroop() => MBRandom.RandomFloat < 0.7f;
 
         /// <summary>
-        /// 清空小队并标记为已征召。
+        /// Attempts to remove a single troop of the specified type from the squad.
+        /// Marks the squad as conscripted upon first successful removal.
         /// </summary>
-        public void Conscript()
+        /// <param name="type">The troop type to remove.</param>
+        /// <returns>True if a troop was removed; otherwise, false.</returns>
+        public bool TryRemoveTroop(FiefTroopType type)
         {
-            if (_isConscripted) return;
-            ClearSquad();
+            if (!CanBeConscripted) return false;
             _isConscripted = true;
-        }
-
-        internal void ResetConscription()
-        {
-            _isConscripted = false;
+            var list = type switch
+            {
+                FiefTroopType.Fief_Retinue => _retinueTroops,
+                FiefTroopType.Fief_Sergeant => _sergeantTroops,
+                FiefTroopType.Fief_Militia => _militiaTroops,
+                _ => null
+            };
+            if (list?.Count > 0)
+            {
+                list.RemoveAt(0);
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
-        /// 清空小队。
+        /// Clears all troops from the squad.
         /// </summary>
         public void ClearSquad()
         {
-            _nobleTroops.Clear();
-            _professionalTroops.Clear();
-            _levyTroops.Clear();
+            _retinueTroops.Clear();
+            _sergeantTroops.Clear();
+            _militiaTroops.Clear();
         }
 
         /// <summary>
-        /// 获取当前小队的所有士兵（贵族兵、职业兵、征召兵）的列表。
+        /// Resets the conscription flag without clearing troops.
+        /// Used during disband operations to allow refilling.
         /// </summary>
-        public List<CharacterObject> allTroops
+        public void ResetConscription() => _isConscripted = false;
+
+        /// <summary>
+        /// Fully resets the squad for refilling: clears troops and resets conscription status.
+        /// Does not affect <see cref="_waitCycle"/>; that is managed separately.
+        /// </summary>
+        internal void ResetForRefill()
+        {
+            ClearSquad();
+            ResetConscription();
+        }
+
+        /// <summary>
+        /// Decrements the post-disband wait cycle by 1 (minimum 0).
+        /// Should be called once per game week to allow eventual re-conscription.
+        /// </summary>
+        public void DecrementWaitCycle()
+        {
+            if (_waitCycle > 0) _waitCycle--;
+        }
+
+        /// <summary>
+        /// Enumerates all troops in the squad (retinue, sergeants, militia).
+        /// </summary>
+        public IEnumerable<CharacterObject> AllTroops
         {
             get
             {
-                var allTroops = new List<CharacterObject>();
-                allTroops.AddRange(_nobleTroops);
-                allTroops.AddRange(_professionalTroops);
-                allTroops.AddRange(_levyTroops);
-                return allTroops;
+                foreach (var t in _retinueTroops) yield return t;
+                foreach (var t in _sergeantTroops) yield return t;
+                foreach (var t in _militiaTroops) yield return t;
             }
         }
 
         /// <summary>
-        /// 获取当前小队的所有士兵（去重计数），用于整体征召。
+        /// Returns a list of recruitable troops grouped by character and count.
+        /// Only returns troops if the squad can be conscripted (<see cref="CanBeConscripted"/> is true).
         /// </summary>
-        public List<(CharacterObject troop, int count)> GetAllTroopsForRecruitment()
+        public List<(CharacterObject troop, int count)> GetRecruitableTroops()
         {
-            if (_isConscripted || TotalTroopCount == 0)
-                return new List<(CharacterObject, int)>();
-
-            var result = new List<(CharacterObject, int)>();
-            AddGroup(_nobleTroops);
-            AddGroup(_professionalTroops);
-            AddGroup(_levyTroops);
-            return result;
-
-            void AddGroup(List<CharacterObject> list)
-            {
-                if (list?.Count > 0)
-                {
-                    foreach (var group in list.GroupBy(t => t))
-                    {
-                        result.Add((group.Key, group.Count()));
-                    }
-                }
-            }
+            return CanBeConscripted ? AllTroops.GroupBy(t => t).Select(g => (g.Key, g.Count())).ToList() : new List<(CharacterObject, int)>();
         }
-
     }
 
-
     /// <summary>
-    /// 管理特定 Settlement 的采邑小队数据。
+    /// Manages all fief squads for a single settlement.
+    /// Handles weekly updates, recruitment, and disbanding with troop recovery.
     /// </summary>
     public class FiefSettlementData
     {
         private Settlement _settlement;
         private TroopRoster _fiefSquadTroopRoster;
+        [NonSerialized] private List<FiefSquad> _squads;
 
+        // Pre-categorized candidate pools (initialized once per settlement)
+        private List<CharacterWeightPair> _retinueCandidates;
+        private List<CharacterWeightPair> _sergeantCandidates;
+        private List<CharacterWeightPair> _militiaCandidates;
 
-        [NonSerialized]
-        private List<FiefSquad> _squads;
-        [NonSerialized]
-        List<CharacterWeightPair> volunteerCandidates;
-
+        /// <summary>
+        /// Maximum number of fief squads based on settlement type:
+        /// - Village: 0 (villages do not host independent fief squads)
+        /// - Castle: 10 + (3 per bound village)
+        /// - Town:   20 + (3 per bound village)
+        /// </summary>
         public int MaxSquadCount
         {
             get
             {
-                if (_settlement == null) return 0;
-                if (_settlement.IsVillage) return 3;
-                if (_settlement.IsCastle) return 10;
-                if (_settlement.IsTown) return 20;
-                return 0; 
+                if (_settlement == null)
+                    return 0;
+
+                // Villages themselves cannot host fief squads
+                if (_settlement.IsVillage)
+                    return 0;
+
+                int baseCount = _settlement.IsCastle ? 10 : _settlement.IsTown ? 20 : 0;
+
+                // Add 3 squads per bound village
+                int villageBonus = _settlement.BoundVillages.Count * 3;
+
+                return baseCount + villageBonus;
             }
         }
 
-        public Settlement GetSettlement()
-        {
-            return _settlement;
-        }
+        public Settlement GetSettlement() => _settlement;
+        public List<FiefSquad> GetFiefSquads() => _squads;
 
-        public List<FiefSquad> GetFiefSquads()
-        { 
-            return _squads; 
-        }
-
-        // 无参构造（反序列化需要）
+        /// <summary>
+        /// Default constructor for deserialization.
+        /// </summary>
         public FiefSettlementData()
         {
             _fiefSquadTroopRoster = TroopRoster.CreateDummyTroopRoster();
         }
 
+        /// <summary>
+        /// Initializes fief data for a given settlement.
+        /// Pre-filters volunteer candidates by troop type and creates empty squads.
+        /// </summary>
         public FiefSettlementData(Settlement settlement)
         {
             _settlement = settlement;
             _fiefSquadTroopRoster = TroopRoster.CreateDummyTroopRoster();
-            volunteerCandidates = CultureVolunteerGroupsCache.Instance.GetVolunteerCandidateCache(settlement.Culture);
-
+            var allVolunteers = CultureVolunteerGroupsCache.Instance.GetVolunteerCandidateCache(settlement.Culture);
+            _retinueCandidates = allVolunteers?.Where(c => c.Type == FiefTroopType.Fief_Retinue).ToList() ?? new List<CharacterWeightPair>();
+            _sergeantCandidates = allVolunteers?.Where(c => c.Type == FiefTroopType.Fief_Sergeant).ToList() ?? new List<CharacterWeightPair>();
+            _militiaCandidates = allVolunteers?.Where(c => c.Type == FiefTroopType.Fief_Militia).ToList() ?? new List<CharacterWeightPair>();
             _squads = new List<FiefSquad>();
             for (int i = 0; i < MaxSquadCount; i++)
             {
@@ -256,171 +405,117 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
-        // 将所有 squad 转为 TroopRoster
+        /// <summary>
+        /// Converts all squads into a single TroopRoster for saving or display.
+        /// Excludes player characters.
+        /// </summary>
         public TroopRoster GetAsTroopRoster()
         {
             _fiefSquadTroopRoster.Clear();
             foreach (var squad in _squads)
             {
-                foreach (var troop in squad.allTroops)
+                foreach (var troop in squad.AllTroops)
                 {
                     if (troop.IsPlayerCharacter) continue;
                     _fiefSquadTroopRoster.AddToCounts(troop, 1, false, 0, 0, true, -1);
                 }
             }
-
-            // === 调试：每次调用都打印 _fiefSquadTroopRoster 的内容 ===
-            var debugLines = new List<string>();
-            int totalCount = 0;
-
-            foreach (var element in _fiefSquadTroopRoster.GetTroopRoster())
-            {
-                if (element.Character == null) continue;
-                int num = element.Number + element.WoundedNumber;
-                if (num <= 0) continue;
-
-                totalCount += num;
-                debugLines.Add($"{num}× {element.Character.Name}");
-            }
-
-            //string settlementName = _settlement?.Name.ToString() ?? "Unknown";
-            //string msg = $"[ROSTER DEBUG] '{settlementName}' exported {totalCount} troops: {string.Join(", ", debugLines.Take(10))}";
-            //if (debugLines.Count > 10) msg += ", ...";
-
-            //InformationManager.DisplayMessage(new InformationMessage(msg, new Color(1f, 1f, 0f))); // Yellow
-
             return _fiefSquadTroopRoster;
         }
 
-        /// <summary>
-        /// 从 CharacterWeightPair 列表中根据权重随机选择一个 CharacterObject。
-        /// </summary>
-        /// <param name="candidates">候选列表。</param>
-        /// <returns>选中的 CharacterObject，如果列表为空或选择失败则返回 null。</returns>
         private CharacterObject WeightedRandomSelectFromCharacterWeightPairs(List<CharacterWeightPair> candidates)
         {
-            if (candidates == null || candidates.Count == 0)
-            {
-                return null;
-            }
-
-            // 计算总权重
+            if (candidates == null || candidates.Count == 0) return null;
             float totalWeight = candidates.Sum(c => c.Weight);
-            if (totalWeight <= 0)
-            {
-                // 如果总权重 <= 0，返回列表中的第一个单位，或者 null
-                return candidates[0].Character; // 或者 return null;
-            }
-
-            // 生成随机数
+            if (totalWeight <= 0) return candidates[0].Character;
             float rand = MBRandom.RandomFloat * totalWeight;
             float sum = 0;
-
-            // 遍历列表，根据权重选择
             foreach (var candidate in candidates)
             {
                 sum += candidate.Weight;
-                if (rand < sum)
-                {
-                    return candidate.Character;
-                }
+                if (rand < sum) return candidate.Character;
             }
-
-            // 理论上不应该到达这里，但如果到达了，返回最后一个单位
             return candidates[candidates.Count - 1].Character;
         }
 
+        private (List<CharacterObject> retinue, List<CharacterObject> sergeant, List<CharacterObject> militia) GenerateMaxCandidateLists()
+        {
+            var retinue = new List<CharacterObject>();
+            for (int i = 0; i < FiefSquadComposition.Retinue.Max; i++)
+            {
+                var t = WeightedRandomSelectFromCharacterWeightPairs(_retinueCandidates);
+                if (t != null) retinue.Add(t);
+            }
+
+            var sergeant = new List<CharacterObject>();
+            for (int i = 0; i < FiefSquadComposition.Sergeant.Max; i++)
+            {
+                var t = WeightedRandomSelectFromCharacterWeightPairs(_sergeantCandidates);
+                if (t != null) sergeant.Add(t);
+            }
+
+            var militia = new List<CharacterObject>();
+            for (int i = 0; i < FiefSquadComposition.Militia.Max; i++)
+            {
+                var t = WeightedRandomSelectFromCharacterWeightPairs(_militiaCandidates);
+                if (t != null) militia.Add(t);
+            }
+            return (retinue, sergeant, militia);
+        }
+
+        /// <summary>
+        /// Performs daily/weekly update:
+        /// - Fills incomplete squads using culture-specific candidates
+        /// - Decrements wait cycles
+        /// Skips update if no candidates exist.
+        /// </summary>
         public void WeeklyUpdate()
         {
-            if (volunteerCandidates == null || volunteerCandidates.Count == 0)
+            if (_retinueCandidates.Count == 0 && _sergeantCandidates.Count == 0 && _militiaCandidates.Count == 0)
             {
-                InformationManager.DisplayMessage(new InformationMessage($"[FiefSquadMod] No volunteer candidates found for {_settlement.Name} (Culture: {_settlement.Culture.Name})."));
+                ModLogger.Error($"[Fief] No candidates of any type for {_settlement?.Name}. Skipping update.");
                 return;
             }
 
-            // 从候选池中筛选出对应类型的单位
-            // 注意：这里需要确保 TroopType 枚举在当前命名空间下是可访问的。
-            // 如果编译报错找不到 TroopType，请检查 VolunteerPatches.cs 是否已编译且包含该枚举定义。
-            var nobleCandidates = volunteerCandidates.Where(c => c.Type == TroopType.EliteBasic).ToList();
-            var professionalCandidates = volunteerCandidates.Where(c => c.Type == TroopType.Professional).ToList();
-            var levyCandidates = volunteerCandidates.Where(c => c.Type == TroopType.Basic).ToList();
-
-            // 检查是否有对应类型的单位存在 (即使只有一种单位)
-            if (nobleCandidates.Count == 0)
+            int filledCount = 0;
+            foreach (var squad in _squads)
             {
-                InformationManager.DisplayMessage(new InformationMessage($"[FiefSquadMod] No noble candidates found for {_settlement.Name}."));
-                return; // 没有贵族兵类型，无法组成小队
-            }
-            if (professionalCandidates.Count == 0)
-            {
-                InformationManager.DisplayMessage(new InformationMessage($"[FiefSquadMod] No professional candidates found for {_settlement.Name}."));
-                return; // 没有职业军类型，无法组成小队
-            }
-            if (levyCandidates.Count == 0)
-            {
-                InformationManager.DisplayMessage(new InformationMessage($"[FiefSquadMod] No levy candidates found for {_settlement.Name}."));
-                return; // 没有征召兵类型，无法组成小队
-            }
-
-            // 随机选择单位 (使用加权随机选择)
-            // 贵族兵 (随机选一个，从 nobleCandidates 中)
-            var newNobleTroops = new List<CharacterObject>();
-            for (int i = 0; i < FiefSquadTroopsMaxNum._nobleTroopsMaxNum; i++)
-            {
-                var noble = WeightedRandomSelectFromCharacterWeightPairs(nobleCandidates);
-                if (noble == null)
-                    return;
-                newNobleTroops.Add(noble);
-            }
-
-            // 职业军 (随机选三个，从 professionalCandidates 中，允许重复选择)
-            var newProfessionalTroops = new List<CharacterObject>();
-            for (int i = 0; i < FiefSquadTroopsMaxNum._professionalTroopsMaxNum; i++)
-            {
-                var pro = WeightedRandomSelectFromCharacterWeightPairs(professionalCandidates);
-                if (pro == null) 
-                    return; // 如果选择失败
-                newProfessionalTroops.Add(pro);
-            }
-
-            // 征召兵 (随机选六个，从 levyCandidates 中，允许重复选择)
-            var newLevyTroops = new List<CharacterObject>();
-            for (int i = 0; i < FiefSquadTroopsMaxNum._levyTroopsMaxNum; i++)
-            {
-                var levy = WeightedRandomSelectFromCharacterWeightPairs(levyCandidates);
-                if (levy == null) 
-                    return; // 如果选择失败
-                newLevyTroops.Add(levy);
+                if (squad.CanBeFilled)
+                {
+                    var (retinue, sergeant, militia) = GenerateMaxCandidateLists();
+                    squad.FillSquad(retinue, sergeant, militia, isRefillAfterDisband: false);
+                    filledCount++;
+                }
             }
 
             foreach (var squad in _squads)
             {
-                if (!squad.IsFilled)
-                {
-                    squad.FillSquad(newNobleTroops, newProfessionalTroops, newLevyTroops);
-                }
+                squad.DecrementWaitCycle();
             }
 
-            InformationManager.DisplayMessage(new InformationMessage(
-                    $"[DEBUG] {(_settlement?.Name)} 共 {_squads.Count} 个小队"));
+            if (filledCount > 0)
+            {
+                ModLogger.Debug($"[Fief] Filled {filledCount} squads in {_settlement?.Name}.");
+            }
         }
 
-        // === 防刷屏日志统计 ===
-        private static int _fillCount = 0;
-        private static int _fillTotalTroops = 0;
-
-        // 从 TroopRoster 填充 squads
+        /// <summary>
+        /// Restores squads from a saved TroopRoster (used during game load).
+        /// Distributes troops into squads respecting composition limits.
+        /// </summary>
         public void FillFromTroopRoster(TroopRoster savedRoster)
         {
             if (savedRoster == null || savedRoster.Count == 0)
             {
+                ModLogger.Debug($"[Fief] No saved roster for {_settlement?.Name}. Skipping squad restoration.");
                 return;
             }
 
-            var nobleList = new List<CharacterObject>();
-            var professionalList = new List<CharacterObject>();
-            var levyList = new List<CharacterObject>();
+            var retinueList = new List<CharacterObject>();
+            var sergeantList = new List<CharacterObject>();
+            var militiaList = new List<CharacterObject>();
 
+            // Step 1: Classify all troops from the saved roster
             foreach (var element in savedRoster.GetTroopRoster())
             {
                 if (element.Character == null) continue;
@@ -434,94 +529,100 @@ namespace ModifiedArmy.Models.Fief
                 {
                     switch (type)
                     {
-                        case SoldierType.Noble:
-                            nobleList.Add(troop);
+                        case FiefTroopType.Fief_Retinue:
+                            retinueList.Add(troop);
                             break;
-                        case SoldierType.Professional:
-                            professionalList.Add(troop);
+                        case FiefTroopType.Fief_Sergeant:
+                            sergeantList.Add(troop);
                             break;
-                        case SoldierType.Levy:
-                            levyList.Add(troop);
+                        case FiefTroopType.Fief_Militia:
+                            militiaList.Add(troop);
+                            break;
+                        default:
+                            ModLogger.Warn($"[Fief] Unrecognized troop type for {troop.Name} in {_settlement?.Name}.");
                             break;
                     }
                 }
             }
 
-            // 2. 填充 squads，逐个“消耗”列表
+            ModLogger.Debug(
+                $"[Fief] Loaded {retinueList.Count} retinue, {sergeantList.Count} sergeants, " +
+                $"{militiaList.Count} militia from saved roster in {_settlement?.Name}.");
+
+            int squadsFilled = 0;
+            int totalAssigned = 0;
+            bool hasSkippedSquad = false;
+
+            // Step 2: Distribute troops into squads
             foreach (var squad in _squads)
             {
-                if (squad.IsFilled) continue;
-
-                // 贵族兵：最多 1 个
-                var nobleToAdd = new List<CharacterObject>();
-                if (nobleList.Count > 0 && nobleToAdd.Count < FiefSquadTroopsMaxNum._nobleTroopsMaxNum)
+                if (!squad.CanBeFilled)
                 {
-                    nobleToAdd.Add(nobleList[0]);
-                    nobleList.RemoveAt(0);
+                    hasSkippedSquad = true;
+                    continue;
                 }
 
-                // 职业兵：最多 3 个
-                var profToAdd = new List<CharacterObject>();
-                while (profToAdd.Count < FiefSquadTroopsMaxNum._professionalTroopsMaxNum && professionalList.Count > 0)
+                var retinueToAdd = new List<CharacterObject>();
+                if (retinueList.Count > 0 && retinueToAdd.Count < FiefSquadComposition.Retinue.Max)
                 {
-                    profToAdd.Add(professionalList[0]);
-                    professionalList.RemoveAt(0);
+                    retinueToAdd.Add(retinueList[0]);
+                    retinueList.RemoveAt(0);
                 }
 
-                // 征召兵：最多 6 个
-                var levyToAdd = new List<CharacterObject>();
-                while (levyToAdd.Count < FiefSquadTroopsMaxNum._levyTroopsMaxNum && levyList.Count > 0)
+                var sergeantsToAdd = new List<CharacterObject>();
+                while (sergeantsToAdd.Count < FiefSquadComposition.Sergeant.Max && sergeantList.Count > 0)
                 {
-                    levyToAdd.Add(levyList[0]);
-                    levyList.RemoveAt(0);
+                    sergeantsToAdd.Add(sergeantList[0]);
+                    sergeantList.RemoveAt(0);
                 }
 
-                // 如果没有任何兵可填，说明后续 squads 也无法填充，提前退出
-                if (nobleToAdd.Count == 0 && profToAdd.Count == 0 && levyToAdd.Count == 0)
+                var militiaToAdd = new List<CharacterObject>();
+                while (militiaToAdd.Count < FiefSquadComposition.Militia.Max && militiaList.Count > 0)
                 {
+                    militiaToAdd.Add(militiaList[0]);
+                    militiaList.RemoveAt(0);
+                }
+
+                int assignedThisSquad = retinueToAdd.Count + sergeantsToAdd.Count + militiaToAdd.Count;
+                if (assignedThisSquad == 0)
+                {
+                    // No more troops to assign — stop early
                     break;
                 }
 
-                // 填充当前 squad
-                squad.FillSquad(nobleToAdd, profToAdd, levyToAdd);
-
-                // 可选：如果所有列表已空，也可提前退出
-                if (nobleList.Count == 0 && professionalList.Count == 0 && levyList.Count == 0)
-                {
-                    break;
-                }
+                squad.FillSquad(retinueToAdd, sergeantsToAdd, militiaToAdd, isRefillAfterDisband: false);
+                squadsFilled++;
+                totalAssigned += assignedThisSquad;
             }
 
-            // 更新统计（可选）
-            _fillCount++;
-            _fillTotalTroops += savedRoster.Count;
-        }
-
-        // === 日志控制 ===
-        public static void LogFillSummaryAndReset()
-        {
-            if (_fillCount > 0)
+            // Final summary log
+            string summary = $"[Fief] Restored {squadsFilled} squads with {totalAssigned} troops in {_settlement?.Name}.";
+            if (hasSkippedSquad)
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief Squad Mod] FillFromTroopRoster summary: filled {_fillCount} settlements with {_fillTotalTroops} troops.",
-                    new Color(0.8f, 0.9f, 0.2f)
-                ));
+                summary += " (Some squads were skipped because they were full or already conscripted.)";
             }
 
-            // 重置状态，为下次初始化准备
-            _fillCount = 0;
-            _fillTotalTroops = 0;
+            ModLogger.Info(summary);
+
+            // Log unassigned leftovers only if any remain (useful for debugging imbalance)
+            if (retinueList.Count > 0 || sergeantList.Count > 0 || militiaList.Count > 0)
+            {
+                ModLogger.Debug(
+                    $"[Fief] Unassigned troops remaining after restoration in {_settlement?.Name}: " +
+                    $"{retinueList.Count} retinue, {sergeantList.Count} sergeants, {militiaList.Count} militia.");
+            }
         }
 
         /// <summary>
-        /// 征召所有可用的采邑小队到指定 MobileParty。
-        /// 每次征召一个完整的小队（不拆散），若容量不足则停止后续征召。
+        /// Recruits all available (non-cooldown, non-empty) squads into the target party.
+        /// Recruits entire squads only (no partial recruitment).
+        /// Stops if party capacity is exceeded.
         /// </summary>
         public void RecruitAvailableSquads(MobileParty targetParty)
         {
             if (targetParty == null || _settlement == null)
             {
-                InformationManager.DisplayMessage(new InformationMessage("[Fief] 征召失败：目标部队或领地为空。", new Color(1f, 0.3f, 0.3f)));
+                ModLogger.Error("[Fief] Recruitment failed: target party or settlement is null.");
                 return;
             }
 
@@ -532,30 +633,22 @@ namespace ModifiedArmy.Models.Fief
 
             foreach (var squad in _squads)
             {
-                if (squad.IsConscripted || squad.TotalTroopCount == 0)
-                    continue;
-
+                if (!squad.CanBeConscripted || squad.TotalTroopCount == 0) continue;
                 int squadSize = squad.TotalTroopCount;
 
-                // ✅ 参考官方 RecruitmentCampaignBehavior 的判断逻辑
                 if (currentMembers >= partySizeLimit)
                 {
-                    InformationManager.DisplayMessage(new InformationMessage(
-                        $"[Fief] 部队已满（{currentMembers}/{partySizeLimit}），停止征召。",
-                        new Color(1f, 0.7f, 0.2f)));
+                    ModLogger.Warn($"[Fief] Party is full ({currentMembers}/{partySizeLimit}). Stopped recruitment.");
                     break;
                 }
 
                 if (currentMembers + squadSize > partySizeLimit)
                 {
-                    InformationManager.DisplayMessage(new InformationMessage(
-                        $"[Fief] 剩余容量 {partySizeLimit - currentMembers} 不足容纳小队（需 {squadSize} 人），停止征召。",
-                        new Color(1f, 0.7f, 0.2f)));
+                    ModLogger.Warn($"[Fief] Insufficient space for squad (need {squadSize}, available {partySizeLimit - currentMembers}). Stopped recruitment.");
                     break;
                 }
 
-                // 执行征召
-                var troopsToRecruit = squad.GetAllTroopsForRecruitment();
+                var troopsToRecruit = squad.GetRecruitableTroops();
                 foreach (var (troop, count) in troopsToRecruit)
                 {
                     if (troop != null && count > 0)
@@ -564,52 +657,40 @@ namespace ModifiedArmy.Models.Fief
                     }
                 }
 
-                squad.Conscript(); // 清空 + 标记
+                squad.ResetForRefill();
                 currentMembers += squadSize;
                 recruitedSquads++;
                 totalRecruited += squadSize;
-
-                //// 日志：列出征召的兵种
-                //var names = troopsToRecruit.Select(t => $"{t.count}×{t.troop.Name}");
-                //InformationManager.DisplayMessage(new InformationMessage(
-                //    $"[Fief] 成功征召 1 个小队（{squadSize}人）: {string.Join(", ", names)}",
-                //    new Color(0.3f, 1f, 0.5f)));
             }
 
             if (recruitedSquads > 0)
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 共征召 {recruitedSquads} 个小队，总计 {totalRecruited} 名士兵到 {targetParty.Name}。",
-                    new Color(0.2f, 0.9f, 0.8f)));
+                ModLogger.Info($"[Fief] Recruited {recruitedSquads} squads ({totalRecruited} troops) into {targetParty.Name}.");
             }
             else
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    "[Fief] 无可征召的小队（可能已全部征召、未填充或容量不足）。",
-                    new Color(0.8f, 0.8f, 0.8f)));
+                ModLogger.Info("[Fief] No squads available for recruitment (already conscripted, empty, or insufficient party space).");
             }
         }
 
-        // ====== 【改动点 3】新增：从 MobileParty 安全移除兵员 ======
         private void RemoveTroopsFromParty(MobileParty party, CharacterObject troop, int countToRemove)
         {
             if (party == null || troop == null || countToRemove <= 0) return;
-
             var roster = party.MemberRoster;
             int currentCount = roster.GetElementNumber(troop);
             if (currentCount <= 0) return;
-
             int actualRemove = Math.Min(countToRemove, currentCount);
             if (actualRemove > 0)
             {
-                // 使用官方推荐方式移除
                 roster.RemoveTroop(troop, actualRemove, default(UniqueTroopDescriptor), 0);
             }
         }
 
-        // ====== 【改动点 4】新增：解散并尝试回收士兵 ======
         /// <summary>
-        /// 解散采邑军队：重置所有 squad 征召状态，并尝试从 MobileParty 回收士兵填充未满 squad。
+        /// Disbands all squads and attempts to refill them from a source party.
+        /// - Resets conscription status for all squads
+        /// - If sourceParty is provided, recovers eligible troops and refills incomplete squads
+        /// - Sets a 2-cycle cooldown on refilled squads
         /// </summary>
         public void DisbandAndRefillFromParty(MobileParty sourceParty)
         {
@@ -620,180 +701,103 @@ namespace ModifiedArmy.Models.Fief
 
             if (sourceParty == null)
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 已重置 {_settlement.Name} 所有采邑小队状态（无部队可供回收）。",
-                    new Color(0.7f, 0.7f, 0.9f)));
+                ModLogger.Info($"[Fief] Disbanded all squads in {_settlement.Name} (no source party for recovery).");
                 return;
             }
 
-            // 收集可回收兵员
-            var recoverableNobles = new List<CharacterObject>();
-            var recoverableProfessionals = new List<CharacterObject>();
-            var recoverableLevies = new List<CharacterObject>();
+            var recoverableRetinue = new List<CharacterObject>();
+            var recoverableSergeants = new List<CharacterObject>();
+            var recoverableMilitia = new List<CharacterObject>();
 
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
-                if (element.Character == null || element.Character.Occupation != Occupation.Soldier) 
-                    continue;
-
+                if (element.Character == null || element.Character.Occupation != Occupation.Soldier) continue;
                 int totalCount = element.Number + element.WoundedNumber;
                 if (totalCount <= 0) continue;
-
                 var troop = element.Character;
                 var type = SoldierTypeClassifier.GetSoldierType(troop);
-
                 for (int i = 0; i < totalCount; i++)
                 {
                     switch (type)
                     {
-                        case SoldierType.Noble:
-                            recoverableNobles.Add(troop);
-                            break;
-                        case SoldierType.Professional:
-                            recoverableProfessionals.Add(troop);
-                            break;
-                        case SoldierType.Levy:
-                            recoverableLevies.Add(troop);
-                            break;
-                        default:
-                            // 可选：只在首次遇到该 troop 时提示，避免刷屏
-                            InformationManager.DisplayMessage(new InformationMessage(
-                                $"[Fief 调试] 发现未分类的 Soldier 兵种：{troop.Name}（ID: {troop.StringId}），类型判定为：{type}。该单位将不会被安置到采邑小队。",
-                                new Color(1f, 0.7f, 0.2f) // 橙黄色，表示警告但非错误
-                            ));
-                            break;
+                        case FiefTroopType.Fief_Retinue: recoverableRetinue.Add(troop); break;
+                        case FiefTroopType.Fief_Sergeant: recoverableSergeants.Add(troop); break;
+                        case FiefTroopType.Fief_Militia: recoverableMilitia.Add(troop); break;
                     }
                 }
             }
 
-            InformationManager.DisplayMessage(new InformationMessage(
-                $"[Fief DEBUG] 可回收兵员 - 贵族: {recoverableNobles.Count}, 职业: {recoverableProfessionals.Count}, 征召: {recoverableLevies.Count}",
-                new Color(0.8f, 0.9f, 0.4f)));
+            ModLogger.Debug($"[Fief] Recoverable troops - Retinue: {recoverableRetinue.Count}, Sergeants: {recoverableSergeants.Count}, Militia: {recoverableMilitia.Count}");
 
-
-            // 计算总容量
-            int totalNobleCapacity = 0, totalProfCapacity = 0, totalLevyCapacity = 0;
-            foreach (var squad in _squads)
-            {
-                totalNobleCapacity += FiefSquadTroopsMaxNum._nobleTroopsMaxNum - squad.NobleCount;
-                totalProfCapacity += FiefSquadTroopsMaxNum._professionalTroopsMaxNum - squad.ProfessionalCount;
-                totalLevyCapacity += FiefSquadTroopsMaxNum._levyTroopsMaxNum - squad.LevyCount;
-            }
-
-            InformationManager.DisplayMessage(new InformationMessage(
-                $"[Fief DEBUG] 采邑总空位 - 贵族: {totalNobleCapacity}, 职业: {totalProfCapacity}, 征召: {totalLevyCapacity}",
-                new Color(0.8f, 0.9f, 0.4f)));
-
-
-            // 【关键】备份原始列表（用于差值统计）
-            var originalNobles = new List<CharacterObject>(recoverableNobles);
-            var originalPros = new List<CharacterObject>(recoverableProfessionals);
-            var originalLevies = new List<CharacterObject>(recoverableLevies);
+            var totalRetinueAdded = new Dictionary<CharacterObject, int>();
+            var totalSergeantsAdded = new Dictionary<CharacterObject, int>();
+            var totalMilitiaAdded = new Dictionary<CharacterObject, int>();
 
             foreach (var squad in _squads)
             {
-                if (squad.IsFilled) continue;
+                if (!squad.CanBeFilled) continue;
 
-                int nobleSlots = FiefSquadTroopsMaxNum._nobleTroopsMaxNum - squad.NobleCount;
-                int profSlots = FiefSquadTroopsMaxNum._professionalTroopsMaxNum - squad.ProfessionalCount;
-                int levySlots = FiefSquadTroopsMaxNum._levyTroopsMaxNum - squad.LevyCount;
+                var localRetinue = new List<CharacterObject>(recoverableRetinue);
+                var localSergeants = new List<CharacterObject>(recoverableSergeants);
+                var localMilitia = new List<CharacterObject>(recoverableMilitia);
 
-                var nobleToAdd = new List<CharacterObject>();
-                var profToAdd = new List<CharacterObject>();
-                var levyToAdd = new List<CharacterObject>();
+                FillResult result = squad.FillSquad(localRetinue, localSergeants, localMilitia, isRefillAfterDisband: true);
 
-                // 补充贵族兵
-                for (int i = 0; i < nobleSlots && recoverableNobles.Count > 0; i++)
-                {
-                    nobleToAdd.Add(recoverableNobles[0]);
-                    recoverableNobles.RemoveAt(0);
-                }
+                MergeDictionary(totalRetinueAdded, result.RetinueAdded);
+                MergeDictionary(totalSergeantsAdded, result.SergeantsAdded);
+                MergeDictionary(totalMilitiaAdded, result.MilitiaAdded);
 
-                // 补充职业兵
-                for (int i = 0; i < profSlots && recoverableProfessionals.Count > 0; i++)
-                {
-                    profToAdd.Add(recoverableProfessionals[0]);
-                    recoverableProfessionals.RemoveAt(0);
-                }
-
-                // 补充征召兵
-                for (int i = 0; i < levySlots && recoverableLevies.Count > 0; i++)
-                {
-                    levyToAdd.Add(recoverableLevies[0]);
-                    recoverableLevies.RemoveAt(0);
-                }
-
-                // 【必须保留】真正把兵加到 squad 中！
-                if (nobleToAdd.Count > 0 || profToAdd.Count > 0 || levyToAdd.Count > 0)
-                {
-                    squad.FillSquad(nobleToAdd, profToAdd, levyToAdd);
-                    // 注意：不再标记为 _isConscripted = true（因为这是正式驻军）
-                }
+                RemoveFilledTroops(recoverableRetinue, result.RetinueAdded);
+                RemoveFilledTroops(recoverableSergeants, result.SergeantsAdded);
+                RemoveFilledTroops(recoverableMilitia, result.MilitiaAdded);
             }
 
-            // 【关键】通过原始 vs 剩余列表计算实际取走的兵
-            var troopsToRemove = new Dictionary<CharacterObject, int>();
-            CountRemovedTroops(originalNobles, recoverableNobles, troopsToRemove);
-            CountRemovedTroops(originalPros, recoverableProfessionals, troopsToRemove);
-            CountRemovedTroops(originalLevies, recoverableLevies, troopsToRemove);
+            foreach (var kvp in totalRetinueAdded) RemoveTroopsFromParty(sourceParty, kvp.Key, kvp.Value);
+            foreach (var kvp in totalSergeantsAdded) RemoveTroopsFromParty(sourceParty, kvp.Key, kvp.Value);
+            foreach (var kvp in totalMilitiaAdded) RemoveTroopsFromParty(sourceParty, kvp.Key, kvp.Value);
 
-            // 从 sourceParty 中移除这些兵
-            foreach (var kvp in troopsToRemove)
-            {
-                RemoveTroopsFromParty(sourceParty, kvp.Key, kvp.Value);
-            }
-
-            int totalAdded = troopsToRemove.Values.Sum();
+            int totalAdded = totalRetinueAdded.Values.Sum() + totalSergeantsAdded.Values.Sum() + totalMilitiaAdded.Values.Sum();
             if (totalAdded > 0)
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 已从 {sourceParty.Name} 补充 {totalAdded} 名士兵到 {_settlement.Name} 的采邑小队。",
-                    new Color(0.8f, 0.9f, 0.4f)));
+                ModLogger.Info($"[Fief] Refilled {totalAdded} troops from {sourceParty.Name} into {_settlement.Name}'s squads.");
             }
         }
 
-        private static void CountRemovedTroops(
-            List<CharacterObject> original,
-            List<CharacterObject> current,
-            Dictionary<CharacterObject, int> result)
+        private void MergeDictionary(Dictionary<CharacterObject, int> target, Dictionary<CharacterObject, int> source)
         {
-            int removedCount = original.Count - current.Count;
-            for (int i = 0; i < removedCount; i++)
+            foreach (var kvp in source)
             {
-                var troop = original[i];
-                if (result.ContainsKey(troop))
-                    result[troop]++;
-                else
-                    result[troop] = 1;
+                if (target.ContainsKey(kvp.Key)) target[kvp.Key] += kvp.Value;
+                else target[kvp.Key] = kvp.Value;
             }
         }
 
-
-        /// <summary>
-        /// 获取当前已填充的小队数量。
-        /// </summary>
-        public int CurrentFilledSquadCount => _squads.Count(s => s.IsFilled);
-
-        /// <summary>
-        /// 获取当前未填充的小队数量。
-        /// </summary>
-        public int CurrentEmptySquadCount => _squads.Count(s => !s.IsFilled);
+        private void RemoveFilledTroops(List<CharacterObject> availableList, Dictionary<CharacterObject, int> usedTroops)
+        {
+            foreach (var kvp in usedTroops)
+            {
+                var troop = kvp.Key;
+                int count = kvp.Value;
+                for (int i = 0; i < count; i++)
+                {
+                    if (!availableList.Remove(troop)) break;
+                }
+            }
+        }
     }
 
     /// <summary>
-    /// 负责管理所有 Settlement 的采邑小队数据的 CampaignBehavior。
+    /// Campaign behavior that manages fief squads across all player-owned settlements.
+    /// Handles initialization, daily updates, saving/loading, and public APIs for recruitment/disbanding.
     /// </summary>
     public class FiefSquadManager : CampaignBehaviorBase
     {
-        // 存储所有 Settlement 与对应 FiefSettlementData 的映射
         private Dictionary<Settlement, FiefSettlementData> _fiefDataMap = new Dictionary<Settlement, FiefSettlementData>();
         private List<Settlement> _savedSettlements = new();
         private List<TroopRoster> _savedRosters = new();
 
         public override void RegisterEvents()
         {
-            // 注册每周事件
-            //CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
         }
@@ -804,16 +808,11 @@ namespace ModifiedArmy.Models.Fief
             {
                 _savedSettlements.Clear();
                 _savedRosters.Clear();
-
                 foreach (var kvp in _fiefDataMap)
                 {
                     var settlement = kvp.Key;
                     var data = kvp.Value;
-
-                    if (settlement.OwnerClan != Clan.PlayerClan)
-                        continue;
-
-                    // 只保存有效数据（非空 roster）
+                    if (settlement.OwnerClan != Clan.PlayerClan) continue;
                     var roster = data.GetAsTroopRoster();
                     if (roster.Count > 0)
                     {
@@ -821,26 +820,17 @@ namespace ModifiedArmy.Models.Fief
                         _savedRosters.Add(roster);
                     }
                 }
-
                 int total = _savedRosters.Sum(r => r?.Count ?? 0);
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief Squad Mod] Saving {_savedSettlements.Count} settlements with {total} unique troop types.",
-                    new Color(0.2f, 0.8f, 1.0f)
-                ));
+                ModLogger.Info($"[Fief Squad Mod] Saving {_savedSettlements.Count} settlements with {total} unique troop types.");
             }
 
-            // 同步字段（加载或保存）
             dataStore.SyncData("_savedSettlements", ref _savedSettlements);
             dataStore.SyncData("_savedRosters", ref _savedRosters);
 
             if (!dataStore.IsSaving)
             {
-                // 加载后日志（可选保留）
                 int total = _savedRosters.Sum(r => r?.Count ?? 0);
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief Squad Mod] Loaded raw save data: {_savedSettlements?.Count ?? 0} settlements, {total} unique troop types.",
-                    new Color(0.2f, 1.0f, 0.6f)
-                ));
+                ModLogger.Info($"[Fief Squad Mod] Loaded raw save data: {_savedSettlements?.Count ?? 0} settlements, {total} unique troop types.");
             }
         }
 
@@ -850,198 +840,171 @@ namespace ModifiedArmy.Models.Fief
             InitializeFiefData();
         }
 
+        /// <summary>
+        /// Initializes fief data for all player-owned villages, castles, and towns.
+        /// Also restores saved squad compositions from loaded data.
+        /// </summary>
         public void InitializeFiefData()
         {
             _fiefDataMap.Clear();
-
-            // 初始化所有有效领地
             foreach (var settlement in Settlement.All)
             {
-                if (settlement.OwnerClan != Clan.PlayerClan)
-                    continue;
-                if (settlement.IsVillage || settlement.IsCastle || settlement.IsTown)
+                if (settlement.OwnerClan != Clan.PlayerClan) continue;
+                if (settlement.IsCastle || settlement.IsTown)
                 {
                     _fiefDataMap[settlement] = new FiefSettlementData(settlement);
                 }
             }
 
-            // 用存档数据填充
             if (_savedSettlements != null && _savedRosters != null && _savedSettlements.Count == _savedRosters.Count)
             {
                 for (int i = 0; i < _savedSettlements.Count; i++)
                 {
                     var settlement = _savedSettlements[i];
                     var roster = _savedRosters[i];
-
                     if (settlement != null && roster != null && _fiefDataMap.TryGetValue(settlement, out var data))
                     {
-                        data.FillFromTroopRoster(roster); 
+                        data.FillFromTroopRoster(roster);
                     }
                 }
             }
 
-            // 3. 打印最终状态
-            FiefSettlementData.LogFillSummaryAndReset();
-
             int total = _fiefDataMap.Values.Sum(d => d.GetAsTroopRoster().Count);
-            InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief Squad Mod] Loaded {_fiefDataMap.Count} fiefs containing {total} unique troop types.",
-                    new Color(0.2f, 0.9f, 0.2f)
-                ));
+            ModLogger.Info($"[Fief Squad Mod] Initialized {_fiefDataMap.Count} fiefs with {total} total troops.");
         }
 
-        //private void OnWeeklyTick()
         private void OnDailyTick()
         {
             foreach (var data in _fiefDataMap.Values)
             {
                 data?.WeeklyUpdate();
             }
-
-            InformationManager.DisplayMessage(new InformationMessage(
-                "[Fief Squad Mod] Weekly squad reinforcement completed.",
-                new Color(0.4f, 0.85f, 0.4f)
-            ));
+            ModLogger.Debug("[Fief Squad Mod] Daily reinforcement update completed.");
         }
 
         /// <summary>
-        /// 获取指定 Settlement 的 FiefSettlementData。
+        /// Retrieves fief data for a specific settlement.
         /// </summary>
-        /// <param name="settlement">目标 Settlement。</param>
-        /// <returns>对应的 FiefSettlementData，如果不存在则返回 null。</returns>
         public FiefSettlementData GetFiefData(Settlement settlement)
         {
             return _fiefDataMap.TryGetValue(settlement, out var data) ? data : null;
         }
 
         /// <summary>
-        /// 获取所有定居点的采邑数据。
+        /// Gets all fief data mappings.
         /// </summary>
-        /// <returns>包含所有 FiefSettlementData 的字典。</returns>
         public Dictionary<Settlement, FiefSettlementData> GetAllFiefData()
         {
             return _fiefDataMap;
         }
 
         /// <summary>
-        /// 获取指定定居点的所有采邑士兵（展开为单个 CharacterObject 列表）。
+        /// Returns all fief troops in a settlement as a flat list.
         /// </summary>
-        /// <param name="settlement">目标定居点</param>
-        /// <returns>包含所有采邑士兵的列表；若无数据则返回空列表</returns>
         public List<CharacterObject> GetAllFiefTroopsForSettlement(Settlement settlement)
         {
-            if (settlement == null)
-                return new List<CharacterObject>();
-
-            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData))
-                return new List<CharacterObject>();
-
+            if (settlement == null) return new List<CharacterObject>();
+            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData)) return new List<CharacterObject>();
             var allTroops = new List<CharacterObject>();
             foreach (var squad in fiefData.GetFiefSquads())
             {
-                if (squad.IsFilled) 
-                {
-                    allTroops.AddRange(squad.allTroops);
-                }
+                allTroops.AddRange(squad.AllTroops);
             }
-
             return allTroops;
         }
 
-
         /// <summary>
-        /// 获取所有定居点中所有FiefSquad列表。
+        /// Returns all fief squads in a settlement as a list of troop lists.
+        /// Each inner list represents one squad.
         /// </summary>
-        /// <returns>一个包含多个列表的列表，每个内层列表代表一个小队的所有士兵。</returns>
-        /// 
         public List<List<CharacterObject>> GetAllFiefSquads(Settlement settlement)
         {
-            if (settlement == null)
-                return new List<List<CharacterObject>>();
-
-            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData))
-                return new List<List<CharacterObject>>();
-
+            if (settlement == null) return new List<List<CharacterObject>>();
+            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData)) return new List<List<CharacterObject>>();
             var allFiefSquads = new List<List<CharacterObject>>();
-
             foreach (var squad in fiefData.GetFiefSquads())
             {
-                if (squad.IsFilled) 
-                {
-                    allFiefSquads.Add(squad.allTroops);
-                }
+                allFiefSquads.Add(squad.AllTroops.ToList());
             }
-
             return allFiefSquads;
         }
 
+        /// <summary>
+        /// Returns the combined troop roster of all fief squads in a settlement.
+        /// </summary>
         public TroopRoster GetFiefTroopRoster(Settlement settlement)
         {
-            if (settlement == null)
-                return TroopRoster.CreateDummyTroopRoster();
-
+            if (settlement == null) return TroopRoster.CreateDummyTroopRoster();
             if (_fiefDataMap.TryGetValue(settlement, out FiefSettlementData data) && data != null)
             {
                 return data.GetAsTroopRoster();
             }
-
             return TroopRoster.CreateDummyTroopRoster();
         }
 
-        // <summary>
-        /// 从指定定居点征召所有可用的采邑小队到目标部队。
+        /// <summary>
+        /// Recruits all available fief squads from a settlement into the target mobile party.
         /// </summary>
         public void RecruitFiefSquadsFromSettlement(Settlement settlement, MobileParty targetParty)
         {
             if (settlement == null || targetParty == null)
             {
-                InformationManager.DisplayMessage(new InformationMessage("[Fief] 征召参数无效。", new Color(1f, 0.3f, 0.3f)));
+                ModLogger.Error("[Fief] Recruitment failed: invalid parameters.");
                 return;
             }
-
             if (_fiefDataMap.TryGetValue(settlement, out var data))
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 开始从 {settlement.Name} 征召采邑军队...",
-                    new Color(0.4f, 0.8f, 1f)));
+                ModLogger.Info($"[Fief] Starting recruitment from {settlement.Name}...");
                 data.RecruitAvailableSquads(targetParty);
             }
             else
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 未找到 {settlement.Name} 的采邑数据（可能非玩家领地）。",
-                    new Color(1f, 0.7f, 0.3f)));
+                ModLogger.Warn($"[Fief] No fief data found for {settlement.Name} (likely not player-owned).");
             }
         }
 
-        // ====== 【改动点 5】新增统一解散接口 ======
         /// <summary>
-        /// 解散指定定居点的采邑军队。
-        /// - 总是重置所有 squads 的征召状态（允许 WeeklyUpdate 重新填充）
-        /// - 如果提供了 mobileParty，则尝试从中回收士兵填充未满 squad，并从 roster 中移除
+        /// Disbands all fief squads in a settlement.
+        /// Optionally recovers troops from a mobile party to refill squads.
         /// </summary>
         public void DisbandFiefSquadsFromSettlement(Settlement settlement, MobileParty mobileParty = null)
         {
             if (settlement == null)
             {
-                InformationManager.DisplayMessage(new InformationMessage("[Fief] 解散失败：定居点为空。", new Color(1f, 0.3f, 0.3f)));
+                ModLogger.Error("[Fief] Disband failed: settlement is null.");
                 return;
             }
-
             if (_fiefDataMap.TryGetValue(settlement, out var data))
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 开始解散 {settlement.Name} 的采邑军队...",
-                    new Color(0.9f, 0.8f, 0.3f)));
-
-                data.DisbandAndRefillFromParty(mobileParty); // mobileParty 可为 null
+                ModLogger.Info($"[Fief] Disbanding squads in {settlement.Name}...");
+                data.DisbandAndRefillFromParty(mobileParty);
             }
             else
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief] 未找到 {settlement.Name} 的采邑数据（可能非玩家领地）。",
-                    new Color(1f, 0.7f, 0.3f)));
+                ModLogger.Warn($"[Fief] No fief data found for {settlement.Name} (likely not player-owned).");
             }
         }
+
+        /// <summary>
+        /// Gets the total number of fief squads in the given settlement.
+        /// Returns 0 if the settlement is null, not player-owned, or has no fief data.
+        /// </summary>
+        public int GetTotalFiefSquadCount(Settlement settlement)
+        {
+            if (settlement == null || !_fiefDataMap.TryGetValue(settlement, out var data))
+                return 0;
+            return data.GetFiefSquads().Count;
+        }
+
+        /// <summary>
+        /// Gets the number of fief squads that can currently be conscripted (i.e., non-empty and not in cooldown).
+        /// </summary>
+        public int GetRecruitableFiefSquadCount(Settlement settlement)
+        {
+            if (settlement == null || !_fiefDataMap.TryGetValue(settlement, out var data))
+                return 0;
+            return data.GetFiefSquads().Count(squad => squad.CanBeConscripted && squad.TotalTroopCount > 0);
+        }
+
     }
 }

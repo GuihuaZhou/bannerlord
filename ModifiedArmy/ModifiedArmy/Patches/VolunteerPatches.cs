@@ -1,174 +1,151 @@
-﻿
-
-using HarmonyLib;
+﻿using HarmonyLib;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Collections.ObjectModel;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.CharacterDevelopment;
-using TaleWorlds.CampaignSystem.GameComponents;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.Core;
-using TaleWorlds.Engine;
 using TaleWorlds.Library;
-using TaleWorlds.MountAndBlade;
 using TaleWorlds.ObjectSystem;
-using System.Collections.ObjectModel;
-using TaleWorlds.ScreenSystem; // 确保添加了这一行
-using static System.Net.Mime.MediaTypeNames;
-
 
 namespace ModifiedArmy.Patches
 {
-    // ====== 新增：士兵类型枚举 ======
-    public enum SoldierType
-    {
-        Levy,          // 征召兵（basic）
-        Noble,         // 贵族兵（elite）
-        Professional,   // 职业兵（其他）
-        Other
-    }
-
-    // ====== 新增：全局分类器（支持增量构建）======
+    /// <summary>
+    /// Global classifier that maps CharacterObject to FiefTroopType.
+    /// Supports propagation through the entire upgrade tree based on culture-defined base troops.
+    /// </summary>
     public static class SoldierTypeClassifier
     {
-        private static readonly Dictionary<CharacterObject, SoldierType> _typeMap = new();
+        private static readonly Dictionary<CharacterObject, FiefTroopType> _typeMap = new();
 
-        // 提供只读视图（线程安全非必需，但 API 更干净）
-        public static IReadOnlyDictionary<CharacterObject, SoldierType> TypeMap =>
-            new ReadOnlyDictionary<CharacterObject, SoldierType>(_typeMap);
+        /// <summary>
+        /// Read-only view of the troop type mapping for external access.
+        /// </summary>
+        public static IReadOnlyDictionary<CharacterObject, FiefTroopType> TypeMap =>
+            new ReadOnlyDictionary<CharacterObject, FiefTroopType>(_typeMap);
 
-        public static SoldierType GetSoldierType(CharacterObject troop)
+        /// <summary>
+        /// Retrieves the fief troop type for a given character.
+        /// Returns Fief_Other if not found or if the input is null.
+        /// </summary>
+        public static FiefTroopType GetSoldierType(CharacterObject troop)
         {
             if (troop == null)
-            {
-                InformationManager.DisplayMessage(new InformationMessage("troop is null", new Color(1f, 0.8f, 0.3f)));
-                return SoldierType.Other;
-            }
+                return FiefTroopType.Fief_Other;
 
             if (_typeMap.TryGetValue(troop, out var type))
-            {
                 return type;
-            }
-            else
-            {
-                // 新增日志：当找不到缓存类型时，打印 troop 信息
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Fief Debug] SoldierTypeClassifier 缓存未命中: troop = '{troop.Name}' (ID: {troop.StringId ?? "null"}, IsHero: {troop.IsHero}, Tier: {troop.Tier})",
-                    new Color(1f, 0.8f, 0.3f) // 橙黄色，表示警告
-                ));
-                return SoldierType.Other;
-            }
+
+            // Cache miss: likely an unregistered troop (e.g., from another mod or custom unit)
+            ModLogger.Warn($"[Fief] Cache miss for troop: '{troop.Name}' (ID: {troop.StringId ?? "null"}, Tier: {troop.Tier})");
+            return FiefTroopType.Fief_Other;
         }
 
-        // 处理单个文化的兵种列表（来自 BuildAndCacheUnifiedCandidates）
+        /// <summary>
+        /// Processes all base troops of a given culture and propagates their types through the upgrade tree.
+        /// </summary>
         public static void ProcessCultureTroops(CultureObject culture, List<CharacterWeightPair> pairs)
         {
-            var processed = new List<(string name, SoldierType type)>();
-
             foreach (var pair in pairs)
             {
                 if (pair.Character == null) continue;
 
-                // 映射 TroopType → SoldierType
-                SoldierType soldierType = pair.Type switch
+                FiefTroopType soldierType = pair.Type switch
                 {
-                    TroopType.Basic => SoldierType.Levy,
-                    TroopType.EliteBasic => SoldierType.Noble,
-                    _ => SoldierType.Professional
+                    FiefTroopType.Fief_Militia => FiefTroopType.Fief_Militia,
+                    FiefTroopType.Fief_Retinue => FiefTroopType.Fief_Retinue,
+                    _ => FiefTroopType.Fief_Sergeant
                 };
 
-                // 游戏保证：此 troop 尚未被其他文化处理过
                 PropagateTypeThroughUpgradeTree(pair.Character, soldierType);
-
-                // 记录用于日志
-                processed.Add(($"{pair.Character.Name}", soldierType));
             }
-
-            // 打印日志到游戏内消息栏
-            var logLines = new List<string> { $"[Fief] 已处理文化 '{culture.Name}' 的兵种分类：" };
-            foreach (var (name, type) in processed)
-            {
-                string typeName = type switch
-                {
-                    SoldierType.Levy => "征召兵",
-                    SoldierType.Noble => "贵族兵",
-                    SoldierType.Professional => "职业兵"
-                };
-                logLines.Add($"  • {name} → {typeName}");
-            }
-            InformationManager.DisplayMessage(new InformationMessage(string.Join("\n", logLines)));
         }
 
+        /// <summary>
+        /// Initializes the classifier by processing all cultures registered in CultureBasicTroopManager.
+        /// This should be called once after all modules are loaded.
+        /// </summary>
         public static void InitializeAll()
         {
-            InformationManager.DisplayMessage(new InformationMessage(
-                "[Fief] 开始初始化 SoldierTypeClassifier 分类器...",
-                new Color(0.6f, 0.9f, 1f)));
+            ModLogger.Info("[Fief] Initializing SoldierTypeClassifier...");
 
             foreach (var kvp in CultureBasicTroopManager.Data)
             {
                 var culture = kvp.Key;
                 var entries = kvp.Value;
-
                 var characterWeightPairList = new List<CharacterWeightPair>();
                 var seenTroops = new HashSet<CharacterObject>();
 
-                // 重建 pairs（复用 BuildAndCacheUnifiedCandidates 中的逻辑）
-                var allRelevantTypes = new List<string> { "infantry", "twohanded", "ranged", "cavalry", "horsearcher", "basic", "elite" };
+                var allRelevantTypes = new List<string>
+                {
+                    "infantry", "twohanded", "ranged", "cavalry", "horsearcher", "basic", "elite"
+                };
+
                 foreach (var type in allRelevantTypes)
                 {
                     if (entries.TryGetValue(type, out var entry) && seenTroops.Add(entry.Troop))
                     {
-                        TroopType troopType = type switch
+                        FiefTroopType troopType = type switch
                         {
-                            "basic" => TroopType.Basic,
-                            "elite" => TroopType.EliteBasic,
-                            _ => TroopType.Professional
+                            "basic" => FiefTroopType.Fief_Militia,
+                            "elite" => FiefTroopType.Fief_Retinue,
+                            _ => FiefTroopType.Fief_Sergeant
                         };
                         characterWeightPairList.Add(new CharacterWeightPair(entry.Troop, entry.Weight, troopType));
                     }
                 }
 
-                // 处理该文化的所有兵种（含升级树）
+                // Fallback to vanilla basic/elite troops if no custom troops are defined
+                if (characterWeightPairList.Count == 0)
+                {
+                    if (culture.EliteBasicTroop != null && seenTroops.Add(culture.EliteBasicTroop))
+                    {
+                        characterWeightPairList.Add(new CharacterWeightPair(culture.EliteBasicTroop, 1, FiefTroopType.Fief_Retinue));
+                    }
+                    else if (culture.BasicTroop != null && seenTroops.Add(culture.BasicTroop))
+                    {
+                        characterWeightPairList.Add(new CharacterWeightPair(culture.BasicTroop, 15, FiefTroopType.Fief_Militia));
+                    }
+                }
+
                 ProcessCultureTroops(culture, characterWeightPairList);
             }
 
-            InformationManager.DisplayMessage(new InformationMessage(
-                $"[Fief] SoldierTypeClassifier 初始化完成，共处理 {TypeMap.Count} 个兵种。",
-                new Color(0.6f, 0.9f, 1f)));
+            ModLogger.Info($"[Fief] SoldierTypeClassifier initialized. Cached {TypeMap.Count} troops.");
         }
 
-        // DFS 遍历升级树并标记类型
-        private static void PropagateTypeThroughUpgradeTree(CharacterObject current, SoldierType type)
+        /// <summary>
+        /// Recursively assigns the given troop type to the entire upgrade tree starting from 'current'.
+        /// </summary>
+        private static void PropagateTypeThroughUpgradeTree(CharacterObject current, FiefTroopType type)
         {
             if (current == null) return;
+            _typeMap[current] = type; // Overwrite if already present (shouldn't happen in practice)
 
-            // 即使已存在也不报错（理论上不会发生，因游戏保证唯一性）
-            _typeMap[current] = type;
-
-            if (current.UpgradeTargets == null || current.UpgradeTargets?.Length == 0)
-                return;
-
-            foreach (var upgrade in current.UpgradeTargets)
+            if (current.UpgradeTargets?.Length > 0)
             {
-                if (upgrade == null) continue;
-                PropagateTypeThroughUpgradeTree(upgrade, type);
+                foreach (var upgrade in current.UpgradeTargets)
+                {
+                    if (upgrade != null)
+                    {
+                        PropagateTypeThroughUpgradeTree(upgrade, type);
+                    }
+                }
             }
         }
     }
 
-    // 这个类代表一个包含 基础troop, Weight, Type 的单元
+    /// <summary>
+    /// Represents a weighted troop candidate with an assigned fief type.
+    /// </summary>
     public class CharacterWeightPair
     {
-        public CharacterObject Character { get; set; } // 使用 CharacterObject
+        public CharacterObject Character { get; set; }
         public float Weight { get; set; }
-        public TroopType Type { get; set; }
+        public FiefTroopType Type { get; set; }
 
-        public CharacterWeightPair(CharacterObject character, float weight, TroopType type)
+        public CharacterWeightPair(CharacterObject character, float weight, FiefTroopType type)
         {
             Character = character;
             Weight = weight;
@@ -176,52 +153,44 @@ namespace ModifiedArmy.Patches
         }
     }
 
-    // 记录一个culture的全部基础troop和weight
+    /// <summary>
+    /// Caches volunteer candidate pools per culture, including weights and fief types.
+    /// </summary>
     public class CultureVolunteerGroupsCache
     {
-        public static CultureVolunteerGroupsCache Instance { get; private set; } = new CultureVolunteerGroupsCache();
+        public static CultureVolunteerGroupsCache Instance { get; } = new CultureVolunteerGroupsCache();
 
-        // 使用 CultureObject 作为 Key
         public Dictionary<CultureObject, List<CharacterWeightPair>> CultureVolunteerData { get; private set; }
 
         private CultureVolunteerGroupsCache()
         {
             CultureVolunteerData = new Dictionary<CultureObject, List<CharacterWeightPair>>();
-            // LoadData(); // 不再需要手动加载，由 Patch_CultureObject_Deserialize 触发
         }
 
-        // 内部方法，供 Patch_CultureObject_Deserialize 调用以填充缓存
         internal void AddOrReplaceVolunteerData(CultureObject culture, List<CharacterWeightPair> data)
         {
             CultureVolunteerData[culture] = data;
         }
 
-        // 1. 添加 GetVolunteerCandidateCache 方法，供外部获取缓存数据 (修正位置)
-        // 该方法现在基于 CultureObject 而非 Settlement 或 StringId
         public List<CharacterWeightPair> GetVolunteerCandidateCache(CultureObject cultureObj)
         {
-            if (cultureObj == null || !CultureVolunteerData.TryGetValue(cultureObj, out List<CharacterWeightPair> volunteerList))
-            {
-                return new List<CharacterWeightPair>(); // 如果没有配置或 CultureObject 为 null，返回空列表
-            }
-
-            // 直接返回缓存的列表，或者可以返回一个副本以防止外部修改
-            // return new List<CharacterWeightPair>(volunteerList); // 返回副本
-            return volunteerList; // 返回原始列表 (如果外部保证不修改，这样更高效)
+            if (cultureObj == null || !CultureVolunteerData.TryGetValue(cultureObj, out var list))
+                return new List<CharacterWeightPair>();
+            return list;
         }
 
-        // 重载方法，接受 Settlement 参数，内部获取 CultureObject
         public List<CharacterWeightPair> GetVolunteerCandidateCache(Settlement settlement)
         {
-            if (settlement == null) return new List<CharacterWeightPair>();
-            return GetVolunteerCandidateCache(settlement.Culture); // 使用 CultureObject
+            return settlement == null ? new List<CharacterWeightPair>() : GetVolunteerCandidateCache(settlement.Culture);
         }
     }
 
-    // 管理 CultureObject 反序列化时的数据读取
+    /// <summary>
+    /// Manages culture-specific base troop definitions loaded from XML during deserialization.
+    /// </summary>
     public static class CultureBasicTroopManager
     {
-        public static Dictionary<CultureObject, Dictionary<string, CultureBasicTroopManager.TroopEntry>> Data { get; } = new Dictionary<CultureObject, Dictionary<string, CultureBasicTroopManager.TroopEntry>>();
+        public static Dictionary<CultureObject, Dictionary<string, TroopEntry>> Data { get; } = new();
 
         public class TroopEntry
         {
@@ -236,13 +205,11 @@ namespace ModifiedArmy.Patches
         }
     }
 
-
     [HarmonyPatch(typeof(CultureObject), "Deserialize")]
     public static class Patch_CultureObject_Deserialize
     {
         public static void Postfix(CultureObject __instance, MBObjectManager objectManager, XmlNode node)
         {
-            // === 1. 读取自定义 troop 和权重 ===
             var entries = new Dictionary<string, CultureBasicTroopManager.TroopEntry>();
             var typeMap = new Dictionary<string, (string troopAttr, string weightAttr)>
             {
@@ -272,53 +239,46 @@ namespace ModifiedArmy.Patches
             }
 
             CultureBasicTroopManager.Data[__instance] = entries;
-
-            // === 2. 预计算并缓存 candidates (统一候选池，不再区分 ContextType) ===
             BuildAndCacheUnifiedCandidates(__instance, entries);
         }
 
         private static void BuildAndCacheUnifiedCandidates(CultureObject culture, Dictionary<string, CultureBasicTroopManager.TroopEntry> entries)
         {
             var characterWeightPairList = new List<CharacterWeightPair>();
-
-            // 遍历所有预定义的类型，将它们添加到统一的候选池中
-            var allRelevantTypes = new List<string> { "infantry", "twohanded", "ranged", "cavalry", "horsearcher", "basic", "elite" };
-
             var seenTroops = new HashSet<CharacterObject>();
+
+            var allRelevantTypes = new List<string>
+            {
+                "infantry", "twohanded", "ranged", "cavalry", "horsearcher", "basic", "elite"
+            };
 
             foreach (var type in allRelevantTypes)
             {
-                if (entries.TryGetValue(type, out var entry) && seenTroops.Add(entry.Troop)) // 避免重复添加同一个单位
+                if (entries.TryGetValue(type, out var entry) && seenTroops.Add(entry.Troop))
                 {
-                    // 确定 TroopType
-                    TroopType troopType = type switch
+                    FiefTroopType troopType = type switch
                     {
-                        "basic" => TroopType.Basic,
-                        "elite" => TroopType.EliteBasic,
-                        _ => TroopType.Professional // 其他类型都视为职业军
+                        "basic" => FiefTroopType.Fief_Militia,
+                        "elite" => FiefTroopType.Fief_Retinue,
+                        _ => FiefTroopType.Fief_Sergeant
                     };
-
-                    // 添加到列表
                     characterWeightPairList.Add(new CharacterWeightPair(entry.Troop, entry.Weight, troopType));
                 }
             }
 
-            // 如果列表为空，添加原版 fallback (basic_troop 或 elite_basic_troop)
+            // Fallback to vanilla troops if no valid custom troops were found
             if (characterWeightPairList.Count == 0)
             {
-                // 尝试 elite_basic_troop
                 if (culture.EliteBasicTroop != null && seenTroops.Add(culture.EliteBasicTroop))
                 {
-                    characterWeightPairList.Add(new CharacterWeightPair(culture.EliteBasicTroop, 1, TroopType.EliteBasic));
+                    characterWeightPairList.Add(new CharacterWeightPair(culture.EliteBasicTroop, 1, FiefTroopType.Fief_Retinue));
                 }
-                // 如果 elite_basic_troop 也没有或不使用，则尝试 basic_troop
                 else if (culture.BasicTroop != null && seenTroops.Add(culture.BasicTroop))
                 {
-                    characterWeightPairList.Add(new CharacterWeightPair(culture.BasicTroop, 15, TroopType.Basic));
+                    characterWeightPairList.Add(new CharacterWeightPair(culture.BasicTroop, 15, FiefTroopType.Fief_Militia));
                 }
             }
 
-            // 将构建好的统一候选池列表添加到全局缓存中
             CultureVolunteerGroupsCache.Instance.AddOrReplaceVolunteerData(culture, characterWeightPairList);
         }
     }
