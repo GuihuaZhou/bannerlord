@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Patches;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,6 +39,7 @@ namespace ModifiedArmy
         {
             CampaignEvents.OnNewGameCreatedPartialFollowUpEndEvent.AddNonSerializedListener(this, OnNewGameCreatedPartialFollowUpEnd);
             CampaignEvents.OnGameLoadedEvent.AddNonSerializedListener(this, OnGameLoaded);
+            CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
         }
 
         public override void SyncData(IDataStore dataStore) { }
@@ -48,6 +50,11 @@ namespace ModifiedArmy
         }
 
         private void OnGameLoaded(CampaignGameStarter starter)
+        {
+            CampaignState.IsReady = true;
+        }
+
+        private void OnNewGameCreated(CampaignGameStarter starter)
         {
             CampaignState.IsReady = true;
         }
@@ -67,11 +74,15 @@ namespace ModifiedArmy
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
                 campaignStarter.AddModel(new NewVolunteerModel());
+
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
+                campaignStarter.AddModel(new FiefSettlementTaxModel());
+                //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
+                //campaignStarter.AddModel(new FiefPartySizeLimitModel());
 
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
-                campaignStarter.AddBehavior(new FiefSquadManager()); 
+                campaignStarter.AddBehavior(new FiefPartyManager());
 
                 string msg = "[MOD] NewVolunteerModel: Initialization complete.";
                 InformationManager.DisplayMessage(new InformationMessage(msg));

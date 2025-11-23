@@ -1,7 +1,9 @@
-﻿using ModifiedArmy.Tool;
+﻿using HarmonyLib;
+using ModifiedArmy.Tool;
 using SandBox.View.Menu;
 using System;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.GameMenus;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
@@ -46,27 +48,26 @@ namespace ModifiedArmy.Models.Fief
         {
             if (settlement == null)
             {
-                MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT",
-                    new TextObject("{=!}You are not in a valid settlement."), false);
+                MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", new TextObject("{=!}You are not in a valid settlement."), false);
                 return;
             }
 
-            var fiefManager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+            var fiefManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
             if (fiefManager == null)
             {
-                MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT",
-                    new TextObject("{=!}Fief squad manager is not available."), false);
+                MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", new TextObject("{=!}Fief squad manager is not available."), false);
                 return;
             }
 
-            int totalSquads = fiefManager.GetTotalFiefSquadCount(settlement);
-            int recruitableSquads = fiefManager.GetRecruitableFiefSquadCount(settlement);
-
             var text = new TextObject(
-                "{=ModifiedArmy_Fief_Intro}You have arrived at your fief. There are {TOTAL} fief squads here, of which {RECRUITABLE} can be recruited."
+                "{=ModifiedArmy_Fief_Intro}" +
+                "You are at your fief. You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
+                   "and {WAITCYCLE} are on their way back to their homes and will become available for recruitment again after a short while."
             );
-            text.SetTextVariable("TOTAL", totalSquads.ToString());
-            text.SetTextVariable("RECRUITABLE", recruitableSquads.ToString());
+
+            text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableRecruitCount(settlement).ToString());
+            text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
+            text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }
@@ -168,7 +169,7 @@ namespace ModifiedArmy.Models.Fief
                 (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
                 (args) =>
                 {
-                    var manager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
                     var playerParty = MobileParty.MainParty;
                     Settlement currentSettlement = Settlement.CurrentSettlement;
 
@@ -178,7 +179,7 @@ namespace ModifiedArmy.Models.Fief
                         return;
                     }
 
-                    manager.RecruitFiefSquadsFromSettlement(currentSettlement, playerParty);
+                    manager.RecruitFiefTroopsFromSettlement(currentSettlement, playerParty);
                 },
                 isLeave: false, index: -1, isRepeatable: false
             );
@@ -191,7 +192,7 @@ namespace ModifiedArmy.Models.Fief
                 (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
                 (args) =>
                 {
-                    var manager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
                     var playerParty = MobileParty.MainParty;
                     Settlement currentSettlement = Settlement.CurrentSettlement;
 
@@ -201,7 +202,7 @@ namespace ModifiedArmy.Models.Fief
                         return;
                     }
 
-                    manager.DisbandFiefSquadsFromSettlement(currentSettlement, playerParty);
+                    manager.DisbandAndReturnTroops(currentSettlement, playerParty);
                 },
                 isLeave: false, index: -1, isRepeatable: false
             );
@@ -221,7 +222,7 @@ namespace ModifiedArmy.Models.Fief
                         return;
                     }
 
-                    var fiefManager = Campaign.Current.GetCampaignBehavior<FiefSquadManager>();
+                    var fiefManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
                     if (fiefManager == null)
                     {
                         ModLogger.Error("[Fief] FiefSquadManager not found.");
@@ -255,6 +256,36 @@ namespace ModifiedArmy.Models.Fief
                 },
                 isLeave: true, index: -1, isRepeatable: false
             );
+        }
+    }
+
+
+    [HarmonyPatch(typeof(CampaignGameStarter))]
+    [HarmonyPatch("AddGameMenuOption")]
+    public static class AddGameMenuOptionPatch
+    {
+        // 拦截 AddGameMenuOption 调用
+        public static bool Prefix(
+            CampaignGameStarter __instance,
+            string menuId,
+            string optionId,
+            string optionText,
+            GameMenuOption.OnConditionDelegate condition,
+            GameMenuOption.OnConsequenceDelegate consequence,
+            bool isLeave,
+            int index,
+            bool isRepeatable,
+            object relatedObject)
+        {
+            // 如果是城镇的招募按钮，直接跳过注册
+            if (optionId == "recruit_volunteers" &&
+                (menuId == "town" || menuId == "castle" || menuId == "village"))
+            {
+                return false; // 阻止注册该菜单项
+            }
+
+            // 其他菜单项正常注册
+            return true;
         }
     }
 }

@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using TaleWorlds.Library;
+﻿using TaleWorlds.Library;
 
 namespace ModifiedArmy.Tool
 {
@@ -9,8 +6,6 @@ namespace ModifiedArmy.Tool
     /// 通用 Mod 日志工具类，适用于所有子系统。
     /// 可通过 EnableLogging 全局开关控制输出。
     /// </summary>
-    /// 
-
     public static class ModLogger
     {
         /// <summary>
@@ -18,13 +13,19 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static bool EnableLogging = true;
 
+        // 预定义日志颜色（便于维护）
+        private static readonly Color InfoColor = Color.White;
+        private static readonly Color DebugColor = new Color(0.6f, 0.95f, 0.7f);   // 淡青绿
+        private static readonly Color WarnColor = new Color(1.0f, 0.8f, 0.2f);     // 橙黄
+        private static readonly Color ErrorColor = new Color(1.0f, 0.3f, 0.3f);    // 红色
+
         /// <summary>
         /// 输出普通信息日志。
         /// </summary>
         public static void Info(string message, Color? color = null)
         {
             if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message, color ?? Color.White));
+            InformationManager.DisplayMessage(new InformationMessage(message, color ?? InfoColor));
         }
 
         /// <summary>
@@ -33,8 +34,7 @@ namespace ModifiedArmy.Tool
         public static void Debug(string message, Color? color = null)
         {
             if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message,
-                color ?? new Color(0.8f, 0.9f, 0.4f)));
+            InformationManager.DisplayMessage(new InformationMessage(message, color ?? DebugColor));
         }
 
         /// <summary>
@@ -43,8 +43,7 @@ namespace ModifiedArmy.Tool
         public static void Warn(string message, Color? color = null)
         {
             if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message,
-                color ?? new Color(1f, 0.7f, 0.2f)));
+            InformationManager.DisplayMessage(new InformationMessage(message, color ?? WarnColor));
         }
 
         /// <summary>
@@ -53,8 +52,7 @@ namespace ModifiedArmy.Tool
         public static void Error(string message, Color? color = null)
         {
             // 错误日志通常应始终可见，便于排查问题
-            InformationManager.DisplayMessage(new InformationMessage(message,
-                color ?? new Color(1f, 0.3f, 0.3f)));
+            InformationManager.DisplayMessage(new InformationMessage(message, color ?? ErrorColor));
         }
     }
 }
