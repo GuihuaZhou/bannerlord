@@ -202,7 +202,7 @@ namespace ModifiedArmy.Models.Fief
                         return;
                     }
 
-                    manager.DisbandAndReturnTroops(currentSettlement, playerParty);
+                    manager.ReturnTroopsToSettlement(currentSettlement, playerParty);
                 },
                 isLeave: false, index: -1, isRepeatable: false
             );

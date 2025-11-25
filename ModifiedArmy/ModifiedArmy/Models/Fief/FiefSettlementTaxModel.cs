@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModifiedArmy.Tool;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TaleWorlds.CampaignSystem;
@@ -25,6 +26,17 @@ namespace ModifiedArmy.Models.Fief
             float multiplier = manager.GetFiefTaxationMultiplier(town);
 
             float feudalTax = (float)(original.ResultNumber * multiplier);
+
+            //if (town.OwnerClan == Clan.PlayerClan)
+            //{
+            //    string townName = town.Name?.ToString() ?? "Unknown Town";
+            //    ModLogger.Debug(
+            //        $"[Fief Tax Debug] Player's {townName}: " +
+            //        $"Original tax = {original.ResultNumber:F2}, " +
+            //        $"Multiplier = {multiplier:F2}, " +
+            //        $"Final tax = {feudalTax:F2}"
+            //    );
+            //}
 
             if (!includeDescriptions)
                 return new ExplainedNumber(feudalTax, false, null);

@@ -1,5 +1,5 @@
-﻿using Helpers;
-using ModifiedArmy.Patches;
+﻿using HarmonyLib;
+using Helpers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,6 +7,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Party;
@@ -214,23 +215,43 @@ namespace ModifiedArmy.Models
                 return culture.BasicTroop;
             }
 
-            var characterWeightPairList = CultureVolunteerGroupsCache.Instance.GetVolunteerCandidateCache(culture);
+            var group = BasicTroopGroupManager.GetGroupForCulture(culture);
 
-            if (characterWeightPairList != null && characterWeightPairList.Count > 0)
+            if (group != null)
             {
-                var troops = characterWeightPairList.Select(p => p.Character).ToList();
-                var weights = characterWeightPairList.Select(p => (int)Math.Round(p.Weight)).ToList(); 
+                var allEntries = new List<BasicTroopEntry>();
+                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Retinue]);
+                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Sergeant]);
+                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Militia]);
 
-                // 使用加权随机选择算法
-                CharacterObject selectedTroop = WeightedRandomSelect(troops, weights);
+                if (allEntries.Count > 0)
+                {
+                    var troops = allEntries.Select(entry => entry.Troop).ToList();
+                    var weights = allEntries.Select(entry => entry.Weight).ToList(); 
 
-                return selectedTroop ?? culture.BasicTroop;
+                    CharacterObject selectedTroop = WeightedRandomSelect(troops, weights);
+
+                    return selectedTroop ?? culture.BasicTroop;
+                }
             }
-            else
-            {
-                // 如果缓存中没有数据，返回 fallback
-                return culture.BasicTroop;
-            }
+
+            // fallback：没有自定义配置时，返回原版基础兵
+            return culture.BasicTroop;
+        }
+    }
+
+    /// <summary>
+    /// 禁止原版的志愿兵自动更新机制
+    /// </summary>
+    [HarmonyPatch(typeof(RecruitmentCampaignBehavior))]
+    [HarmonyPatch("UpdateVolunteersOfNotablesInSettlement")]
+    public static class RecruitmentCampaignBehavior_UpdateVolunteers_Patch
+    {
+        // Prefix 返回 false 表示跳过原方法
+        public static bool Prefix()
+        {
+            // 完全禁用原版志愿兵生成逻辑
+            return false;
         }
     }
 }

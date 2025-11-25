@@ -1,5 +1,4 @@
-﻿using ModifiedArmy.Patches;
-using ModifiedArmy.Tool;
+﻿using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -32,6 +31,8 @@ namespace ModifiedArmy.Models.Fief
         {
             base.AddClassDefinition(typeof(FiefTroopDetachment), 1);
             base.AddClassDefinition(typeof(FiefPartyData), 2);
+            base.AddClassDefinition(typeof(FiefWageExemption), 3);
+            base.AddClassDefinition(typeof(FiefWageExemptionManager), 4);
         }
 
         protected override void DefineContainerDefinitions()
@@ -39,6 +40,9 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(Dictionary<CharacterObject, int>));
             base.ConstructContainerDefinition(typeof(List<FiefTroopDetachment>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, FiefPartyData>));
+
+            base.ConstructContainerDefinition(typeof(List<FiefWageExemption>));
+            base.ConstructContainerDefinition(typeof(Dictionary<String, List<FiefWageExemption>>));
         }
     }
 
@@ -53,7 +57,8 @@ namespace ModifiedArmy.Models.Fief
 
         public override void RegisterEvents()
         {
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
+            CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
+            //CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
         }
 
@@ -76,31 +81,31 @@ namespace ModifiedArmy.Models.Fief
         {
             foreach (var settlement in Settlement.All)
             {
-                if (settlement.OwnerClan != Clan.PlayerClan) continue;
+                //if (settlement.OwnerClan != Clan.PlayerClan) continue;
                 if (!settlement.IsCastle && !settlement.IsTown) continue;
                 if (_fiefDataMap.TryGetValue(settlement, out var existingData))
                 {
-                    ModLogger.Debug($"[InitializeFiefData] Refreshing existing data for {settlement.Name}");
-                    existingData.Reflush();
+                    //ModLogger.Debug($"[InitializeFiefData] Refreshing existing data for {settlement.Name}");
+                    existingData.Reflush(true);
                 }
                 else
                 {
-                    ModLogger.Info($"[InitializeFiefData] Creating new fief data for {settlement.Name}");
+                    //ModLogger.Debug($"[InitializeFiefData] Creating new fief data for {settlement.Name}");
                     _fiefDataMap[settlement] = new FiefPartyData(settlement);
                 }
             }
             ModLogger.Info($"[Fief Squad Mod] Initialized {_fiefDataMap.Count} fiefs.");
         }
 
-        private void OnDailyTick()
+        private void OnWeeklyTick()
         {
             int updatedCount = 0;
             foreach (var data in _fiefDataMap.Values)
             {
-                data?.WeeklyUpdate();
+                data.WeeklyUpdate();
                 updatedCount++;
             }
-            ModLogger.Debug($"[Fief Squad Mod] Daily reinforcement update completed for {updatedCount} settlements.");
+            ModLogger.Debug($"[Fief Squad Mod] Weekly reinforcement update completed for {updatedCount} settlements.");
         }
 
         /// <summary>
@@ -127,7 +132,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlement == null) return TroopRoster.CreateDummyTroopRoster();
             if (_fiefDataMap.TryGetValue(settlement, out FiefPartyData data) && data != null)
             {
-                return data.FiefTroops;
+                return data.GetFiefTroopRoster();
             }
             return TroopRoster.CreateDummyTroopRoster();
         }
@@ -135,24 +140,25 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// Recruits all available fief squads from a settlement into the target mobile party.
         /// </summary>
-        public void RecruitFiefTroopsFromSettlement(Settlement settlement, MobileParty targetParty)
+        public int RecruitFiefTroopsFromSettlement(Settlement settlement, MobileParty targetParty)
         {
             if (settlement == null || targetParty == null)
             {
                 ModLogger.Error("[Fief] Recruitment failed: invalid parameters.");
-                return;
+                return 0;
             }
             if (_fiefDataMap.TryGetValue(settlement, out var data))
             {
-                data.RecruitTroopsToParty(targetParty);
+                return data.RecruitTroopsToParty(targetParty);
             }
+            return 0;
         }
 
         /// <summary>
         /// Disbands all fief squads in a settlement.
         /// Optionally recovers troops from a mobile party to refill squads.
         /// </summary>
-        public void DisbandAndReturnTroops(Settlement settlement, MobileParty mobileParty = null)
+        public void ReturnTroopsToSettlement(Settlement settlement, MobileParty mobileParty = null)
         {
             if (settlement == null)
             {
@@ -161,7 +167,7 @@ namespace ModifiedArmy.Models.Fief
             }
             if (_fiefDataMap.TryGetValue(settlement, out var data))
             {
-                data.DisbandAndReturnTroops(mobileParty);
+                data.ReturnTroopsToSettlement(mobileParty);
             }
         }
 
@@ -175,7 +181,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlement == null) return 0;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
-                return data.FiefTroops?.TotalManCount ?? 0;
+                return data.GetReadyFiefTroopCount();
             }
             return 0;
         }

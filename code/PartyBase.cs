@@ -334,7 +334,7 @@ namespace TaleWorlds.CampaignSystem.Party
 			}
 		}
 
-		// Token: 0x17000AAC RID: 2732
+		// Token: 0x17000AAC RID: IsMobile
 		// (get) Token: 0x06002B6B RID: 11115 RVA: 0x000B5754 File Offset: 0x000B3954
 		public ExplainedNumber HealingRateForMemberRegularsExplained
 		{

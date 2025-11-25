@@ -2,18 +2,20 @@
 using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
-using ModifiedArmy.Patches;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.ObjectSystem;
 
 namespace ModifiedArmy
 {
@@ -31,6 +33,7 @@ namespace ModifiedArmy
     public static class CampaignState
     {
         public static bool IsReady { get; set; } = false;
+        public static bool IsNewGame { get; set; } = false;
     }
 
     public class CampaignReadyBehavior : CampaignBehaviorBase
@@ -56,7 +59,7 @@ namespace ModifiedArmy
 
         private void OnNewGameCreated(CampaignGameStarter starter)
         {
-            CampaignState.IsReady = true;
+            CampaignState.IsNewGame = true;
         }
     }
 
@@ -74,18 +77,38 @@ namespace ModifiedArmy
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
                 campaignStarter.AddModel(new NewVolunteerModel());
-
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new FiefSettlementTaxModel());
                 //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
-                //campaignStarter.AddModel(new FiefPartySizeLimitModel());
-
+                campaignStarter.AddModel(new NewPartySizeLimitModel());
+                
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
                 campaignStarter.AddBehavior(new FiefPartyManager());
+                campaignStarter.AddBehavior(new AiRecruitFiefTroopsBehavior());
+                campaignStarter.AddBehavior(new FiefWageExemptionManager());
+
+                CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
+
+                game.ObjectManager.RegisterType<BasicTroopGroup>("BasicTroopGroup", "BasicTroopGroups", 100U, true, false);
+                MBObjectManager.Instance.LoadXML("BasicTroopGroups", true);
 
                 string msg = "[MOD] NewVolunteerModel: Initialization complete.";
                 InformationManager.DisplayMessage(new InformationMessage(msg));
+            }
+        }
+
+        private void OnAfterSessionLaunched(CampaignGameStarter starter)
+        {
+            if (CampaignState.IsNewGame)
+            {
+                Hero.MainHero.ChangeHeroGold(99000);
+
+                var armor = MBObjectManager.Instance.GetObject<ItemObject>("imperial_mail_vest");
+                if (armor != null && armor.HasArmorComponent) 
+                    MobileParty.MainParty.ItemRoster.AddToCounts(armor, 1);
+
+                CampaignState.IsNewGame = false;
             }
         }
     }

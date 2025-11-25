@@ -2,6 +2,15 @@
 
 namespace ModifiedArmy.Tool
 {
+    public enum LogLevel
+    {
+        Debug = 0,
+        Info = 1,
+        Notice = 2,
+        Warn = 3,
+        Error = 4
+    }
+
     /// <summary>
     /// 通用 Mod 日志工具类，适用于所有子系统。
     /// 可通过 EnableLogging 全局开关控制输出。
@@ -9,32 +18,43 @@ namespace ModifiedArmy.Tool
     public static class ModLogger
     {
         /// <summary>
-        /// 是否启用日志输出。设为 false 可关闭所有 Info/Debug/Warn 日志。
+        /// 最低显示级别。设为 Info，则 Info/Notice/Warn/Error 会显示，Debug 不会。
+        /// 默认为 Notice。
         /// </summary>
-        public static bool EnableLogging = true;
+        public static LogLevel MinLogLevel = LogLevel.Notice;
 
         // 预定义日志颜色（便于维护）
-        private static readonly Color InfoColor = Color.White;
         private static readonly Color DebugColor = new Color(0.6f, 0.95f, 0.7f);   // 淡青绿
+        private static readonly Color InfoColor = new Color(0.7f, 0.9f, 1.0f);     // 浅蓝（比纯白更友好）
+        private static readonly Color NoticeColor = new Color(1.0f, 1.0f, 0.6f);   // 淡黄（用于提示性信息）
         private static readonly Color WarnColor = new Color(1.0f, 0.8f, 0.2f);     // 橙黄
         private static readonly Color ErrorColor = new Color(1.0f, 0.3f, 0.3f);    // 红色
-
-        /// <summary>
-        /// 输出普通信息日志。
-        /// </summary>
-        public static void Info(string message, Color? color = null)
-        {
-            if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message, color ?? InfoColor));
-        }
 
         /// <summary>
         /// 输出调试信息。
         /// </summary>
         public static void Debug(string message, Color? color = null)
         {
-            if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message, color ?? DebugColor));
+            if ((int)LogLevel.Debug >= (int)MinLogLevel)
+                InformationManager.DisplayMessage(new InformationMessage(message, color ?? DebugColor));
+        }
+
+        /// <summary>
+        /// 输出普通信息日志。
+        /// </summary>
+        public static void Info(string message, Color? color = null)
+        {
+            if ((int)LogLevel.Info >= (int)MinLogLevel)
+                InformationManager.DisplayMessage(new InformationMessage(message, color ?? InfoColor));
+        }
+
+        /// <summary>
+        /// 输出提示性信息（比 Info 更重要，但非警告）。
+        /// </summary>
+        public static void Notice(string message, Color? color = null)
+        {
+            if ((int)LogLevel.Notice >= (int)MinLogLevel)
+                InformationManager.DisplayMessage(new InformationMessage(message, color ?? NoticeColor));
         }
 
         /// <summary>
@@ -42,8 +62,8 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Warn(string message, Color? color = null)
         {
-            if (!EnableLogging) return;
-            InformationManager.DisplayMessage(new InformationMessage(message, color ?? WarnColor));
+            if ((int)LogLevel.Warn >= (int)MinLogLevel)
+                InformationManager.DisplayMessage(new InformationMessage(message, color ?? WarnColor));
         }
 
         /// <summary>
@@ -51,8 +71,8 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Error(string message, Color? color = null)
         {
-            // 错误日志通常应始终可见，便于排查问题
-            InformationManager.DisplayMessage(new InformationMessage(message, color ?? ErrorColor));
+            if ((int)LogLevel.Error >= (int)MinLogLevel)
+                InformationManager.DisplayMessage(new InformationMessage(message, color ?? ErrorColor));
         }
     }
 }
