@@ -104,7 +104,7 @@ namespace ModifiedArmy
             {
                 Hero.MainHero.ChangeHeroGold(99000);
 
-                var armor = MBObjectManager.Instance.GetObject<ItemObject>("imperial_mail_vest");
+                var armor = MBObjectManager.Instance.GetObject<ItemObject>("northern_coat_of_plates");
                 if (armor != null && armor.HasArmorComponent) 
                     MobileParty.MainParty.ItemRoster.AddToCounts(armor, 1);
 

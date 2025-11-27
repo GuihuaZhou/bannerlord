@@ -308,6 +308,9 @@ namespace ModifiedArmy.Models.Fief
     public class FiefPartyData
     {
         [SaveableField(1)] private Settlement _settlement;
+        [SaveableField(2)] private int RecruitedRetinueCount;
+        [SaveableField(3)] private int RecruitedSergeantCount;
+        [SaveableField(4)] private int RecruitedMilitiaCount;
         /// <summary>
         /// 封邑就绪军队容器
         /// </summary>
@@ -637,11 +640,11 @@ namespace ModifiedArmy.Models.Fief
                 float prosperity = _settlement.Town.Prosperity;
                 if (_settlement.IsTown)
                 {
-                    baseCount = Math.Min(40, ((int)(prosperity / 2500f) + 1) * 10);
+                    baseCount = Math.Min(50, 20 + ((int)(prosperity / 2500f)) * 10);
                 }
                 else if (_settlement.IsCastle)
                 {
-                    baseCount = Math.Min(30, ((int)(prosperity / 500f) + 1) * 10);
+                    baseCount = Math.Min(50, 20 + ((int)(prosperity / 500f)) * 10);
                 }
 
             }
@@ -1057,7 +1060,7 @@ namespace ModifiedArmy.Models.Fief
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
             _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited);
 
-            ModLogger.Notice($"[Fief] Recruited {totalRecruited} troops (R={takenRetinue}, S={takenSergeant}, M={takenMilitia}).");
+            //ModLogger.Notice($"[Fief] Recruited {totalRecruited} troops (R={takenRetinue}, S={takenSergeant}, M={takenMilitia}).");
             return totalRecruited;
         }
 
