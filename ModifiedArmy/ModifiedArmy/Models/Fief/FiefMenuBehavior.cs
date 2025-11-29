@@ -89,6 +89,28 @@ namespace ModifiedArmy.Models.Fief
             AddGameMenus(starter);
         }
 
+        // 允许玩家选择任意采邑士兵（健康兵）
+        bool CanSelectTroop(CharacterObject troop)
+        {
+            if (troop == null) return false;
+            var type = SoldierTypeClassifier.GetSoldierType(troop);
+            return type is FiefTroopType.Fief_Retinue or FiefTroopType.Fief_Sergeant or FiefTroopType.Fief_Militia;
+        }
+
+        // 回调：处理玩家选择结果
+        void OnRecruitDone(TroopRoster selectedRoster)
+        {
+            if (selectedRoster == null || selectedRoster.TotalManCount <= 0)
+                return;
+
+            var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
+            if (manager == null) return;
+
+            var playerParty = MobileParty.MainParty;
+
+            manager.ManualRecruitFromFief(Settlement.CurrentSettlement, selectedRoster, playerParty);
+        }
+
         /// <summary>
         /// Registers the "Fief" entry point in town and castle menus only,
         /// and defines the full "Your Fief" submenu.
@@ -229,14 +251,20 @@ namespace ModifiedArmy.Models.Fief
                         return;
                     }
 
+                    var playerParty = MobileParty.MainParty;
                     TroopRoster fiefRoster = fiefManager.GetFiefTroopRoster(currentSettlement);
+                    TroopRoster selectRoster = TroopRoster.CreateDummyTroopRoster();
+
+                    // 计算最大可招募数量（受 party size 限制）
+                    int maxSelectable = Math.Max(0,
+                       playerParty.Party.PartySizeLimit - playerParty.Party.NumberOfAllMembers);
 
                     args.MenuContext.OpenTroopSelection(
                         fullRoster: fiefRoster,
-                        initialSelections: TroopRoster.CreateDummyTroopRoster(),
-                        canChangeStatusOfTroop: _ => false,
-                        onDone: _ => { /* No action needed */ },
-                        maxSelectableTroopCount: 0,
+                        initialSelections: selectRoster,
+                        canChangeStatusOfTroop: CanSelectTroop,
+                        onDone: OnRecruitDone,
+                        maxSelectableTroopCount: maxSelectable,
                         minSelectableTroopCount: 0
                     );
                     args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");

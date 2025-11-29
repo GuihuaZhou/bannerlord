@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
@@ -60,6 +61,8 @@ namespace ModifiedArmy.Models.Fief
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             //CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+            CampaignEvents.AfterSiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(this.OnAfterSiegeCompleted));
+            CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, new Action<Settlement, bool, Hero, Hero, Hero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail>(this.OnSettlementOwnerChanged));
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -196,7 +199,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlement == null) return 0;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
-                return data.RecruitedTroops?.GetTotalCount() ?? 0;
+                return data.GetRecruitedFiefTroopCount();
             }
             return 0;
         }
@@ -236,6 +239,41 @@ namespace ModifiedArmy.Models.Fief
                 return data.GetTaxationMultiplier();
             }
             return 1.0f;
+        }
+
+
+        private void OnAfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
+        {
+            if (battleType != MapEvent.BattleTypes.Siege && battleType != MapEvent.BattleTypes.SallyOut)
+                return;
+
+            if (!_fiefDataMap.TryGetValue(siegeSettlement, out var fiefData) || fiefData == null)
+                return;
+
+            fiefData.OnSiegeCompleted(isWin);
+        }
+
+
+        private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero previousOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
+        {
+            if (settlement == null) return;
+
+            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData) || fiefData == null)
+                return;
+
+            fiefData.OnSettlementOwnerChanged();
+        }
+
+        public void ManualRecruitFromFief(Settlement settlement, TroopRoster selectedRoster, MobileParty targetParty)
+        {
+            if (settlement == null || selectedRoster == null)
+                return;
+
+            if (_fiefDataMap.TryGetValue(settlement, out var fiefData) && fiefData != null)
+            {
+                fiefData.RecruitManualSelection(selectedRoster, targetParty);
+                ModLogger.Notice($"[Manual Recruit] Added {selectedRoster.TotalManCount} troops to player party from {settlement.Name}.");
+            }
         }
 
     }

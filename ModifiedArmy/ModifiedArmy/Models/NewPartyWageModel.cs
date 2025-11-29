@@ -45,33 +45,33 @@ namespace ModifiedArmy.Models
             }
             else if (troop.Level <= 21)
             {
-                result = new ExplainedNumber(500f, false, null);       // 原：200
+                result = new ExplainedNumber(400f, false, null);       // 原：200
             }
             else if (troop.Level <= 26)
             {
-                result = new ExplainedNumber(1000f, false, null);      // 原：400
+                result = new ExplainedNumber(800f, false, null);      // 原：400
             }
             else if (troop.Level <= 31)
             {
-                result = new ExplainedNumber(1500f, false, null);      // 原：600
+                result = new ExplainedNumber(1200f, false, null);      // 原：600
             }
             else if (troop.Level <= 36)
             {
-                result = new ExplainedNumber(2500f, false, null);      // 原：1000
+                result = new ExplainedNumber(2000f, false, null);      // 原：1000
             }
             else
             {
-                result = new ExplainedNumber(3750f, false, null);      // 原：1500
+                result = new ExplainedNumber(3000f, false, null);      // 原：1500
             }
             if (troop.Equipment.Horse.Item != null && !withoutItemCost)
             {
                 if (troop.Level < 26)
                 {
-                    result.Add(1000f, null, null);  // 原：150
+                    result.Add(400f, null, null);  // 原：150
                 }
                 else
                 {
-                    result.Add(2000f, null, null);  // 原：500
+                    result.Add(1200f, null, null);  // 原：500
                 }
             }
             bool flag = troop.Occupation == Occupation.Mercenary || troop.Occupation == Occupation.Gangster || troop.Occupation == Occupation.CaravanGuard;
