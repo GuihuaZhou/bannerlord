@@ -34,6 +34,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(FiefPartyData), 2);
             base.AddClassDefinition(typeof(FiefWageExemption), 3);
             base.AddClassDefinition(typeof(FiefWageExemptionManager), 4);
+            base.AddClassDefinition(typeof(FiefPartyComponent), 5);
         }
 
         protected override void DefineContainerDefinitions()

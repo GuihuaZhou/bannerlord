@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -358,6 +360,7 @@ namespace ModifiedArmy.Models.Fief
         /// 封邑就绪军队容器
         /// </summary>
         public TroopRoster FiefTroops { get; private set; }
+        [SaveableProperty(1)] public MobileParty _fiefParty { get; private set; }
         /// <summary>
         /// 已被征召的封邑军队
         /// </summary>
@@ -454,15 +457,35 @@ namespace ModifiedArmy.Models.Fief
         {
             if (settlementWasCaptured)
             {
-                RecruitedTroopDetachmentList.Clear();
+                // 城陷 → 视为所有权变更
+                OnSettlementOwnerChanged();
             }
-
-            SyncManpowerCounters();
+            else
+            {
+                // 守城成功：不清除部队，但同步兵力（可能有战斗减员）
+                SyncManpowerCounters();
+            }
         }
 
         public void OnSettlementOwnerChanged()
         {
-            RecruitedTroopDetachmentList.Clear();
+            // 防御性检查：避免重复销毁
+            if (_fiefParty != null)
+            {
+                DestroyPartyAction.Apply(null, _fiefParty);
+                _fiefParty = null;
+                FiefTroops = null;
+            }
+
+            // 清空征召/遣返列表
+            if (RecruitedTroopDetachmentList != null)
+                RecruitedTroopDetachmentList.Clear();
+
+            // 注意：ReturnedTroopDetachmentList 是否也应清空？
+            // 通常：是的，因为新领主不继承旧部队
+            if (ReturnedTroopDetachmentList != null)
+                ReturnedTroopDetachmentList.Clear();
+
             SyncManpowerCounters();
         }
 
@@ -515,19 +538,30 @@ namespace ModifiedArmy.Models.Fief
             //    ResetManpowerCounters();
             //}
 
-            if (FiefTroops == null)
+            //if (FiefTroops == null)
+            //{
+            //    if (_settlement.MilitiaPartyComponent != null
+            //        && _settlement.MilitiaPartyComponent.MobileParty.IsActive)
+            //    {
+            //        FiefTroops = _settlement.MilitiaPartyComponent.MobileParty.MemberRoster;
+            //        SyncManpowerCounters();
+            //    }
+            //    else
+            //    {
+            //        ResetManpowerCounters();
+            //        return false;
+            //    }
+            //}
+            //else if (first_flag)
+            //{
+            //    SyncManpowerCounters();
+            //}
+
+            if (_fiefParty == null || !_fiefParty.Party.IsValid)
             {
-                if (_settlement.MilitiaPartyComponent != null
-                    && _settlement.MilitiaPartyComponent.MobileParty.IsActive)
-                {
-                    FiefTroops = _settlement.MilitiaPartyComponent.MobileParty.MemberRoster;
-                    SyncManpowerCounters();
-                }
-                else
-                {
-                    ResetManpowerCounters();
-                    return false;
-                }
+                _fiefParty = FiefPartyComponent.CreateFiefParty(_settlement.StringId, _settlement);
+                FiefTroops = _fiefParty.MemberRoster;
+                SyncManpowerCounters();
             }
             else if (first_flag)
             {

@@ -80,7 +80,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new FiefSettlementTaxModel());
-                //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
+                campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
                 
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
