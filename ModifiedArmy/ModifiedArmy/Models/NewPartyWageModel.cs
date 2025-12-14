@@ -159,10 +159,10 @@ namespace ModifiedArmy.Models
                     num = 16; // 原来8
                     break;
                 case 5:
-                    num = 24; // 原来12
+                    num = 30; // 原来12
                     break;
                 case 6:
-                    num = 34; // 原来17
+                    num = 51; // 原来17
                     break;
                 default:
                     num = 46; // 原来23
@@ -170,7 +170,7 @@ namespace ModifiedArmy.Models
             }
             if (character.Occupation == Occupation.Mercenary)
             {
-                num = (int)((float)num * 1.5f);
+                num = (int)((float)num * 1.25f);
             }
             return num;
         }

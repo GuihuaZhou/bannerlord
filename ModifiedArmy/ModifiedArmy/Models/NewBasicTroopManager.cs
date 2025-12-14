@@ -71,7 +71,7 @@ namespace ModifiedArmy.Models
             int total = TroopsByType[FiefTroopType.Fief_Retinue].Count +
                         TroopsByType[FiefTroopType.Fief_Sergeant].Count +
                         TroopsByType[FiefTroopType.Fief_Militia].Count;
-            ModLogger.Info($"[BasicTroopGroup] Finished loading troop config for '{Culture.Name}', total entries: {total}");
+            ModLogger.Debug($"[BasicTroopGroup] Finished loading troop config for '{Culture.Name}', total entries: {total}");
             BasicTroopGroupManager.Instance.RegisterGroup(this);
         }
 
@@ -85,13 +85,12 @@ namespace ModifiedArmy.Models
                 if (node.Name == "troop")
                 {
                     CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
-                    int weight = XmlHelper.ReadInt(node, "weight");
 
                     if (troop != null)
                     {
-                        list.Add(new BasicTroopEntry(troop, weight, type));
+                        list.Add(new BasicTroopEntry(troop, 1, type));
                         count++;
-                        ModLogger.Debug($"  ├─ [{type}] Added troop: {troop.Name} (weight={weight})");
+                        ModLogger.Debug($"  ├─ [{type}] Added troop: {troop.Name}");
                     }
                     else
                     {
@@ -100,7 +99,7 @@ namespace ModifiedArmy.Models
                     }
                 }
             }
-            ModLogger.Info($"  └─ {type}: Successfully loaded {count} troops");
+            ModLogger.Debug($"  └─ {type}: Successfully loaded {count} troops");
         }
     }
 
@@ -132,7 +131,7 @@ namespace ModifiedArmy.Models
                 return group;
             }
 
-            ModLogger.Info($"[BasicTroopGroupManager] No troop configuration found for culture: {culture.Name}");
+            ModLogger.Debug($"[BasicTroopGroupManager] No troop configuration found for culture: {culture.Name}");
             return null;
         }
 
@@ -154,6 +153,21 @@ namespace ModifiedArmy.Models
         private static readonly Dictionary<CharacterObject, FiefTroopType> _typeMap = new();
 
         /// <summary>
+        /// [DEBUG] Prints all entries in the _typeMap for debugging purposes.
+        /// </summary>
+        public static void DebugPrintAllMappings()
+        {
+            ModLogger.Debug($"[SoldierTypeClassifier DEBUG] Printing all {_typeMap.Count} mappings:");
+            foreach (var kvp in _typeMap)
+            {
+                string troopName = kvp.Key.Name.ToString() ?? "NULL_TROOP";
+                string typeName = kvp.Value.ToString();
+                ModLogger.Debug($" ├─ {troopName} -> {typeName}");
+            }
+            ModLogger.Debug($"[SoldierTypeClassifier DEBUG] End of mappings.");
+        }
+
+        /// <summary>
         /// Read-only view of the troop type mapping for external access.
         /// </summary>
         public static IReadOnlyDictionary<CharacterObject, FiefTroopType> TypeMap =>
@@ -165,6 +179,7 @@ namespace ModifiedArmy.Models
         /// </summary>
         public static FiefTroopType GetSoldierType(CharacterObject troop)
         {
+            //DebugPrintAllMappings();
             if (troop == null) return FiefTroopType.Fief_Other;
             if (_typeMap.TryGetValue(troop, out var type)) return type;
             return FiefTroopType.Fief_Other;
@@ -196,7 +211,7 @@ namespace ModifiedArmy.Models
         /// </summary>
         public static void InitializeAll()
         {
-            ModLogger.Info("[Fief] Initializing SoldierTypeClassifier...");
+            ModLogger.Debug("[Fief] Initializing SoldierTypeClassifier...");
 
             // Clear previous data (in case of reload)
             _typeMap.Clear();
@@ -212,21 +227,9 @@ namespace ModifiedArmy.Models
                     ProcessTroopEntries(group.TroopsByType[FiefTroopType.Fief_Sergeant]);
                     ProcessTroopEntries(group.TroopsByType[FiefTroopType.Fief_Militia]);
                 }
-                else
-                {
-                    // Fallback to vanilla basic/elite troops if no custom config exists
-                    if (culture.EliteBasicTroop != null)
-                    {
-                        PropagateTypeThroughUpgradeTree(culture.EliteBasicTroop, FiefTroopType.Fief_Retinue);
-                    }
-                    else if (culture.BasicTroop != null)
-                    {
-                        PropagateTypeThroughUpgradeTree(culture.BasicTroop, FiefTroopType.Fief_Militia);
-                    }
-                }
             }
 
-            ModLogger.Info($"[Fief] SoldierTypeClassifier initialized. Cached {_typeMap.Count} troops.");
+            ModLogger.Debug($"[Fief] SoldierTypeClassifier initialized. Cached {_typeMap.Count} troops.");
         }
 
         private static void ProcessTroopEntries(List<BasicTroopEntry> entries)
@@ -239,5 +242,22 @@ namespace ModifiedArmy.Models
                 }
             }
         }
+
+        /// <summary>
+        /// 判断指定兵种是否为三类封邑士兵之一（民兵、军士、扈从）。
+        /// </summary>
+        /// <param name="troop">要检查的兵种</param>
+        /// <returns>如果是封邑士兵，返回 true；否则 false</returns>
+        public static bool IsFiefTroop(CharacterObject troop)
+        {
+            if (troop == null)
+                return false;
+
+            var type = GetSoldierType(troop);
+            return type == FiefTroopType.Fief_Militia ||
+                   type == FiefTroopType.Fief_Sergeant ||
+                   type == FiefTroopType.Fief_Retinue;
+        }
     }
+
 }

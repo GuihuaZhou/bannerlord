@@ -10,8 +10,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 	// Token: 0x02000104 RID: 260
 	public class DefaultClanTierModel : ClanTierModel
 	{
-		// Token: 0x17000636 RID: 1590
-		// (get) Token: 0x060016CC RID: 5836 RVA: 0x0006A2B5 File Offset: 0x000684B5
+		// Token: 0x17000637 RID: 1591
+		// (get) Token: 0x060016EE RID: 5870 RVA: 0x0006A9AD File Offset: 0x00068BAD
 		public override int MinClanTier
 		{
 			get
@@ -20,8 +20,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x17000637 RID: 1591
-		// (get) Token: 0x060016CD RID: 5837 RVA: 0x0006A2B8 File Offset: 0x000684B8
+		// Token: 0x17000638 RID: 1592
+		// (get) Token: 0x060016EF RID: 5871 RVA: 0x0006A9B0 File Offset: 0x00068BB0
 		public override int MaxClanTier
 		{
 			get
@@ -30,8 +30,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x17000638 RID: 1592
-		// (get) Token: 0x060016CE RID: 5838 RVA: 0x0006A2BB File Offset: 0x000684BB
+		// Token: 0x17000639 RID: 1593
+		// (get) Token: 0x060016F0 RID: 5872 RVA: 0x0006A9B3 File Offset: 0x00068BB3
 		public override int MercenaryEligibleTier
 		{
 			get
@@ -40,8 +40,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x17000639 RID: 1593
-		// (get) Token: 0x060016CF RID: 5839 RVA: 0x0006A2BE File Offset: 0x000684BE
+		// Token: 0x1700063A RID: 1594
+		// (get) Token: 0x060016F1 RID: 5873 RVA: 0x0006A9B6 File Offset: 0x00068BB6
 		public override int VassalEligibleTier
 		{
 			get
@@ -50,8 +50,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x1700063A RID: 1594
-		// (get) Token: 0x060016D0 RID: 5840 RVA: 0x0006A2C1 File Offset: 0x000684C1
+		// Token: 0x1700063B RID: 1595
+		// (get) Token: 0x060016F2 RID: 5874 RVA: 0x0006A9B9 File Offset: 0x00068BB9
 		public override int BannerEligibleTier
 		{
 			get
@@ -60,8 +60,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x1700063B RID: 1595
-		// (get) Token: 0x060016D1 RID: 5841 RVA: 0x0006A2C4 File Offset: 0x000684C4
+		// Token: 0x1700063C RID: 1596
+		// (get) Token: 0x060016F3 RID: 5875 RVA: 0x0006A9BC File Offset: 0x00068BBC
 		public override int RebelClanStartingTier
 		{
 			get
@@ -70,8 +70,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x1700063C RID: 1596
-		// (get) Token: 0x060016D2 RID: 5842 RVA: 0x0006A2C7 File Offset: 0x000684C7
+		// Token: 0x1700063D RID: 1597
+		// (get) Token: 0x060016F4 RID: 5876 RVA: 0x0006A9BF File Offset: 0x00068BBF
 		public override int CompanionToLordClanStartingTier
 		{
 			get
@@ -80,8 +80,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x1700063D RID: 1597
-		// (get) Token: 0x060016D3 RID: 5843 RVA: 0x0006A2CA File Offset: 0x000684CA
+		// Token: 0x1700063E RID: 1598
+		// (get) Token: 0x060016F5 RID: 5877 RVA: 0x0006A9C2 File Offset: 0x00068BC2
 		private int KingdomEligibleTier
 		{
 			get
@@ -90,7 +90,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x060016D4 RID: 5844 RVA: 0x0006A2E0 File Offset: 0x000684E0
+		// Token: 0x060016F6 RID: 5878 RVA: 0x0006A9D8 File Offset: 0x00068BD8
 		public override int CalculateInitialRenown(Clan clan)
 		{
 			int num = DefaultClanTierModel.TierLowerRenownLimits[clan.Tier];
@@ -99,13 +99,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return MBRandom.RandomInt(num, maxValue);
 		}
 
-		// Token: 0x060016D5 RID: 5845 RVA: 0x0006A341 File Offset: 0x00068541
+		// Token: 0x060016F7 RID: 5879 RVA: 0x0006AA39 File Offset: 0x00068C39
 		public override int CalculateInitialInfluence(Clan clan)
 		{
 			return (int)(150f + (float)MBRandom.RandomInt((int)((float)this.CalculateInitialRenown(clan) / 15f)) + (float)MBRandom.RandomInt(MBRandom.RandomInt(MBRandom.RandomInt(400))));
 		}
 
-		// Token: 0x060016D6 RID: 5846 RVA: 0x0006A378 File Offset: 0x00068578
+		// Token: 0x060016F8 RID: 5880 RVA: 0x0006AA70 File Offset: 0x00068C70
 		public override int CalculateTier(Clan clan)
 		{
 			int result = this.MinClanTier;
@@ -119,7 +119,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x060016D7 RID: 5847 RVA: 0x0006A3B8 File Offset: 0x000685B8
+		// Token: 0x060016F9 RID: 5881 RVA: 0x0006AAB0 File Offset: 0x00068CB0
 		public override ValueTuple<ExplainedNumber, bool> HasUpcomingTier(Clan clan, out TextObject extraExplanation, bool includeDescriptions = false)
 		{
 			bool flag = clan.Tier < this.MaxClanTier;
@@ -163,13 +163,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return new ValueTuple<ExplainedNumber, bool>(item, flag);
 		}
 
-		// Token: 0x060016D8 RID: 5848 RVA: 0x0006A51F File Offset: 0x0006871F
+		// Token: 0x060016FA RID: 5882 RVA: 0x0006AC17 File Offset: 0x00068E17
 		public override int GetRequiredRenownForTier(int tier)
 		{
 			return DefaultClanTierModel.TierLowerRenownLimits[tier];
 		}
 
-		// Token: 0x060016D9 RID: 5849 RVA: 0x0006A528 File Offset: 0x00068728
+		// Token: 0x060016FB RID: 5883 RVA: 0x0006AC20 File Offset: 0x00068E20
 		public override int GetPartyLimitForTier(Clan clan, int clanTierToCheck)
 		{
 			ExplainedNumber explainedNumber = new ExplainedNumber(0f, false, null);
@@ -196,7 +196,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return MathF.Round(explainedNumber.ResultNumber);
 		}
 
-		// Token: 0x060016DA RID: 5850 RVA: 0x0006A5B2 File Offset: 0x000687B2
+		// Token: 0x060016FC RID: 5884 RVA: 0x0006ACAA File Offset: 0x00068EAA
 		private void AddPartyLimitPerkEffects(Clan clan, ref ExplainedNumber result)
 		{
 			if (clan.Leader != null && clan.Leader.GetPerkValue(DefaultPerks.Leadership.TalentMagnet))
@@ -205,7 +205,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x060016DB RID: 5851 RVA: 0x0006A5EC File Offset: 0x000687EC
+		// Token: 0x060016FD RID: 5885 RVA: 0x0006ACE4 File Offset: 0x00068EE4
 		public override int GetCompanionLimit(Clan clan)
 		{
 			int num = this.GetCompanionLimitFromTier(clan.Tier);
@@ -220,13 +220,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return num;
 		}
 
-		// Token: 0x060016DC RID: 5852 RVA: 0x0006A647 File Offset: 0x00068847
+		// Token: 0x060016FE RID: 5886 RVA: 0x0006AD3F File Offset: 0x00068F3F
 		private int GetCompanionLimitFromTier(int clanTier)
 		{
 			return clanTier + 3;
 		}
 
-		// Token: 0x04000791 RID: 1937
+		// Token: 0x0400079D RID: 1949
 		private static readonly int[] TierLowerRenownLimits = new int[]
 		{
 			0,
@@ -238,25 +238,25 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			6150
 		};
 
-		// Token: 0x04000792 RID: 1938
+		// Token: 0x0400079E RID: 1950
 		private readonly TextObject _partyLimitBonusText = GameTexts.FindText("str_clan_tier_party_limit_bonus", null);
 
-		// Token: 0x04000793 RID: 1939
+		// Token: 0x0400079F RID: 1951
 		private readonly TextObject _companionLimitBonusText = GameTexts.FindText("str_clan_tier_companion_limit_bonus", null);
 
-		// Token: 0x04000794 RID: 1940
+		// Token: 0x040007A0 RID: 1952
 		private readonly TextObject _mercenaryEligibleText = GameTexts.FindText("str_clan_tier_mercenary_eligible", null);
 
-		// Token: 0x04000795 RID: 1941
+		// Token: 0x040007A1 RID: 1953
 		private readonly TextObject _vassalEligibleText = GameTexts.FindText("str_clan_tier_vassal_eligible", null);
 
-		// Token: 0x04000796 RID: 1942
+		// Token: 0x040007A2 RID: 1954
 		private readonly TextObject _additionalCurrentPartySizeBonus = GameTexts.FindText("str_clan_tier_party_size_bonus", null);
 
-		// Token: 0x04000797 RID: 1943
+		// Token: 0x040007A3 RID: 1955
 		private readonly TextObject _additionalWorkshopCountBonus = GameTexts.FindText("str_clan_tier_workshop_count_bonus", null);
 
-		// Token: 0x04000798 RID: 1944
+		// Token: 0x040007A4 RID: 1956
 		private readonly TextObject _kingdomEligibleText = GameTexts.FindText("str_clan_tier_kingdom_eligible", null);
 	}
 }

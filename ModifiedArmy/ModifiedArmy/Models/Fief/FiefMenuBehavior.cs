@@ -62,12 +62,22 @@ namespace ModifiedArmy.Models.Fief
             var text = new TextObject(
                 "{=ModifiedArmy_Fief_Intro}" +
                 "You are at your fief. You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
-                   "and {WAITCYCLE} are on their way back to their homes and will become available for recruitment again after a short while."
+                "and {WAITCYCLE} are on their way back to their homes.\n\n" +
+                "Current troop composition:\n" +
+                "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
+                "- Sergeants: {SERGEANT_COUNT}/{SERGEANT_MAX}\n" +
+                "- Militia: {MILITIA_COUNT}/{MILITIA_MAX}"
             );
 
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableRecruitCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
+            text.SetTextVariable("RETINUE_COUNT", fiefManager.GetFiefRetinueCount(settlement).ToString());
+            text.SetTextVariable("RETINUE_MAX", fiefManager.GetFiefMaxRetinueCount(settlement).ToString());
+            text.SetTextVariable("SERGEANT_COUNT", fiefManager.GetFiefSergeantCount(settlement).ToString());
+            text.SetTextVariable("SERGEANT_MAX", fiefManager.GetFiefMaxSergeantCount(settlement).ToString());
+            text.SetTextVariable("MILITIA_COUNT", fiefManager.GetFiefMilitiaCount(settlement).ToString());
+            text.SetTextVariable("MILITIA_MAX", fiefManager.GetFiefMaxMilitiaCount(settlement).ToString());
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }
@@ -89,7 +99,7 @@ namespace ModifiedArmy.Models.Fief
             AddGameMenus(starter);
         }
 
-        // 允许玩家选择任意采邑士兵（健康兵）
+        // 允许玩家选择任意采邑士兵
         bool CanSelectTroop(CharacterObject troop)
         {
             if (troop == null) return false;
@@ -229,11 +239,11 @@ namespace ModifiedArmy.Models.Fief
                 isLeave: false, index: -1, isRepeatable: false
             );
 
-            // Manage / View
+            // Recruit Partial 
             starter.AddGameMenuOption(
                 FIEF_MENU_ID,
                 MANAGE_FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Manage}Manage Fief Troops",
+                "{=ModifiedArmy_FiefMenu_RecruitPartial}Recruit Partial Fief Troops",
                 (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
                 (args) =>
                 {
@@ -271,6 +281,59 @@ namespace ModifiedArmy.Models.Fief
                 },
                 isLeave: false, index: -1, isRepeatable: false
             );
+
+
+            //// === NEW: Disband Partial ===
+            //const string DISBAND_PARTIAL_FIEF_OPTION_ID = "fief_disband_partial";
+            //starter.AddGameMenuOption(
+            //    FIEF_MENU_ID,
+            //    DISBAND_PARTIAL_FIEF_OPTION_ID,
+            //    "{=ModifiedArmy_FiefMenu_DisbandPartial}Disband Partial Fief Troops",
+            //    (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
+            //    (args) =>
+            //    {
+            //        Settlement currentSettlement = Settlement.CurrentSettlement;
+            //        if (currentSettlement == null)
+            //        {
+            //            ModLogger.Warn("[Fief] Disband partial failed: settlement is null.");
+            //            return;
+            //        }
+            //        var fiefManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
+            //        if (fiefManager == null)
+            //        {
+            //            ModLogger.Error("[Fief] FiefSquadManager not found.");
+            //            return;
+            //        }
+
+            //        // Get only fief troops currently in player's party
+            //        TroopRoster playerRoster = MobileParty.MainParty.MemberRoster;
+            //        TroopRoster selectRoster = TroopRoster.CreateDummyTroopRoster();
+
+            //        // 计算采邑剩余容量
+            //        int totalLimit = fiefManager.GetFiefTroopLimit(currentSettlement);
+            //        int totalCount = fiefManager.GetFiefRetinueCount(currentSettlement)
+            //                         + fiefManager.GetFiefSergeantCount(currentSettlement)
+            //                         + fiefManager.GetFiefMilitiaCount(currentSettlement);
+            //        int recruitedCount = fiefManager.GetRecruitedRetinueCount(currentSettlement)
+            //                             + fiefManager.GetRecruitedSergeantCount(currentSettlement)
+            //                             + fiefManager.GetRecruitedMilitiaCount(currentSettlement);
+
+            //        int maxSelectable = Math.Max(0, totalLimit - (totalCount - recruitedCount));
+
+            //        args.MenuContext.OpenTroopSelection(
+            //            fullRoster: playerRoster,
+            //            initialSelections: selectRoster,
+            //            canChangeStatusOfTroop: CanReturnTroop,
+            //            onDone: OnRecruitDone,
+            //            maxSelectableTroopCount: maxSelectable,
+            //            minSelectableTroopCount: 0
+            //        );
+            //        args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");
+            //    },
+            //    isLeave: false,
+            //    index: -1,
+            //    isRepeatable: false
+            //);
 
             // Return
             starter.AddGameMenuOption(

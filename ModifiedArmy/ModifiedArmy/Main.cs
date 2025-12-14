@@ -1,12 +1,17 @@
 ﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using MCM.Abstractions.Base.Global;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Utils;
+
+//using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime;
 using System.Runtime.CompilerServices;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
@@ -16,6 +21,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.MountAndBlade;
 using TaleWorlds.ObjectSystem;
+
 
 namespace ModifiedArmy
 {
@@ -65,9 +71,23 @@ namespace ModifiedArmy
 
     public class Main : MBSubModuleBase
     {
+
+        public static Settings ModSettings { get; private set; }
+
         protected override void OnSubModuleLoad()
         {
             new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
+
+            ModSettings = GlobalSettings<Settings>.Instance;
+        }
+
+        protected override void OnBeforeInitialModuleScreenSetAsRoot()
+        {
+            base.OnBeforeInitialModuleScreenSetAsRoot();
+            if (Main.ModSettings == null)
+            {
+                Main.ModSettings = GlobalSettings<Settings>.Instance;
+            }
         }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
@@ -76,25 +96,43 @@ namespace ModifiedArmy
             {
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
+
                 campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
-                campaignStarter.AddModel(new FiefSettlementTaxModel());
-                //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
-                
+                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
+                campaignStarter.AddModel(new NewClanTierModel());
+
+                // //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
+                campaignStarter.AddModel(new FiefSettlementTaxModel());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
-                campaignStarter.AddBehavior(new FiefPartyManager());
                 campaignStarter.AddBehavior(new AiRecruitFiefTroopsBehavior());
                 campaignStarter.AddBehavior(new FiefWageExemptionManager());
+                campaignStarter.AddBehavior(new FiefPartyManager());
+
+                game.ObjectManager.RegisterType<BasicTroopGroup>(
+                    "BasicTroopGroup", 
+                    "BasicTroopGroups", 
+                    100U, 
+                    true, 
+                    false);
+                MBObjectManager.Instance.LoadXML("BasicTroopGroups", true);
+
+
+                game.ObjectManager.RegisterType<FiefPartyTemplate>(
+                    "FiefPartyTemplate",
+                    "FiefPartyTemplates",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML("FiefPartyTemplates", true);
+
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 
-                game.ObjectManager.RegisterType<BasicTroopGroup>("BasicTroopGroup", "BasicTroopGroups", 100U, true, false);
-                MBObjectManager.Instance.LoadXML("BasicTroopGroups", true);
-
-                string msg = "[MOD] NewVolunteerModel: Initialization complete.";
-                InformationManager.DisplayMessage(new InformationMessage(msg));
+                var msgText = GameTexts.FindText("str_modifiedarmy_initialization_complete");
+                InformationManager.DisplayMessage(new InformationMessage(msgText.ToString()));
             }
         }
 
@@ -104,8 +142,8 @@ namespace ModifiedArmy
             {
                 Hero.MainHero.ChangeHeroGold(99000);
 
-                var armor = MBObjectManager.Instance.GetObject<ItemObject>("northern_coat_of_plates");
-                if (armor != null && armor.HasArmorComponent) 
+                var armor = MBObjectManager.Instance.GetObject<ItemObject>("southern_lamellar_armor");
+                if (armor != null && armor.HasArmorComponent)
                     MobileParty.MainParty.ItemRoster.AddToCounts(armor, 1);
 
                 CampaignState.IsNewGame = false;

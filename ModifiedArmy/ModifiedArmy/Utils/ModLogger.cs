@@ -21,7 +21,17 @@ namespace ModifiedArmy.Tool
         /// 最低显示级别。设为 Info，则 Info/Notice/Warn/Error 会显示，Debug 不会。
         /// 默认为 Notice。
         /// </summary>
-        public static LogLevel MinLogLevel = LogLevel.Notice;
+        private static LogLevel CurrentMinLogLevel
+        {
+            get
+            {
+                var settings = Main.ModSettings;
+                if (settings == null) 
+                    return LogLevel.Info;
+
+                return settings.MinLogLevel.SelectedValue;
+            }
+        }
 
         // 预定义日志颜色（便于维护）
         private static readonly Color DebugColor = new Color(0.6f, 0.95f, 0.7f);   // 淡青绿
@@ -35,7 +45,7 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Debug(string message, Color? color = null)
         {
-            if ((int)LogLevel.Debug >= (int)MinLogLevel)
+            if ((int)LogLevel.Debug >= (int)CurrentMinLogLevel)
                 InformationManager.DisplayMessage(new InformationMessage(message, color ?? DebugColor));
         }
 
@@ -44,7 +54,7 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Info(string message, Color? color = null)
         {
-            if ((int)LogLevel.Info >= (int)MinLogLevel)
+            if ((int)LogLevel.Info >= (int)CurrentMinLogLevel)
                 InformationManager.DisplayMessage(new InformationMessage(message, color ?? InfoColor));
         }
 
@@ -53,7 +63,7 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Notice(string message, Color? color = null)
         {
-            if ((int)LogLevel.Notice >= (int)MinLogLevel)
+            if ((int)LogLevel.Notice >= (int)CurrentMinLogLevel)
                 InformationManager.DisplayMessage(new InformationMessage(message, color ?? NoticeColor));
         }
 
@@ -62,7 +72,7 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Warn(string message, Color? color = null)
         {
-            if ((int)LogLevel.Warn >= (int)MinLogLevel)
+            if ((int)LogLevel.Warn >= (int)CurrentMinLogLevel)
                 InformationManager.DisplayMessage(new InformationMessage(message, color ?? WarnColor));
         }
 
@@ -71,7 +81,7 @@ namespace ModifiedArmy.Tool
         /// </summary>
         public static void Error(string message, Color? color = null)
         {
-            if ((int)LogLevel.Error >= (int)MinLogLevel)
+            if ((int)LogLevel.Error >= (int)CurrentMinLogLevel)
                 InformationManager.DisplayMessage(new InformationMessage(message, color ?? ErrorColor));
         }
     }

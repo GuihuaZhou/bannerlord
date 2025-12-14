@@ -6,6 +6,8 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -17,7 +19,9 @@ namespace ModifiedArmy.Models.Fief
         {
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
-            ModLogger.Notice("[AI Fief Recruitment] AiRecruitFiefTroopsBehavior loaded and events registered.");
+
+            var msg = GameTexts.FindText("str_modifiedarmy_ai_recruit_behavior_loaded");
+            ModLogger.Notice(msg.ToString());
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -64,7 +68,6 @@ namespace ModifiedArmy.Models.Fief
                         if (party == null || !party.IsLordParty || party.Army != null) continue;
                         if (IsPartyCurrentlyOnValidFiefRecruitmentTask(party, clan))
                         {
-                            //ModLogger.Debug($"[AI Fief Recruit] Skipping {clan.Name}'s party: already en route to {party.TargetSettlement?.Name}");
                             continue;
                         }
                         if (!ShouldRecruitForParty(party)) continue;
@@ -77,11 +80,6 @@ namespace ModifiedArmy.Models.Fief
                             MobileParty.NavigationType.Default,
                             isTargetingThePort: false
                         );
-
-                        //ModLogger.Debug(
-                        //    $"[AI Fief Recruitment] {clan.Name}'s party heading to {targetSettlement.Name} " +
-                        //    $"(assignment #{settlementIndex})"
-                        //);
                     }
                 }
             }
@@ -121,12 +119,15 @@ namespace ModifiedArmy.Models.Fief
             int recruited = _fiefPartyManager.RecruitFiefTroopsFromSettlement(settlement, party);
             if (recruited > 0)
             {
-                // 安全日志：显式调用 .ToString()
                 string partyName = party.Name?.ToString() ?? "UnknownParty";
                 string settlementName = settlement.Name?.ToString() ?? "UnknownSettlement";
-                ModLogger.Info(
-                    $"[AI Fief Recruitment] {partyName} recruited {recruited} fief troops at {settlementName}."
-                );
+
+                TextObject message = GameTexts.FindText("str_modifiedarmy_ai_recruited_fief_troops");
+                message.SetTextVariable("PARTY_NAME", partyName);
+                message.SetTextVariable("SETTLEMENT_NAME", settlementName);
+                message.SetTextVariable("COUNT", recruited);
+
+                ModLogger.Info(message.ToString());
             }
         }
 

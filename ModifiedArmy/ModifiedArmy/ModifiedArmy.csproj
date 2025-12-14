@@ -8,6 +8,7 @@
 	    <PrivateAssets>all</PrivateAssets>
 	    <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
+	  <PackageReference Include="Bannerlord.MCM" Version="5.11.3" />
 	  <PackageReference Include="Bannerlord.UIExtenderEx" Version="2.13.0" />
 	  <PackageReference Include="BUTR.Harmony.Analyzer" Version="1.0.1.50">
 	    <PrivateAssets>all</PrivateAssets>

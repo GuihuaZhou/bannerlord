@@ -8,6 +8,8 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedArmy.Models.Fief
@@ -173,7 +175,15 @@ namespace ModifiedArmy.Models.Fief
             if (_exemptionMap.TryGetValue(key, out var list))
             {
                 _exemptionMap.Remove(key);
-                ModLogger.Debug($"[FiefWage] Cleared all exemptions for {party.Name} (ID: {key})");
+                if (party.IsMainParty)
+                    //ModLogger.Notice($"[FiefWage] Cleared all exemptions for {party.Name} (ID: {key})");
+                {
+                    TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_cleared");
+                    msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                    ModLogger.Notice(msg.ToString());
+                }
+                else
+                    ModLogger.Debug($"[FiefWage] Cleared all exemptions for {party.Name} (ID: {key})");
             }
         }
 
@@ -203,7 +213,17 @@ namespace ModifiedArmy.Models.Fief
             }
 
             list.Add(new FiefWageExemption(troopCount, durationDays));
-            ModLogger.Debug($"[FiefWage] Added {troopCount} troops for {party.Name} (ID: {key}) for {durationDays} days");
+            if (party.IsMainParty)
+            {
+                //ModLogger.Notice($"[FiefWage] Added {troopCount} troops for {party.Name} (ID: {key}) for {durationDays} days");
+                TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_added");
+                msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                msg.SetTextVariable("COUNT", troopCount);
+                msg.SetTextVariable("DAYS", durationDays);
+                ModLogger.Notice(msg.ToString());
+            }
+            else
+                ModLogger.Debug($"[FiefWage] Added {troopCount} troops for {party.Name} (ID: {key}) for {durationDays} days");
         }
 
         /// <summary>
@@ -271,7 +291,17 @@ namespace ModifiedArmy.Models.Fief
                 _exemptionMap.Remove(key);
             }
 
-            ModLogger.Debug($"[FiefWage] Consumed {consumed}/{dismissedCount} troops for {party.Name} (ID: {key})");
+            if (party.IsMainParty)
+            {
+                //ModLogger.Notice($"[FiefWage] Consumed {consumed}/{dismissedCount} troops for {party.Name} (ID: {key})");
+                TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_consumed");
+                msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                msg.SetTextVariable("CONSUMED", consumed);
+                msg.SetTextVariable("REQUESTED", dismissedCount);
+                ModLogger.Notice(msg.ToString());
+            }
+            else
+                ModLogger.Debug($"[FiefWage] Consumed {consumed}/{dismissedCount} troops for {party.Name} (ID: {key})");
         }
 
         /// <summary>
