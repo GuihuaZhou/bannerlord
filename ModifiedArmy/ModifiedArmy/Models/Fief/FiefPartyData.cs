@@ -1080,10 +1080,12 @@ namespace ModifiedArmy.Models.Fief
             var retinuePool = new List<(CharacterObject troop, int totalCount)>();
             var sergeantPool = new List<(CharacterObject troop, int totalCount)>();
             var militiaPool = new List<(CharacterObject troop, int totalCount)>();
-
+            
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
                 var troop = element.Character;
+                if (troop.Culture != _settlement.Culture)
+                    continue;
                 if (troop == null || troop.Occupation != Occupation.Soldier)
                     continue;
                 int total = element.Number + element.WoundedNumber;
