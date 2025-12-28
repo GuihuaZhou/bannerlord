@@ -3,17 +3,8 @@ using HarmonyLib;
 using MCM.Abstractions.Base.Global;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
-using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
-
-//using ModifiedArmy.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Runtime;
-using System.Runtime.CompilerServices;
-using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
@@ -79,6 +70,10 @@ namespace ModifiedArmy
             new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
 
             ModSettings = GlobalSettings<Settings>.Instance;
+
+            UIExtender _UIextender = new UIExtender("com.mod.ModifiedArmy");
+            _UIextender.Register(Assembly.GetExecutingAssembly());
+            _UIextender.Enable();
         }
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()

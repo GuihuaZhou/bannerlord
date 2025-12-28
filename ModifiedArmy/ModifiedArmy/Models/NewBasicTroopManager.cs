@@ -71,6 +71,7 @@ namespace ModifiedArmy.Models
             int total = TroopsByType[FiefTroopType.Fief_Retinue].Count +
                         TroopsByType[FiefTroopType.Fief_Sergeant].Count +
                         TroopsByType[FiefTroopType.Fief_Militia].Count;
+
             ModLogger.Debug($"[BasicTroopGroup] Finished loading troop config for '{Culture.Name}', total entries: {total}");
             BasicTroopGroupManager.Instance.RegisterGroup(this);
         }

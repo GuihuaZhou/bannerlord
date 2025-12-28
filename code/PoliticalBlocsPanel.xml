@@ -1,0 +1,29 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="StretchToParent"
+            IsVisible="@Show">
+      <Children>
+        <ListPanel WidthSizePolicy="StretchToParent"
+                   HeightSizePolicy="StretchToParent"
+                   StackLayout.LayoutMethod="VerticalBottomToTop">
+          <Children>
+            <TextWidget Text="{=POLITICAL_BLOCS_TITLE}Political Blocs"
+                        WidthSizePolicy="Fixed"
+                        HeightSizePolicy="Fixed"
+                        SuggestedWidth="1000"
+                        SuggestedHeight="45"
+                        HorizontalAlignment="Center"
+                        Brush="Kingdom.TitleMedium.Text" />
+            <TextWidget Text="(Content will appear here)"
+                        WidthSizePolicy="CoverChildren"
+                        HeightSizePolicy="CoverChildren"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Center"
+                        Brush="Kingdom.ParagraphSmall.Text" />
+          </Children>
+        </ListPanel>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -1,0 +1,52 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Kingdom.Header.Policies.Width" BrushLayer="Default" BrushName="Kingdom.Header.Policies" BrushValueType="Width" />
+    <Constant Name="Kingdom.Header.Policies.Height" BrushLayer="Default" BrushName="Kingdom.Header.Policies" BrushValueType="Height" />
+
+    <Constant Name="Kingdom.Scroll.Header.Width" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Width" />
+    <Constant Name="Kingdom.Scroll.Header.Height" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Height" />
+
+    <Constant Name="DiplomacyToggle.Width" BrushLayer="Default" BrushName="Kingdom.Policy.Toggle.Tuple" BrushValueType="Width" />
+    <Constant Name="DiplomacyToggle.Height" BrushLayer="Default" BrushName="Kingdom.Policy.Toggle.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+
+    <Constant Name="Stat.Width" Value="175" />
+    <Constant Name="Stat.Height" Value="55" />
+
+    <Constant Name="Stat.Name.Height" Value="100" />
+    <Constant Name="Stat.Bar.HorizontalMargin" Value="10" />
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Nameplate.FlatBanner.Big" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Nameplate.FlatBanner.Big" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.43" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.43" Value="!Banner.Height" />
+  </Constants>
+  <Window>
+
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@Show">
+      <Children>
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <Children>
+
+            <!-- Left Panel -->
+            <BrushListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Bottom" MarginLeft="0" MarginTop="6" MarginBottom="9" Brush="Frame1Brush" StackLayout.LayoutMethod="VerticalBottomToTop">
+              <Children>
+              </Children>
+            </BrushListPanel>
+
+            <!-- Right Side -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+              <Children>
+              </Children>
+            </Widget>
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>
