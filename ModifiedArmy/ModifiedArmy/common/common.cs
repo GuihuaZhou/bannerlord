@@ -53,4 +53,27 @@ namespace ModifiedArmy.common
         /// </summary>
         public const float HearthsWeight = 0.6f;
     }
+
+    public static class GarrisonConstants
+    {
+        /// <summary>
+        /// 驻军基础人数
+        /// </summary>
+        public const float BaseGarrisonSize = 100f;
+
+        /// <summary>
+        /// 城镇为驻军提供的人数加成
+        /// </summary>
+        public const float TownGarrisonBonus = 50f;
+
+        /// <summary>
+        /// 军营建筑为驻军提供的人数加成
+        /// </summary>
+        public const float BarracksGarrisonBonus = 20f;
+
+        /// <summary>
+        /// 训练场建筑为驻军提供的人数加成
+        /// </summary>
+        public const float TrainingFieldGarrisonBonus = 20f;
+    }
 }
