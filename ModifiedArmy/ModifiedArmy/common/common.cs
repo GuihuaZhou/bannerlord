@@ -91,4 +91,20 @@ namespace ModifiedArmy.common
         /// </summary>
         public const float TrainingFieldGarrisonBonus = 20f;
     }
+
+    /// <summary>
+    /// 定义 Clan 在自动生成领主队伍时的经济与行为规则常量。
+    /// </summary>
+    public static class ClanPartySpawnConstants
+    {
+        /// <summary>
+        /// Clan 必须至少拥有此金额的金币，才会在创建新队伍时扣除创建费用。
+        /// </summary>
+        public const int MinGoldToChargeCreationFee = 100000;
+
+        /// <summary>
+        /// 创建队伍时，从 Clan 金库中扣除的金币比例（例如 0.02f = 2%）。
+        /// </summary>
+        public const float CreationGoldFeeRate = 0.02f;
+    }
 }
