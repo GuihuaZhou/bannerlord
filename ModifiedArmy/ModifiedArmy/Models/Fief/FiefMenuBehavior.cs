@@ -310,34 +310,4 @@ namespace ModifiedArmy.Models.Fief
             );
         }
     }
-
-
-    //[HarmonyPatch(typeof(CampaignGameStarter))]
-    //[HarmonyPatch("AddGameMenuOption")]
-    //public static class AddGameMenuOptionPatch
-    //{
-    //    // 拦截 AddGameMenuOption 调用
-    //    public static bool Prefix(
-    //        CampaignGameStarter __instance,
-    //        string menuId,
-    //        string optionId,
-    //        string optionText,
-    //        GameMenuOption.OnConditionDelegate condition,
-    //        GameMenuOption.OnConsequenceDelegate consequence,
-    //        bool isLeave,
-    //        int index,
-    //        bool isRepeatable,
-    //        object relatedObject)
-    //    {
-    //        // 如果是城镇的招募按钮，直接跳过注册
-    //        if (optionId == "recruit_volunteers" &&
-    //            (menuId == "town" || menuId == "castle" || menuId == "village"))
-    //        {
-    //            return false; // 阻止注册该菜单项
-    //        }
-
-    //        // 其他菜单项正常注册
-    //        return true;
-    //    }
-    //}
 }
