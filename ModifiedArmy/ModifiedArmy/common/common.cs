@@ -23,10 +23,10 @@ namespace ModifiedArmy.common
         public const int CastleProsperityCostPerTier = 4;
 
         // 城镇招募：每级（Tier）消耗的繁荣度基数
-        public const int TownProsperityCostPerTier = 12; 
+        public const int TownProsperityCostPerTier = 8; 
 
-        // 村庄招募：每级（Tier）消耗的户数（Hearths）基数
-        public const int VillageHearthCostPerTier = 3;
+        // 消耗的户数（Hearths）基数
+        public const int VillageHearthCostPer = 1;
 
         // <summary>
         /// 城堡达到最大补员人数所需的繁荣度
@@ -42,6 +42,21 @@ namespace ModifiedArmy.common
         /// 村庄达到最大补员人数所需的户数
         /// </summary>
         public const float VillageMaxReinforcementHearthThreshold = 900f;
+
+        // <summary>
+        /// 城堡最低繁荣度
+        /// </summary>
+        public const float CastleMinProsperityThreshold = 300f;
+
+        /// <summary>
+        /// 城镇最低繁荣度
+        /// </summary>
+        public const float TownMinProsperityThreshold = 1000f;
+
+        /// <summary>
+        /// 村庄最低户数
+        /// </summary>
+        public const float VillageMinHearthThreshold = 100f;
 
         // <summary>
         /// 繁荣度的权重系数

@@ -17,6 +17,7 @@ using TaleWorlds.Engine;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
+using static System.Collections.Specialized.BitVector32;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -429,6 +430,80 @@ namespace ModifiedArmy.Models.Fief
             SyncManpowerCounters();
         }
 
+
+        /// <summary>
+        /// 更新定居点繁荣度和户数
+        /// </summary>
+        /// 
+        private void updateProsperity(float prosperityCost, int hearthCost, bool isAdd)
+        {
+            // 分配繁荣度
+            if (isAdd)
+                _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity + prosperityCost);
+            else
+            {
+                if (_settlement.IsCastle)
+                    _settlement.Town.Prosperity = Math.Max(RecruitmentCosts.CastleMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+                else if (_settlement.IsTown)
+                    _settlement.Town.Prosperity = Math.Max(RecruitmentCosts.TownMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+            }
+
+            // 分配户数
+
+            if (hearthCost <= 0)
+                return;
+
+            int villageCount = _settlement.BoundVillages.Count;
+            int sign = isAdd ? 1 : -1;
+            int totalChange = hearthCost * sign;
+
+            // 均匀分配：基础值 + 余数
+            int baseChange = totalChange / villageCount;
+            int remainder = totalChange % villageCount;
+
+            // 修正负余数
+            if (remainder < 0)
+            {
+                baseChange--;
+                remainder += villageCount;
+            }
+
+            // === 应用基础分配 ===
+            for (int i = 0; i < villageCount; i++)
+            {
+                Village village = _settlement.BoundVillages[i];
+                float newHearth = village.Hearth + baseChange;
+
+                if (!isAdd)
+                {
+                    newHearth = Math.Max(RecruitmentCosts.VillageMinHearthThreshold, newHearth);
+                }
+
+                village.Hearth = newHearth;
+            }
+
+            // === 分配余数
+            for (int i = 0; i < remainder; i++)
+            {
+                Village village = _settlement.BoundVillages[i];
+                float newHearth = village.Hearth + 1f;
+
+                if (!isAdd)
+                {
+                    newHearth = Math.Max(RecruitmentCosts.VillageMinHearthThreshold, newHearth);
+                }
+
+                village.Hearth = newHearth;
+            }
+
+            string action = isAdd ? "restored" : "consumed";
+            string settlementName = _settlement.Name?.ToString() ?? "Unknown";
+            ModLogger.Info(
+                $"[GarrisonSystem] {action} {Math.Abs(prosperityCost):F1} prosperity and {Math.Abs(hearthCost)} hearths " +
+                $"at settlement '{settlementName}'. Affected {villageCount} bound villages."
+            );
+        }
+
         private void CalculateLimit()
         {
             if (_totalLimit == 0)
@@ -641,14 +716,13 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 获取每周自动补员的数量
         /// </summary>
-        private int GetWeeklyUpdateCount()
+        public int GetWeeklyUpdateCount()
         {
             if (_settlement == null || _fiefPartyTemplate == null) 
                 return 0;
 
-            var template = _fiefPartyTemplate;
-            int minReinforcements = template.MinWeeklySupplement;
-            int maxReinforcements = template.MaxWeeklySupplement;
+            int minReinforcements = _fiefPartyTemplate.MinWeeklySupplement;
+            int maxReinforcements = _fiefPartyTemplate.MaxWeeklySupplement;
 
             // 如果 min >= max，直接返回 min（避免无效区间）
             if (minReinforcements >= maxReinforcements)
@@ -744,15 +818,15 @@ namespace ModifiedArmy.Models.Fief
                 return;
 
             // 计算本周最多可补充人数
-            int tmpMaxSize = Math.Min(GetWeeklyUpdateCount(), _totalLimit - _totalTroopCount);
-            if (tmpMaxSize <= 0)
+            int tmpWeeklyUpdateCount = Math.Min(GetWeeklyUpdateCount(), _totalLimit - _totalTroopCount);
+            if (tmpWeeklyUpdateCount <= 0)
                 return;
 
             // 按权重分配可补充人数
             Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
             foreach (var kvp in _soldierTypeWeights)
             {
-                int idealSize = (tmpMaxSize * _soldierTypeWeights[kvp.Key]) / _totalWeight;
+                int idealSize = (tmpWeeklyUpdateCount * _soldierTypeWeights[kvp.Key]) / _totalWeight;
                 // 需要考虑兵种类型的最大容量
                 tmpSoldierTypeSize[kvp.Key] = Math.Min(idealSize, _soldierTypeMaxCounts[kvp.Key] - _soldierTypeCounts[kvp.Key]);
             }
@@ -842,20 +916,32 @@ namespace ModifiedArmy.Models.Fief
 
             // 记录归还的封邑士兵
             Dictionary<CharacterObject, int> tmpReturnTroops = new();
-            // 返回的繁荣度
+            // 返还的繁荣度
             int prosperityCost = 0;
+            // 返还的户数
+            int hearthCost = 0;
+
+            int tmpProsperityCostPerTier = 0;
+
+            if (_settlement.IsTown)
+                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+            else if (_settlement.IsCastle)
+                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
                 var troop = element.Character;
                 if (troop == null || troop.Occupation != Occupation.Soldier)
                     continue;
+
                 if (!_fiefPartyTemplate.IsEnableTroop(troop))
                     continue;
+
                 int count = element.Number + element.WoundedNumber;
                 if (count <= 0)
                     continue;
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
 
+                var type = SoldierTypeClassifier.GetSoldierType(troop);
                 // 检查剩余容量是否足够
                 int taken = Math.Min(count, _soldierTypeMaxCounts[type] - _soldierTypeCounts[type]);
                 if (taken > 0)
@@ -869,11 +955,9 @@ namespace ModifiedArmy.Models.Fief
                         tmpReturnTroops[troop] = taken;
                     // 修改计数器
                     _soldierTypeCounts[type] += taken;
-
-                    if (_settlement.IsTown)
-                        prosperityCost += taken * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
-                    else if (_settlement.IsCastle)
-                        prosperityCost += taken * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
+                    
+                    hearthCost += taken * RecruitmentCosts.VillageHearthCostPer;
+                    prosperityCost += taken * tmpProsperityCostPerTier * troop.Tier;
                 }
             }
 
@@ -883,8 +967,7 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Debug($"[Return] Returned {tmpReturnTroopCount} troops to fief '{_settlement?.Name}'. ");
                 return 0;
             }
-
-            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity + prosperityCost);
+            updateProsperity(prosperityCost, hearthCost, true);
 
             // 添加到ReturnedTroopDetachmentList，记录处于冷却状态的士兵
             FiefTroopDetachment targetDetachment = ReturnedTroopDetachmentList
@@ -922,6 +1005,7 @@ namespace ModifiedArmy.Models.Fief
             msgResult.SetTextVariable("TROOP_COUNT", _totalTroopCount);
             msgResult.SetTextVariable("TOTAL_LIMIT", _totalLimit);
             msgResult.SetTextVariable("PROSPERITY_COST", prosperityCost);
+            msgResult.SetTextVariable("HEARTH_COST", hearthCost);
 
             if (sourceParty.LeaderHero.Clan == Clan.PlayerClan)
                 ModLogger.Notice(msgResult.ToString());
@@ -988,6 +1072,16 @@ namespace ModifiedArmy.Models.Fief
 
             // 消耗的繁荣度
             int prosperityCost = 0;
+            // 消耗的户数
+            int hearthCost = 0;
+
+            int tmpProsperityCostPerTier = 0;
+
+            if (_settlement.IsTown)
+                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+            else if (_settlement.IsCastle)
+                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+
             foreach (var element in FiefTroops.GetTroopRoster())
             {
                 var troop = element.Character;
@@ -1015,10 +1109,8 @@ namespace ModifiedArmy.Models.Fief
                     tmpSoldierTypeSize[type] = Math.Min(0, tmpSoldierTypeSize[type] - taken);
                     tmpRecruitSoldierTypeSize[type] += taken;
 
-                    if (_settlement.IsTown)
-                        prosperityCost += taken * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
-                    else if (_settlement.IsCastle)
-                        prosperityCost += taken * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
+                    hearthCost += taken * RecruitmentCosts.VillageHearthCostPer;
+                    prosperityCost += taken * tmpProsperityCostPerTier * troop.Tier;
                 }
             }
 
@@ -1026,7 +1118,7 @@ namespace ModifiedArmy.Models.Fief
             if (totalRecruited <= 0)
                 return 0;
 
-            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity - prosperityCost);
+            updateProsperity(prosperityCost, hearthCost, false);
 
             // 记录招募的士兵
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
@@ -1049,6 +1141,7 @@ namespace ModifiedArmy.Models.Fief
             msg.SetTextVariable("SLAVE", tmpRecruitSoldierTypeSize[SoldierType.Slave]);
             msg.SetTextVariable("MILITIA", tmpRecruitSoldierTypeSize[SoldierType.Militia]);
             msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
+            msg.SetTextVariable("HEARTH_COST", hearthCost);
 
             //if (_settlement.OwnerClan == Clan.PlayerClan)
             if (targetParty.LeaderHero.Clan == Clan.PlayerClan)
@@ -1089,6 +1182,16 @@ namespace ModifiedArmy.Models.Fief
             }
             // 消耗的繁荣度
             int prosperityCost = 0;
+            // 消耗的户数
+            int hearthCost = 0;
+
+            int tmpProsperityCostPerTier = 0;
+
+            if (_settlement.IsTown)
+                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+            else if (_settlement.IsCastle)
+                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+
             foreach (var element in selectedRoster.GetTroopRoster())
             {
                 var troop = element.Character;
@@ -1106,17 +1209,15 @@ namespace ModifiedArmy.Models.Fief
                 // 从封邑party移除士兵
                 RemoveTroopsFromParty(FiefTroops, troop, count);
 
-                if (_settlement.IsTown)
-                    prosperityCost += count * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
-                else if (_settlement.IsCastle)
-                    prosperityCost += count * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
+                hearthCost += count * RecruitmentCosts.VillageHearthCostPer;
+                prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
             }
 
             int totalRecruited = tmpRecruitTroops.Values.Sum();
             if (totalRecruited <= 0)
                 return 0;
 
-            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity - prosperityCost);
+            updateProsperity(prosperityCost, hearthCost, false);
 
             // 添加到 RecruitedTroopDetachmentList
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
@@ -1138,6 +1239,7 @@ namespace ModifiedArmy.Models.Fief
             msg.SetTextVariable("SLAVE", tmpRecruitSoldierTypeSize[SoldierType.Slave]);
             msg.SetTextVariable("MILITIA", tmpRecruitSoldierTypeSize[SoldierType.Militia]);
             msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
+            msg.SetTextVariable("HEARTH_COST", hearthCost);
 
             if (targetParty.LeaderHero.Clan == Clan.PlayerClan)
             {

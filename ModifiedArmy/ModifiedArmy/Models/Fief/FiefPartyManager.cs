@@ -285,6 +285,18 @@ namespace ModifiedArmy.Models.Fief
             return null;
         }
 
+
+        /// <summary>
+        /// 获取指定封邑每周更新的实际人数
+        /// </summary>
+        public int GetWeeklyUpdateCount(Settlement settlement)
+        {
+            if (settlement == null) return 0;
+            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
+                return data.GetWeeklyUpdateCount();
+            return 0;
+        }
+
         /// <summary>
         /// 监听围城结束事件
         /// </summary>
@@ -356,7 +368,7 @@ namespace ModifiedArmy.Models.Fief
             else if (settlement.IsVillage)
             {
                 // 扣除户数
-                int hearthCost = count * RecruitmentCosts.VillageHearthCostPerTier * troop.Tier;
+                int hearthCost = count * RecruitmentCosts.VillageHearthCostPer;
                 settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
                 ModLogger.Debug($"[HearthCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {hearthCost:F1}");
             }

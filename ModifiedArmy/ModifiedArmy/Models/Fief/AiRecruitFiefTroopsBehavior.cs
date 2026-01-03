@@ -215,7 +215,7 @@ namespace ModifiedArmy.Models.Fief
                 }
                 else if (settlement.IsVillage)
                 {
-                    hearthCost += RecruitmentCosts.VillageHearthCostPerTier * recruitVolunteerTroopVM.Character.Tier;
+                    hearthCost += RecruitmentCosts.VillageHearthCostPer;
                 }
                 count += 1;
             }
@@ -256,68 +256,4 @@ namespace ModifiedArmy.Models.Fief
             __instance.Deactivate();
         }
     }
-
-   // [HarmonyPatch(typeof(RecruitmentCampaignBehavior), "RecruitVolunteersFromNotable")]
-   // public static class RecruitmentCampaignBehavior_RecruitVolunteersFromNotable_ReplacePatch
-   // {
-
-   //     public static void Prefix(
-   //         RecruitmentCampaignBehavior __instance,
-   //         MobileParty mobileParty,
-   //         Settlement settlement)
-   //     {
-   //         if (((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f)
-			//{
-			//	foreach (Hero hero in settlement.Notables)
-			//	{
-			//		if (hero.IsAlive)
-			//		{
-			//			int num = hero.VolunteerTypes.FindIndexQ((CharacterObject x) => x != null);
-			//			if (num >= 0)
-			//			{
-			//				int num2 = MBRandom.RandomInt(6);
-			//				int num3 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(mobileParty.IsGarrison ? mobileParty.Party.Owner : mobileParty.LeaderHero, hero, -101);
-			//				if (num <= num3)
-			//				{
-			//					for (int i = num2; i < num2 + 6; i++)
-			//					{
-			//						int num4 = i % 6;
-			//						if (num4 >= num3)
-			//						{
-			//							break;
-			//						}
-			//						int num5 = (mobileParty.LeaderHero != null) ? ((int)MathF.Sqrt((float)mobileParty.PartyTradeGold / 10000f)) : 0;
-			//						float num6 = MBRandom.RandomFloat;
-			//						for (int j = 0; j < num5; j++)
-			//						{
-			//							float randomFloat = MBRandom.RandomFloat;
-			//							if (randomFloat > num6)
-			//							{
-			//								num6 = randomFloat;
-			//							}
-			//						}
-			//						if (mobileParty.Army != null)
-			//						{
-			//							float y = (mobileParty.Army.LeaderParty == mobileParty) ? 0.5f : 0.67f;
-			//							num6 = MathF.Pow(num6, y);
-			//						}
-			//						float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.Party.PartySizeLimit;
-			//						if (num6 > num7 - 0.1f)
-			//						{
-			//							CharacterObject characterObject = hero.VolunteerTypes[num4];
-			//							if (characterObject != null && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber && mobileParty.GetAvailableWageBudget() >= Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
-			//							{
-   //                                         __instance.GetRecruitVolunteerFromIndividual(mobileParty, characterObject, hero, num4);
-			//								break;
-			//							}
-			//						}
-			//					}
-			//				}
-			//			}
-			//		}
-			//	}
-			//}
-   //     }
-   // }
-
 }

@@ -64,7 +64,7 @@ namespace ModifiedArmy.Models.Fief
             var text = new TextObject(
                 "{=ModifiedArmy_Fief_Intro}" +
                 "You are at your fief. You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
-                "and {WAITCYCLE} are on their way back to their homes.\n\n" +
+                "and {WAITCYCLE} are on their way back to their homes, and up to {WEEKLY_REINFORCEMENT} will be replenished each week.\n\n" +
                 "Current troop composition:\n" +
                 "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
                 "- Sergeants: {SERGEANT_COUNT}/{SERGEANT_MAX}\n" +
@@ -79,6 +79,7 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
+            text.SetTextVariable("WEEKLY_REINFORCEMENT", fiefManager.GetWeeklyUpdateCount(settlement).ToString());
             text.SetTextVariable("RETINUE_COUNT", tmpSoldierTypeCounts[SoldierType.Retinue].ToString());
             text.SetTextVariable("RETINUE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Retinue].ToString());
             text.SetTextVariable("SERGEANT_COUNT", tmpSoldierTypeCounts[SoldierType.Sergeant].ToString());
@@ -89,6 +90,7 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable("SLAVE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Slave].ToString());
             text.SetTextVariable("MILITIA_COUNT", tmpSoldierTypeCounts[SoldierType.Militia].ToString());
             text.SetTextVariable("MILITIA_MAX", tmpSoldierTypeMaxCounts[SoldierType.Militia].ToString());
+            
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }
