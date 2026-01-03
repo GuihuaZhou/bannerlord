@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Helpers;
+using ModifiedArmy.common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,13 +8,16 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Recruitment;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
 namespace ModifiedArmy.Models
@@ -23,7 +27,7 @@ namespace ModifiedArmy.Models
         // 降低volunteer troop生成的概率
         public override float GetDailyVolunteerProductionProbability(Hero hero, int index, Settlement settlement)
         {
-            float num = 0.7f; // 原0.7
+            float num = 0.4f; // 原0.7
             int num2 = 0;
             foreach (Town town in hero.CurrentSettlement.MapFaction.Fiefs)
             {
@@ -209,8 +213,7 @@ namespace ModifiedArmy.Models
             var culture = sellerHero.Culture;
             var settlement = sellerHero.CurrentSettlement;
 
-            if (!settlement.IsTown &&
-                !(settlement.IsVillage && (settlement.Village.Bound.IsTown || settlement.Village.Bound.IsCastle)))
+            if (!settlement.IsTown && !settlement.IsVillage)
             {
                 return culture.BasicTroop;
             }
@@ -220,10 +223,19 @@ namespace ModifiedArmy.Models
             if (group != null)
             {
                 var allEntries = new List<BasicTroopEntry>();
-                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Retinue]);
-                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Sergeant]);
-                allEntries.AddRange(group.TroopsByType[FiefTroopType.Fief_Militia]);
 
+                if (settlement.IsTown)
+                {
+                    allEntries.AddRange(group.TroopsByType[SoldierType.Sergeant]);
+                    if (settlement.HasPort)
+                    {
+                        allEntries.AddRange(group.TroopsByType[SoldierType.Marine]);
+                    }
+                }
+                else if (settlement.IsVillage)
+                {
+                    allEntries.AddRange(group.TroopsByType[SoldierType.Militia]);
+                }
                 if (allEntries.Count > 0)
                 {
                     var troops = allEntries.Select(entry => entry.Troop).ToList();
@@ -238,20 +250,76 @@ namespace ModifiedArmy.Models
             // fallback：没有自定义配置时，返回原版基础兵
             return culture.BasicTroop;
         }
-    }
 
-    /// <summary>
-    /// 禁止原版的志愿兵自动更新机制
-    /// </summary>
-    [HarmonyPatch(typeof(RecruitmentCampaignBehavior))]
-    [HarmonyPatch("UpdateVolunteersOfNotablesInSettlement")]
-    public static class RecruitmentCampaignBehavior_UpdateVolunteers_Patch
-    {
-        // Prefix 返回 false 表示跳过原方法
-        public static bool Prefix()
-        {
-            // 完全禁用原版志愿兵生成逻辑
-            return false;
-        }
+        // 每日更新维护定居点hero提供的志愿兵
+        private void UpdateVolunteersOfNotablesInSettlement(Settlement settlement)
+		{
+			if ((settlement.IsTown && !settlement.Town.InRebelliousState) || (settlement.IsVillage && !settlement.Village.Bound.Town.InRebelliousState))
+			{
+				foreach (Hero hero in settlement.Notables)
+				{
+					if (hero.CanHaveRecruits && hero.IsAlive)
+					{
+						CharacterObject basicVolunteer = Campaign.Current.Models.VolunteerModel.GetBasicVolunteer(hero);
+						for (int i = 0; i < 6; i++)
+						{
+							if (MBRandom.RandomFloat < Campaign.Current.Models.VolunteerModel.GetDailyVolunteerProductionProbability(hero, i, settlement))
+							{
+								CharacterObject characterObject = hero.VolunteerTypes[i];
+								if (characterObject == null)
+								{
+									hero.VolunteerTypes[i] = basicVolunteer;
+								}
+								else if (characterObject.UpgradeTargets.Length != 0 && characterObject.Tier < Campaign.Current.Models.VolunteerModel.MaxVolunteerTier)
+								{
+									float num = MathF.Log(hero.Power / (float)characterObject.Tier, 2f) * 0.01f;
+									if (MBRandom.RandomFloat < num)
+									{
+										hero.VolunteerTypes[i] = characterObject.UpgradeTargets[MBRandom.RandomInt(characterObject.UpgradeTargets.Length)];
+									}
+								}
+							}
+						}
+						if (false)
+						{
+							CharacterObject[] volunteerTypes = hero.VolunteerTypes;
+							for (int j = 1; j < 6; j++)
+							{
+								CharacterObject characterObject2 = volunteerTypes[j];
+								if (characterObject2 != null)
+								{
+									int num2 = 0;
+									int num3 = j - 1;
+									CharacterObject characterObject3 = volunteerTypes[num3];
+									while (num3 >= 0 && (characterObject3 == null || (float)characterObject2.Level + (characterObject2.IsMounted ? 0.5f : 0f) < (float)characterObject3.Level + (characterObject3.IsMounted ? 0.5f : 0f)))
+									{
+										if (characterObject3 == null)
+										{
+											num3--;
+											num2++;
+											if (num3 >= 0)
+											{
+												characterObject3 = volunteerTypes[num3];
+											}
+										}
+										else
+										{
+											volunteerTypes[num3 + 1 + num2] = characterObject3;
+											num3--;
+											num2 = 0;
+											if (num3 >= 0)
+											{
+												characterObject3 = volunteerTypes[num3];
+											}
+										}
+									}
+									volunteerTypes[num3 + 1 + num2] = characterObject2;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
     }
 }

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModifiedArmy.Models.Fief;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TaleWorlds.CampaignSystem;
@@ -7,7 +8,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.Models.Fief
+namespace ModifiedArmy.Models
 {
     public class NewPartySizeLimitModel : DefaultPartySizeLimitModel
     {
@@ -21,7 +22,8 @@ namespace ModifiedArmy.Models.Fief
                 if (settlement != null 
                     && (settlement.IsTown || settlement.IsCastle))
                 {
-                    int totalLimit = FiefTroopCapacity.CalculateSizeLimit(settlement);
+                    var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
+                    int totalLimit = manager.GetFiefTroopLimit(settlement);
                     result.Add(totalLimit, new TextObject("{=Fief_Party_Size_Limit}Fief Party Size Limit"), null);
                 }
             }

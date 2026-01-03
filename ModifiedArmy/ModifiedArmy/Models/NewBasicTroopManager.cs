@@ -1,4 +1,5 @@
-﻿using ModifiedArmy.Tool;
+﻿using ModifiedArmy.common;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -14,9 +15,9 @@ namespace ModifiedArmy.Models
     {
         public CharacterObject Troop { get; }
         public int Weight { get; }
-        public FiefTroopType Type { get; }
+        public SoldierType Type { get; }
 
-        public BasicTroopEntry(CharacterObject troop, int weight, FiefTroopType type)
+        public BasicTroopEntry(CharacterObject troop, int weight, SoldierType type)
         {
             Troop = troop;
             Weight = weight;
@@ -27,11 +28,13 @@ namespace ModifiedArmy.Models
     public class BasicTroopGroup : MBObjectBase
     {
         public CultureObject Culture { get; private set; }
-        public Dictionary<FiefTroopType, List<BasicTroopEntry>> TroopsByType { get; } = new()
+        public Dictionary<SoldierType, List<BasicTroopEntry>> TroopsByType { get; } = new()
         {
-            [FiefTroopType.Fief_Retinue] = new List<BasicTroopEntry>(),
-            [FiefTroopType.Fief_Sergeant] = new List<BasicTroopEntry>(),
-            [FiefTroopType.Fief_Militia] = new List<BasicTroopEntry>()
+            [SoldierType.Retinue] = new List<BasicTroopEntry>(),
+            [SoldierType.Sergeant] = new List<BasicTroopEntry>(),
+            [SoldierType.Slave] = new List<BasicTroopEntry>(),
+            [SoldierType.Marine] = new List<BasicTroopEntry>(),
+            [SoldierType.Militia] = new List<BasicTroopEntry>()
         };
 
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
@@ -58,25 +61,33 @@ namespace ModifiedArmy.Models
                 switch (child.Name)
                 {
                     case "RetinueTroops":
-                        ParseTroopNodes(objectManager, child, FiefTroopType.Fief_Retinue);
+                        ParseTroopNodes(objectManager, child, SoldierType.Retinue);
                         break;
                     case "SergeantTroops":
-                        ParseTroopNodes(objectManager, child, FiefTroopType.Fief_Sergeant);
+                        ParseTroopNodes(objectManager, child, SoldierType.Sergeant);
                         break;
                     case "MilitiaTroops":
-                        ParseTroopNodes(objectManager, child, FiefTroopType.Fief_Militia);
+                        ParseTroopNodes(objectManager, child, SoldierType.Militia);
+                        break;
+                    case "SlaveTroops":
+                        ParseTroopNodes(objectManager, child, SoldierType.Slave);
+                        break;
+                    case "MarineTroops":
+                        ParseTroopNodes(objectManager, child, SoldierType.Marine);
                         break;
                 }
             }
-            int total = TroopsByType[FiefTroopType.Fief_Retinue].Count +
-                        TroopsByType[FiefTroopType.Fief_Sergeant].Count +
-                        TroopsByType[FiefTroopType.Fief_Militia].Count;
+            int total = TroopsByType[SoldierType.Retinue].Count +
+                        TroopsByType[SoldierType.Sergeant].Count +
+                        TroopsByType[SoldierType.Slave].Count +
+                        TroopsByType[SoldierType.Marine].Count +
+                        TroopsByType[SoldierType.Militia].Count;
 
             ModLogger.Debug($"[BasicTroopGroup] Finished loading troop config for '{Culture.Name}', total entries: {total}");
             BasicTroopGroupManager.Instance.RegisterGroup(this);
         }
 
-        private void ParseTroopNodes(MBObjectManager objectManager, XmlNode parent, FiefTroopType type)
+        private void ParseTroopNodes(MBObjectManager objectManager, XmlNode parent, SoldierType type)
         {
             var list = TroopsByType[type];
             int count = 0;
@@ -146,12 +157,12 @@ namespace ModifiedArmy.Models
     }
 
     /// <summary>
-    /// Global classifier that maps CharacterObject to FiefTroopType.
+    /// Global classifier that maps CharacterObject to SoldierType.
     /// Supports propagation through the entire upgrade tree based on culture-defined base troops.
     /// </summary>
     public static class SoldierTypeClassifier
     {
-        private static readonly Dictionary<CharacterObject, FiefTroopType> _typeMap = new();
+        private static readonly Dictionary<CharacterObject, SoldierType> _typeMap = new();
 
         /// <summary>
         /// [DEBUG] Prints all entries in the _typeMap for debugging purposes.
@@ -171,25 +182,25 @@ namespace ModifiedArmy.Models
         /// <summary>
         /// Read-only view of the troop type mapping for external access.
         /// </summary>
-        public static IReadOnlyDictionary<CharacterObject, FiefTroopType> TypeMap =>
-            new ReadOnlyDictionary<CharacterObject, FiefTroopType>(_typeMap);
+        public static IReadOnlyDictionary<CharacterObject, SoldierType> TypeMap =>
+            new ReadOnlyDictionary<CharacterObject, SoldierType>(_typeMap);
 
         /// <summary>
         /// Retrieves the fief troop type for a given character.
-        /// Returns Fief_Other if not found or if the input is null.
+        /// Returns Other if not found or if the input is null.
         /// </summary>
-        public static FiefTroopType GetSoldierType(CharacterObject troop)
+        public static SoldierType GetSoldierType(CharacterObject troop)
         {
             //DebugPrintAllMappings();
-            if (troop == null) return FiefTroopType.Fief_Other;
+            if (troop == null) return SoldierType.Other;
             if (_typeMap.TryGetValue(troop, out var type)) return type;
-            return FiefTroopType.Fief_Other;
+            return SoldierType.Other;
         }
 
         /// <summary>
         /// Recursively assigns the given troop type to the entire upgrade tree starting from 'current'.
         /// </summary>
-        private static void PropagateTypeThroughUpgradeTree(CharacterObject current, FiefTroopType type)
+        private static void PropagateTypeThroughUpgradeTree(CharacterObject current, SoldierType type)
         {
             if (current == null) return;
             _typeMap[current] = type;
@@ -224,9 +235,11 @@ namespace ModifiedArmy.Models
                 if (group != null)
                 {
                     // Process pre-classified entries from XML config
-                    ProcessTroopEntries(group.TroopsByType[FiefTroopType.Fief_Retinue]);
-                    ProcessTroopEntries(group.TroopsByType[FiefTroopType.Fief_Sergeant]);
-                    ProcessTroopEntries(group.TroopsByType[FiefTroopType.Fief_Militia]);
+                    ProcessTroopEntries(group.TroopsByType[SoldierType.Retinue]);
+                    ProcessTroopEntries(group.TroopsByType[SoldierType.Sergeant]);
+                    ProcessTroopEntries(group.TroopsByType[SoldierType.Militia]);
+                    ProcessTroopEntries(group.TroopsByType[SoldierType.Slave]);
+                    ProcessTroopEntries(group.TroopsByType[SoldierType.Marine]);
                 }
             }
 
@@ -255,9 +268,11 @@ namespace ModifiedArmy.Models
                 return false;
 
             var type = GetSoldierType(troop);
-            return type == FiefTroopType.Fief_Militia ||
-                   type == FiefTroopType.Fief_Sergeant ||
-                   type == FiefTroopType.Fief_Retinue;
+            return type == SoldierType.Militia ||
+                   type == SoldierType.Sergeant ||
+                   type == SoldierType.Marine ||
+                   type == SoldierType.Slave ||
+                   type == SoldierType.Retinue;
         }
     }
 

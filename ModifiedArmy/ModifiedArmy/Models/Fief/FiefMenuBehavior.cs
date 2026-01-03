@@ -1,7 +1,9 @@
 ﻿using HarmonyLib;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using SandBox.View.Menu;
 using System;
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.GameMenus;
@@ -66,18 +68,27 @@ namespace ModifiedArmy.Models.Fief
                 "Current troop composition:\n" +
                 "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
                 "- Sergeants: {SERGEANT_COUNT}/{SERGEANT_MAX}\n" +
+                "- Marine: {MARINE_COUNT}/{MARINE_MAX}\n" +
+                "- Slave: {SLAVE_COUNT}/{SLAVE_MAX}\n" +
                 "- Militia: {MILITIA_COUNT}/{MILITIA_MAX}"
             );
 
-            text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableRecruitCount(settlement).ToString());
+            Dictionary<SoldierType, int> tmpSoldierTypeMaxCounts = fiefManager.GetFiefMaxTroopCounts(settlement);
+            Dictionary<SoldierType, int> tmpSoldierTypeCounts = fiefManager.GetFiefTroopCounts(settlement);
+
+            text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
-            text.SetTextVariable("RETINUE_COUNT", fiefManager.GetFiefRetinueCount(settlement).ToString());
-            text.SetTextVariable("RETINUE_MAX", fiefManager.GetFiefMaxRetinueCount(settlement).ToString());
-            text.SetTextVariable("SERGEANT_COUNT", fiefManager.GetFiefSergeantCount(settlement).ToString());
-            text.SetTextVariable("SERGEANT_MAX", fiefManager.GetFiefMaxSergeantCount(settlement).ToString());
-            text.SetTextVariable("MILITIA_COUNT", fiefManager.GetFiefMilitiaCount(settlement).ToString());
-            text.SetTextVariable("MILITIA_MAX", fiefManager.GetFiefMaxMilitiaCount(settlement).ToString());
+            text.SetTextVariable("RETINUE_COUNT", tmpSoldierTypeCounts[SoldierType.Retinue].ToString());
+            text.SetTextVariable("RETINUE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Retinue].ToString());
+            text.SetTextVariable("SERGEANT_COUNT", tmpSoldierTypeCounts[SoldierType.Sergeant].ToString());
+            text.SetTextVariable("SERGEANT_MAX", tmpSoldierTypeMaxCounts[SoldierType.Sergeant].ToString());
+            text.SetTextVariable("MARINE_COUNT", tmpSoldierTypeCounts[SoldierType.Marine].ToString());
+            text.SetTextVariable("MARINE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Marine].ToString());
+            text.SetTextVariable("SLAVE_COUNT", tmpSoldierTypeCounts[SoldierType.Slave].ToString());
+            text.SetTextVariable("SLAVE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Slave].ToString());
+            text.SetTextVariable("MILITIA_COUNT", tmpSoldierTypeCounts[SoldierType.Militia].ToString());
+            text.SetTextVariable("MILITIA_MAX", tmpSoldierTypeMaxCounts[SoldierType.Militia].ToString());
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }
@@ -103,8 +114,9 @@ namespace ModifiedArmy.Models.Fief
         bool CanSelectTroop(CharacterObject troop)
         {
             if (troop == null) return false;
-            var type = SoldierTypeClassifier.GetSoldierType(troop);
-            return type is FiefTroopType.Fief_Retinue or FiefTroopType.Fief_Sergeant or FiefTroopType.Fief_Militia;
+            // var type = SoldierTypeClassifier.GetSoldierType(troop);
+            // return type is SoldierType.Retinue or SoldierType.Sergeant or SoldierType.Militia;
+            return SoldierTypeClassifier.IsFiefTroop(troop);
         }
 
         // 回调：处理玩家选择结果
@@ -298,32 +310,32 @@ namespace ModifiedArmy.Models.Fief
     }
 
 
-    [HarmonyPatch(typeof(CampaignGameStarter))]
-    [HarmonyPatch("AddGameMenuOption")]
-    public static class AddGameMenuOptionPatch
-    {
-        // 拦截 AddGameMenuOption 调用
-        public static bool Prefix(
-            CampaignGameStarter __instance,
-            string menuId,
-            string optionId,
-            string optionText,
-            GameMenuOption.OnConditionDelegate condition,
-            GameMenuOption.OnConsequenceDelegate consequence,
-            bool isLeave,
-            int index,
-            bool isRepeatable,
-            object relatedObject)
-        {
-            // 如果是城镇的招募按钮，直接跳过注册
-            if (optionId == "recruit_volunteers" &&
-                (menuId == "town" || menuId == "castle" || menuId == "village"))
-            {
-                return false; // 阻止注册该菜单项
-            }
+    //[HarmonyPatch(typeof(CampaignGameStarter))]
+    //[HarmonyPatch("AddGameMenuOption")]
+    //public static class AddGameMenuOptionPatch
+    //{
+    //    // 拦截 AddGameMenuOption 调用
+    //    public static bool Prefix(
+    //        CampaignGameStarter __instance,
+    //        string menuId,
+    //        string optionId,
+    //        string optionText,
+    //        GameMenuOption.OnConditionDelegate condition,
+    //        GameMenuOption.OnConsequenceDelegate consequence,
+    //        bool isLeave,
+    //        int index,
+    //        bool isRepeatable,
+    //        object relatedObject)
+    //    {
+    //        // 如果是城镇的招募按钮，直接跳过注册
+    //        if (optionId == "recruit_volunteers" &&
+    //            (menuId == "town" || menuId == "castle" || menuId == "village"))
+    //        {
+    //            return false; // 阻止注册该菜单项
+    //        }
 
-            // 其他菜单项正常注册
-            return true;
-        }
-    }
+    //        // 其他菜单项正常注册
+    //        return true;
+    //    }
+    //}
 }

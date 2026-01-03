@@ -16,17 +16,6 @@ using TaleWorlds.ObjectSystem;
 
 namespace ModifiedArmy
 {
-    /// <summary>
-    /// 封邑军队类型：封邑扈从、封邑军士、封邑民兵
-    /// </summary>
-    public enum FiefTroopType
-    {
-        Fief_Retinue,
-        Fief_Sergeant,
-        Fief_Militia,
-        Fief_Other
-    }
-
     public static class CampaignState
     {
         public static bool IsReady { get; set; } = false;
@@ -98,8 +87,10 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
                 campaignStarter.AddModel(new NewSettlementLoyaltyModel());
                 campaignStarter.AddModel(new NewClanTierModel());
+                campaignStarter.AddModel(new NewSettlementMilitiaModel());
 
                 // //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
+
                 campaignStarter.AddModel(new FiefSettlementTaxModel());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
                 campaignStarter.AddBehavior(new AiRecruitFiefTroopsBehavior());

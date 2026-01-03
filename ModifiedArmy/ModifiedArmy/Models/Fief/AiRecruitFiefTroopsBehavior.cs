@@ -1,13 +1,21 @@
-﻿using ModifiedArmy.Tool;
+﻿using HarmonyLib;
+using ModifiedArmy.common;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Recruitment;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.LinQuick;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -50,7 +58,7 @@ namespace ModifiedArmy.Models.Fief
                     foreach (Settlement settlement in clan.Settlements)
                     {
                         if (!settlement.IsTown && !settlement.IsCastle) continue;
-                        if (_fiefPartyManager.GetAvailableRecruitCount(settlement) > 0)
+                        if (_fiefPartyManager.GetAvailableTroopCount(settlement) > 0)
                         {
                             availableSettlements.Add(settlement);
                         }
@@ -107,7 +115,7 @@ namespace ModifiedArmy.Models.Fief
                 return;
 
             // 检查是否有可招募兵源
-            int recruitableCount = _fiefPartyManager.GetAvailableRecruitCount(settlement);
+            int recruitableCount = _fiefPartyManager.GetAvailableTroopCount(settlement);
             if (recruitableCount <= 0)
                 return;
 
@@ -172,4 +180,144 @@ namespace ModifiedArmy.Models.Fief
             return hasEnoughGold;
         }
     }
+
+    ///
+    /// 招募志愿兵消耗繁荣度或户数
+    /// 
+    [HarmonyPatch(typeof(RecruitmentVM), "OnDone")]
+    public static class RecruitmentVM_OnDone_ReplacePatch
+    {
+        public static void Prefix(RecruitmentVM __instance)
+        {
+            // __instance.RefreshPartyProperties();
+            int num = __instance.TroopsInCart.Sum((RecruitVolunteerTroopVM t) => t.Cost);
+            if (num > Hero.MainHero.Gold)
+            {
+                Debug.FailedAssert("Execution shouldn't come here. The checks should happen before", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem.ViewModelCollection\\GameMenu\\Recruitment\\RecruitmentVM.cs", "OnDone", 229);
+                return;
+            }
+
+            Settlement settlement = Settlement.CurrentSettlement;
+
+            int prosperityCost = 0;
+            int hearthCost = 0;
+            int count = 0;
+
+            foreach (RecruitVolunteerTroopVM recruitVolunteerTroopVM in __instance.TroopsInCart)
+            {
+                recruitVolunteerTroopVM.Owner.OwnerHero.VolunteerTypes[recruitVolunteerTroopVM.Index] = null;
+                MobileParty.MainParty.MemberRoster.AddToCounts(recruitVolunteerTroopVM.Character, 1, false, 0, 0, true, -1);
+                CampaignEventDispatcher.Instance.OnUnitRecruited(recruitVolunteerTroopVM.Character, 1);
+
+                if (settlement.IsTown)
+                {
+                    prosperityCost += RecruitmentCosts.TownProsperityCostPerTier * recruitVolunteerTroopVM.Character.Tier;
+                }
+                else if (settlement.IsVillage)
+                {
+                    hearthCost += RecruitmentCosts.VillageHearthCostPerTier * recruitVolunteerTroopVM.Character.Tier;
+                }
+                count += 1;
+            }
+
+            if (settlement.IsTown)
+            {
+                // 扣除繁荣度
+                settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
+
+                TextObject msg = GameTexts.FindText("str_recruitment_prosperity_cost");
+                msg.SetTextVariable("PARTY_NAME", MobileParty.MainParty.Name.ToString());
+                msg.SetTextVariable("SETTLEMENT_NAME", settlement.Name.ToString());
+                msg.SetTextVariable("TROOP_COUNT", count);
+                msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
+
+                ModLogger.Notice(msg.ToString());
+            }
+            else if (settlement.IsVillage)
+            {
+                // 扣除户数
+                settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
+
+                TextObject msg = GameTexts.FindText("str_recruitment_hearth_cost");
+                msg.SetTextVariable("PARTY_NAME", MobileParty.MainParty.Name.ToString());
+                msg.SetTextVariable("SETTLEMENT_NAME", settlement.Name.ToString());
+                msg.SetTextVariable("TROOP_COUNT", count);
+                msg.SetTextVariable("HEARTH_COST", hearthCost);
+
+                ModLogger.Notice(msg.ToString());
+            }
+
+            GiveGoldAction.ApplyBetweenCharacters(Hero.MainHero, null, num, true);
+            if (num > 0)
+            {
+                MBTextManager.SetTextVariable("GOLD_AMOUNT", MathF.Abs(num));
+                InformationManager.DisplayMessage(new InformationMessage(GameTexts.FindText("str_gold_removed_with_icon", null).ToString(), "event:/ui/notification/coins_negative"));
+            }
+            __instance.Deactivate();
+        }
+    }
+
+   // [HarmonyPatch(typeof(RecruitmentCampaignBehavior), "RecruitVolunteersFromNotable")]
+   // public static class RecruitmentCampaignBehavior_RecruitVolunteersFromNotable_ReplacePatch
+   // {
+
+   //     public static void Prefix(
+   //         RecruitmentCampaignBehavior __instance,
+   //         MobileParty mobileParty,
+   //         Settlement settlement)
+   //     {
+   //         if (((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f)
+			//{
+			//	foreach (Hero hero in settlement.Notables)
+			//	{
+			//		if (hero.IsAlive)
+			//		{
+			//			int num = hero.VolunteerTypes.FindIndexQ((CharacterObject x) => x != null);
+			//			if (num >= 0)
+			//			{
+			//				int num2 = MBRandom.RandomInt(6);
+			//				int num3 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(mobileParty.IsGarrison ? mobileParty.Party.Owner : mobileParty.LeaderHero, hero, -101);
+			//				if (num <= num3)
+			//				{
+			//					for (int i = num2; i < num2 + 6; i++)
+			//					{
+			//						int num4 = i % 6;
+			//						if (num4 >= num3)
+			//						{
+			//							break;
+			//						}
+			//						int num5 = (mobileParty.LeaderHero != null) ? ((int)MathF.Sqrt((float)mobileParty.PartyTradeGold / 10000f)) : 0;
+			//						float num6 = MBRandom.RandomFloat;
+			//						for (int j = 0; j < num5; j++)
+			//						{
+			//							float randomFloat = MBRandom.RandomFloat;
+			//							if (randomFloat > num6)
+			//							{
+			//								num6 = randomFloat;
+			//							}
+			//						}
+			//						if (mobileParty.Army != null)
+			//						{
+			//							float y = (mobileParty.Army.LeaderParty == mobileParty) ? 0.5f : 0.67f;
+			//							num6 = MathF.Pow(num6, y);
+			//						}
+			//						float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.Party.PartySizeLimit;
+			//						if (num6 > num7 - 0.1f)
+			//						{
+			//							CharacterObject characterObject = hero.VolunteerTypes[num4];
+			//							if (characterObject != null && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber && mobileParty.GetAvailableWageBudget() >= Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
+			//							{
+   //                                         __instance.GetRecruitVolunteerFromIndividual(mobileParty, characterObject, hero, num4);
+			//								break;
+			//							}
+			//						}
+			//					}
+			//				}
+			//			}
+			//		}
+			//	}
+			//}
+   //     }
+   // }
+
 }

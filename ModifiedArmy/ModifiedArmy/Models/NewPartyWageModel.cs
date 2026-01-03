@@ -1,4 +1,5 @@
 ﻿using Helpers;
+using ModifiedArmy.common;
 using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
@@ -247,10 +248,7 @@ namespace ModifiedArmy.Models
                 int countToCharge = number;
                 if (exemptableCount > 0)
                 {
-                    var type = SoldierTypeClassifier.GetSoldierType(character);
-                    if (type == FiefTroopType.Fief_Retinue ||
-                        type == FiefTroopType.Fief_Sergeant ||
-                        type == FiefTroopType.Fief_Militia)
+                    if (SoldierTypeClassifier.IsFiefTroop(character))
                     {
                         int consume = Math.Min(number, exemptableCount);
                         countToCharge = number - consume;

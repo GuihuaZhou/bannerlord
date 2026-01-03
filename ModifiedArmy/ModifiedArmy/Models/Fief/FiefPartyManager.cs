@@ -1,4 +1,5 @@
-﻿using ModifiedArmy.Tool;
+﻿using ModifiedArmy.common;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -6,6 +7,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
@@ -59,10 +61,12 @@ namespace ModifiedArmy.Models.Fief
         public override void RegisterEvents()
         {
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
-            //CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
+            // CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
             CampaignEvents.AfterSiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(this.OnAfterSiegeCompleted));
             CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, new Action<Settlement, bool, Hero, Hero, Hero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail>(this.OnSettlementOwnerChanged));
+            CampaignEvents.OnTroopRecruitedEvent.AddNonSerializedListener(this, new Action<Hero, Settlement, Hero, CharacterObject, int>(this.OnTroopRecruited));
+            // CampaignEvents.OnUnitRecruitedEvent.AddNonSerializedListener(this, new Action<CharacterObject, int>(this.OnUnitRecruited));
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -73,6 +77,7 @@ namespace ModifiedArmy.Models.Fief
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             SoldierTypeClassifier.InitializeAll();
+            FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
         }
 
@@ -89,7 +94,7 @@ namespace ModifiedArmy.Models.Fief
                 if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
                 {
                     ModLogger.Debug($"[InitializeFiefData] Refreshing existing data for {settlement.Name}");
-                    data.Reflush(true);
+                    data.Init();
                 }
                 else
                 {
@@ -152,7 +157,7 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Error("[Fief] Recruitment failed: invalid parameters.");
                 return 0;
             }
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
+            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
                 return data.RecruitTroopsToParty(targetParty);
             }
@@ -170,7 +175,7 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Error("[Fief] Disband failed: settlement is null.");
                 return;
             }
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
+            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
                 data.ReturnTroopsToSettlement(mobileParty);
             }
@@ -196,7 +201,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         /// <param name="settlement">目标封邑</param>
         /// <returns>可招募人数，若封邑无效或非玩家所有则返回 0</returns>
-        public int GetAvailableRecruitCount(Settlement settlement)
+        public int GetAvailableTroopCount(Settlement settlement)
         {
             if (settlement == null) return 0;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
@@ -259,111 +264,30 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 获取指定封邑中扈从（Retinue）的当前总数量。
+        /// 获取指定封邑士兵的实际数量
         /// </summary>
-        public int GetFiefRetinueCount(Settlement settlement)
+        public Dictionary<SoldierType, int> GetFiefTroopCounts(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetRetinueCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中扈从（Retinue）的最大允许数量。
-        /// </summary>
-        public int GetFiefMaxRetinueCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetMaxRetinueCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中处于征召状态的扈从（Retinue）数量。
-        /// </summary>
-        public int GetRecruitedRetinueCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
+            if (settlement == null) return null;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-            {
-                return data.GetRecruitedRetinueCount();
-            }
-            return 0;
+                return data.GetTroopCounts();
+            return null;
         }
 
         /// <summary>
-        /// 获取指定封邑中军士（Sergeant）的当前总数量。
+        /// 获取指定封邑士兵的最大数量
         /// </summary>
-        public int GetFiefSergeantCount(Settlement settlement)
+        public Dictionary<SoldierType, int> GetFiefMaxTroopCounts(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetSergeantCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中军士（Sergeant）的最大允许数量。
-        /// </summary>
-        public int GetFiefMaxSergeantCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetMaxSergeantCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中处于征召状态的军士（Sergeant）数量。
-        /// </summary>
-        public int GetRecruitedSergeantCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
+            if (settlement == null) return null;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-            {
-                return data.GetRecruitedSergeantCount();
-            }
-            return 0;
+                return data.GetMaxTroopCounts();
+            return null;
         }
 
         /// <summary>
-        /// 获取指定封邑中民兵（Militia）的当前总数量。
+        /// 监听围城结束事件
         /// </summary>
-        public int GetFiefMilitiaCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetMilitiaCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中民兵（Militia）的最大允许数量。
-        /// </summary>
-        public int GetFiefMaxMilitiaCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data))
-                return data.GetMaxMilitiaCount();
-            return 0;
-        }
-
-        /// <summary>
-        /// 获取指定封邑中处于征召状态的民兵（Militia）数量。
-        /// </summary>
-        public int GetRecruitedMilitiaCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-            {
-                return data.GetRecruitedMilitiaCount();
-            }
-            return 0;
-        }
-
-
         private void OnAfterSiegeCompleted(Settlement siegeSettlement, MobileParty attackerParty, bool isWin, MapEvent.BattleTypes battleType)
         {
             if (battleType != MapEvent.BattleTypes.Siege && battleType != MapEvent.BattleTypes.SallyOut)
@@ -375,7 +299,9 @@ namespace ModifiedArmy.Models.Fief
             fiefData.OnSiegeCompleted(isWin);
         }
 
-
+        /// <summary>
+        /// 监听定居点所有者家族变化事件
+        /// </summary>
         private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim, Hero newOwner, Hero previousOwner, Hero capturerHero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
         {
             if (settlement == null) return;
@@ -402,5 +328,38 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
+        /// <summary>
+        /// 监听招募事件，扣除定居点繁荣度
+        /// </summary>
+        /// 
+        private void OnTroopRecruited(
+            Hero recruiter, 
+            Settlement settlement, 
+            Hero recruitmentSource, 
+            CharacterObject troop, 
+            int count)
+        {
+            // 安全检查
+            if (settlement == null || count <= 0)
+                return;
+
+            if (troop.Occupation != Occupation.Soldier) 
+                return;
+
+            if (settlement.IsTown)
+            {
+                // 扣除繁荣度
+                int prosperityCost = count * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
+                settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
+                ModLogger.Debug($"[ProsperityCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {prosperityCost:F1}");
+            }
+            else if (settlement.IsVillage)
+            {
+                // 扣除户数
+                int hearthCost = count * RecruitmentCosts.VillageHearthCostPerTier * troop.Tier;
+                settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
+                ModLogger.Debug($"[HearthCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {hearthCost:F1}");
+            }
+        }
     }
 }

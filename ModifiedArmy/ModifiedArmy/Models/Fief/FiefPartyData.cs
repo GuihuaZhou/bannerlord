@@ -1,8 +1,10 @@
 ﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -55,174 +57,6 @@ namespace ModifiedArmy.Models.Fief
             Sergeant = sergeant;
             Militia = militia;
             Total = retinue + sergeant + militia;
-        }
-    }
-
-    /// <summary>
-    /// 提供采邑部队容量相关的计算与分析功能。
-    /// 包括：基于定居点属性计算最大兵力上限，
-    /// 以及从部队名单中统计当前三类采邑士兵的实际数量。
-    /// </summary>
-    public static class FiefTroopCapacity
-    {
-        /// <summary>
-        /// 计算指定定居点的采邑部队最大兵力上限（Total Limit）。
-        /// 上限基于定居点类型、附属村庄数量、繁荣度等因素综合确定。
-        /// </summary>
-        /// <param name="settlement">目标定居点（城镇或城堡）。</param>
-        /// <returns>该定居点可维持的采邑部队最大人数；若输入无效则返回 0。</returns>
-        public static int CalculateSizeLimit(Settlement settlement)
-        {
-            if (settlement == null)
-                return 0;
-
-            int baseLimit = settlement.IsTown ? 250 : 200;
-            int boundVillageCount = settlement.BoundVillages?.Count ?? 0;
-            return baseLimit + (boundVillageCount * 30);
-        }
-
-        /// <summary>
-        /// 从给定的部队名单中统计三类采邑士兵的实际数量（含健康兵与伤员）。
-        /// </summary>
-        /// <param name="roster">要分析的部队名单，通常来自 MilitiaParty 的 MemberRoster。</param>
-        /// <returns>
-        /// 包含总兵力及 Retinue、Sergeant、Militia 三类兵种数量的结构体。
-        /// 若 roster 为 null，则返回全零计数。
-        /// </returns>
-        /// <seealso cref="FiefTroopCounts"/>
-        public static FiefTroopCounts AnalyzeCurrentManpower(TroopRoster roster)
-        {
-            if (roster == null)
-                return new FiefTroopCounts(0, 0, 0);
-
-            int retinue = 0, sergeant = 0, militia = 0;
-
-            foreach (var element in roster.GetTroopRoster())
-            {
-                var troop = element.Character;
-                var count = element.Number + element.WoundedNumber; // 健康 + 伤员
-                if (troop == null || count <= 0)
-                    continue;
-
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-                switch (type)
-                {
-                    case FiefTroopType.Fief_Retinue:
-                        retinue += count;
-                        break;
-                    case FiefTroopType.Fief_Sergeant:
-                        sergeant += count;
-                        break;
-                    case FiefTroopType.Fief_Militia:
-                        militia += count;
-                        break;
-                }
-            }
-
-            return new FiefTroopCounts(retinue, sergeant, militia);
-        }
-
-        /// <summary>
-        /// 将指定分遣队列表中的兵力按兵种类型累加到给定的计数器。
-        /// </summary>
-        /// <param name="detachments">分遣队列表，可为 null</param>
-        /// 
-        public static FiefTroopCounts AccumulateDetachments(List<FiefTroopDetachment> detachments)
-        {
-            int retinue = 0, sergeant = 0, militia = 0;
-
-            if (detachments != null)
-            {
-                foreach (var detachment in detachments)
-                {
-                    if (detachment?.IsEmpty() == false)
-                    {
-                        foreach (var kvp in detachment.Troops)
-                        {
-                            var troop = kvp.Key;
-                            int count = kvp.Value;
-                            if (troop == null || count <= 0) continue;
-
-                            var type = SoldierTypeClassifier.GetSoldierType(troop);
-                            switch (type)
-                            {
-                                case FiefTroopType.Fief_Retinue:
-                                    retinue += count;
-                                    break;
-                                case FiefTroopType.Fief_Sergeant:
-                                    sergeant += count;
-                                    break;
-                                case FiefTroopType.Fief_Militia:
-                                    militia += count;
-                                    break;
-                            }
-                        }
-                    }
-                }
-            }
-
-            return new FiefTroopCounts(retinue, sergeant, militia);
-        }
-    }
-    /// <summary>
-    /// 封邑部队组成配置：根据 Settlement 类型初始化兵种权重。
-    /// 每个小队总人数为 10，权重用于计算理想兵种数量。
-    /// </summary>
-    public class FiefTroopComposition
-    {
-        private float _retinueWeight;
-        private float _sergeantWeight;
-        private float _militiaWeight;
-        private readonly Settlement _settlement;
-
-        // 只读属性（公开访问）
-        public float RetinueWeight => _retinueWeight;
-        public float SergeantWeight => _sergeantWeight;
-        public float MilitiaWeight => _militiaWeight;
-
-        public float TotalWeight = 10f; // 始终为 10
-
-        private void flush()
-        {
-            float prosperity = _settlement.Town.Prosperity;
-            if (_settlement.IsTown)
-            {
-                int level = (int)(prosperity / 5000f);
-                level = Math.Min(level, 2);
-                _retinueWeight = 0.5f + level * 0.25f;
-                _sergeantWeight = 4.5f + level * 0.25f;
-            }
-            else if (_settlement.IsCastle)
-            {
-                int level = (int)(prosperity / 500f);
-                level = Math.Min(level, 4);
-                _retinueWeight = 1.0f + level * 0.25f;
-                _sergeantWeight = 2.0f + level * 0.25f;
-            }
-            else
-            {
-                _retinueWeight = 1.0f;
-                _sergeantWeight = 2.0f;
-            }
-
-            // 自动计算民兵权重：确保总和为 10
-            _militiaWeight = TotalWeight - _retinueWeight - _sergeantWeight;
-        }
-
-        /// <summary>
-        /// 根据封邑类型初始化兵种权重（总权重 = 10）
-        /// </summary>
-        public FiefTroopComposition(Settlement settlement)
-        {
-            _settlement = settlement;
-            if (_settlement != null)
-                flush();
-        }
-
-        public void update()
-        {
-            if (_settlement != null)
-                flush();
         }
     }
 
@@ -364,7 +198,8 @@ namespace ModifiedArmy.Models.Fief
     [SaveableRootClass(3)]
     public class FiefPartyData
     {
-        [SaveableField(1)] private Settlement _settlement;
+        [SaveableField(1)] 
+        private Settlement _settlement;
         /// <summary>
         /// 封邑就绪军队容器
         /// </summary>
@@ -386,107 +221,145 @@ namespace ModifiedArmy.Models.Fief
         public int SergeantCount { get; private set; } = 0;
         [SaveableProperty(5)] 
         public int MilitiaCount { get; private set; } = 0;
-        
-        public int TotalTroopCount;
 
-        private FiefTroopComposition _troopComposition;
+        /// <summary>
+        /// 封邑士兵类型和实际数量
+        /// <summary>
+        public Dictionary<SoldierType, int> _soldierTypeCounts { get; private set; }
+
+        /// <summary>
+        /// 当前封邑使用的部队模板
+        /// </summary>
+        private FiefPartyTemplate _fiefPartyTemplate;
+
+        /// <summary>
+        /// 封邑士兵类型和最大数量
+        /// <summary>
+        public Dictionary<SoldierType, int> _soldierTypeMaxCounts { get; private set; }
+
+        /// <summary>
+        /// 封邑士兵类型和权重
+        /// <summary>
+        public Dictionary<SoldierType, int> _soldierTypeWeights { get; private set; }
+
+        /// <summary>
+        /// 封邑士兵总权重
+        /// <summary>
+        private int _totalWeight;
+
+        /// <summary>
+        /// 封邑士兵总人数
+        /// <summary>
+        public int _totalTroopCount { get; private set; }
 
         /// <summary>
         /// 封邑军队最大人数限制
         /// </summary>
-        public int TotalLimit { get; private set; }
+        public int _totalLimit { get; private set; }
 
-        // === 兵种上限（由封邑决定）===
-        public int MaxRetinue { get; private set; }
-        public int MaxSergeant { get; private set; }
-        public int MaxMilitia { get; private set; }
-
-        /// <summary>
-        /// 当前封邑使用的部队模板（不保存到存档）
-        /// </summary>
-        private FiefPartyTemplate _fiefPartyTemplate;
 
         public FiefPartyData() { }
         public FiefPartyData(Settlement settlement)
         {
             _settlement = settlement;
-            Reflush();
+            Init();
         }
 
         /// <summary>
         /// 获取采邑部队的最大数量。
         /// </summary>
         /// 
-        public int GetFiefTroopLimit() => TotalLimit;
+        public int GetFiefTroopLimit() => _totalLimit;
 
         /// <summary>
-        /// 获取扈从（Retinue）的当前总数量（包括就绪、征召中、遣返中）。
+        /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
-        public int GetRetinueCount() => RetinueCount;
+        public Dictionary<SoldierType, int> GetTroopCounts() => _soldierTypeCounts;
 
         /// <summary>
-        /// 获取扈从（Retinue）的最大允许数量。
+        /// 获取封邑士兵的最大数量
         /// </summary>
-        public int GetMaxRetinueCount() => MaxRetinue;
+        public Dictionary<SoldierType, int> GetMaxTroopCounts() => _soldierTypeMaxCounts;
+
 
         /// <summary>
-        /// 获取当前处于征召状态的扈从（Retinue）数量。
+        /// 从给定的部队名单中统计采邑士兵的实际数量（含健康兵与伤员）。
         /// </summary>
-        public int GetRecruitedRetinueCount()
+        public void AnalyzeCurrentManpower(
+            TroopRoster roster, 
+            Dictionary<SoldierType, int> tmpSoldierTypeCounts)
         {
-            var counts = FiefTroopCapacity.AccumulateDetachments(RecruitedTroopDetachmentList);
-            return counts.Retinue;
+            if (roster == null)
+                return;
+
+            foreach (var element in roster.GetTroopRoster())
+            {
+                var troop = element.Character;
+                var count = element.Number + element.WoundedNumber; // 健康 + 伤员
+                if (troop == null || count <= 0)
+                    continue;
+
+                if (!_fiefPartyTemplate.IsEnableTroop(troop))
+                    continue;
+
+                var type = SoldierTypeClassifier.GetSoldierType(troop);
+                if (tmpSoldierTypeCounts.ContainsKey(type))
+                    tmpSoldierTypeCounts[type] += count;
+                else
+                    tmpSoldierTypeCounts[type] = count;
+            }
         }
 
         /// <summary>
-        /// 获取军士（Sergeant）的当前总数量（包括就绪、征召中、遣返中）。
+        /// 将指定分遣队列表中的兵力按兵种类型累加到给定的计数器。
         /// </summary>
-        public int GetSergeantCount() => SergeantCount;
-
-        /// <summary>
-        /// 获取军士（Sergeant）的最大允许数量。
-        /// </summary>
-        public int GetMaxSergeantCount() => MaxSergeant;
-
-        /// <summary>
-        /// 获取当前处于征召状态的军士（Sergeant）数量。
-        /// </summary>
-        public int GetRecruitedSergeantCount()
+        /// <param name="detachments">分遣队列表，可为 null</param>
+        /// 
+        public void AccumulateDetachments(
+            List<FiefTroopDetachment> detachments,
+            Dictionary<SoldierType, int> tmpSoldierTypeCounts)
         {
-            var counts = FiefTroopCapacity.AccumulateDetachments(RecruitedTroopDetachmentList);
-            return counts.Sergeant;
+            if (detachments != null)
+            {
+                foreach (var detachment in detachments)
+                {
+                    if (detachment?.IsEmpty() == false)
+                    {
+                        foreach (var kvp in detachment.Troops)
+                        {
+                            var troop = kvp.Key;
+                            int count = kvp.Value;
+                            if (troop == null || count <= 0) continue;
+
+                            var type = SoldierTypeClassifier.GetSoldierType(troop);
+                            if (tmpSoldierTypeCounts.ContainsKey(type))
+                                tmpSoldierTypeCounts[type] += count;
+                            else
+                                tmpSoldierTypeCounts[type] = count;
+                        }
+                    }
+                }
+            }
         }
 
         /// <summary>
-        /// 获取民兵（Militia）的当前总数量（包括就绪、征召中、遣返中）。
+        /// 获取就绪的封邑士兵数量
         /// </summary>
-        public int GetMilitiaCount() => MilitiaCount;
-
-        /// <summary>
-        /// 获取民兵（Militia）的最大允许数量。
-        /// </summary>
-        public int GetMaxMilitiaCount() => MaxMilitia;
-
-        /// <summary>
-        /// 获取当前处于征召状态的民兵（Militia）数量。
-        /// </summary>
-        public int GetRecruitedMilitiaCount()
-        {
-            var counts = FiefTroopCapacity.AccumulateDetachments(RecruitedTroopDetachmentList);
-            return counts.Militia;
-        }
-
         public int GetReadyFiefTroopCount()
         {
-            var counts = FiefTroopCapacity.AnalyzeCurrentManpower(FiefTroops);
-            return counts.Retinue + counts.Sergeant + counts.Militia;
+            Dictionary<SoldierType, int> tmpSoldierTypeCounts = new();
+            AnalyzeCurrentManpower(FiefTroops, tmpSoldierTypeCounts);
+            return tmpSoldierTypeCounts.Values.Sum();
         }
 
-
+        /// <summary>
+        /// 获取征召的封邑士兵数量
+        /// </summary>
         public int GetRecruitedFiefTroopCount()
         {
-            var recruitedCounts = FiefTroopCapacity.AccumulateDetachments(RecruitedTroopDetachmentList);
-            return recruitedCounts.Retinue + recruitedCounts.Sergeant + recruitedCounts.Militia;
+            Dictionary<SoldierType, int> tmpSoldierTypeCounts = new();
+            AccumulateDetachments(RecruitedTroopDetachmentList, tmpSoldierTypeCounts);
+            return tmpSoldierTypeCounts.Values.Sum();
         }
 
         /// <summary>
@@ -495,32 +368,35 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private void SyncManpowerCounters()
         {
-            if (FiefTroops == null)
+            foreach (SoldierType type in Enum.GetValues(typeof(SoldierType)))
             {
-                TotalTroopCount = RetinueCount = SergeantCount = MilitiaCount = 0;
-                return;
+                _soldierTypeCounts[type] = 0;
             }
 
             // 1. 就绪部队
-            var baseCounts = FiefTroopCapacity.AnalyzeCurrentManpower(FiefTroops);
-
+            AnalyzeCurrentManpower(FiefTroops, _soldierTypeCounts);
             // 2. 征召中部队
-            var recruitedCounts = FiefTroopCapacity.AccumulateDetachments(RecruitedTroopDetachmentList);
+            AccumulateDetachments(RecruitedTroopDetachmentList, _soldierTypeCounts);
 
             // 3. 归还冷却中部队
-            var returnedCounts = FiefTroopCapacity.AccumulateDetachments(ReturnedTroopDetachmentList);
+            AccumulateDetachments(ReturnedTroopDetachmentList, _soldierTypeCounts);
 
-            // 4. 合并
-            RetinueCount = baseCounts.Retinue + recruitedCounts.Retinue + returnedCounts.Retinue;
-            SergeantCount = baseCounts.Sergeant + recruitedCounts.Sergeant + returnedCounts.Sergeant;
-            MilitiaCount = baseCounts.Militia + recruitedCounts.Militia + returnedCounts.Militia;
+            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+        }
 
-            TotalTroopCount = RetinueCount + SergeantCount + MilitiaCount;
 
-            //ModLogger.Debug($"[SyncCounters] Settlement: {_settlement?.Name}, " +
-            //               $"R={RetinueCount}/{MaxRetinue}, " +
-            //               $"S={SergeantCount}/{MaxSergeant}, " +
-            //               $"M={MilitiaCount}/{MaxMilitia}");
+        /// <summary>
+        /// 计算指定定居点的采邑部队最大兵力上限（Total Limit）。
+        /// 上限基于定居点类型、附属村庄数量、繁荣度等因素综合确定。
+        /// </summary>
+        /// <returns>该定居点可维持的采邑部队最大人数；若输入无效则返回 0。</returns>
+        public int CalculateSizeLimit()
+        {
+            if (_settlement == null || _fiefPartyTemplate == null)
+                return 0;
+
+            int boundVillageCount = _settlement.BoundVillages?.Count ?? 0;
+            return _fiefPartyTemplate.BaseLimit + (boundVillageCount * _fiefPartyTemplate.VillageBonus);
         }
 
         /// <summary>
@@ -541,6 +417,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlementWasCaptured)
             {
                 RecruitedTroopDetachmentList.Clear();
+                ModLogger.Info($"Settlement {_settlement.Name} captured - cleared all recruited troop detachments.");
             }
 
             SyncManpowerCounters();
@@ -552,111 +429,44 @@ namespace ModifiedArmy.Models.Fief
             SyncManpowerCounters();
         }
 
-        /// <summary>
-        /// 检查封邑部队是否超限。若超限，则将所有兵种按 Tier 升序排序，
-        /// 从健康兵中删除（使用 GetTroopCount），直到各类总兵力不超限。
-        /// </summary>
-        public void EnforceTroopLimits()
-        {
-            if (FiefTroops == null)
-                return;
-
-            // 1. 计算三类兵种的超限数量（基于总兵力 = 健康 + 伤员）
-            int excessMilitia = Math.Max(0, MilitiaCount - MaxMilitia);
-            int excessSergeant = Math.Max(0, SergeantCount - MaxSergeant);
-            int excessRetinue = Math.Max(0, RetinueCount - MaxRetinue);
-
-            if ((excessMilitia | excessSergeant | excessRetinue) == 0)
-                return;
-
-            // 2. 收集所有唯一的兵种（CharacterObject）
-            var uniqueTroops = new List<CharacterObject>();
-            foreach (var element in FiefTroops.GetTroopRoster())
-            {
-                if (element.Character != null)
-                    uniqueTroops.Add(element.Character);
-            }
-
-            if (uniqueTroops.Count == 0)
-                return;
-
-            // 3. 按 Tier 升序排序（低阶优先）
-            uniqueTroops.Sort((a, b) => a.Tier.CompareTo(b.Tier));
-
-            // 4. 遍历排序后的兵种，仅使用 GetTroopCount 查询可删数量
-            int removedRetinue = 0, removedSergeant = 0, removedMilitia = 0;
-            foreach (var troop in uniqueTroops)
-            {
-                if ((excessMilitia | excessSergeant | excessRetinue) == 0)
-                    break;
-
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-                int currentExcess = type switch
-                {
-                    FiefTroopType.Fief_Militia => excessMilitia,
-                    FiefTroopType.Fief_Sergeant => excessSergeant,
-                    FiefTroopType.Fief_Retinue => excessRetinue,
-                    _ => 0
-                };
-
-                if (currentExcess <= 0)
-                    continue;
-
-                int troopCount = FiefTroops.GetTroopCount(troop);
-                if (troopCount <= 0)
-                    continue;
-
-                int removeNow = Math.Min(troopCount, currentExcess);
-                if (removeNow > 0)
-                {
-                    FiefTroops.RemoveTroop(troop, removeNow, default(UniqueTroopDescriptor), 0);
-
-                    // 更新超限计数
-                    switch (type)
-                    {
-                        case FiefTroopType.Fief_Retinue:
-                            removedRetinue += removeNow;
-                            excessRetinue -= removeNow;
-                            break;
-                        case FiefTroopType.Fief_Sergeant:
-                            removedSergeant += removeNow;
-                            excessSergeant -= removeNow;
-                            break;
-                        case FiefTroopType.Fief_Militia:
-                            removedMilitia += removeNow;
-                            excessMilitia -= removeNow;
-                            break;
-                    }
-                }
-            }
-
-            if (removedRetinue > 0 || removedSergeant > 0 || removedMilitia > 0)
-            {
-                SyncManpowerCounters();
-                if (_settlement.OwnerClan == Clan.PlayerClan)
-                {
-                    TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_troops_removed_due_to_limit");
-                    msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-                    msg.SetTextVariable("RETINUE", removedRetinue);
-                    msg.SetTextVariable("SERGEANT", removedSergeant);
-                    msg.SetTextVariable("MILITIA", removedMilitia);
-                    ModLogger.Notice(msg.ToString());
-                }
-            }
-        }
-
         private void CalculateLimit()
         {
-            _troopComposition.update();
-            TotalLimit = FiefTroopCapacity.CalculateSizeLimit(_settlement);
+            if (_totalLimit == 0)
+                _totalLimit = CalculateSizeLimit();
 
-            MaxRetinue = Math.Max(0, (int)MathF.Floor((TotalLimit * _troopComposition.RetinueWeight) / _troopComposition.TotalWeight));
-            MaxSergeant = Math.Max(0, (int)MathF.Floor((TotalLimit * _troopComposition.SergeantWeight) / _troopComposition.TotalWeight));
-            MaxMilitia = TotalLimit - MaxRetinue - MaxSergeant;
-            MaxMilitia = Math.Max(0, MaxMilitia);
+            _soldierTypeWeights = _fiefPartyTemplate.GetSoldierTypeWeights();
+            _totalWeight = _soldierTypeWeights.Values.Sum();
+            if (_totalWeight <= 0)
+            {
+                _totalWeight = 1; // 避免除零
+                ModLogger.Warn($"[FiefSettlementData] Total weight is zero for '{_settlement.Name}', clamped to 1.");
+                return;
+            }
 
-            ModLogger.Debug($"[FiefSettlementData] Calculated for '{_settlement.Name}' with limits: " +
-                           $"R≤{MaxRetinue}, S≤{MaxSergeant}, M≤{MaxMilitia}, T≤{TotalLimit}");
+            _soldierTypeMaxCounts ??= new Dictionary<SoldierType, int>();
+            _soldierTypeCounts ??= new Dictionary<SoldierType, int>();
+            foreach (SoldierType type in Enum.GetValues(typeof(SoldierType)))
+            {
+                _soldierTypeMaxCounts[type] = 0;
+                _soldierTypeCounts[type] = 0;
+            }
+
+            // 按权重分配上限
+            foreach (var kvp in _soldierTypeWeights)
+            {
+                if (kvp.Value <= 0) continue;
+                int max = (int)MathF.Floor((_totalLimit * kvp.Value) / (float)_totalWeight);
+                _soldierTypeMaxCounts[kvp.Key] = Math.Max(0, max);
+            }
+
+            // 日志
+            var nonZero = _soldierTypeMaxCounts
+                .Where(kvp => kvp.Value > 0)
+                .Select(kvp => $"{kvp.Key}≤{kvp.Value}")
+                .ToArray();
+
+            string detail = nonZero.Length > 0 ? string.Join(", ", nonZero) : "no limits";
+            ModLogger.Debug($"[FiefSettlementData] Limits for '{_settlement.Name}': {detail}, Total≤{_totalLimit}");
         }
 
 
@@ -692,17 +502,14 @@ namespace ModifiedArmy.Models.Fief
             return template;
         }
 
-        public bool Reflush(bool first_flag = false)
+        public bool Init()
         {
             if (_settlement == null)
             {
-                ModLogger.Error("[Reflush] _settlement is NULL! Skipping initialization.");
-                TotalLimit = 0;
+                ModLogger.Error("[Init] _settlement is NULL! Skipping initialization.");
+                _totalLimit = 0;
                 return false;
             }
-
-            if (_troopComposition == null)
-                _troopComposition = new FiefTroopComposition(_settlement);
 
             if (ReturnedTroopDetachmentList == null)
                 ReturnedTroopDetachmentList = new List<FiefTroopDetachment>();
@@ -710,18 +517,13 @@ namespace ModifiedArmy.Models.Fief
             if (RecruitedTroopDetachmentList == null)
                 RecruitedTroopDetachmentList = new List<FiefTroopDetachment>();
 
-
-            CalculateLimit();
-
             var group = BasicTroopGroupManager.GetGroupForCulture(_settlement.Culture);
-
             if (group == null)
             {
                 ModLogger.Warn($"No baisc troop for {_settlement.Culture.Name}");
                 return false;
             }
 
-            
             if (_fiefPartyTemplate == null)
             {
                 _fiefPartyTemplate = ResolveFiefPartyTemplate(_settlement);
@@ -733,13 +535,14 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
+            CalculateLimit();
+
             if (FiefTroops == null)
             {
                 if (_settlement.MilitiaPartyComponent != null
                     && _settlement.MilitiaPartyComponent.MobileParty.IsActive)
                 {
                     FiefTroops = _settlement.MilitiaPartyComponent.MobileParty.MemberRoster;
-                    SyncManpowerCounters();
                 }
                 else
                 {
@@ -747,21 +550,9 @@ namespace ModifiedArmy.Models.Fief
                     return false;
                 }
             }
-            else if (first_flag)
-            {
-                SyncManpowerCounters();
-            }
-            else
-            {
-                EnforceTroopLimits();
-            }
 
+            SyncManpowerCounters();
             return true;
-        }
-        
-        public void AfterLoad()
-        {
-            Reflush(true);
         }
 
         private CharacterObject WeightedRandomSelectFromBasicTroopEntries(List<BasicTroopEntry> candidates)
@@ -769,11 +560,11 @@ namespace ModifiedArmy.Models.Fief
             if (candidates == null || candidates.Count == 0)
                 return null;
 
-            int totalWeight = candidates.Sum(c => c.Weight);
-            if (totalWeight <= 0)
+            int tmpTotalWeight = candidates.Sum(c => c.Weight);
+            if (tmpTotalWeight <= 0)
                 return candidates[0].Troop;
 
-            int rand = MBRandom.RandomInt(totalWeight); // 使用整数随机更高效且避免浮点误差
+            int rand = MBRandom.RandomInt(tmpTotalWeight); // 使用整数随机更高效且避免浮点误差
             int sum = 0;
 
             foreach (var candidate in candidates)
@@ -786,51 +577,31 @@ namespace ModifiedArmy.Models.Fief
             return candidates[candidates.Count - 1].Troop;
         }
 
-        private (Dictionary<CharacterObject, int> retinue,
-                 Dictionary<CharacterObject, int> sergeant,
-                 Dictionary<CharacterObject, int> militia)
-        GenerateRecruitTemplates(int retinueCount, int sergeantCount, int militiaCount)
+        // 根据模板生成新troops
+        private Dictionary<CharacterObject, int> 
+        GenerateNewTroops(Dictionary<SoldierType, int> tmpSoldierTypeSize)
         {
-            var retinueDict = new Dictionary<CharacterObject, int>();
-            for (int i = 0; i < retinueCount; i++)
+            // 获取基础troops
+            Dictionary<SoldierType, List<BasicTroopEntry>> tmpBasicTroops = _fiefPartyTemplate.GetBasicTroops();
+
+            Dictionary<CharacterObject, int> tmpNewTroops = new();
+            // 遍历生成新的basic troops
+            foreach (var kvp in tmpSoldierTypeSize)
             {
-                var troop = WeightedRandomSelectFromBasicTroopEntries(_fiefPartyTemplate.RetinueTroops);
-                if (troop != null)
+                for (int i = 0; i < kvp.Value; i++)
                 {
-                    if (retinueDict.ContainsKey(troop))
-                        retinueDict[troop]++;
-                    else
-                        retinueDict[troop] = 1;
+                    var troop = WeightedRandomSelectFromBasicTroopEntries(tmpBasicTroops[kvp.Key]);
+                    if (troop != null)
+                    {
+                        if (tmpNewTroops.ContainsKey(troop))
+                            tmpNewTroops[troop]++;
+                        else
+                            tmpNewTroops[troop] = 1;
+                    }
                 }
             }
 
-            var sergeantDict = new Dictionary<CharacterObject, int>();
-            for (int i = 0; i < sergeantCount; i++)
-            {
-                var troop = WeightedRandomSelectFromBasicTroopEntries(_fiefPartyTemplate.SergeantTroops);
-                if (troop != null)
-                {
-                    if (sergeantDict.ContainsKey(troop))
-                        sergeantDict[troop]++;
-                    else
-                        sergeantDict[troop] = 1;
-                }
-            }
-
-            var militiaDict = new Dictionary<CharacterObject, int>();
-            for (int i = 0; i < militiaCount; i++)
-            {
-                var troop = WeightedRandomSelectFromBasicTroopEntries(_fiefPartyTemplate.MilitiaTroops);
-                if (troop != null)
-                {
-                    if (militiaDict.ContainsKey(troop))
-                        militiaDict[troop]++;
-                    else
-                        militiaDict[troop] = 1;
-                }
-            }
-
-            return (retinueDict, sergeantDict, militiaDict);
+            return tmpNewTroops;
         }
 
 
@@ -838,7 +609,7 @@ namespace ModifiedArmy.Models.Fief
         /// 从给定的 TroopRoster 中提取所有采邑类型士兵，返回一个新的仅含采邑部队的 TroopRoster。
         /// </summary>
         /// <param name="roster">源 TroopRoster（例如来自 MemberRoster.GetTroopRoster()）</param>
-        /// <returns>新的 TroopRoster，仅包含 Fief_Retinue / Fief_Sergeant / Fief_Militia 类型的士兵</returns>
+        /// <returns>新的 TroopRoster，仅包含 Retinue / Sergeant / Militia 类型的士兵</returns>
         public TroopRoster GetFiefTroopRoster()
         {
             if (FiefTroops == null)
@@ -849,53 +620,75 @@ namespace ModifiedArmy.Models.Fief
             foreach (var element in FiefTroops.GetTroopRoster())
             {
                 var troop = element.Character;
+                if (!_fiefPartyTemplate.IsEnableTroop(troop))
+                {
+                    continue;
+                }
+
                 var count = element.Number + element.WoundedNumber;
                 if (troop == null || count <= 0)
                     continue;
 
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-                if (type is FiefTroopType.Fief_Retinue or
-                                    FiefTroopType.Fief_Sergeant or
-                                    FiefTroopType.Fief_Militia)
-                {
-                    if (element.Number >= 0)
-                        fiefRoster.AddToCounts(troop, element.Number);
-                    if (element.WoundedNumber >= 0)
-                        fiefRoster.AddToCounts(troop, 0, false, element.WoundedNumber);
-                }
+                if (element.Number >= 0)
+                    fiefRoster.AddToCounts(troop, element.Number);
+                if (element.WoundedNumber >= 0)
+                    fiefRoster.AddToCounts(troop, 0, false, element.WoundedNumber);
             }
 
             return fiefRoster;
         }
 
         /// <summary>
-        /// 获取每周自动补员的小队数量。
-        /// 默认返回 2，后期可基于繁荣度、领主能力等动态计算。
+        /// 获取每周自动补员的数量
         /// </summary>
         private int GetWeeklyUpdateCount()
         {
-            if (_settlement == null) return 0;
+            if (_settlement == null || _fiefPartyTemplate == null) 
+                return 0;
 
-            var settings = Main.ModSettings;
-            float prosperity = _settlement.Town.Prosperity;
+            var template = _fiefPartyTemplate;
+            int minReinforcements = template.MinWeeklySupplement;
+            int maxReinforcements = template.MaxWeeklySupplement;
 
-            int baseReinforcements = settings.BaseReinforcements;
-            int maxReinforcements = settings.MaxReinforcements;
+            // 如果 min >= max，直接返回 min（避免无效区间）
+            if (minReinforcements >= maxReinforcements)
+                return minReinforcements;
+
+            // === 1. 获取繁荣度 ===
+            float prosperity = _settlement.Town.Prosperity; // 使用 Settlement 的 Prosperity 属性
+            float prosperityRatio = 0f;
 
             if (_settlement.IsTown)
             {
-                int divisor = Math.Max(1, settings.TownProsperityPer);
-                int extraGroups = (int)(prosperity / divisor);
-                baseReinforcements += extraGroups * 10;
+                prosperityRatio = MathF.Min(1f, prosperity / RecruitmentCosts.TownMaxReinforcementProsperityThreshold); 
             }
             else if (_settlement.IsCastle)
             {
-                int divisor = Math.Max(1, settings.CastleProsperityPer);
-                int extraGroups = (int)(prosperity / divisor);
-                baseReinforcements += extraGroups * 10;
+                prosperityRatio = MathF.Min(1f, prosperity / RecruitmentCosts.CastleMaxReinforcementProsperityThreshold); 
             }
 
-            return Math.Min(maxReinforcements, baseReinforcements);
+            // === 2. 获取附属村庄总户数 ===
+            float totalHearth = 0;
+            int villageCount = 0;
+            foreach (var village in _settlement.BoundVillages)
+            {
+                if (!village.IsDeserted)
+                    totalHearth += village.Hearth;
+                
+                villageCount += 1;
+            }
+            float hearthRatio = MathF.Min(1f, totalHearth / (RecruitmentCosts.VillageMaxReinforcementHearthThreshold * villageCount)); 
+
+            // === 3. 计算加权综合比例 ===
+            const float prosperityWeight = RecruitmentCosts.ProsperityWeight; // 繁荣度权重
+            const float hearthWeight = RecruitmentCosts.HearthsWeight;    // 村庄户数权重
+            float combinedRatio = prosperityRatio * prosperityWeight + hearthRatio * hearthWeight;
+            combinedRatio = MathF.Clamp(combinedRatio, 0f, 1f);
+
+            // === 4. 映射到 [min, max] 区间 ===
+            float reinforcements = minReinforcements + combinedRatio * (maxReinforcements - minReinforcements);
+            
+            return (int)MathF.Round(reinforcements);
         }
 
         /// <summary>
@@ -903,10 +696,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public void WeeklyUpdate()
         {
-            if (!Reflush())
-                return;
-
-            // Step 1: 处理 ReturnedTroopDetachmentList 的回归
+            // 处理 ReturnedTroopDetachmentList, 即解散士兵冷却结束
             if (ReturnedTroopDetachmentList != null)
             {
                 for (int i = ReturnedTroopDetachmentList.Count - 1; i >= 0; i--)
@@ -927,6 +717,7 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
 
+            // 处理已经征召的士兵
             if (RecruitedTroopDetachmentList != null)
             {
                 for (int i = RecruitedTroopDetachmentList.Count - 1; i >= 0; i--)
@@ -938,18 +729,8 @@ namespace ModifiedArmy.Models.Fief
                     {
                         foreach (var kvp in detachment.Troops)
                         {
-                            switch (SoldierTypeClassifier.GetSoldierType(kvp.Key))
-                            {
-                                case FiefTroopType.Fief_Retinue:
-                                    RetinueCount = Math.Max(0, RetinueCount - kvp.Value);
-                                    break;
-                                case FiefTroopType.Fief_Sergeant:
-                                    SergeantCount = Math.Max(0, SergeantCount - kvp.Value);
-                                    break;
-                                case FiefTroopType.Fief_Militia:
-                                    MilitiaCount = Math.Max(0, MilitiaCount - kvp.Value);
-                                    break;
-                            }
+                            var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
+                            _soldierTypeCounts[type] = Math.Max(0, _soldierTypeCounts[type] - kvp.Value);
                         }
                         // 移除该分遣队
                         RecruitedTroopDetachmentList.RemoveAt(i);
@@ -957,75 +738,68 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
 
-            // Step 2: 检查是否已达总兵力上限
-            int currentTotal = TotalTroopCount;
-            if (currentTotal >= TotalLimit)
+            // 检查是否已达总兵力上限
+            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+            if (_totalTroopCount >= _totalLimit)
                 return;
 
-            // Step 3: 计算本周最多可补充人数
-            int totalCanAdd = Math.Min(GetWeeklyUpdateCount(), TotalLimit - currentTotal);
-            if (totalCanAdd <= 0)
+            // 计算本周最多可补充人数
+            int tmpMaxSize = Math.Min(GetWeeklyUpdateCount(), _totalLimit - _totalTroopCount);
+            if (tmpMaxSize <= 0)
                 return;
 
-            // Step 4: 按权重分配理想补充数量
-            int idealRetinue = (int)MathF.Floor(totalCanAdd * _troopComposition.RetinueWeight / _troopComposition.TotalWeight);
-            int idealSergeant = (int)MathF.Floor(totalCanAdd * _troopComposition.SergeantWeight / _troopComposition.TotalWeight);
-            int idealMilitia = totalCanAdd - idealRetinue - idealSergeant;
-
-            // Step 5: 受限于各兵种容量上限
-            int actualRetinue = Math.Min(idealRetinue, MaxRetinue - RetinueCount);
-            int actualSergeant = Math.Min(idealSergeant, MaxSergeant - SergeantCount);
-            int actualMilitia = Math.Min(idealMilitia, MaxMilitia - MilitiaCount);
+            // 按权重分配可补充人数
+            Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
+            foreach (var kvp in _soldierTypeWeights)
+            {
+                int idealSize = (tmpMaxSize * _soldierTypeWeights[kvp.Key]) / _totalWeight;
+                // 需要考虑兵种类型的最大容量
+                tmpSoldierTypeSize[kvp.Key] = Math.Min(idealSize, _soldierTypeMaxCounts[kvp.Key] - _soldierTypeCounts[kvp.Key]);
+            }
 
             // 若无可补充兵员，直接退出
-            if (actualRetinue + actualSergeant + actualMilitia <= 0)
+            if (tmpSoldierTypeSize.Values.Sum() <= 0)
             {
-                ModLogger.Debug("[WeeklyUpdate] No troops can be recruited this week (capacity full or ideal=0). Skipping.");
+                ModLogger.Debug($"[WeeklyUpdate] No troops can be recruited this week in {_settlement.Name} (capacity full or ideal=0). Skipping.");
                 return;
             }
 
-            // Step 6: 生成招募列表
-            var (retinueDict, sergeantDict, militiaDict) = GenerateRecruitTemplates(
-                actualRetinue,
-                actualSergeant,
-                actualMilitia
-            );
+            // 生成新troops
+            var tmpNewTroops = GenerateNewTroops(tmpSoldierTypeSize);
 
-            // Step 7: 批量添加部队
-            foreach (var kvp in retinueDict)
+            // 批量添加
+            foreach (var kvp in tmpNewTroops)
             {
                 FiefTroops.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
-                RetinueCount += kvp.Value;
-            }
-            foreach (var kvp in sergeantDict)
-            {
-                FiefTroops.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
-                SergeantCount += kvp.Value;
-            }
-            foreach (var kvp in militiaDict)
-            {
-                FiefTroops.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
-                MilitiaCount += kvp.Value;
+
+                var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
+                _soldierTypeCounts[type] += kvp.Value;
             }
 
-            TotalTroopCount = RetinueCount + SergeantCount + MilitiaCount;
+            _totalTroopCount = _soldierTypeCounts.Values.Sum();;
+
+            
+            TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
+            msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
+            msg.SetTextVariable("RETINUE", tmpSoldierTypeSize[SoldierType.Retinue]);
+            msg.SetTextVariable("SERGEANT", tmpSoldierTypeSize[SoldierType.Sergeant]);
+            msg.SetTextVariable("MILITIA", tmpSoldierTypeSize[SoldierType.Militia]);
+            msg.SetTextVariable("RETINUE_COUNT", _soldierTypeCounts[SoldierType.Retinue]);
+            msg.SetTextVariable("MAX_RETINUE", _soldierTypeMaxCounts[SoldierType.Retinue]);
+            msg.SetTextVariable("SERGEANT_COUNT", _soldierTypeCounts[SoldierType.Sergeant]);
+            msg.SetTextVariable("MAX_SERGEANT", _soldierTypeMaxCounts[SoldierType.Sergeant]);
+            msg.SetTextVariable("MILITIA_COUNT", _soldierTypeCounts[SoldierType.Militia]);
+            msg.SetTextVariable("MAX_MILITIA", _soldierTypeMaxCounts[SoldierType.Militia]);
+            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
 
             if (_settlement.OwnerClan == Clan.PlayerClan)
             {
-                TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
-                msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-                msg.SetTextVariable("RETINUE", actualRetinue);
-                msg.SetTextVariable("SERGEANT", actualSergeant);
-                msg.SetTextVariable("MILITIA", actualMilitia);
-                msg.SetTextVariable("RETINUE_COUNT", RetinueCount);
-                msg.SetTextVariable("MAX_RETINUE", MaxRetinue);
-                msg.SetTextVariable("SERGEANT_COUNT", SergeantCount);
-                msg.SetTextVariable("MAX_SERGEANT", MaxSergeant);
-                msg.SetTextVariable("MILITIA_COUNT", MilitiaCount);
-                msg.SetTextVariable("MAX_MILITIA", MaxMilitia);
-                msg.SetTextVariable("TROOP_COUNT", TotalTroopCount);
-                msg.SetTextVariable("TOTAL_LIMIT", TotalLimit);
                 ModLogger.Info(msg.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(msg.ToString());
             }
         }
 
@@ -1043,201 +817,118 @@ namespace ModifiedArmy.Models.Fief
             if (sourceParty == null || FiefTroops == null)
                 return 0;
 
-            // Step 1: 清空 RecruitedTroopDetachmentList 并扣减计数器
-
+            // 清空 RecruitedTroopDetachmentList 并扣减计数器
             if (RecruitedTroopDetachmentList != null)
             {
                 foreach (var detachment in RecruitedTroopDetachmentList)
                 {
                     if (detachment?.IsEmpty() == false)
                     {
-                        int pendingRetinue = 0, pendingSergeant = 0, pendingMilitia = 0;
                         foreach (var kvp in detachment.Troops)
                         {
                             var troop = kvp.Key;
                             int count = kvp.Value;
-                            if (troop == null || count <= 0) continue;
+                            if (troop == null || count <= 0) 
+                                continue;
 
                             var type = SoldierTypeClassifier.GetSoldierType(troop);
-                            switch (type)
-                            {
-                                case FiefTroopType.Fief_Retinue: pendingRetinue += count; break;
-                                case FiefTroopType.Fief_Sergeant: pendingSergeant += count; break;
-                                case FiefTroopType.Fief_Militia: pendingMilitia += count; break;
-                            }
+                            _soldierTypeCounts[type] = Math.Max(0, _soldierTypeCounts[type] - count);
                         }
-                        RetinueCount = Math.Max(0, RetinueCount - pendingRetinue);
-                        SergeantCount = Math.Max(0, SergeantCount - pendingSergeant);
-                        MilitiaCount = Math.Max(0, MilitiaCount - pendingMilitia);
-                        TotalTroopCount = RetinueCount + MilitiaCount + SergeantCount;
                         detachment.Clear();
                     }
                 }
                 RecruitedTroopDetachmentList.Clear();
             }
 
-            // Step 2: 分类当前 party 中的采邑士兵
-            var retinuePool = new List<(CharacterObject troop, int totalCount)>();
-            var sergeantPool = new List<(CharacterObject troop, int totalCount)>();
-            var militiaPool = new List<(CharacterObject troop, int totalCount)>();
-            
+            // 记录归还的封邑士兵
+            Dictionary<CharacterObject, int> tmpReturnTroops = new();
+            // 返回的繁荣度
+            int prosperityCost = 0;
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
                 var troop = element.Character;
-                if (troop.Culture != _settlement.Culture)
-                    continue;
                 if (troop == null || troop.Occupation != Occupation.Soldier)
                     continue;
-                int total = element.Number + element.WoundedNumber;
-                if (total <= 0)
+                if (!_fiefPartyTemplate.IsEnableTroop(troop))
+                    continue;
+                int count = element.Number + element.WoundedNumber;
+                if (count <= 0)
                     continue;
                 var type = SoldierTypeClassifier.GetSoldierType(troop);
-                switch (type)
+
+                // 检查剩余容量是否足够
+                int taken = Math.Min(count, _soldierTypeMaxCounts[type] - _soldierTypeCounts[type]);
+                if (taken > 0)
                 {
-                    case FiefTroopType.Fief_Retinue: 
-                        retinuePool.Add((troop, total)); 
-                        break;
-                    case FiefTroopType.Fief_Sergeant: 
-                        sergeantPool.Add((troop, total)); 
-                        break;
-                    case FiefTroopType.Fief_Militia: 
-                        militiaPool.Add((troop, total)); 
-                        break;
-                }
-            }
-
-            // Step 3: 计算各兵种可接收的剩余容量
-            int retinueSpace = Math.Max(0, MaxRetinue - RetinueCount);
-            int sergeantSpace = Math.Max(0, MaxSergeant - SergeantCount);
-            int militiaSpace = Math.Max(0, MaxMilitia - MilitiaCount);
-
-            var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-            _fiefWageExemptionManager.ClearAllExemptions(sourceParty);
-
-            ModLogger.Debug($"[Return] Space: R={retinueSpace}/{MaxRetinue}, S={sergeantSpace}/{MaxSergeant}, " +
-                           $"M={militiaSpace}/{MaxMilitia}.");
-
-            // 若无空间，直接返回
-            if (retinueSpace + sergeantSpace + militiaSpace <= 0)
-                return 0;
-
-            // Step 4: 从各 pool 中取兵（不超过 space），构建归还字典
-            var allReturned = new Dictionary<CharacterObject, int>();
-
-            // 扈从
-            int takenRetinue = 0;
-            foreach (var (troop, available) in retinuePool)
-            {
-                if (takenRetinue >= retinueSpace) break;
-                int take = Math.Min(available, retinueSpace - takenRetinue);
-                if (take > 0)
-                {
-                    if (allReturned.ContainsKey(troop))
-                        allReturned[troop] += take;
+                    // 从 sourceParty 移除士兵
+                    RemoveTroopsFromParty(sourceParty.MemberRoster, troop, taken);
+                    // 记录归还的士兵和数量
+                    if (tmpReturnTroops.ContainsKey(troop))
+                        tmpReturnTroops[troop] += taken;
                     else
-                        allReturned[troop] = take;
-                    takenRetinue += take;
+                        tmpReturnTroops[troop] = taken;
+                    // 修改计数器
+                    _soldierTypeCounts[type] += taken;
+
+                    if (_settlement.IsTown)
+                        prosperityCost += taken * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
+                    else if (_settlement.IsCastle)
+                        prosperityCost += taken * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
                 }
             }
 
-            // 军士
-            int takenSergeant = 0;
-            foreach (var (troop, available) in sergeantPool)
+            int tmpReturnTroopCount = tmpReturnTroops.Values.Sum();
+            if (tmpReturnTroopCount <= 0)
             {
-                if (takenSergeant >= sergeantSpace) break;
-                int take = Math.Min(available, sergeantSpace - takenSergeant);
-                if (take > 0)
-                {
-                    if (allReturned.ContainsKey(troop))
-                        allReturned[troop] += take;
-                    else
-                        allReturned[troop] = take;
-                    takenSergeant += take;
-                }
-            }
-
-            // 民兵
-            int takenMilitia = 0;
-            foreach (var (troop, available) in militiaPool)
-            {
-                if (takenMilitia >= militiaSpace) break;
-                int take = Math.Min(available, militiaSpace - takenMilitia);
-                if (take > 0)
-                {
-                    if (allReturned.ContainsKey(troop))
-                        allReturned[troop] += take;
-                    else
-                        allReturned[troop] = take;
-                    takenMilitia += take;
-                }
-            }
-
-            int totalReturned = takenRetinue + takenSergeant + takenMilitia;
-            if (totalReturned <= 0)
-            {
-                ModLogger.Debug($"[Return] Returned {totalReturned} troops to fief '{_settlement?.Name}'. " +
-                           $"Counts: R={RetinueCount}/{MaxRetinue}, S={SergeantCount}/{MaxSergeant}, " +
-                           $"M={MilitiaCount}/{MaxMilitia}, T={TotalTroopCount}/{TotalLimit}.");
+                ModLogger.Debug($"[Return] Returned {tmpReturnTroopCount} troops to fief '{_settlement?.Name}'. ");
                 return 0;
             }
 
-            // Step 5: 从 sourceParty 移除士兵
-            foreach (var kvp in allReturned)
-            {
-                RemoveTroopsFromParty(sourceParty.MemberRoster, kvp.Key, kvp.Value);
-            }
+            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity + prosperityCost);
 
-            // Step 6: 创建冷却分遣队（2周后自动回归 FiefTroops）
-            FiefTroopDetachment targetDetachment = null;
+            // 添加到ReturnedTroopDetachmentList，记录处于冷却状态的士兵
+            FiefTroopDetachment targetDetachment = ReturnedTroopDetachmentList
+                .FirstOrDefault(d => d != null && d.WaitCycle == 2);
 
-            if (ReturnedTroopDetachmentList == null)
-                ReturnedTroopDetachmentList = new List<FiefTroopDetachment>();
-
-            // 尝试在 ReturnedTroopDetachmentList 中查找 WaitCycle == 2 的分遣队
-            if (ReturnedTroopDetachmentList != null)
-            {
-                foreach (var detachment in ReturnedTroopDetachmentList)
-                {
-                    if (detachment != null && detachment.WaitCycle == 2)
-                    {
-                        targetDetachment = detachment;
-                        break;
-                    }
-                }
-            }
-
-            // 如果没找到，则新建一个
             if (targetDetachment == null)
             {
                 targetDetachment = new FiefTroopDetachment(2); // WaitCycle = 2
                 ReturnedTroopDetachmentList.Add(targetDetachment);
             }
-
             // 向目标分遣队添加归还的部队
-            targetDetachment.AddTroops(allReturned);
+            targetDetachment.AddTroops(tmpReturnTroops);
 
-            // Step 7: 更新计数器
-            RetinueCount += takenRetinue;
-            SergeantCount += takenSergeant;
-            MilitiaCount += takenMilitia;
+            // 更新计数器
+            _totalTroopCount = _soldierTypeCounts.Values.Sum();
 
-            TotalTroopCount = RetinueCount + SergeantCount + MilitiaCount;
-
-            _fiefWageExemptionManager.ConsumeExemption(sourceParty, totalReturned);
+            // 清除工资减免
+            var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
+            _fiefWageExemptionManager.ConsumeExemption(sourceParty, tmpReturnTroopCount);
 
             TextObject msgResult = GameTexts.FindText("str_modifiedarmy_fief_return_result");
+            msgResult.SetTextVariable("PARTY_NAME", sourceParty.Name.ToString());
             msgResult.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-            msgResult.SetTextVariable("RETURNED_COUNT", totalReturned);
-            msgResult.SetTextVariable("RETINUE_COUNT", RetinueCount);
-            msgResult.SetTextVariable("MAX_RETINUE", MaxRetinue);
-            msgResult.SetTextVariable("SERGEANT_COUNT", SergeantCount);
-            msgResult.SetTextVariable("MAX_SERGEANT", MaxSergeant);
-            msgResult.SetTextVariable("MILITIA_COUNT", MilitiaCount);
-            msgResult.SetTextVariable("MAX_MILITIA", MaxMilitia);
-            msgResult.SetTextVariable("TROOP_COUNT", TotalTroopCount);
-            msgResult.SetTextVariable("TOTAL_LIMIT", TotalLimit);
-            ModLogger.Notice(msgResult.ToString());
-            return totalReturned;
+            msgResult.SetTextVariable("RETURNED_COUNT", tmpReturnTroopCount);
+            msgResult.SetTextVariable("RETINUE_COUNT", _soldierTypeCounts[SoldierType.Retinue]);
+            msgResult.SetTextVariable("MAX_RETINUE", _soldierTypeMaxCounts[SoldierType.Retinue]);
+            msgResult.SetTextVariable("SERGEANT_COUNT", _soldierTypeCounts[SoldierType.Sergeant]);
+            msgResult.SetTextVariable("MAX_SERGEANT", _soldierTypeMaxCounts[SoldierType.Sergeant]);
+            msgResult.SetTextVariable("MARINE_COUNT", _soldierTypeCounts[SoldierType.Marine]);
+            msgResult.SetTextVariable("MAX_MARINE", _soldierTypeMaxCounts[SoldierType.Marine]);
+            msgResult.SetTextVariable("SLAVE_COUNT", _soldierTypeCounts[SoldierType.Slave]);
+            msgResult.SetTextVariable("MAX_SLAVE", _soldierTypeMaxCounts[SoldierType.Slave]);
+            msgResult.SetTextVariable("MILITIA_COUNT", _soldierTypeCounts[SoldierType.Militia]);
+            msgResult.SetTextVariable("MAX_MILITIA", _soldierTypeMaxCounts[SoldierType.Militia]);
+            msgResult.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msgResult.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            msgResult.SetTextVariable("PROSPERITY_COST", prosperityCost);
+
+            if (sourceParty.LeaderHero.Clan == Clan.PlayerClan)
+                ModLogger.Notice(msgResult.ToString());
+            else
+                ModLogger.Debug(msgResult.ToString());
+
+            return tmpReturnTroopCount;
         }
 
         private void RemoveTroopsFromParty(TroopRoster roster, CharacterObject troop, int countToRemove)
@@ -1270,148 +961,106 @@ namespace ModifiedArmy.Models.Fief
 
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
-            if (currentMembers >= partySizeLimit)
+            int remainSize = partySizeLimit - currentMembers;
+            // 目标party没有空间，则停止招募
+            if (remainSize <= 0)
                 return 0;
 
-            // Step 1: 分类士兵
-            var retinuePool = new List<(CharacterObject troop, int count)>();
-            var sergeantPool = new List<(CharacterObject troop, int count)>();
-            var militiaPool = new List<(CharacterObject troop, int count)>();
+            if (_soldierTypeWeights == null || _totalWeight <= 0)
+            {
+                ModLogger.Error($"[Recruit] CRITICAL: _soldierTypeWeights is null/empty or _totalWeight={_totalWeight}");
+                return 0;
+            }
 
+            // 士兵类型及可招募的数量
+            Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
+            // 记录招募的士兵类型及数量
+            Dictionary<SoldierType, int> tmpRecruitSoldierTypeSize = new();
+            // 按权重分配剩余空间
+            foreach (var kvp in _soldierTypeWeights)
+            {
+                tmpSoldierTypeSize[kvp.Key] = (remainSize * _soldierTypeWeights[kvp.Key]) / _totalWeight;
+                tmpRecruitSoldierTypeSize[kvp.Key] = 0;
+            }
+
+            // 记录招募的士兵和数量
+            Dictionary<CharacterObject, int> tmpRecruitTroops = new();
+
+            // 消耗的繁荣度
+            int prosperityCost = 0;
             foreach (var element in FiefTroops.GetTroopRoster())
             {
                 var troop = element.Character;
                 var count = element.Number;
                 if (troop == null || count <= 0) continue;
 
+                if (!SoldierTypeClassifier.IsFiefTroop(troop))
+                    continue;
+
                 var type = SoldierTypeClassifier.GetSoldierType(troop);
-                switch (type)
+                // 检查剩余容量是否足够
+                int taken = Math.Min(count, tmpSoldierTypeSize[type]);
+                if (taken > 0)
                 {
-                    case FiefTroopType.Fief_Retinue:
-                        retinuePool.Add((troop, count));
-                        break;
-                    case FiefTroopType.Fief_Sergeant:
-                        sergeantPool.Add((troop, count));
-                        break;
-                    case FiefTroopType.Fief_Militia:
-                        militiaPool.Add((troop, count));
-                        break;
-                }
-            }
-
-            // 按 Tier 降序（优先高阶兵）
-            retinuePool.Sort((a, b) => (b.troop?.Tier ?? 0).CompareTo(a.troop?.Tier ?? 0));
-            sergeantPool.Sort((a, b) => (b.troop?.Tier ?? 0).CompareTo(a.troop?.Tier ?? 0));
-            militiaPool.Sort((a, b) => (b.troop?.Tier ?? 0).CompareTo(a.troop?.Tier ?? 0));
-
-            // Step 2: 计算 targetParty 可接受的最大人数
-            int remainingSlots = partySizeLimit - currentMembers;
-            if (remainingSlots <= 0)
-                return 0;
-
-            // Step 3: 按权重分配理想招募数量
-            int idealRetinue = (int)MathF.Floor(remainingSlots * _troopComposition.RetinueWeight / _troopComposition.TotalWeight);
-            int idealSergeant = (int)MathF.Floor(remainingSlots * _troopComposition.SergeantWeight / _troopComposition.TotalWeight);
-            int idealMilitia = remainingSlots - idealRetinue - idealSergeant; // 补足至 remainingSlots
-
-            // Step 4: 直接从 pool 取兵并执行三处操作
-            int totalRecruited = 0;
-            var allRecruitedTroops = new Dictionary<CharacterObject, int>(); // 用于 RecruitedTroops.AddTroops
-
-            // 扈从
-            int takenRetinue = 0;
-            foreach (var (troop, available) in retinuePool)
-            {
-                if (takenRetinue >= idealRetinue) break;
-                int take = Math.Min(available, idealRetinue - takenRetinue);
-                if (take > 0)
-                {
-                    RemoveTroopsFromParty(FiefTroops, troop, take);
-                    targetParty.MemberRoster.AddToCounts(troop, take, false, 0, 0, true, -1);
-                    if (allRecruitedTroops.ContainsKey(troop))
-                        allRecruitedTroops[troop] += take;
+                    // 从封邑party移除士兵
+                    RemoveTroopsFromParty(FiefTroops, troop, taken);
+                    // 向目标party添加士兵
+                    targetParty.MemberRoster.AddToCounts(troop, taken, false, 0, 0, true, -1);
+                    // 记录招募的士兵
+                    if (tmpRecruitTroops.ContainsKey(troop))
+                        tmpRecruitTroops[troop] += taken;
                     else
-                        allRecruitedTroops[troop] = take;
+                        tmpRecruitTroops[troop] = taken;
+                    // 更新计数器
+                    tmpSoldierTypeSize[type] = Math.Min(0, tmpSoldierTypeSize[type] - taken);
+                    tmpRecruitSoldierTypeSize[type] += taken;
 
-                    takenRetinue += take;
+                    if (_settlement.IsTown)
+                        prosperityCost += taken * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
+                    else if (_settlement.IsCastle)
+                        prosperityCost += taken * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
                 }
             }
 
-            // 军士
-            int takenSergeant = 0;
-            foreach (var (troop, available) in sergeantPool)
-            {
-                if (takenSergeant >= idealSergeant) break;
-                int take = Math.Min(available, idealSergeant - takenSergeant);
-                if (take > 0)
-                {
-                    RemoveTroopsFromParty(FiefTroops, troop, take);
-                    targetParty.MemberRoster.AddToCounts(troop, take, false, 0, 0, true, -1);
-                    if (allRecruitedTroops.ContainsKey(troop))
-                        allRecruitedTroops[troop] += take;
-                    else
-                        allRecruitedTroops[troop] = take;
-
-                    takenSergeant += take;
-                }
-            }
-
-            // 民兵
-            int takenMilitia = 0;
-            foreach (var (troop, available) in militiaPool)
-            {
-                if (takenMilitia >= idealMilitia) break;
-                int take = Math.Min(available, idealMilitia - takenMilitia);
-                if (take > 0)
-                {
-                    RemoveTroopsFromParty(FiefTroops, troop, take);
-                    targetParty.MemberRoster.AddToCounts(troop, take, false, 0, 0, true, -1);
-                    if (allRecruitedTroops.ContainsKey(troop))
-                        allRecruitedTroops[troop] += take;
-                    else
-                        allRecruitedTroops[troop] = take;
-
-                    takenMilitia += take;
-                }
-            }
-
-            totalRecruited = takenRetinue + takenSergeant + takenMilitia;
+            int totalRecruited = tmpRecruitTroops.Values.Sum();
             if (totalRecruited <= 0)
                 return 0;
 
-            if (RecruitedTroopDetachmentList == null)
-            {
-                RecruitedTroopDetachmentList = new List<FiefTroopDetachment>();
-            }
-            FiefTroopDetachment targetDetachment = null;
-            foreach (var detachment in RecruitedTroopDetachmentList)
-            {
-                if (detachment != null && detachment.WaitCycle == 5)
-                {
-                    targetDetachment = detachment;
-                    break;
-                }
-            }
+            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity - prosperityCost);
+
+            // 记录招募的士兵
+            FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
+                .FirstOrDefault(d => d != null && d.WaitCycle == 5);
 
             if (targetDetachment == null)
             {
                 targetDetachment = new FiefTroopDetachment(4);
                 RecruitedTroopDetachmentList.Add(targetDetachment);
             }
-            targetDetachment.AddTroops(allRecruitedTroops);
+            targetDetachment.AddTroops(tmpRecruitTroops);
 
-            if (_settlement.OwnerClan == Clan.PlayerClan)
+            TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
+            
+            msg.SetTextVariable("PARTY_NAME", targetParty.Name.ToString());
+            msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
+            msg.SetTextVariable("RETINUE", tmpRecruitSoldierTypeSize[SoldierType.Retinue]);
+            msg.SetTextVariable("SERGEANT", tmpRecruitSoldierTypeSize[SoldierType.Sergeant]);
+            msg.SetTextVariable("MARINE", tmpRecruitSoldierTypeSize[SoldierType.Marine]);
+            msg.SetTextVariable("SLAVE", tmpRecruitSoldierTypeSize[SoldierType.Slave]);
+            msg.SetTextVariable("MILITIA", tmpRecruitSoldierTypeSize[SoldierType.Militia]);
+            msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
+
+            //if (_settlement.OwnerClan == Clan.PlayerClan)
+            if (targetParty.LeaderHero.Clan == Clan.PlayerClan)
             {
-                TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
-                msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-                msg.SetTextVariable("RETINUE", takenRetinue);
-                msg.SetTextVariable("SERGEANT", takenSergeant);
-                msg.SetTextVariable("MILITIA", takenMilitia);
                 ModLogger.Notice(msg.ToString());
             }
+            else
+            {
+                ModLogger.Info(msg.ToString());
+            }
 
-            TotalTroopCount = RetinueCount + SergeantCount + MilitiaCount;
-
+            // 给与工资减免
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
             _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, 28);
 
@@ -1430,33 +1079,46 @@ namespace ModifiedArmy.Models.Fief
             if (selectedRoster == null || selectedRoster.TotalManCount <= 0 || FiefTroops == null)
                 return 0;
 
-            var recruitDict = new Dictionary<CharacterObject, int>();
-            int totalRecruited = 0;
-
+            var tmpRecruitTroops = new Dictionary<CharacterObject, int>();
+            // 记录招募的士兵类型及数量
+            Dictionary<SoldierType, int> tmpRecruitSoldierTypeSize = new();
+            // 按权重分配剩余空间
+            foreach (var kvp in _soldierTypeWeights)
+            {
+                tmpRecruitSoldierTypeSize[kvp.Key] = 0;
+            }
+            // 消耗的繁荣度
+            int prosperityCost = 0;
             foreach (var element in selectedRoster.GetTroopRoster())
             {
                 var troop = element.Character;
                 int count = element.Number;
                 if (troop == null || count <= 0) continue;
 
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-                if (type is not (FiefTroopType.Fief_Retinue or FiefTroopType.Fief_Sergeant or FiefTroopType.Fief_Militia))
+                if (!SoldierTypeClassifier.IsFiefTroop(troop))
                     continue;
 
-                recruitDict[troop] = count;
-                totalRecruited += count;
+                var type = SoldierTypeClassifier.GetSoldierType(troop);
+
+                // 记录招募的士兵
+                tmpRecruitTroops[troop] = count;
+                tmpRecruitSoldierTypeSize[type] += count;
+                // 从封邑party移除士兵
+                RemoveTroopsFromParty(FiefTroops, troop, count);
+
+                if (_settlement.IsTown)
+                    prosperityCost += count * RecruitmentCosts.TownProsperityCostPerTier * troop.Tier;
+                else if (_settlement.IsCastle)
+                    prosperityCost += count * RecruitmentCosts.CastleProsperityCostPerTier * troop.Tier;
             }
 
+            int totalRecruited = tmpRecruitTroops.Values.Sum();
             if (totalRecruited <= 0)
                 return 0;
 
-            // 从 FiefTroops 移除
-            foreach (var kvp in recruitDict)
-            {
-                FiefTroops.RemoveTroop(kvp.Key, kvp.Value, default, 0);
-            }
+            _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity - prosperityCost);
 
-            // 添加到 RecruitedTroopDetachmentList（WaitCycle = 5）
+            // 添加到 RecruitedTroopDetachmentList
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
                 .FirstOrDefault(d => d != null && d.WaitCycle == 5);
 
@@ -1465,15 +1127,32 @@ namespace ModifiedArmy.Models.Fief
                 targetDetachment = new FiefTroopDetachment(5);
                 RecruitedTroopDetachmentList.Add(targetDetachment);
             }
+            targetDetachment.AddTroops(tmpRecruitTroops);
 
-            targetDetachment.AddTroops(recruitDict);
+            TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
+            msg.SetTextVariable("PARTY_NAME", targetParty.Name.ToString());
+            msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
+            msg.SetTextVariable("RETINUE", tmpRecruitSoldierTypeSize[SoldierType.Retinue]);
+            msg.SetTextVariable("SERGEANT", tmpRecruitSoldierTypeSize[SoldierType.Sergeant]);
+            msg.SetTextVariable("MARINE", tmpRecruitSoldierTypeSize[SoldierType.Marine]);
+            msg.SetTextVariable("SLAVE", tmpRecruitSoldierTypeSize[SoldierType.Slave]);
+            msg.SetTextVariable("MILITIA", tmpRecruitSoldierTypeSize[SoldierType.Militia]);
+            msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
 
-            // 同步计数器
-            SyncManpowerCounters();
+            if (targetParty.LeaderHero.Clan == Clan.PlayerClan)
+            {
+                ModLogger.Notice(msg.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(msg.ToString());
+            }
 
+            // 给予工资减免
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
             _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, 28);
 
+            // 将士兵添加到目标party
             targetParty.MemberRoster.Add(selectedRoster);
 
             return totalRecruited;
@@ -1486,12 +1165,12 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public float GetTaxationMultiplier()
         {
-            //ModLogger.Debug($"[Tax Debug] TotalTroopCount={TotalTroopCount}, TotalLimit={TotalLimit}");
+            //ModLogger.Debug($"[Tax Debug] _totalTroopCount={_totalTroopCount}, _totalLimit={_totalLimit}");
 
-            if (TotalLimit <= 0)
+            if (_totalLimit <= 0)
                 return 1.0f;
 
-            float ratio = MathF.Clamp((float)TotalTroopCount / TotalLimit, 0f, 1f);
+            float ratio = MathF.Clamp((float)_totalTroopCount / _totalLimit, 0f, 1f);
             float multiplier = 1f - ratio * 0.9f;
 
             //ModLogger.Debug($"[Tax Debug] ratio={ratio:F3} → multiplier={multiplier:F3}");
@@ -1507,10 +1186,7 @@ namespace ModifiedArmy.Models.Fief
         private static bool IsFiefTroop(CharacterObject troop)
         {
             if (troop == null) return false;
-            var type = SoldierTypeClassifier.GetSoldierType(troop);
-            return type is FiefTroopType.Fief_Retinue or
-                             FiefTroopType.Fief_Sergeant or
-                             FiefTroopType.Fief_Militia;
+            return SoldierTypeClassifier.IsFiefTroop(troop);
         }
 
         // Prefix：完全接管函数逻辑
