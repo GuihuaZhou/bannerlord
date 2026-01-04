@@ -125,18 +125,6 @@ namespace ModifiedArmy.Models.Fief
 
             // 执行招募
             int recruited = _fiefPartyManager.RecruitFiefTroopsFromSettlement(settlement, party);
-            if (recruited > 0)
-            {
-                string partyName = party.Name?.ToString() ?? "UnknownParty";
-                string settlementName = settlement.Name?.ToString() ?? "UnknownSettlement";
-
-                TextObject message = GameTexts.FindText("str_modifiedarmy_ai_recruited_fief_troops");
-                message.SetTextVariable("PARTY_NAME", partyName);
-                message.SetTextVariable("SETTLEMENT_NAME", settlementName);
-                message.SetTextVariable("COUNT", recruited);
-
-                ModLogger.Info(message.ToString());
-            }
         }
 
         /// <summary>

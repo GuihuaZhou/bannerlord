@@ -94,7 +94,7 @@ namespace ModifiedArmy.Models.Fief
                 if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
                 {
                     ModLogger.Debug($"[InitializeFiefData] Refreshing existing data for {settlement.Name}");
-                    data.Init();
+                    data.InitialFeifPartyData();
                 }
                 else
                 {
