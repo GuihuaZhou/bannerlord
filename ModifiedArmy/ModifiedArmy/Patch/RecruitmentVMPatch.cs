@@ -1,6 +1,7 @@
 ﻿using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,11 +47,11 @@ namespace ModifiedArmy.Patch
 
                 if (settlement.IsTown)
                 {
-                    prosperityCost += RecruitmentCosts.TownProsperityCostPerTier * recruitVolunteerTroopVM.Character.Tier;
+                    prosperityCost += Settings.Instance.TownProsperityCostPerTier * recruitVolunteerTroopVM.Character.Tier;
                 }
                 else if (settlement.IsVillage)
                 {
-                    hearthCost += RecruitmentCosts.VillageHearthCostPer;
+                    hearthCost += Settings.Instance.VillageHearthCostPer;
                 }
                 count += 1;
             }

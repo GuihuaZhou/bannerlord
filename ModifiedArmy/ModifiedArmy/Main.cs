@@ -88,6 +88,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewSettlementLoyaltyModel());
                 campaignStarter.AddModel(new NewClanTierModel());
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
+                //campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());
 
                 // //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
 

@@ -2,6 +2,7 @@
 using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -425,7 +426,7 @@ namespace ModifiedArmy.Models.Fief
 
             if (count <= 0)
                 return;
-                
+
             // 执行补员
             PerformReinforcement(count);
         }
@@ -469,9 +470,9 @@ namespace ModifiedArmy.Models.Fief
             else
             {
                 if (_settlement.IsCastle)
-                    _settlement.Town.Prosperity = Math.Max(RecruitmentCosts.CastleMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+                    _settlement.Town.Prosperity = Math.Max(Settings.Instance.CastleMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
                 else if (_settlement.IsTown)
-                    _settlement.Town.Prosperity = Math.Max(RecruitmentCosts.TownMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+                    _settlement.Town.Prosperity = Math.Max(Settings.Instance.TownMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
             }
 
             // 分配户数
@@ -502,7 +503,7 @@ namespace ModifiedArmy.Models.Fief
 
                 if (!isAdd)
                 {
-                    newHearth = Math.Max(RecruitmentCosts.VillageMinHearthThreshold, newHearth);
+                    newHearth = Math.Max(Settings.Instance.VillageMinHearthThreshold, newHearth);
                 }
 
                 village.Hearth = newHearth;
@@ -516,7 +517,7 @@ namespace ModifiedArmy.Models.Fief
 
                 if (!isAdd)
                 {
-                    newHearth = Math.Max(RecruitmentCosts.VillageMinHearthThreshold, newHearth);
+                    newHearth = Math.Max(Settings.Instance.VillageMinHearthThreshold, newHearth);
                 }
 
                 village.Hearth = newHearth;
@@ -805,11 +806,11 @@ namespace ModifiedArmy.Models.Fief
 
             if (_settlement.IsTown)
             {
-                prosperityRatio = MathF.Min(1f, prosperity / RecruitmentCosts.TownMaxReinforcementProsperityThreshold); 
+                prosperityRatio = MathF.Min(1f, prosperity / Settings.Instance.TownMaxReinforcementProsperityThreshold); 
             }
             else if (_settlement.IsCastle)
             {
-                prosperityRatio = MathF.Min(1f, prosperity / RecruitmentCosts.CastleMaxReinforcementProsperityThreshold); 
+                prosperityRatio = MathF.Min(1f, prosperity / Settings.Instance.CastleMaxReinforcementProsperityThreshold); 
             }
 
             // === 2. 获取附属村庄总户数 ===
@@ -822,11 +823,11 @@ namespace ModifiedArmy.Models.Fief
                 
                 villageCount += 1;
             }
-            float hearthRatio = MathF.Min(1f, totalHearth / (RecruitmentCosts.VillageMaxReinforcementHearthThreshold * villageCount)); 
+            float hearthRatio = MathF.Min(1f, totalHearth / (Settings.Instance.VillageMaxReinforcementHearthThreshold * villageCount)); 
 
             // === 3. 计算加权综合比例 ===
-            const float prosperityWeight = RecruitmentCosts.ProsperityWeight; // 繁荣度权重
-            const float hearthWeight = RecruitmentCosts.HearthsWeight;    // 村庄户数权重
+            float prosperityWeight = Settings.Instance.ProsperityWeight; // 繁荣度权重
+            float hearthWeight = Settings.Instance.HearthsWeight;    // 村庄户数权重
             float combinedRatio = prosperityRatio * prosperityWeight + hearthRatio * hearthWeight;
             combinedRatio = MathF.Clamp(combinedRatio, 0f, 1f);
 
@@ -964,9 +965,9 @@ namespace ModifiedArmy.Models.Fief
             int tmpProsperityCostPerTier = 0;
 
             if (_settlement.IsTown)
-                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.TownProsperityCostPerTier;
             else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.CastleProsperityCostPerTier;
 
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
@@ -996,7 +997,7 @@ namespace ModifiedArmy.Models.Fief
                     // 修改计数器
                     _soldierTypeCounts[type] += taken;
                     
-                    hearthCost += taken * RecruitmentCosts.VillageHearthCostPer;
+                    hearthCost += taken * Settings.Instance.VillageHearthCostPer;
                     prosperityCost += taken * tmpProsperityCostPerTier * troop.Tier;
                 }
             }
@@ -1118,9 +1119,9 @@ namespace ModifiedArmy.Models.Fief
             int tmpProsperityCostPerTier = 0;
 
             if (_settlement.IsTown)
-                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.TownProsperityCostPerTier;
             else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.CastleProsperityCostPerTier;
 
             foreach (var element in _fiefParty.GetTroopRoster())
             {
@@ -1149,7 +1150,7 @@ namespace ModifiedArmy.Models.Fief
                     tmpSoldierTypeSize[type] = Math.Min(0, tmpSoldierTypeSize[type] - taken);
                     tmpRecruitSoldierTypeSize[type] += taken;
 
-                    hearthCost += taken * RecruitmentCosts.VillageHearthCostPer;
+                    hearthCost += taken * Settings.Instance.VillageHearthCostPer;
                     prosperityCost += taken * tmpProsperityCostPerTier * troop.Tier;
                 }
             }
@@ -1228,9 +1229,9 @@ namespace ModifiedArmy.Models.Fief
             int tmpProsperityCostPerTier = 0;
 
             if (_settlement.IsTown)
-                tmpProsperityCostPerTier = RecruitmentCosts.TownProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.TownProsperityCostPerTier;
             else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier = RecruitmentCosts.CastleProsperityCostPerTier;
+                tmpProsperityCostPerTier = Settings.Instance.CastleProsperityCostPerTier;
 
             foreach (var element in selectedRoster.GetTroopRoster())
             {
@@ -1249,7 +1250,7 @@ namespace ModifiedArmy.Models.Fief
                 // 从封邑party移除士兵
                 RemoveTroopsFromParty(_fiefParty, troop, count);
 
-                hearthCost += count * RecruitmentCosts.VillageHearthCostPer;
+                hearthCost += count * Settings.Instance.VillageHearthCostPer;
                 prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
             }
 

@@ -17,57 +17,6 @@ namespace ModifiedArmy.common
         Other
     }
 
-    public static class RecruitmentCosts
-    {
-        // 城堡招募：每级（Tier）消耗的繁荣度基数
-        public const int CastleProsperityCostPerTier = 4;
-
-        // 城镇招募：每级（Tier）消耗的繁荣度基数
-        public const int TownProsperityCostPerTier = 8; 
-
-        // 消耗的户数（Hearths）基数
-        public const int VillageHearthCostPer = 1;
-
-        // <summary>
-        /// 城堡达到最大补员人数所需的繁荣度
-        /// </summary>
-        public const float CastleMaxReinforcementProsperityThreshold = 2000f;
-
-        /// <summary>
-        /// 城镇达到最大补员人数所需的繁荣度
-        /// </summary>
-        public const float TownMaxReinforcementProsperityThreshold = 12000f;
-
-        /// <summary>
-        /// 村庄达到最大补员人数所需的户数
-        /// </summary>
-        public const float VillageMaxReinforcementHearthThreshold = 900f;
-
-        // <summary>
-        /// 城堡最低繁荣度
-        /// </summary>
-        public const float CastleMinProsperityThreshold = 300f;
-
-        /// <summary>
-        /// 城镇最低繁荣度
-        /// </summary>
-        public const float TownMinProsperityThreshold = 1000f;
-
-        /// <summary>
-        /// 村庄最低户数
-        /// </summary>
-        public const float VillageMinHearthThreshold = 100f;
-
-        // <summary>
-        /// 繁荣度的权重系数
-        /// </summary>
-        public const float ProsperityWeight = 0.4f;
-
-        /// <summary>
-        /// 村庄户数的权重系数
-        /// </summary>
-        public const float HearthsWeight = 0.6f;
-    }
 
     public static class GarrisonConstants
     {
