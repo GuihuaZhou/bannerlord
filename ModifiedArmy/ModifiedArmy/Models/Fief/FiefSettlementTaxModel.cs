@@ -22,22 +22,7 @@ namespace ModifiedArmy.Models.Fief
         {
             // 获取原版计算结果
             ExplainedNumber original = base.CalculateTownTax(town, includeDescriptions);
-
-            var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-            float multiplier = manager.GetFiefTaxationMultiplier(town);
-
-            float feudalTax = (float)(original.ResultNumber * multiplier);
-
-            //if (town.OwnerClan == Clan.PlayerClan)
-            //{
-            //    string townName = town.Name?.ToString() ?? "Unknown Town";
-            //    ModLogger.Debug(
-            //        $"[Fief Tax Debug] Player's {townName}: " +
-            //        $"Original tax = {original.ResultNumber:F2}, " +
-            //        $"Multiplier = {multiplier:F2}, " +
-            //        $"Final tax = {feudalTax:F2}"
-            //    );
-            //}
+            float feudalTax = (float)(original.ResultNumber * 0.95f);
 
             if (!includeDescriptions)
                 return new ExplainedNumber(feudalTax, false, null);

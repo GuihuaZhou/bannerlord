@@ -1300,24 +1300,5 @@ namespace ModifiedArmy.Models.Fief
 
             return totalRecruited;
         }
-
-
-        /// <summary>
-        /// 返回税收裁剪系数：1 - (当前人数/最大容量) * 0.9
-        /// 范围锁定在 [0.1, 1.0]
-        /// </summary>
-        public float GetTaxationMultiplier()
-        {
-            //ModLogger.Debug($"[Tax Debug] _totalTroopCount={_totalTroopCount}, _totalLimit={_totalLimit}");
-
-            if (_totalLimit <= 0)
-                return 1.0f;
-
-            float ratio = MathF.Clamp((float)_totalTroopCount / _totalLimit, 0f, 1f);
-            float multiplier = 1f - ratio * 0.9f;
-
-            //ModLogger.Debug($"[Tax Debug] ratio={ratio:F3} → multiplier={multiplier:F3}");
-            return MathF.Clamp(multiplier, 0.1f, 1.0f);
-        }
     }
 }

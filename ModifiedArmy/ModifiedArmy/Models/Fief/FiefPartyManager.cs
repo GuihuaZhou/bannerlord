@@ -251,20 +251,6 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 对外接口：根据 Town 获取税收裁剪系数
-        /// </summary>
-        public float GetFiefTaxationMultiplier(Town town)
-        {
-            if (town == null) return 1.0f;
-
-            if (_fiefDataMap.TryGetValue(town.Settlement, out var data) && data != null)
-            {
-                return data.GetTaxationMultiplier();
-            }
-            return 1.0f;
-        }
-
-        /// <summary>
         /// 获取指定封邑士兵的实际数量
         /// </summary>
         public Dictionary<SoldierType, int> GetFiefTroopCounts(Settlement settlement)
