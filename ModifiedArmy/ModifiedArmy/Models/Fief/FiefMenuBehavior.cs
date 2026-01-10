@@ -61,9 +61,76 @@ namespace ModifiedArmy.Models.Fief
                 return;
             }
 
+            string introKey, descKey;
+
+            CultureObject rulingCulture = settlement.OwnerClan?.Kingdom?.Culture;
+            string rulingCultureId = rulingCulture?.StringId ?? "default";
+
+            switch (rulingCultureId)
+            {
+                case "empire":
+                    introKey = "{=Fief_Intro_Line_Empire}a Pronoia of the Empire.";
+                    break;
+                case "vlandia":
+                    introKey = "{=Fief_Intro_Line_Vlandia}a Fief of Vlandia.";
+                    break;
+                case "aserai":
+                    introKey = "{=Fief_Intro_Line_Aserai}an Iqta of the Aserai.";
+                    break;
+                case "khuzait":
+                    introKey = "{=Fief_Intro_Line_Khuzait}an Ulus of the Khuzait.";
+                    break;
+                case "sturgia":
+                    introKey = "{=Fief_Intro_Line_Sturgia}a Princely Domain of Sturgia.";
+                    break;
+                case "battania":
+                    introKey = "{=Fief_Intro_Line_Battania}a Tribal Holding of Battania.";
+                    break;
+                case "nord":
+                    introKey = "{=Fief_Intro_Line_Northern}a Viking Holding of the Northern clans.";
+                    break;
+                default:
+                    introKey = "{=Fief_Intro_Line_Default}a fiefdom.";
+                    break;
+            }
+
+
+            CultureObject nativeCulture = settlement.Culture;
+            string nativeCultureId = nativeCulture?.StringId ?? "default";
+
+            switch (nativeCultureId)
+            {
+                case "empire":
+                    descKey = "{=Fief_Desc_Empire}The land here is fertile and abundant, yet the Empire’s martial spirit has waned—its defenses rely heavily on mercenaries.";
+                    break;
+                case "vlandia":
+                    descKey = "{=Fief_Desc_Vlandia}The Vlandians field the continent’s finest heavy cavalry and deadliest crossbowmen.";
+                    break;
+                case "aserai":
+                    descKey = "{=Fief_Desc_Aserai}Oasis-fed lands sustain the Aserai, whose wealth stems from trade and law, and whose elite Mamluk slave-soldiers are famed for discipline and valor.";
+                    break;
+                case "khuzait":
+                    descKey = "{=Fief_Desc_Khuzait}Though some Khuzait now settle and raise infantry, their horse archers remain unmatched across the continent.";
+                    break;
+                case "sturgia":
+                    descKey = "{=Fief_Desc_Sturgia}Sturgian princes guard vast forests, rivers, and frontier strongholds with loyal druzhina and levied militias.";
+                    break;
+                case "battania":
+                    descKey = "{=Fief_Desc_Battania}Amid mist-shrouded highlands, Battanian nobles train the continent’s finest archers—silent, precise, and deadly.";
+                    break;
+                case "nord":
+                    descKey = "{=Fief_Desc_Northern}Fjords and longships define the Northerners, whose warriors wield axe and shield-wall to conquer coast and sea alike.";
+                    break;
+                default:
+                    descKey = "{=Fief_Desc_Default}This land is rugged and its people fierce—a vital source of levy troops.";
+                    break;
+            }
+
             var text = new TextObject(
                 "{=ModifiedArmy_Fief_Intro}" +
-                "You are at your fief. You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
+                "{INTRO_LINE}" +
+                "{DESCRIPTION}" +
+                "You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
                 "and {WAITCYCLE} are on their way back to their homes, and up to {WEEKLY_REINFORCEMENT} will be replenished each week.\n\n" +
                 "Current troop composition:\n" +
                 "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
@@ -73,9 +140,11 @@ namespace ModifiedArmy.Models.Fief
                 "- Militia: {MILITIA_COUNT}/{MILITIA_MAX}"
             );
 
+            text.SetTextVariable("INTRO_LINE", introKey.ToString());
+            text.SetTextVariable("DESCRIPTION", descKey.ToString());
+
             Dictionary<SoldierType, int> tmpSoldierTypeMaxCounts = fiefManager.GetFiefMaxTroopCounts(settlement);
             Dictionary<SoldierType, int> tmpSoldierTypeCounts = fiefManager.GetFiefTroopCounts(settlement);
-
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
@@ -172,7 +241,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 TOWN_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Entry Fief",
+                "{=ModifiedArmy_FiefMenu_Entry}Enter Fief",
                 fiefCondition,
                 fiefConsequence,
                 isLeave: false,
@@ -184,7 +253,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 CASTLE_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Entry Fief",
+                "{=ModifiedArmy_FiefMenu_Entry}Enter Fief",
                 fiefCondition,
                 fiefConsequence,
                 isLeave: false,

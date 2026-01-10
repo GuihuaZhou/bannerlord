@@ -13,6 +13,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Engine;
 using TaleWorlds.Library;
@@ -740,13 +741,29 @@ namespace ModifiedArmy.Models.Fief
         /// <param name="maxReinforcements">最多可补充的总人数（已扣除总容量限制）</param>
         private void PerformReinforcement(int maxReinforcements)
         {
-            // 按权重分配可补充人数
             Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
+            int tmpTotalWeight = 0;
             foreach (var kvp in _soldierTypeWeights)
             {
-                int idealSize = (maxReinforcements * _soldierTypeWeights[kvp.Key]) / _totalWeight;
-                // 需要考虑兵种类型的最大容量
-                tmpSoldierTypeSize[kvp.Key] = Math.Min(idealSize, _soldierTypeMaxCounts[kvp.Key] - _soldierTypeCounts[kvp.Key]);
+                tmpSoldierTypeSize[kvp.Key] = Math.Max(0, _soldierTypeMaxCounts[kvp.Key] - _soldierTypeCounts[kvp.Key]);
+                if (tmpSoldierTypeSize[kvp.Key] > 0)
+                {
+                    tmpTotalWeight += kvp.Value;
+                }
+            }
+
+            if (tmpTotalWeight <= 0)
+                return;
+
+            // 按权重分配可补充人数
+            foreach (var kvp in _soldierTypeWeights)
+            {
+                if (tmpSoldierTypeSize[kvp.Key] > 0)
+                {
+                    int idealSize = (maxReinforcements * _soldierTypeWeights[kvp.Key]) / tmpTotalWeight;
+                    // 需要考虑兵种类型的最大容量
+                    tmpSoldierTypeSize[kvp.Key] = Math.Min(idealSize, tmpSoldierTypeSize[kvp.Key]);
+                }
             }
 
             // 若无可补充兵员，直接退出
@@ -859,10 +876,158 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
+        /// 获取兵种类型的升级权重（用于加权随机）
+        /// 步兵 > 骑兵 > 射手
+        /// </summary>
+        private int GetUpgradeWeight(CharacterObject troop)
+        {
+            if (troop.IsInfantry)
+                return 5; // 最高偏好
+            if (troop.IsRanged)
+                return 2; // 最低偏好
+            return 3; 
+        }
+
+        /// <summary>
+        /// 从候选列表中按权重随机选择一个目标
+        /// </summary>
+        private CharacterObject WeightedRandomChoice(CharacterObject[] candidates)
+        {
+            if (candidates.Length == 0)
+                return null;
+            if (candidates.Length == 1)
+                return candidates[0];
+
+            int totalWeight = 0;
+            var weights = new int[candidates.Length];
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                weights[i] = GetUpgradeWeight(candidates[i]);
+                totalWeight += weights[i];
+            }
+
+            if (totalWeight <= 0)
+                return candidates[MBRandom.RandomInt(candidates.Length)];
+
+            int roll = MBRandom.RandomInt(totalWeight);
+            int cumulative = 0;
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                cumulative += weights[i];
+                if (roll < cumulative)
+                    return candidates[i];
+            }
+            return candidates[0]; // fallback
+        }
+
+        /// <summary>
+        /// 计算封邑部队每周升级概率 [0.05, 0.20]
+        /// - 繁荣度提供基础晋升可能（即使无训练场）
+        /// - 训练场与繁荣度协同放大效果（主通道）
+        /// - 无训练场时：p ∈ [0.05, 0.09]
+        /// - 有满级训练场+高繁荣：p = 0.20
+        /// </summary>
+        private float CalculateFiefUpgradeChance()
+        {
+            if (_settlement == null)
+                return 0.05f;
+
+            // 1. 归一化繁荣度 [0, 1]
+            float normP;
+            if (_settlement.IsCastle)
+                normP = MathF.Min(1f, _settlement.Town.Prosperity / 2000f);
+            else
+                normP = MathF.Min(1f, _settlement.Town.Prosperity / 10000f);
+
+            // 2. 归一化训练场等级 [0, 1]
+            float normT = 0f;
+            foreach (Building building in _settlement.Town.Buildings)
+            {
+                if (building.BuildingType == DefaultBuildingTypes.CastleTrainingFields ||
+                    building.BuildingType == DefaultBuildingTypes.SettlementTrainingFields)
+                {
+                    normT = MathF.Min(1f, building.CurrentLevel / 3f);
+                    break;
+                }
+            }
+            // 3. 双通道模型
+            float baseFromProsperity = 0.05f + 0.04f * normP;     // [0.05, 0.09]
+            float bonusFromSynergy = 0.11f * normP * normT;      // [0.00, 0.11]
+
+            float upgradeChance = baseFromProsperity + bonusFromSynergy;
+            return MathF.Clamp(upgradeChance, 0.05f, 0.20f);
+        }
+
+
+        /// <summary>
+        /// 每周自动尝试将低Tier封邑士兵升级为直接下一阶的同类型高Tier士兵。
+        /// - 仅处理 Tier < 4 的健康士兵
+        /// - 使用 CalculateVeteranMilitiaSpawnChance 返回的概率作为单兵升级率
+        /// </summary>
+        private void PerformAutoUpgrade()
+        {
+            // 获取升级基础概率
+            float upgradeChance = CalculateFiefUpgradeChance();
+
+            if (upgradeChance <= 0f)
+                return;
+
+            ModLogger.Debug($"[AutoUpgrade] Base chance in {_settlement.Name}: {upgradeChance:P1}");
+
+            // 对每个士兵独立判定是否升级
+            int upgradedCount = 0;
+
+            // 遍历所有 troop 
+            var rosterSnapshot = _fiefParty.GetTroopRoster().ToList();
+            foreach (var element in rosterSnapshot)
+            {
+                var troop = element.Character;
+                int count = element.Number; 
+
+                if (troop == null || count <= 0)
+                    continue;
+
+                // 跳过非采邑兵 或 Tier >= 4
+                if (!_fiefPartyTemplate.IsEnableTroop(troop) || troop.Tier >= 4)
+                    continue;
+
+                if (troop.UpgradeTargets == null || troop.UpgradeTargets.Length == 0)
+                    continue;
+
+                // 筛选合法升级目标：非 null + 属于采邑模板
+                var validTargets = troop.UpgradeTargets
+                    .Where(t => t != null && _fiefPartyTemplate.IsEnableTroop(t))
+                    .ToArray();
+
+                for (int i = 0; i < count; i++)
+                {
+                    if (MBRandom.RandomFloat < upgradeChance)
+                    {
+                        _fiefParty.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
+
+                        CharacterObject newTroop = WeightedRandomChoice(validTargets);
+                        _fiefParty.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
+
+                        upgradedCount++;
+                    }
+                }
+            }
+
+            if (upgradedCount > 0)
+            {
+                ModLogger.Debug($"[AutoUpgrade] Upgraded {upgradedCount} troops in {_settlement.Name}.");
+            }
+        }
+
+
+        /// <summary>
         /// 每周调用一次，处理封邑军队的自动恢复与补员。
         /// </summary>
         public void WeeklyUpdate()
         {
+            // 升级封邑士兵
+            PerformAutoUpgrade();
+
             // 处理 ReturnedTroopDetachmentList, 即解散士兵冷却结束
             if (ReturnedTroopDetachmentList != null)
             {
