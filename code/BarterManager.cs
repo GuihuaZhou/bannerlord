@@ -10,11 +10,11 @@ using TaleWorlds.SaveSystem;
 
 namespace TaleWorlds.CampaignSystem.BarterSystem
 {
-	// Token: 0x0200047A RID: 1146
+	// Token: 0x0200047B RID: 1147
 	public class BarterManager
 	{
-		// Token: 0x17000E42 RID: 3650
-		// (get) Token: 0x060047EB RID: 18411 RVA: 0x0016BAE2 File Offset: 0x00169CE2
+		// Token: 0x17000E47 RID: 3655
+		// (get) Token: 0x06004819 RID: 18457 RVA: 0x0016CA46 File Offset: 0x0016AC46
 		public static BarterManager Instance
 		{
 			get
@@ -23,19 +23,19 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x17000E43 RID: 3651
-		// (get) Token: 0x060047EC RID: 18412 RVA: 0x0016BAEE File Offset: 0x00169CEE
-		// (set) Token: 0x060047ED RID: 18413 RVA: 0x0016BAF6 File Offset: 0x00169CF6
+		// Token: 0x17000E48 RID: 3656
+		// (get) Token: 0x0600481A RID: 18458 RVA: 0x0016CA52 File Offset: 0x0016AC52
+		// (set) Token: 0x0600481B RID: 18459 RVA: 0x0016CA5A File Offset: 0x0016AC5A
 		[SaveableProperty(1)]
 		public bool LastBarterIsAccepted { get; internal set; }
 
-		// Token: 0x060047EE RID: 18414 RVA: 0x0016BAFF File Offset: 0x00169CFF
+		// Token: 0x0600481C RID: 18460 RVA: 0x0016CA63 File Offset: 0x0016AC63
 		public BarterManager()
 		{
 			this._barteredHeroes = new Dictionary<Hero, CampaignTime>();
 		}
 
-		// Token: 0x060047EF RID: 18415 RVA: 0x0016BB12 File Offset: 0x00169D12
+		// Token: 0x0600481D RID: 18461 RVA: 0x0016CA76 File Offset: 0x0016AC76
 		public void BeginPlayerBarter(BarterData args)
 		{
 			if (this.BarterBegin != null)
@@ -50,7 +50,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			campaignMission.SetMissionMode(MissionMode.Barter, false);
 		}
 
-		// Token: 0x060047F0 RID: 18416 RVA: 0x0016BB3C File Offset: 0x00169D3C
+		// Token: 0x0600481E RID: 18462 RVA: 0x0016CAA0 File Offset: 0x0016ACA0
 		private void AddBaseBarterables(BarterData args, IEnumerable<Barterable> defaultBarterables)
 		{
 			if (defaultBarterables != null)
@@ -70,7 +70,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047F1 RID: 18417 RVA: 0x0016BBA8 File Offset: 0x00169DA8
+		// Token: 0x0600481F RID: 18463 RVA: 0x0016CB0C File Offset: 0x0016AD0C
 		public void StartBarterOffer(Hero offerer, Hero other, PartyBase offererParty, PartyBase otherParty, Hero beneficiaryOfOtherHero = null, BarterManager.BarterContextInitializer InitContext = null, int persuasionCostReduction = 0, bool isAIBarter = false, IEnumerable<Barterable> defaultBarterables = null)
 		{
 			this.LastBarterIsAccepted = false;
@@ -93,7 +93,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047F2 RID: 18418 RVA: 0x0016BC40 File Offset: 0x00169E40
+		// Token: 0x06004820 RID: 18464 RVA: 0x0016CBA4 File Offset: 0x0016ADA4
 		public void ExecuteAiBarter(IFaction faction1, IFaction faction2, Hero faction1Hero, Hero faction2Hero, Barterable barterable)
 		{
 			this.ExecuteAiBarter(faction1, faction2, faction1Hero, faction2Hero, new Barterable[]
@@ -102,7 +102,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			});
 		}
 
-		// Token: 0x060047F3 RID: 18419 RVA: 0x0016BC64 File Offset: 0x00169E64
+		// Token: 0x06004821 RID: 18465 RVA: 0x0016CBC8 File Offset: 0x0016ADC8
 		public void ExecuteAiBarter(IFaction faction1, IFaction faction2, Hero faction1Hero, Hero faction2Hero, IEnumerable<Barterable> baseBarterables)
 		{
 			BarterData barterData = new BarterData(faction1.Leader, faction2.Leader, null, null, null, 0, true);
@@ -116,7 +116,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			Campaign.Current.BarterManager.ExecuteAIBarter(barterData, faction1, faction2, faction1Hero, faction2Hero);
 		}
 
-		// Token: 0x060047F4 RID: 18420 RVA: 0x0016BCF8 File Offset: 0x00169EF8
+		// Token: 0x06004822 RID: 18466 RVA: 0x0016CC5C File Offset: 0x0016AE5C
 		public void ExecuteAIBarter(BarterData barterData, IFaction faction1, IFaction faction2, Hero faction1Hero, Hero faction2Hero)
 		{
 			this.MakeBalanced(barterData, faction1, faction2, faction2Hero, 1f);
@@ -129,7 +129,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047F5 RID: 18421 RVA: 0x0016BD60 File Offset: 0x00169F60
+		// Token: 0x06004823 RID: 18467 RVA: 0x0016CCC4 File Offset: 0x0016AEC4
 		private void MakeBalanced(BarterData args, IFaction faction1, IFaction faction2, Hero faction2Hero, float fulfillRatio)
 		{
 			foreach (ValueTuple<Barterable, int> valueTuple in BarterHelper.GetAutoBalanceBarterablesAdd(args, faction1, faction2, faction2Hero, fulfillRatio))
@@ -145,7 +145,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047F6 RID: 18422 RVA: 0x0016BDDC File Offset: 0x00169FDC
+		// Token: 0x06004824 RID: 18468 RVA: 0x0016CD40 File Offset: 0x0016AF40
 		public void Close()
 		{
 			if (CampaignMission.Current != null)
@@ -158,13 +158,13 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047F7 RID: 18423 RVA: 0x0016BE04 File Offset: 0x0016A004
+		// Token: 0x06004825 RID: 18469 RVA: 0x0016CD68 File Offset: 0x0016AF68
 		public bool IsOfferAcceptable(BarterData args, Hero hero, PartyBase party)
 		{
 			return this.GetOfferValue(hero, party, args.OffererParty, args.GetOfferedBarterables()) > -0.01f;
 		}
 
-		// Token: 0x060047F8 RID: 18424 RVA: 0x0016BE24 File Offset: 0x0016A024
+		// Token: 0x06004826 RID: 18470 RVA: 0x0016CD88 File Offset: 0x0016AF88
 		public float GetOfferValueForFaction(BarterData barterData, IFaction faction)
 		{
 			int num = 0;
@@ -175,7 +175,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			return (float)num;
 		}
 
-		// Token: 0x060047F9 RID: 18425 RVA: 0x0016BE80 File Offset: 0x0016A080
+		// Token: 0x06004827 RID: 18471 RVA: 0x0016CDE4 File Offset: 0x0016AFE4
 		public float GetOfferValue(Hero selfHero, PartyBase selfParty, PartyBase offererParty, IEnumerable<Barterable> offeredBarters)
 		{
 			float num = 0f;
@@ -198,7 +198,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			return num;
 		}
 
-		// Token: 0x060047FA RID: 18426 RVA: 0x0016BF0C File Offset: 0x0016A10C
+		// Token: 0x06004828 RID: 18472 RVA: 0x0016CE70 File Offset: 0x0016B070
 		public void ApplyAndFinalizePlayerBarter(Hero offererHero, Hero otherHero, BarterData barterData)
 		{
 			this.LastBarterIsAccepted = true;
@@ -209,13 +209,13 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047FB RID: 18427 RVA: 0x0016BF2D File Offset: 0x0016A12D
+		// Token: 0x06004829 RID: 18473 RVA: 0x0016CE91 File Offset: 0x0016B091
 		public void CancelAndFinalizePlayerBarter(Hero offererHero, Hero otherHero, BarterData barterData)
 		{
 			this.CancelBarter(offererHero, otherHero, barterData.GetOfferedBarterables());
 		}
 
-		// Token: 0x060047FC RID: 18428 RVA: 0x0016BF40 File Offset: 0x0016A140
+		// Token: 0x0600482A RID: 18474 RVA: 0x0016CEA4 File Offset: 0x0016B0A4
 		private void ApplyBarterOffer(Hero offererHero, Hero otherHero, List<Barterable> barters)
 		{
 			foreach (Barterable barterable in barters)
@@ -238,7 +238,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047FD RID: 18429 RVA: 0x0016BFF8 File Offset: 0x0016A1F8
+		// Token: 0x0600482B RID: 18475 RVA: 0x0016CF5C File Offset: 0x0016B15C
 		private void CancelBarter(Hero offererHero, Hero otherHero, List<Barterable> offeredBarters)
 		{
 			this.Close();
@@ -247,7 +247,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			Campaign.Current.ConversationManager.ContinueConversation();
 		}
 
-		// Token: 0x060047FE RID: 18430 RVA: 0x0016C034 File Offset: 0x0016A234
+		// Token: 0x0600482C RID: 18476 RVA: 0x0016CF98 File Offset: 0x0016B198
 		private void ApplyOverpayBonus(Hero otherHero)
 		{
 			if (otherHero.MapFaction.IsAtWarWith(Hero.MainHero.MapFaction))
@@ -261,14 +261,14 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x060047FF RID: 18431 RVA: 0x0016C088 File Offset: 0x0016A288
+		// Token: 0x0600482D RID: 18477 RVA: 0x0016CFEC File Offset: 0x0016B1EC
 		public bool CanPlayerBarterWithHero(Hero hero)
 		{
 			CampaignTime campaignTime;
 			return !this._barteredHeroes.TryGetValue(hero, out campaignTime) || campaignTime.IsPast;
 		}
 
-		// Token: 0x06004800 RID: 18432 RVA: 0x0016C0B0 File Offset: 0x0016A2B0
+		// Token: 0x0600482E RID: 18478 RVA: 0x0016D014 File Offset: 0x0016B214
 		private void HandleHeroCooldown(Hero hero)
 		{
 			CampaignTime value = CampaignTime.Now + CampaignTime.Days((float)Campaign.Current.Models.BarterModel.BarterCooldownWithHeroInDays);
@@ -280,7 +280,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			this._barteredHeroes[hero] = value;
 		}
 
-		// Token: 0x06004801 RID: 18433 RVA: 0x0016C10C File Offset: 0x0016A30C
+		// Token: 0x0600482F RID: 18479 RVA: 0x0016D070 File Offset: 0x0016B270
 		private void ClearHeroCooldowns()
 		{
 			foreach (KeyValuePair<Hero, CampaignTime> keyValuePair in new Dictionary<Hero, CampaignTime>(this._barteredHeroes))
@@ -292,7 +292,7 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			}
 		}
 
-		// Token: 0x06004802 RID: 18434 RVA: 0x0016C184 File Offset: 0x0016A384
+		// Token: 0x06004830 RID: 18480 RVA: 0x0016D0E8 File Offset: 0x0016B2E8
 		public bool InitializeMarriageBarterContext(Barterable barterable, BarterData args, object obj)
 		{
 			Hero hero = null;
@@ -310,19 +310,19 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			return marriageBarterable != null && hero != null && hero2 != null && marriageBarterable.ProposingHero == hero2 && marriageBarterable.HeroBeingProposedTo == hero;
 		}
 
-		// Token: 0x06004803 RID: 18435 RVA: 0x0016C1D4 File Offset: 0x0016A3D4
+		// Token: 0x06004831 RID: 18481 RVA: 0x0016D138 File Offset: 0x0016B338
 		public bool InitializeJoinFactionBarterContext(Barterable barterable, BarterData args, object obj)
 		{
 			return barterable.GetType() == typeof(JoinKingdomAsClanBarterable) && barterable.OriginalOwner == Hero.OneToOneConversationHero;
 		}
 
-		// Token: 0x06004804 RID: 18436 RVA: 0x0016C1FC File Offset: 0x0016A3FC
+		// Token: 0x06004832 RID: 18482 RVA: 0x0016D160 File Offset: 0x0016B360
 		public bool InitializeMakePeaceBarterContext(Barterable barterable, BarterData args, object obj)
 		{
 			return barterable.GetType() == typeof(PeaceBarterable) && barterable.OriginalOwner == args.OtherHero;
 		}
 
-		// Token: 0x06004805 RID: 18437 RVA: 0x0016C225 File Offset: 0x0016A425
+		// Token: 0x06004833 RID: 18483 RVA: 0x0016D189 File Offset: 0x0016B389
 		public bool InitializeSafePassageBarterContext(Barterable barterable, BarterData args, object obj)
 		{
 			if (barterable.GetType() == typeof(SafePassageBarterable))
@@ -334,53 +334,53 @@ namespace TaleWorlds.CampaignSystem.BarterSystem
 			return false;
 		}
 
-		// Token: 0x06004806 RID: 18438 RVA: 0x0016C259 File Offset: 0x0016A459
+		// Token: 0x06004834 RID: 18484 RVA: 0x0016D1BD File Offset: 0x0016B3BD
 		internal static void AutoGeneratedStaticCollectObjectsBarterManager(object o, List<object> collectedObjects)
 		{
 			((BarterManager)o).AutoGeneratedInstanceCollectObjects(collectedObjects);
 		}
 
-		// Token: 0x06004807 RID: 18439 RVA: 0x0016C267 File Offset: 0x0016A467
+		// Token: 0x06004835 RID: 18485 RVA: 0x0016D1CB File Offset: 0x0016B3CB
 		protected virtual void AutoGeneratedInstanceCollectObjects(List<object> collectedObjects)
 		{
 			collectedObjects.Add(this._barteredHeroes);
 		}
 
-		// Token: 0x06004808 RID: 18440 RVA: 0x0016C275 File Offset: 0x0016A475
+		// Token: 0x06004836 RID: 18486 RVA: 0x0016D1D9 File Offset: 0x0016B3D9
 		internal static object AutoGeneratedGetMemberValueLastBarterIsAccepted(object o)
 		{
 			return ((BarterManager)o).LastBarterIsAccepted;
 		}
 
-		// Token: 0x06004809 RID: 18441 RVA: 0x0016C287 File Offset: 0x0016A487
+		// Token: 0x06004837 RID: 18487 RVA: 0x0016D1EB File Offset: 0x0016B3EB
 		internal static object AutoGeneratedGetMemberValue_barteredHeroes(object o)
 		{
 			return ((BarterManager)o)._barteredHeroes;
 		}
 
-		// Token: 0x040013CA RID: 5066
+		// Token: 0x040013E9 RID: 5097
 		public BarterManager.BarterCloseEventDelegate Closed;
 
-		// Token: 0x040013CB RID: 5067
+		// Token: 0x040013EA RID: 5098
 		public BarterManager.BarterBeginEventDelegate BarterBegin;
 
-		// Token: 0x040013CC RID: 5068
+		// Token: 0x040013EB RID: 5099
 		[SaveableField(2)]
 		private readonly Dictionary<Hero, CampaignTime> _barteredHeroes;
 
-		// Token: 0x040013CD RID: 5069
+		// Token: 0x040013EC RID: 5100
 		private float _overpayAmount;
 
-		// Token: 0x0200086B RID: 2155
-		// (Invoke) Token: 0x06006749 RID: 26441
+		// Token: 0x02000877 RID: 2167
+		// (Invoke) Token: 0x060067A5 RID: 26533
 		public delegate bool BarterContextInitializer(Barterable barterable, BarterData args, object obj = null);
 
-		// Token: 0x0200086C RID: 2156
-		// (Invoke) Token: 0x0600674D RID: 26445
+		// Token: 0x02000878 RID: 2168
+		// (Invoke) Token: 0x060067A9 RID: 26537
 		public delegate void BarterCloseEventDelegate();
 
-		// Token: 0x0200086D RID: 2157
-		// (Invoke) Token: 0x06006751 RID: 26449
+		// Token: 0x02000879 RID: 2169
+		// (Invoke) Token: 0x060067AD RID: 26541
 		public delegate void BarterBeginEventDelegate(BarterData args);
 	}
 }
