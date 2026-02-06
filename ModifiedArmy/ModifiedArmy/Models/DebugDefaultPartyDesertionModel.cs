@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ModifiedArmy.Tool;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using TaleWorlds.CampaignSystem;
@@ -13,24 +14,15 @@ namespace ModifiedArmy.Models
     {
         public override TroopRoster GetTroopsToDesert(MobileParty mobileParty)
         {
-            // === 开始日志：记录 party 基本状态 ===
-            InformationManager.DisplayMessage(new InformationMessage(
-                $"[Desertion Debug] Party: '{mobileParty.Name}' | " +
-                $"IsGarrison: {mobileParty.IsGarrison} | " +
-                $"Morale: {mobileParty.Morale:F1} | " +
-                $"TotalMembers: {mobileParty.Party.NumberOfAllMembers} | " +
-                $"PartySizeLimit: {mobileParty.Party.PartySizeLimit} | " +
-                $"HasUnpaidWages: {mobileParty.HasUnpaidWages:F2} | " +
-                $"PaymentLimit: {mobileParty.PaymentLimit} | " +
-                $"TotalWage: {mobileParty.TotalWage}"
-            ));
+            //// === 开始日志：记录 party 基本状态 ===
+            StringBuilder logBuilder = new StringBuilder();
 
             TroopRoster troopsToDesert = TroopRoster.CreateDummyTroopRoster();
 
             // ========== 复制原版 GetTroopsToDesertDueToMorale 逻辑 + 日志 ==========
             {
                 int maxDeserters = (int)((float)mobileParty.Party.NumberOfRegularMembers * CalculateDesertionChanceFromTroopLevel(mobileParty.Morale, 20));
-                InformationManager.DisplayMessage(new InformationMessage($"  [Morale Path] Max deserters from morale: {maxDeserters}"));
+                logBuilder.AppendLine($"因士气导致的最大逃兵数: {maxDeserters}");
 
                 if (maxDeserters > 0)
                 {
@@ -47,37 +39,33 @@ namespace ModifiedArmy.Models
                 float currentWage = Campaign.Current.Models.PartyWageModel.GetTotalWage(mobileParty, troopsToDesert, false).ResultNumber;
                 float unpaidWage = mobileParty.TotalWage - currentWage;
 
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"  [Wage/Size Path] ExcessMembers: {excessMembers}, UnpaidWage: {unpaidWage:F2}"
-                ));
+                logBuilder.AppendLine($"超编人数: {excessMembers}, 未支付工资: {unpaidWage:F2}");
 
                 if (mobileParty.HasLimitedWage() && mobileParty.PaymentLimit < unpaidWage)
                 {
                     int deficit = mobileParty.TotalWage - mobileParty.PaymentLimit;
                     wageDesertion = MathF.Min(20, MathF.Max(1, (int)((float)deficit / Campaign.Current.AverageWage * 0.25f)));
-                    InformationManager.DisplayMessage(new InformationMessage($"    → Wage desertion count: {wageDesertion} (deficit={deficit})"));
+                    logBuilder.AppendLine($" → 因工资不足的逃兵数: {wageDesertion} (赤字={deficit})");
                 }
 
                 if (excessMembers > 0)
                 {
                     sizeDesertion = MathF.Max(1, (int)(excessMembers * 0.25f));
-                    InformationManager.DisplayMessage(new InformationMessage($"    → Size desertion count: {sizeDesertion} (excess={excessMembers})"));
+                    logBuilder.AppendLine($" → 因超编的逃兵数: {sizeDesertion} (超编={excessMembers})");
                 }
 
                 int baseDesertion = MathF.Max(wageDesertion, sizeDesertion);
 
-                // ⚠️ 原版驻军欠薪逻辑（关键！）
+                // 驻军欠薪逻辑
                 if (mobileParty.IsGarrison && mobileParty.HasUnpaidWages > 0f)
                 {
                     int garrisonBonus = MathF.Min(mobileParty.Party.NumberOfHealthyMembers, 5);
                     baseDesertion += garrisonBonus;
-                    InformationManager.DisplayMessage(new InformationMessage(
-                        $"    → Garrison unpaid wages! Adding {garrisonBonus} deserters (HasUnpaidWages={mobileParty.HasUnpaidWages:F2})"
-                    ));
+                    logBuilder.AppendLine($" → 驻军且有欠薪！额外增加 {garrisonBonus} 名逃兵 (欠薪额={mobileParty.HasUnpaidWages:F2})");
                 }
 
                 baseDesertion = MathF.Min(baseDesertion, mobileParty.MemberRoster.TotalRegulars);
-                InformationManager.DisplayMessage(new InformationMessage($"    → Final desertion count (wage/size): {baseDesertion}"));
+                logBuilder.AppendLine($" → 工资/规模导致的最终逃兵数: {baseDesertion}");
 
                 if (baseDesertion > 0)
                 {
@@ -86,17 +74,18 @@ namespace ModifiedArmy.Models
             }
 
             // === 结果汇总 ===
-            if (troopsToDesert.TotalManCount > 0)
+            if (mobileParty.IsGarrison && troopsToDesert.TotalManCount > 0)
             {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Desertion Result] {troopsToDesert.TotalManCount} troops will desert from '{mobileParty.Name}'"
-                ));
-            }
-            else
-            {
-                InformationManager.DisplayMessage(new InformationMessage(
-                    $"[Desertion Result] No desertion for '{mobileParty.Name}'"
-                ));
+                string basicInfo = $"[逃兵调试] 部队: '{mobileParty.Name}' | " +
+                                   $"士气: {mobileParty.Morale:F1} | " +
+                                   $"总成员数: {mobileParty.Party.NumberOfAllMembers} | " +
+                                   $"部队规模上限: {mobileParty.Party.PartySizeLimit} | " +
+                                   $"欠薪: {mobileParty.HasUnpaidWages:F2} | " +
+                                   $"支付上限: {mobileParty.PaymentLimit} | " +
+                                   $"总工资: {mobileParty.TotalWage}";
+                ModLogger.Info(basicInfo);
+
+                ModLogger.Info(logBuilder.ToString());
             }
 
             return troopsToDesert;

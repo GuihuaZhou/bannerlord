@@ -30,7 +30,7 @@ namespace ModifiedArmy.Utils
         [SettingPropertyGroup("{=MA_RecruitmentCost_Group}Recruitment Costs", GroupOrder = 1)]
         [SettingPropertyInteger(
             "{=MA_CastleProsperityCostPerTier}Castle: Prosperity Cost per Tier",
-            1, 20,
+            0, 10,
             Order = 0,
             RequireRestart = false,
             HintText = "{=MA_CastleProsperityCostPerTier_Desc}Prosperity consumed per soldier tier when recruiting from a castle.")]
@@ -39,7 +39,7 @@ namespace ModifiedArmy.Utils
         [SettingPropertyGroup("{=MA_RecruitmentCost_Group}Recruitment Costs", GroupOrder = 1)]
         [SettingPropertyInteger(
             "{=MA_TownProsperityCostPerTier}Town: Prosperity Cost per Tier",
-            1, 50,
+            0, 10,
             Order = 1,
             RequireRestart = false,
             HintText = "{=MA_TownProsperityCostPerTier_Desc}Prosperity consumed per soldier tier when recruiting from a town.")]
@@ -48,7 +48,7 @@ namespace ModifiedArmy.Utils
         [SettingPropertyGroup("{=MA_RecruitmentCost_Group}Recruitment Costs", GroupOrder = 1)]
         [SettingPropertyInteger(
             "{=MA_VillageHearthCostPer}Village: Hearth Cost per Recruit",
-            1, 20,
+            0, 20,
             Order = 2,
             RequireRestart = false,
             HintText = "{=MA_VillageHearthCostPer_Desc}Number of hearths consumed per recruit when recruiting from a village.")]

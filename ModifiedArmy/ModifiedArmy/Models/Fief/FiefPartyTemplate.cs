@@ -59,6 +59,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int MaxWeeklySupplement { get; private set; } = 20;
 
+        public CultureObject culture { get; private set; }
+
 
         /// <summary>
         /// 判断指定的 CharacterObject 是否为本模板中启用的兵种（即存在于升级树中）。
@@ -115,6 +117,8 @@ namespace ModifiedArmy.Models.Fief
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
         {
             base.Deserialize(objectManager, node);
+
+            culture = MBObjectManager.Instance.ReadObjectReferenceFromXml<CultureObject>("culture", node);
 
             BaseLimit = XmlHelper.ReadInt(node, "baseLimit");
             VillageBonus = XmlHelper.ReadInt(node, "villageBonus");
@@ -187,9 +191,13 @@ namespace ModifiedArmy.Models.Fief
                     troopWeight = XmlHelper.ReadInt(troopNode, "weight");
                 }
 
-                // 创建条目并加入列表
-                var entry = new BasicTroopEntry(troop, troopWeight, troopType);
-                _allBasicTroops[troopType].Add(entry);
+                var basicTroop = BasicTroopGroupManager.FindBasicTroop(culture, troopType, troop);
+                if (basicTroop == null)
+                {
+                    continue;
+                }
+                basicTroop.SetWeight(troopWeight);
+                _allBasicTroops[troopType].Add(basicTroop);
             }
         }
 

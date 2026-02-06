@@ -43,6 +43,10 @@ namespace ModifiedArmy.Patch
                 float num2 = CalculateScoreToCreateParty(clan);
                 if (GetHeroPartyCommandScore(bestAvailableCommander) + num2 > 100f)
                 {
+
+                    if (clan.Gold < ClanPartySpawnConstants.CreationGoldCost * 1.5f && !isNewGame)
+                        continue;
+
                     MobileParty mobileParty = SpawnLordParty(bestAvailableCommander, isNewGame);
                     if (mobileParty != null)
                     {
@@ -50,15 +54,8 @@ namespace ModifiedArmy.Patch
 
                         if (!isNewGame)
                         {
-                            // 每次创建party，消耗 2% 的gold
-                            int tmpClanGold = clan.Gold;
-                            if (tmpClanGold > ClanPartySpawnConstants.MinGoldToChargeCreationFee)
-                            {
-                                int goldCost = (int)(tmpClanGold * ClanPartySpawnConstants.CreationGoldFeeRate);
-                                clan.Leader.ChangeHeroGold(goldCost * -1);
-
-                                ModLogger.Info($"Clan {clan.Name} has raised a new party led by {bestAvailableCommander.Name}. Gold cost: {goldCost}. Remaining clan treasury: {clan.Gold}.");
-                            }
+                            GiveGoldAction.ApplyBetweenCharacters(clan.Leader, null, ClanPartySpawnConstants.CreationGoldCost, false);
+                            ModLogger.Info($"{clan.Name} has raised a new party led by {bestAvailableCommander.Name}. Gold cost: {ClanPartySpawnConstants.CreationGoldCost}. Remaining clan treasury: {clan.Gold}.");
                         }
                     }
                 }

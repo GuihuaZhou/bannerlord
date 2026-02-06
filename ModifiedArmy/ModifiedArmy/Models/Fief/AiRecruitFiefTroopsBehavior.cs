@@ -25,7 +25,8 @@ namespace ModifiedArmy.Models.Fief
 
         public override void RegisterEvents()
         {
-            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
+            //CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
+            CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
 
             var msg = GameTexts.FindText("str_modifiedarmy_ai_recruit_behavior_loaded");
@@ -159,11 +160,12 @@ namespace ModifiedArmy.Models.Fief
         private bool ShouldRecruitForParty(MobileParty party)
         {
             if (party.Party.IsStarving) return false;
-            if (party.PartySizeRatio >= 0.9f) return false;
+            if (party.PartySizeRatio >= 0.7f) return false;
 
             float minGoldNeeded = party.TotalWage * 0.3f;
-            bool hasEnoughGold = party.PartyTradeGold >= minGoldNeeded ||
-                                (party.LeaderHero?.Clan.Gold ?? 0) >= minGoldNeeded;
+            bool hasEnoughGold = (party.PartyTradeGold >= minGoldNeeded ||
+                                (party.LeaderHero?.Clan.Gold ?? 0) >= minGoldNeeded)
+                                && MBRandom.RandomFloat < 0.4f;
 
             return hasEnoughGold;
         }

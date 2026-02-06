@@ -14,14 +14,37 @@ namespace ModifiedArmy.Models
     public class BasicTroopEntry
     {
         public CharacterObject Troop { get; }
-        public int Weight { get; }
+        public int Weight { get; set; }
         public SoldierType Type { get; }
 
-        public BasicTroopEntry(CharacterObject troop, int weight, SoldierType type)
+        /// <summary>
+        /// 招募此兵种所需的最低兵营等级。
+        /// 0 表示无要求。
+        /// </summary>
+        public int RequiredBarracksLevel { get; }
+
+        public BasicTroopEntry(CharacterObject troop, int weight, SoldierType type, int requiredBarracksLevel = 0)
         {
             Troop = troop;
             Weight = weight;
             Type = type;
+            RequiredBarracksLevel = requiredBarracksLevel;
+        }
+
+        /// <summary>
+        /// 设置此兵种条目的权重。
+        /// </summary>
+        /// <param name="newWeight">新的权重值。必须大于0。</param>
+        public void SetWeight(int newWeight)
+        {
+            if (newWeight <= 0)
+            {
+                Weight = 1;
+            }
+            else
+            {
+                Weight = newWeight;
+            }
         }
     }
 
@@ -98,9 +121,15 @@ namespace ModifiedArmy.Models
                 {
                     CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
 
+                    int barracksLevel = 0;
+                    if (node.Attributes?["barracksLevel"] != null)
+                    {
+                        barracksLevel = XmlHelper.ReadInt(node, "barracksLevel");
+                    }
+
                     if (troop != null)
                     {
-                        list.Add(new BasicTroopEntry(troop, 1, type));
+                        list.Add(new BasicTroopEntry(troop, 1, type, barracksLevel));
                         count++;
                         ModLogger.Debug($"  ├─ [{type}] Added troop: {troop.Name}");
                     }
@@ -153,6 +182,37 @@ namespace ModifiedArmy.Models
             int count = _groups.Count;
             _groups.Clear();
             ModLogger.Debug($"[BasicTroopGroupManager] Cleared cache ({count} entries)");
+        }
+
+        public static BasicTroopEntry FindBasicTroop(CultureObject culture, SoldierType type, CharacterObject troop)
+        {
+            if (culture == null || troop == null)
+            {
+                return null;
+            }
+
+            if (!_groups.TryGetValue(culture, out BasicTroopGroup group))
+            {
+                ModLogger.Debug($"[BasicTroopGroupManager] No group found for culture: {culture.StringId}");
+                return null;
+            }
+
+            if (!group.TroopsByType.TryGetValue(type, out List<BasicTroopEntry> entries))
+            {
+                ModLogger.Debug($"[BasicTroopGroupManager] No list found for SoldierType: {type} in culture: {culture.StringId}");
+                return null;
+            }
+
+            foreach (var entry in entries)
+            {
+                if (entry?.Troop == troop)
+                {
+                    return entry;
+                }
+            }
+
+            ModLogger.Debug($"[BasicTroopGroupManager] No entry found for troop '{troop.StringId}' of type {type} in culture: {culture.StringId}");
+            return null;
         }
     }
 

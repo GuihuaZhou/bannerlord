@@ -97,7 +97,6 @@ namespace ModifiedArmy.Models
         
         // 限制招募志愿troop
         // NPC只能在clan拥有的settlement招募
-        // 玩家没有settlement时，可以在任意settlement招募；拥有时，只能在所属的settlement招募troop
 
         public override int MaximumIndexHeroCanRecruitFromHero(Hero buyerHero, Hero sellerHero, int useValueAsRelation = -101)
         {
@@ -115,18 +114,7 @@ namespace ModifiedArmy.Models
             }
 
             Clan ownerClan = settlement.OwnerClan;
-            bool isPlayer = (buyerClan == Clan.PlayerClan);
-            bool canRecruitFromSettlement = false;
-
-            if (isPlayer)
-            {
-                bool playerHasSettlement = Clan.PlayerClan.Settlements.Count > 0;
-                canRecruitFromSettlement = !playerHasSettlement || (ownerClan == Clan.PlayerClan);
-            }
-            else
-            {
-                canRecruitFromSettlement = (ownerClan == buyerClan);
-            }
+            bool canRecruitFromSettlement = (ownerClan == buyerClan);
 
             if (!canRecruitFromSettlement)
             {
@@ -270,14 +258,14 @@ namespace ModifiedArmy.Models
 								{
 									hero.VolunteerTypes[i] = basicVolunteer;
 								}
-								else if (characterObject.UpgradeTargets.Length != 0 && characterObject.Tier < Campaign.Current.Models.VolunteerModel.MaxVolunteerTier)
-								{
-									float num = MathF.Log(hero.Power / (float)characterObject.Tier, 2f) * 0.01f;
-									if (MBRandom.RandomFloat < num)
-									{
-										hero.VolunteerTypes[i] = characterObject.UpgradeTargets[MBRandom.RandomInt(characterObject.UpgradeTargets.Length)];
-									}
-								}
+								//else if (characterObject.UpgradeTargets.Length != 0 && characterObject.Tier < Campaign.Current.Models.VolunteerModel.MaxVolunteerTier)
+								//{
+								//	float num = MathF.Log(hero.Power / (float)characterObject.Tier, 2f) * 0.01f;
+								//	if (MBRandom.RandomFloat < num)
+								//	{
+								//		hero.VolunteerTypes[i] = characterObject.UpgradeTargets[MBRandom.RandomInt(characterObject.UpgradeTargets.Length)];
+								//	}
+								//}
 							}
 						}
 						if (false)

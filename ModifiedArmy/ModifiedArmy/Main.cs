@@ -59,10 +59,6 @@ namespace ModifiedArmy
             new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
 
             ModSettings = GlobalSettings<Settings>.Instance;
-
-            UIExtender _UIextender = new UIExtender("com.mod.ModifiedArmy");
-            _UIextender.Register(Assembly.GetExecutingAssembly());
-            _UIextender.Enable();
         }
 
         protected override void OnBeforeInitialModuleScreenSetAsRoot()
@@ -88,6 +84,13 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewSettlementLoyaltyModel());
                 campaignStarter.AddModel(new NewClanTierModel());
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
+                //campaignStarter.AddModel(new NewDiplomacyModel());
+                campaignStarter.AddModel(new NewBuildingConstructionModel());
+                campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
+                campaignStarter.AddModel(new NewMinorFactionsModel());
+
+
+                //campaignStarter.AddModel(new DebugGarrisonMoraleModel());
                 //campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());
 
                 // //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
@@ -97,6 +100,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new AiRecruitFiefTroopsBehavior());
                 campaignStarter.AddBehavior(new FiefWageExemptionManager());
                 campaignStarter.AddBehavior(new FiefPartyManager());
+                campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
+                campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup", 
@@ -129,9 +134,33 @@ namespace ModifiedArmy
             {
                 Hero.MainHero.ChangeHeroGold(99000);
 
-                var armor = MBObjectManager.Instance.GetObject<ItemObject>("southern_lamellar_armor");
-                if (armor != null && armor.HasArmorComponent)
-                    MobileParty.MainParty.ItemRoster.AddToCounts(armor, 1);
+                var item = MBObjectManager.Instance.GetObject<ItemObject>("sturgian_lamellar_fortified");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("brass_lamellar_shoulder_white");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("sturgian_helmet_closed");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("mail_chausses");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("northern_brass_bracers");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("t3_khuzait_horse");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
+
+                item = MBObjectManager.Instance.GetObject<ItemObject>("steppe_half_barding");
+                if (item != null)
+                    MobileParty.MainParty.ItemRoster.AddToCounts(item, 1);
 
                 CampaignState.IsNewGame = false;
             }

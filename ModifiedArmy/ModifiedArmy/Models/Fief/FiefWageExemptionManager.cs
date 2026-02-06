@@ -1,4 +1,6 @@
 ﻿
+using HarmonyLib;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -28,7 +30,7 @@ namespace ModifiedArmy.Models.Fief
         // Parameterless constructor for TaleWorlds SaveSystem
         public FiefWageExemption() { }
 
-        public FiefWageExemption(int count, int durationDays = 15)
+        public FiefWageExemption(int count, int durationDays)
         {
             ExemptedTroopCount = Math.Max(0, count);
             DaysRemaining = Math.Max(0, durationDays);
@@ -193,7 +195,7 @@ namespace ModifiedArmy.Models.Fief
         /// <param name="party"></param>
         /// <param name="troopCount"></param>
         /// <param name="durationDays"></param>
-        public void AddExemption(MobileParty party, int troopCount, int durationDays = 15)
+        public void AddExemption(MobileParty party, int troopCount, int durationDays)
         {
             if (troopCount <= 0 || party == null)
             {

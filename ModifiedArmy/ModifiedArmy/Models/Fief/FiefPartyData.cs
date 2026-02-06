@@ -20,6 +20,7 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
 using static System.Collections.Specialized.BitVector32;
+using static ModifiedArmy.common.CommonConstants;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -176,6 +177,21 @@ namespace ModifiedArmy.Models.Fief
         public bool IsReadyToReturn()
         {
             return WaitCycle <= 0 && !IsEmpty();
+        }
+
+
+        /// <summary>
+        /// 判断是否为最后一个周期
+        /// 
+        /// </summary>
+        /// 
+        public bool IsLastCycle()
+        {
+            if (WaitCycle == 1)
+            {
+                return true;
+            }
+            return false;
         }
 
         /// <summary>
@@ -447,6 +463,12 @@ namespace ModifiedArmy.Models.Fief
                 // 立即补充一部分士兵
                 _totalTroopCount = 0;
                 InitialFeifParty();
+
+                // 清除驻军的士气惩罚
+                if (_settlement.Town != null && _settlement.Town.GarrisonParty != null)
+                {
+                    _settlement.Town.GarrisonParty.RecentEventsMorale = 0f;
+                }
             }
 
             SyncManpowerCounters();
@@ -471,9 +493,9 @@ namespace ModifiedArmy.Models.Fief
             else
             {
                 if (_settlement.IsCastle)
-                    _settlement.Town.Prosperity = Math.Max(Settings.Instance.CastleMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+                    _settlement.Town.Prosperity = Math.Max(CommonConstants.CASTLE_POOR_THRESHOLD, _settlement.Town.Prosperity - prosperityCost);
                 else if (_settlement.IsTown)
-                    _settlement.Town.Prosperity = Math.Max(Settings.Instance.TownMinProsperityThreshold, _settlement.Town.Prosperity - prosperityCost);
+                    _settlement.Town.Prosperity = Math.Max(CommonConstants.TOWN_POOR_THRESHOLD, _settlement.Town.Prosperity - prosperityCost);
             }
 
             // 分配户数
@@ -651,6 +673,32 @@ namespace ModifiedArmy.Models.Fief
             return true;
         }
 
+
+        /// <summary>
+        /// 获取当前定居点的兵营等级。
+        /// 城镇使用 SettlementBarracks，城堡使用 CastleBarracks。
+        /// </summary>
+        private int GetCurrentBarracksLevel()
+        {
+            if (_settlement?.Town == null) 
+                return 0;
+
+            var town = _settlement.Town;
+            var barracksType = _settlement.IsCastle 
+                ? DefaultBuildingTypes.CastleBarracks 
+                : DefaultBuildingTypes.SettlementBarracks;
+
+            foreach (var building in town.Buildings)
+            {
+                if (building.BuildingType == barracksType)
+                {
+                    return building.CurrentLevel;
+                }
+            }
+            return 0; // 未找到兵营，等级为0
+        }
+
+
         private CharacterObject WeightedRandomSelectFromBasicTroopEntries(List<BasicTroopEntry> candidates)
         {
             if (candidates == null || candidates.Count == 0)
@@ -663,14 +711,18 @@ namespace ModifiedArmy.Models.Fief
             int rand = MBRandom.RandomInt(tmpTotalWeight); // 使用整数随机更高效且避免浮点误差
             int sum = 0;
 
+            int currentBarracksLevel = GetCurrentBarracksLevel();
             foreach (var candidate in candidates)
             {
+                if (candidate.RequiredBarracksLevel > currentBarracksLevel)
+                    continue;
+
                 sum += candidate.Weight;
                 if (rand < sum)
                     return candidate.Troop;
             }
 
-            return candidates[candidates.Count - 1].Troop;
+            return null;
         }
 
         // 根据模板生成新troops
@@ -823,11 +875,11 @@ namespace ModifiedArmy.Models.Fief
 
             if (_settlement.IsTown)
             {
-                prosperityRatio = MathF.Min(1f, prosperity / Settings.Instance.TownMaxReinforcementProsperityThreshold); 
+                prosperityRatio = MathF.Min(1f, prosperity / CommonConstants.TOWN_VERY_RICH_THRESHOLD); 
             }
             else if (_settlement.IsCastle)
             {
-                prosperityRatio = MathF.Min(1f, prosperity / Settings.Instance.CastleMaxReinforcementProsperityThreshold); 
+                prosperityRatio = MathF.Min(1f, prosperity / CommonConstants.CASTLE_VERY_RICH_THRESHOLD); 
             }
 
             // === 2. 获取附属村庄总户数 ===
@@ -935,9 +987,9 @@ namespace ModifiedArmy.Models.Fief
             // 1. 归一化繁荣度 [0, 1]
             float normP;
             if (_settlement.IsCastle)
-                normP = MathF.Min(1f, _settlement.Town.Prosperity / 2000f);
+                normP = MathF.Min(1f, _settlement.Town.Prosperity / CommonConstants.CASTLE_VERY_RICH_THRESHOLD);
             else
-                normP = MathF.Min(1f, _settlement.Town.Prosperity / 10000f);
+                normP = MathF.Min(1f, _settlement.Town.Prosperity / CommonConstants.TOWN_VERY_RICH_THRESHOLD);
 
             // 2. 归一化训练场等级 [0, 1]
             float normT = 0f;
@@ -1045,6 +1097,13 @@ namespace ModifiedArmy.Models.Fief
 
                         // 移除该分遣队
                         ReturnedTroopDetachmentList.RemoveAt(i);
+
+                        if (_settlement.OwnerClan == Clan.PlayerClan)
+                        {
+                            TextObject textObject = new TextObject("{=FiefTroopsReady}{SETTLEMENT_NAME}'s feudal troops are ready!", null);
+                            textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+                            MBInformationManager.AddQuickInformation(textObject, 5000, null, null, "");
+                        }
                     }
                 }
             }
@@ -1057,7 +1116,13 @@ namespace ModifiedArmy.Models.Fief
                     var detachment = RecruitedTroopDetachmentList[i];
                     detachment.Tick();
 
-                    if (detachment.IsReadyToReturn())
+                    if (detachment.IsLastCycle() && _settlement.OwnerClan == Clan.PlayerClan)
+                    {
+                        TextObject textObject = new TextObject("{=FiefTroopsServiceEnding}The service period of {SETTLEMENT_NAME}'s feudal troops is about to end!", null);
+                        textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+                        MBInformationManager.AddQuickInformation(textObject, 5000, null, null, "");
+                    }
+                    else if (detachment.IsReadyToReturn())
                     {
                         foreach (var kvp in detachment.Troops)
                         {
@@ -1177,11 +1242,11 @@ namespace ModifiedArmy.Models.Fief
 
             // 添加到ReturnedTroopDetachmentList，记录处于冷却状态的士兵
             FiefTroopDetachment targetDetachment = ReturnedTroopDetachmentList
-                .FirstOrDefault(d => d != null && d.WaitCycle == 2);
+                .FirstOrDefault(d => d != null && d.WaitCycle == CommonConstants.RETURN_TROOP_WAIT_CYCLE);
 
             if (targetDetachment == null)
             {
-                targetDetachment = new FiefTroopDetachment(2); // WaitCycle = 2
+                targetDetachment = new FiefTroopDetachment(CommonConstants.RETURN_TROOP_WAIT_CYCLE); // WaitCycle = 2
                 ReturnedTroopDetachmentList.Add(targetDetachment);
             }
             // 向目标分遣队添加归还的部队
@@ -1328,11 +1393,11 @@ namespace ModifiedArmy.Models.Fief
 
             // 记录招募的士兵
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
-                .FirstOrDefault(d => d != null && d.WaitCycle == 5);
+                .FirstOrDefault(d => d != null && d.WaitCycle == CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
 
             if (targetDetachment == null)
             {
-                targetDetachment = new FiefTroopDetachment(4);
+                targetDetachment = new FiefTroopDetachment(CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
                 RecruitedTroopDetachmentList.Add(targetDetachment);
             }
             targetDetachment.AddTroops(tmpRecruitTroops);
@@ -1361,7 +1426,7 @@ namespace ModifiedArmy.Models.Fief
 
             // 给与工资减免
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-            _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, 28);
+            _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
 
             return totalRecruited;
         }
@@ -1392,7 +1457,6 @@ namespace ModifiedArmy.Models.Fief
             int hearthCost = 0;
 
             int tmpProsperityCostPerTier = 0;
-
             if (_settlement.IsTown)
                 tmpProsperityCostPerTier = Settings.Instance.TownProsperityCostPerTier;
             else if (_settlement.IsCastle)
@@ -1427,11 +1491,11 @@ namespace ModifiedArmy.Models.Fief
 
             // 添加到 RecruitedTroopDetachmentList
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
-                .FirstOrDefault(d => d != null && d.WaitCycle == 5);
+                .FirstOrDefault(d => d != null && d.WaitCycle == CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
 
             if (targetDetachment == null)
             {
-                targetDetachment = new FiefTroopDetachment(5);
+                targetDetachment = new FiefTroopDetachment(CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
                 RecruitedTroopDetachmentList.Add(targetDetachment);
             }
             targetDetachment.AddTroops(tmpRecruitTroops);
@@ -1458,12 +1522,70 @@ namespace ModifiedArmy.Models.Fief
 
             // 给予工资减免
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-            _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, 28);
+            _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
 
             // 将士兵添加到目标party
             targetParty.MemberRoster.Add(selectedRoster);
 
             return totalRecruited;
+        }
+
+
+        /// <summary>
+        /// 从定居点俘虏中直接招募指定数量的士兵到封建部队（无需冷却）。
+        /// </summary>
+        /// <param name="troop">要招募的士兵类型</param>
+        /// <param name="num">要招募的数量</param>
+        /// <returns>是否成功招募</returns>
+        public bool RecruitFromPrisoners(CharacterObject troop, int count)
+        {
+            // 参数校验
+            if (troop == null || count <= 0)
+                return false;
+
+            if (_fiefParty == null)
+                return false;
+
+            // 1. 检查是否为封建部队允许的兵种
+            if (_fiefPartyTemplate == null || !_fiefPartyTemplate.IsEnableTroop(troop))
+                return false;
+
+            // 2. 获取士兵类型并检查剩余容量
+            var type = SoldierTypeClassifier.GetSoldierType(troop);
+            int currentCount = _soldierTypeCounts[type];
+            int maxCount = _soldierTypeMaxCounts[type];
+            int availableCapacity = Math.Max(0, maxCount - currentCount);
+
+            if (availableCapacity < count)
+                return false;
+
+
+            // 3. 直接添加到封建部队并更新繁荣度
+            _fiefParty.AddToCounts(troop, count, false, 0, 0, true, -1);
+
+            // 消耗的繁荣度
+            int prosperityCost = 0;
+            // 消耗的户数
+            int hearthCost = 0;
+
+            int tmpProsperityCostPerTier = 0;
+            if (_settlement.IsTown)
+                tmpProsperityCostPerTier = Settings.Instance.TownProsperityCostPerTier;
+            else if (_settlement.IsCastle)
+                tmpProsperityCostPerTier = Settings.Instance.CastleProsperityCostPerTier;
+
+            hearthCost += count * Settings.Instance.VillageHearthCostPer;
+            prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
+
+            updateProsperity(prosperityCost, hearthCost, true);
+
+            // 4. 更新计数器
+            _soldierTypeCounts[type] += count;
+            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+
+            ModLogger.Notice($"{_settlement.Name}的封邑部队从俘虏中招募了{count}名{troop.Name}");
+
+            return true;
         }
     }
 }
