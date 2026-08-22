@@ -90,9 +90,12 @@ namespace ModifiedArmy.Models
             float militia = settlement.Militia;
 
             var fiefManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-            var fiefTroopCount = fiefManager.GetAvailableTroopCount(settlement);
-            militia -= fiefTroopCount;
-
+            if (fiefManager != null)
+            {
+                var fiefTroopCount = fiefManager.GetAvailableTroopCount(settlement);
+                militia -= fiefTroopCount;
+            }
+            
             if (settlement.IsFortification)
             {
                 result.Add(2f, NewSettlementMilitiaModel.BaseText, null);

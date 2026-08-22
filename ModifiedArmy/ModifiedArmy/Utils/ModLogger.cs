@@ -25,11 +25,13 @@ namespace ModifiedArmy.Tool
         {
             get
             {
-                var settings = Main.ModSettings;
-                if (settings == null) 
-                    return LogLevel.Info;
+                //var settings = Main.ModSettings;
+                //if (settings == null) 
+                //    return LogLevel.Info;
 
-                return settings.MinLogLevel.SelectedValue;
+                //return settings.MinLogLevel.SelectedValue;
+
+                return LogLevel.Notice;
             }
         }
 

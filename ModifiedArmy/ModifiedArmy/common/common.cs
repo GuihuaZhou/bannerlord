@@ -100,5 +100,21 @@ namespace ModifiedArmy.common
         public static readonly int RETURN_TROOP_WAIT_CYCLE = 3;
         // 封建部队最大使用周期，即服役的周数
         public static readonly int FIEF_TROOP_MAX_SERVICE_CYCLE = 5;
+
+        public static readonly int TownProsperityCostPerTier = 8;
+
+        public static readonly float VillageMinHearthThreshold = 100f;
+
+        public static readonly float VillageMaxReinforcementHearthThreshold = 900f;
+
+        public static readonly float ProsperityWeight = 0.4f;
+
+        public static readonly float HearthsWeight = 0.6f;
+
+        public static readonly int CastleProsperityCostPerTier = 4;
+
+        public static readonly int VillageHearthCostPer = 1;
+
+        public static readonly float PlayerSettlementPrisonerEscapeChance = 0.01f;
     }
 }

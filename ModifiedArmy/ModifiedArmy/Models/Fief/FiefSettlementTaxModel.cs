@@ -22,7 +22,7 @@ namespace ModifiedArmy.Models.Fief
         {
             // 获取原版计算结果
             ExplainedNumber original = base.CalculateTownTax(town, includeDescriptions);
-            float feudalTax = (float)(original.ResultNumber * 0.95f);
+            float feudalTax = (float)(original.ResultNumber * 0.1f);
 
             if (!includeDescriptions)
                 return new ExplainedNumber(feudalTax, false, null);

@@ -253,7 +253,7 @@ namespace ModifiedArmy.Patch
 
                         if (hasAnyEnemy)
                         {
-                            continue; 
+                            continue;
                         }
 
                         // 找到合格的王国，执行加入！

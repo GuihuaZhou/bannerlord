@@ -22,10 +22,10 @@ namespace ModifiedArmy.Patch
         [HarmonyPrefix]
         public static bool Prefix(BarterData args)
         {
-            if (args.OffererHero != null 
-                && args.OtherHero != null 
-                && (!args.OtherHero.Clan.IsMinorFaction || args.OtherHero.Clan == Clan.PlayerClan) 
-                && !args.OtherHero.Clan.IsUnderMercenaryService 
+            if (args.OffererHero != null
+                && args.OtherHero != null
+                && (!args.OtherHero.Clan.IsMinorFaction || args.OtherHero.Clan == Clan.PlayerClan)
+                && !args.OtherHero.Clan.IsUnderMercenaryService
                 && !args.OffererHero.Clan.IsUnderMercenaryService)
             {
                 // 玩家为君主时，可以直接交易定居点
@@ -51,7 +51,7 @@ namespace ModifiedArmy.Patch
                         }
                     }
                 }
-                
+
             }
 
             return false;

@@ -53,7 +53,7 @@ namespace ModifiedArmy.Patch
                 Settlement _newlyConqueredFortification = (Settlement)newlyConqueredField.GetValue(__instance);
 
                 // 如果不是新占定居点且不是所属clan的定居点，禁止捐兵
-                if (settlement != _newlyConqueredFortification 
+                if (settlement != _newlyConqueredFortification
                     && mobileParty.Owner.Clan != settlement.OwnerClan)
                     return false;
             }

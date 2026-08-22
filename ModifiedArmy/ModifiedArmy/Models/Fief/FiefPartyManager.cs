@@ -342,14 +342,14 @@ namespace ModifiedArmy.Models.Fief
             if (settlement.IsTown)
             {
                 // 扣除繁荣度
-                int prosperityCost = count * Settings.Instance.TownProsperityCostPerTier * troop.Tier;
+                int prosperityCost = count * CommonConstants.TownProsperityCostPerTier * troop.Tier;
                 settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
                 ModLogger.Debug($"[ProsperityCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {prosperityCost:F1}");
             }
             else if (settlement.IsVillage)
             {
                 // 扣除户数
-                int hearthCost = count * Settings.Instance.VillageHearthCostPer;
+                int hearthCost = count * CommonConstants.VillageHearthCostPer;
                 settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
                 ModLogger.Debug($"[HearthCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {hearthCost:F1}");
             }

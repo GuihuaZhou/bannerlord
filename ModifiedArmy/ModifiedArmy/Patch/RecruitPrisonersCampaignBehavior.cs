@@ -19,11 +19,11 @@ namespace ModifiedArmy.Patch
     [HarmonyPatch(typeof(RecruitPrisonersCampaignBehavior), "RecruitPrisonersAi")]
     public static class RecruitPrisonersAiPatch
     {
-        //private static void ApplyPrisonerRecruitmentEffects(MobileParty mobileParty, CharacterObject troop, int num)
-        //{
-        //    int prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(mobileParty.Party, troop, num);
-        //    mobileParty.RecentEventsMorale += (float)prisonerRecruitmentMoraleEffect;
-        //}
+        private static void ApplyPrisonerRecruitmentEffects(MobileParty mobileParty, CharacterObject troop, int num)
+        {
+            int prisonerRecruitmentMoraleEffect = Campaign.Current.Models.PrisonerRecruitmentCalculationModel.GetPrisonerRecruitmentMoraleEffect(mobileParty.Party, troop, num);
+            mobileParty.RecentEventsMorale += (float)prisonerRecruitmentMoraleEffect;
+        }
 
         private static int GetGoldCostForRecruitment(CharacterObject troop, int count, Hero buyerHero)
         {
@@ -55,15 +55,7 @@ namespace ModifiedArmy.Patch
                 mobileParty.PrisonRoster.AddToCounts(troop, -num, false, 0, -conformityCost * num, true, -1);
                 mobileParty.MemberRoster.AddToCounts(troop, num, false, 0, 0, true, -1);
                 CampaignEventDispatcher.Instance.OnTroopRecruited(mobileParty.LeaderHero, null, null, troop, num);
-                //ApplyPrisonerRecruitmentEffects(mobileParty, troop, num);
-
-                var cost = GetGoldCostForRecruitment(troop, num, mobileParty.LeaderHero);
-                cost = (int)(cost * 0.3f);
-                if (cost > 0)
-                {
-                    GiveGoldAction.ApplyBetweenCharacters(mobileParty.LeaderHero, null, cost, false);
-                    ModLogger.Info($"{mobileParty.Name}从俘虏中招募{num}名{troop.Name}，花费：{cost}");
-                }
+                ApplyPrisonerRecruitmentEffects(mobileParty, troop, num);
             }
 
             return false;

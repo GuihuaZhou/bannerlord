@@ -15,7 +15,7 @@ namespace ModifiedArmy.Models
         {
             get
             {
-                return -3f;
+                return -2f;
             }
         }
     }

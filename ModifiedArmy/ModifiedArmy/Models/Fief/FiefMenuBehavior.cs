@@ -159,7 +159,7 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable("SLAVE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Slave].ToString());
             text.SetTextVariable("MILITIA_COUNT", tmpSoldierTypeCounts[SoldierType.Militia].ToString());
             text.SetTextVariable("MILITIA_MAX", tmpSoldierTypeMaxCounts[SoldierType.Militia].ToString());
-            
+
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }

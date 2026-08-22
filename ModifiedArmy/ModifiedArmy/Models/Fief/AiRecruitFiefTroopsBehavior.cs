@@ -25,8 +25,8 @@ namespace ModifiedArmy.Models.Fief
 
         public override void RegisterEvents()
         {
-            //CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
-            CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnDailyTick);
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
+            //CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnDailyTick);
             CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
 
             var msg = GameTexts.FindText("str_modifiedarmy_ai_recruit_behavior_loaded");
@@ -165,7 +165,7 @@ namespace ModifiedArmy.Models.Fief
             float minGoldNeeded = party.TotalWage * 0.3f;
             bool hasEnoughGold = (party.PartyTradeGold >= minGoldNeeded ||
                                 (party.LeaderHero?.Clan.Gold ?? 0) >= minGoldNeeded)
-                                && MBRandom.RandomFloat < 0.4f;
+                                && MBRandom.RandomFloat < 0.8f;
 
             return hasEnoughGold;
         }

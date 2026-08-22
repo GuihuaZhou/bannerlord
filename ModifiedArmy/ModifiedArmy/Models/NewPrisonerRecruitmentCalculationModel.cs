@@ -41,10 +41,10 @@ namespace ModifiedArmy.Models
                     case SoldierType.Sergeant:
                     case SoldierType.Marine:
                     case SoldierType.Slave:
-                        levelOffset = 10; // 军士等
+                        levelOffset = 15; // 军士等
                         break;
                     case SoldierType.Retinue:
-                        levelOffset = 15; // 扈从需要显著更高的难度
+                        levelOffset = 25; // 扈从需要显著更高的难度
                         break;
                 }
 

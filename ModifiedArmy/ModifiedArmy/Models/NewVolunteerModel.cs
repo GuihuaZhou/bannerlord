@@ -215,6 +215,7 @@ namespace ModifiedArmy.Models
                 if (settlement.IsTown)
                 {
                     allEntries.AddRange(group.TroopsByType[SoldierType.Sergeant]);
+                    allEntries.AddRange(group.TroopsByType[SoldierType.Retinue]);
                     if (settlement.HasPort)
                     {
                         allEntries.AddRange(group.TroopsByType[SoldierType.Marine]);
@@ -268,43 +269,43 @@ namespace ModifiedArmy.Models
 								//}
 							}
 						}
-						if (false)
-						{
-							CharacterObject[] volunteerTypes = hero.VolunteerTypes;
-							for (int j = 1; j < 6; j++)
-							{
-								CharacterObject characterObject2 = volunteerTypes[j];
-								if (characterObject2 != null)
-								{
-									int num2 = 0;
-									int num3 = j - 1;
-									CharacterObject characterObject3 = volunteerTypes[num3];
-									while (num3 >= 0 && (characterObject3 == null || (float)characterObject2.Level + (characterObject2.IsMounted ? 0.5f : 0f) < (float)characterObject3.Level + (characterObject3.IsMounted ? 0.5f : 0f)))
-									{
-										if (characterObject3 == null)
-										{
-											num3--;
-											num2++;
-											if (num3 >= 0)
-											{
-												characterObject3 = volunteerTypes[num3];
-											}
-										}
-										else
-										{
-											volunteerTypes[num3 + 1 + num2] = characterObject3;
-											num3--;
-											num2 = 0;
-											if (num3 >= 0)
-											{
-												characterObject3 = volunteerTypes[num3];
-											}
-										}
-									}
-									volunteerTypes[num3 + 1 + num2] = characterObject2;
-								}
-							}
-						}
+						//if (false)
+						//{
+						//	CharacterObject[] volunteerTypes = hero.VolunteerTypes;
+						//	for (int j = 1; j < 6; j++)
+						//	{
+						//		CharacterObject characterObject2 = volunteerTypes[j];
+						//		if (characterObject2 != null)
+						//		{
+						//			int num2 = 0;
+						//			int num3 = j - 1;
+						//			CharacterObject characterObject3 = volunteerTypes[num3];
+						//			while (num3 >= 0 && (characterObject3 == null || (float)characterObject2.Level + (characterObject2.IsMounted ? 0.5f : 0f) < (float)characterObject3.Level + (characterObject3.IsMounted ? 0.5f : 0f)))
+						//			{
+						//				if (characterObject3 == null)
+						//				{
+						//					num3--;
+						//					num2++;
+						//					if (num3 >= 0)
+						//					{
+						//						characterObject3 = volunteerTypes[num3];
+						//					}
+						//				}
+						//				else
+						//				{
+						//					volunteerTypes[num3 + 1 + num2] = characterObject3;
+						//					num3--;
+						//					num2 = 0;
+						//					if (num3 >= 0)
+						//					{
+						//						characterObject3 = volunteerTypes[num3];
+						//					}
+						//				}
+						//			}
+						//			volunteerTypes[num3 + 1 + num2] = characterObject2;
+						//		}
+						//	}
+						//}
 					}
 				}
 			}
