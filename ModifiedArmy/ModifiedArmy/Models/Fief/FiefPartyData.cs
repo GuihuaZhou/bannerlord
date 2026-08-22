@@ -480,36 +480,92 @@ namespace ModifiedArmy.Models.Fief
             SyncManpowerCounters();
         }
 
-
         /// <summary>
-        /// 更新定居点繁荣度和户数
+        /// 更新定居点繁荣度。
+        ///
+        /// 玩家：
+        ///     100% Prosperity 影响
+        ///
+        /// AI：
+        ///     10% Prosperity 影响
+        ///
+        /// Hearth 不在此函数中处理。
         /// </summary>
-        /// 
-        private void updateProsperity(float prosperityCost, int hearthCost, bool isAdd)
+        private void UpdateProsperity(
+            float prosperityCost,
+            bool isAdd)
         {
-            // 分配繁荣度
+            if (prosperityCost <= 0f)
+                return;
+
+            // 玩家 100%，AI 10%
+            float prosperityMultiplier =
+                _settlement.OwnerClan == Clan.PlayerClan
+                    ? 1.0f
+                    : CommonConstants.AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER;
+
+            float actualProsperityCost =
+                prosperityCost * prosperityMultiplier;
+
             if (isAdd)
-                _settlement.Town.Prosperity = Math.Max(0f, _settlement.Town.Prosperity + prosperityCost);
+            {
+                _settlement.Town.Prosperity =
+                    Math.Max(
+                        0f,
+                        _settlement.Town.Prosperity +
+                        actualProsperityCost);
+            }
             else
             {
                 if (_settlement.IsCastle)
-                    _settlement.Town.Prosperity = Math.Max(CommonConstants.CASTLE_POOR_THRESHOLD, _settlement.Town.Prosperity - prosperityCost);
+                {
+                    _settlement.Town.Prosperity =
+                        Math.Max(
+                            CommonConstants.CASTLE_POOR_THRESHOLD,
+                            _settlement.Town.Prosperity -
+                            actualProsperityCost);
+                }
                 else if (_settlement.IsTown)
-                    _settlement.Town.Prosperity = Math.Max(CommonConstants.TOWN_POOR_THRESHOLD, _settlement.Town.Prosperity - prosperityCost);
+                {
+                    _settlement.Town.Prosperity =
+                        Math.Max(
+                            CommonConstants.TOWN_POOR_THRESHOLD,
+                            _settlement.Town.Prosperity -
+                            actualProsperityCost);
+                }
             }
+        }
 
-            // 分配户数
-
+        /// <summary>
+        /// 更新封邑所属村庄的 Hearth。
+        ///
+        /// Hearth 不区分玩家和 AI，始终按照实际人数完整变化。
+        /// </summary>
+        private void UpdateHearth(
+            int hearthCost,
+            bool isAdd)
+        {
             if (hearthCost <= 0)
                 return;
 
-            int villageCount = _settlement.BoundVillages.Count;
-            int sign = isAdd ? 1 : -1;
-            int totalChange = hearthCost * sign;
+            int villageCount =
+                _settlement.BoundVillages.Count;
+
+            if (villageCount <= 0)
+                return;
+
+            int sign =
+                isAdd ? 1 : -1;
+
+            int totalChange =
+                hearthCost * sign;
 
             // 均匀分配：基础值 + 余数
-            int baseChange = totalChange / villageCount;
-            int remainder = totalChange % villageCount;
+            int baseChange =
+                totalChange / villageCount;
+
+            int remainder =
+                totalChange % villageCount;
 
             // 修正负余数
             if (remainder < 0)
@@ -521,29 +577,43 @@ namespace ModifiedArmy.Models.Fief
             // === 应用基础分配 ===
             for (int i = 0; i < villageCount; i++)
             {
-                Village village = _settlement.BoundVillages[i];
-                float newHearth = village.Hearth + baseChange;
+                Village village =
+                    _settlement.BoundVillages[i];
+
+                float newHearth =
+                    village.Hearth + baseChange;
 
                 if (!isAdd)
                 {
-                    newHearth = Math.Max(CommonConstants.TownProsperityCostPerTier, newHearth);
+                    newHearth =
+                        Math.Max(
+                            CommonConstants.TownProsperityCostPerTier,
+                            newHearth);
                 }
 
-                village.Hearth = newHearth;
+                village.Hearth =
+                    newHearth;
             }
 
-            // === 分配余数
+            // === 分配余数 ===
             for (int i = 0; i < remainder; i++)
             {
-                Village village = _settlement.BoundVillages[i];
-                float newHearth = village.Hearth + 1f;
+                Village village =
+                    _settlement.BoundVillages[i];
+
+                float newHearth =
+                    village.Hearth + 1f;
 
                 if (!isAdd)
                 {
-                    newHearth = Math.Max(CommonConstants.VillageMinHearthThreshold, newHearth);
+                    newHearth =
+                        Math.Max(
+                            CommonConstants.VillageMinHearthThreshold,
+                            newHearth);
                 }
 
-                village.Hearth = newHearth;
+                village.Hearth =
+                    newHearth;
             }
         }
 
@@ -1158,20 +1228,119 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
+        /// 计算封建军征召期间每日造成的 Prosperity 损失。
+        ///
+        /// 每名处于征召状态的士兵每天产生固定 Prosperity 损失。
+        ///
+        /// Town   = 0.100 Prosperity / 人 / 天
+        /// Castle = 0.050 Prosperity / 人 / 天
+        ///
+        /// 允许产生小数。
+        /// </summary>
+        private float CalculateDailyRecruitmentProsperityLoss(
+            int recruitedTroopCount)
+        {
+            if (recruitedTroopCount <= 0)
+                return 0f;
+
+            float prosperityLossPerTroop = 0f;
+
+            if (_settlement.IsTown)
+            {
+                prosperityLossPerTroop = 0.100f;
+            }
+            else if (_settlement.IsCastle)
+            {
+                prosperityLossPerTroop = 0.050f;
+            }
+
+            if (prosperityLossPerTroop <= 0f)
+                return 0f;
+
+            return recruitedTroopCount *
+                prosperityLossPerTroop;
+        }
+
+        /// <summary>
+        /// 每天调用一次，处理封邑军队征召期间的每日 Prosperity 损失。
+        ///
+        /// 规则：
+        /// - 只计算当前处于 RecruitedTroopDetachmentList 的士兵。
+        /// - 玩家和 AI 暂时使用相同的每日损失。
+        /// - Prosperity 可以产生小数。
+        /// - Hearth 不受 Daily Debuff 影响。
+        /// </summary>
+        public void DailyUpdate()
+        {
+            int recruitedTroopCount =
+                GetRecruitedFiefTroopCount();
+
+            if (recruitedTroopCount <= 0)
+                return;
+
+            float dailyProsperityLoss =
+                CalculateDailyRecruitmentProsperityLoss(
+                    recruitedTroopCount);
+
+            if (dailyProsperityLoss <= 0f)
+                return;
+
+            UpdateProsperity(
+                dailyProsperityLoss,
+                false);
+
+            // 只有玩家领地打印 Daily Debuff 日志
+            if (_settlement.OwnerClan == Clan.PlayerClan)
+            {
+                ModLogger.Notice(
+                    $"[DailyDebuff] Fief '{_settlement?.Name}' lost {dailyProsperityLoss:F2} Prosperity from {recruitedTroopCount} recruited troops.");
+            }
+        }
+
+        /// <summary>
         /// 玩家/AI 将部队中的采邑士兵（含伤员）归还至封邑军队。
         /// - 所有归还士兵（健康+伤员）均作为健康兵加入 FiefTroops（通过冷却分遣队）
         /// - 使用 RemoveTroop 自动处理健康/伤员混合移除
         /// - 仅处理 Occupation.Soldier
         /// - 先清空 RecruitedTroopDetachmentList
         /// - 按兵种剩余容量归还（不再循环权重）
-        /// - 归还不会返还 Prosperity / Hearth
+        /// - 归还时：
+        ///     1. 恢复实际归还士兵对应的 Hearth
+        ///     2. 按照征召模型恢复对应的一次性 Prosperity 动员成本
+        /// - Daily Debuff 不会因为归还而返还
         /// </summary>
         public int ReturnTroopsToSettlement(MobileParty sourceParty)
         {
             if (sourceParty == null || _fiefParty == null)
                 return 0;
 
+            // ============================================================
+            // 记录当前处于征召状态的士兵数量
+            //
+            // 必须在清空 RecruitedTroopDetachmentList 之前获取。
+            //
+            // 例如：
+            //     当前有 60 名采邑士兵被征召
+            //     recruitedCountBeforeReturn = 60
+            //
+            // 这个值目前主要用于日志和调试。
+            // Prosperity 返还按照实际归还人数重新使用
+            // CalculateRecruitmentProsperityCost() 计算。
+            // ============================================================
+            int recruitedCountBeforeReturn =
+                GetRecruitedFiefTroopCount();
+
+            // ============================================================
             // 清空 RecruitedTroopDetachmentList 并扣减计数器
+            //
+            // 注意：
+            // 这里清空之后，_soldierTypeCounts 表示的是：
+            //
+            //     当前没有被征召出去的封建军队数量
+            //
+            // 不能使用这里的封建军队总人数来计算本次
+            // Prosperity 返还。
+            // ============================================================
             if (RecruitedTroopDetachmentList != null)
             {
                 foreach (var detachment in RecruitedTroopDetachmentList)
@@ -1186,10 +1355,13 @@ namespace ModifiedArmy.Models.Fief
                             if (troop == null || count <= 0)
                                 continue;
 
-                            var type = SoldierTypeClassifier.GetSoldierType(troop);
+                            var type =
+                                SoldierTypeClassifier.GetSoldierType(troop);
 
                             _soldierTypeCounts[type] =
-                                Math.Max(0, _soldierTypeCounts[type] - count);
+                                Math.Max(
+                                    0,
+                                    _soldierTypeCounts[type] - count);
                         }
 
                         detachment.Clear();
@@ -1199,30 +1371,45 @@ namespace ModifiedArmy.Models.Fief
                 RecruitedTroopDetachmentList.Clear();
             }
 
+            // ============================================================
             // 记录归还的封邑士兵
+            // ============================================================
             Dictionary<CharacterObject, int> tmpReturnTroops = new();
 
             foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
             {
                 var troop = element.Character;
 
-                if (troop == null || troop.Occupation != Occupation.Soldier)
+                if (troop == null ||
+                    troop.Occupation != Occupation.Soldier)
                     continue;
 
                 if (!_fiefPartyTemplate.IsEnableTroop(troop))
                     continue;
 
-                int count = element.Number + element.WoundedNumber;
+                int count =
+                    element.Number +
+                    element.WoundedNumber;
 
                 if (count <= 0)
                     continue;
 
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
+                var type =
+                    SoldierTypeClassifier.GetSoldierType(troop);
 
+                // ========================================================
                 // 检查剩余容量是否足够
-                int taken = Math.Min(
-                    count,
-                    _soldierTypeMaxCounts[type] - _soldierTypeCounts[type]);
+                // ========================================================
+                int availableCapacity =
+                    Math.Max(
+                        0,
+                        _soldierTypeMaxCounts[type] -
+                        _soldierTypeCounts[type]);
+
+                int taken =
+                    Math.Min(
+                        count,
+                        availableCapacity);
 
                 if (taken > 0)
                 {
@@ -1234,16 +1421,21 @@ namespace ModifiedArmy.Models.Fief
 
                     // 记录归还的士兵和数量
                     if (tmpReturnTroops.ContainsKey(troop))
+                    {
                         tmpReturnTroops[troop] += taken;
+                    }
                     else
+                    {
                         tmpReturnTroops[troop] = taken;
+                    }
 
                     // 修改计数器
                     _soldierTypeCounts[type] += taken;
                 }
             }
 
-            int tmpReturnTroopCount = tmpReturnTroops.Values.Sum();
+            int tmpReturnTroopCount =
+                tmpReturnTroops.Values.Sum();
 
             if (tmpReturnTroopCount <= 0)
             {
@@ -1253,12 +1445,88 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
             }
 
-            // 添加到 ReturnedTroopDetachmentList，记录处于冷却状态的士兵
+            // ============================================================
+            // 计算本次实际归还士兵对应的 Prosperity
+            //
+            // 重要：
+            //
+            // CalculateRecruitmentProsperityCost() 的逻辑是：
+            //
+            //     当前已征召人数
+            //          ↓
+            //     再征召 N 人所需要的 Prosperity
+            //
+            // 由于前面已经清空 RecruitedTroopDetachmentList，
+            // 此时：
+            //
+            //     GetRecruitedFiefTroopCount() = 0
+            //
+            // 因此：
+            //
+            //     归还 60 人
+            //     → CalculateRecruitmentProsperityCost(60)
+            //     → 0 → 60
+            //
+            // Town：
+            //     60 × 3 × 1 = 180
+            //
+            // 所以：
+            //
+            //     征召 60 → -180
+            //     归还 60 → +180
+            //
+            // 如果只回来 40 人：
+            //
+            //     40 × 3 × 1 = 120
+            //
+            //     征召 60 → -180
+            //     归还 40 → +120
+            //
+            // 剩余 20 人对应的 Prosperity 永久损失。
+            //
+            // Daily Debuff 不参与返还。
+            // ============================================================
+            int prosperityToReturn =
+                CalculateRecruitmentProsperityCost(
+                    tmpReturnTroopCount);
+
+            // ============================================================
+            // 返还 Prosperity
+            // ============================================================
+            if (prosperityToReturn > 0)
+            {
+                UpdateProsperity(
+                    prosperityToReturn,
+                    true);
+            }
+
+            // ============================================================
+            // 归还 Hearth
+            //
+            // 只恢复实际活着归还的士兵数量。
+            //
+            // 例如：
+            //     征召 100
+            //     归还 70
+            //
+            //     Hearth +70
+            //
+            // 剩余 30 不恢复。
+            // ============================================================
+            UpdateHearth(
+                tmpReturnTroopCount,
+                true);
+
+            // ============================================================
+            // 添加到 ReturnedTroopDetachmentList，
+            // 记录处于冷却状态的士兵
+            // ============================================================
             FiefTroopDetachment targetDetachment =
                 ReturnedTroopDetachmentList
                     .FirstOrDefault(
                         d => d != null &&
-                            d.WaitCycle == CommonConstants.RETURN_TROOP_WAIT_CYCLE);
+                            d.WaitCycle ==
+                            CommonConstants.RETURN_TROOP_WAIT_CYCLE);
 
             if (targetDetachment == null)
             {
@@ -1266,25 +1534,37 @@ namespace ModifiedArmy.Models.Fief
                     new FiefTroopDetachment(
                         CommonConstants.RETURN_TROOP_WAIT_CYCLE);
 
-                ReturnedTroopDetachmentList.Add(targetDetachment);
+                ReturnedTroopDetachmentList.Add(
+                    targetDetachment);
             }
 
             // 向目标分遣队添加归还的部队
-            targetDetachment.AddTroops(tmpReturnTroops);
+            targetDetachment.AddTroops(
+                tmpReturnTroops);
 
+            // ============================================================
             // 更新计数器
-            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+            // ============================================================
+            _totalTroopCount =
+                _soldierTypeCounts.Values.Sum();
 
+            // ============================================================
             // 清除工资减免
+            // ============================================================
             var _fiefWageExemptionManager =
-                Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
+                Campaign.Current
+                    .GetCampaignBehavior<FiefWageExemptionManager>();
 
             _fiefWageExemptionManager.ConsumeExemption(
                 sourceParty,
                 tmpReturnTroopCount);
 
+            // ============================================================
+            // 显示归还结果
+            // ============================================================
             TextObject msgResult =
-                GameTexts.FindText("str_modifiedarmy_fief_return_result");
+                GameTexts.FindText(
+                    "str_modifiedarmy_fief_return_result");
 
             msgResult.SetTextVariable(
                 "PARTY_NAME",
@@ -1296,6 +1576,14 @@ namespace ModifiedArmy.Models.Fief
 
             msgResult.SetTextVariable(
                 "RETURNED_COUNT",
+                tmpReturnTroopCount);
+
+            msgResult.SetTextVariable(
+                "PROSPERITY_COST",
+                prosperityToReturn);
+
+            msgResult.SetTextVariable(
+                "HEARTH_COST",
                 tmpReturnTroopCount);
 
             msgResult.SetTextVariable(
@@ -1347,13 +1635,27 @@ namespace ModifiedArmy.Models.Fief
                 _totalLimit);
 
             if (sourceParty.LeaderHero.Clan == Clan.PlayerClan)
-                ModLogger.Notice(msgResult.ToString());
+                ModLogger.Notice(
+                    msgResult.ToString());
             else
-                ModLogger.Debug(msgResult.ToString());
+                ModLogger.Debug(
+                    msgResult.ToString());
+
+            // ============================================================
+            // 玩家额外输出 Prosperity 归还日志
+            // ============================================================
+            if (_settlement.OwnerClan == Clan.PlayerClan)
+            {
+                ModLogger.Debug(
+                    $"[Return] Fief '{_settlement?.Name}' returned " +
+                    $"{prosperityToReturn:F2} Prosperity. " +
+                    $"Recruited before return: {recruitedCountBeforeReturn}, " +
+                    $"returned troops: {tmpReturnTroopCount}.");
+            }
 
             return tmpReturnTroopCount;
-        }
-
+        }       
+                
         private void RemoveTroopsFromParty(TroopRoster roster, CharacterObject troop, int countToRemove)
         {
             if (roster == null || troop == null || countToRemove <= 0) return;
@@ -1365,6 +1667,110 @@ namespace ModifiedArmy.Models.Fief
                 roster.RemoveTroop(troop, actualRemove, default(UniqueTroopDescriptor), 0);
             }
         }
+
+        /// <summary>
+        /// 计算玩家征召封建军所需支付的 Prosperity。
+        ///
+        /// 计算规则：
+        /// Castle BaseCost = 1
+        /// Town   BaseCost = 3
+        ///
+        /// 动员比例：
+        /// 0% ~ 25%      -> x1.0
+        /// >25% ~ 50%    -> x1.5
+        /// >50% ~ 75%    -> x2.0
+        /// >75% ~ 100%   -> x2.5
+        ///
+        /// 如果一次征召跨越多个档位，则分段计算。
+        /// </summary>
+        private int CalculateRecruitmentProsperityCost(int recruitCount)
+        {
+            if (recruitCount <= 0)
+                return 0;
+
+            float baseProsperityCost = 0f;
+
+            if (_settlement.IsTown)
+            {
+                baseProsperityCost = 3f;
+            }
+            else if (_settlement.IsCastle)
+            {
+                baseProsperityCost = 1f;
+            }
+
+            if (baseProsperityCost <= 0f)
+                return 0;
+
+            int currentMobilized =
+                GetRecruitedFiefTroopCount();
+
+            int maxMobilized =
+                Math.Max(1, _totalLimit);
+
+            int remainingToCalculate =
+                recruitCount;
+
+            float totalProsperityCost = 0f;
+
+            while (remainingToCalculate > 0 &&
+                currentMobilized < maxMobilized)
+            {
+                float mobilizationRatio =
+                    currentMobilized / (float)maxMobilized;
+
+                float tierMultiplier;
+                int tierLimit;
+
+                if (mobilizationRatio < 0.25f)
+                {
+                    tierMultiplier = 1.0f;
+                    tierLimit =
+                        (int)MathF.Ceiling(maxMobilized * 0.25f);
+                }
+                else if (mobilizationRatio < 0.50f)
+                {
+                    tierMultiplier = 1.5f;
+                    tierLimit =
+                        (int)MathF.Ceiling(maxMobilized * 0.50f);
+                }
+                else if (mobilizationRatio < 0.75f)
+                {
+                    tierMultiplier = 2.0f;
+                    tierLimit =
+                        (int)MathF.Ceiling(maxMobilized * 0.75f);
+                }
+                else
+                {
+                    tierMultiplier = 2.5f;
+                    tierLimit = maxMobilized;
+                }
+
+                int troopsInThisTier =
+                    Math.Min(
+                        remainingToCalculate,
+                        Math.Max(
+                            0,
+                            tierLimit - currentMobilized));
+
+                if (troopsInThisTier <= 0)
+                    break;
+
+                totalProsperityCost +=
+                    troopsInThisTier *
+                    baseProsperityCost *
+                    tierMultiplier;
+
+                currentMobilized +=
+                    troopsInThisTier;
+
+                remainingToCalculate -=
+                    troopsInThisTier;
+            }
+
+            return (int)MathF.Round(totalProsperityCost);
+        }
+
 
         /// <summary>
         /// 从封邑军队中按比例招募士兵到目标部队。
@@ -1432,9 +1838,6 @@ namespace ModifiedArmy.Models.Fief
             // 记录招募的士兵和数量
             Dictionary<CharacterObject, int> tmpRecruitTroops = new();
 
-            // ============================================================
-            // 只有玩家征召才计算 Prosperity / Hearth 成本
-            // ============================================================
             int prosperityCost = 0;
             int hearthCost = 0;
 
@@ -1509,11 +1912,6 @@ namespace ModifiedArmy.Models.Fief
                     {
                         hearthCost +=
                             taken * CommonConstants.VillageHearthCostPer;
-
-                        prosperityCost +=
-                            taken *
-                            tmpProsperityCostPerTier *
-                            troop.Tier;
                     }
                 }
             }
@@ -1524,14 +1922,15 @@ namespace ModifiedArmy.Models.Fief
             if (totalRecruited <= 0)
                 return 0;
 
-            // ============================================================
-            // 只有玩家支付 Prosperity / Hearth 动员成本
-            // AI 永远不执行 updateProsperity()
-            // ============================================================
             if (isPlayerRecruitment)
             {
-                updateProsperity(
+                prosperityCost =
+                    CalculateRecruitmentProsperityCost(totalRecruited);
+
+                UpdateProsperity(
                     prosperityCost,
+                    false);
+                UpdateHearth(
                     hearthCost,
                     false);
             }
@@ -1594,11 +1993,11 @@ namespace ModifiedArmy.Models.Fief
             // 玩家显示实际成本；AI 显示 0
             msg.SetTextVariable(
                 "PROSPERITY_COST",
-                isPlayerRecruitment ? prosperityCost : 0);
+                prosperityCost);
 
             msg.SetTextVariable(
                 "HEARTH_COST",
-                isPlayerRecruitment ? hearthCost : 0);
+                hearthCost);
 
             if (targetParty.LeaderHero.Clan == Clan.PlayerClan)
             {
@@ -1643,9 +2042,8 @@ namespace ModifiedArmy.Models.Fief
             {
                 tmpRecruitSoldierTypeSize[kvp.Key] = 0;
             }
-            // 消耗的繁荣度
+
             int prosperityCost = 0;
-            // 消耗的户数
             int hearthCost = 0;
 
             int tmpProsperityCostPerTier = 0;
@@ -1671,15 +2069,31 @@ namespace ModifiedArmy.Models.Fief
                 // 从封邑party移除士兵
                 RemoveTroopsFromParty(_fiefParty, troop, count);
 
-                hearthCost += count * CommonConstants.VillageHearthCostPer;
-                prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
+                // ====================================================
+                // Hearth 成本
+                //
+                // 每征召 1 名士兵，消耗 1 Hearth。
+                // Prosperity 不在这里计算，统一在本次征召完成后计算。
+                // ====================================================
+                hearthCost +=
+                    count * CommonConstants.VillageHearthCostPer;
             }
 
-            int totalRecruited = tmpRecruitTroops.Values.Sum();
+            int totalRecruited =
+                tmpRecruitTroops.Values.Sum();
+
             if (totalRecruited <= 0)
                 return 0;
 
-            updateProsperity(prosperityCost, hearthCost, false);
+            prosperityCost =
+                CalculateRecruitmentProsperityCost(totalRecruited);
+
+            UpdateProsperity(
+                prosperityCost,
+                false);
+            UpdateHearth(
+                hearthCost,
+                false);
 
             // 添加到 RecruitedTroopDetachmentList
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
@@ -1769,7 +2183,8 @@ namespace ModifiedArmy.Models.Fief
             hearthCost += count * CommonConstants.VillageHearthCostPer;
             prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
 
-            updateProsperity(prosperityCost, hearthCost, true);
+            UpdateProsperity(prosperityCost, true);
+            UpdateHearth(hearthCost, true);
 
             // 4. 更新计数器
             _soldierTypeCounts[type] += count;

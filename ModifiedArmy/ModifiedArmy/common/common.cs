@@ -116,5 +116,8 @@ namespace ModifiedArmy.common
         public static readonly int VillageHearthCostPer = 1;
 
         public static readonly float PlayerSettlementPrisonerEscapeChance = 0.01f;
+
+        // ---- AI 对封地繁荣度的影响系数 ----
+        public static readonly float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER = 0.2f;
     }
 }
