@@ -3,64 +3,39 @@
   <!--
     ModifiedArmy 全局配置
     所有数值通过 TaleWorlds MBObjectManager 系统加载，与 FiefPartyTemplate 模式一致。
-    文件位置：ModifiedArmy/ModuleData/modConfigs.xml
-    使用时拷贝到：Steam/.../Modules/ModifiedArmy/ModuleData/modConfigs.xml
   -->
   <ModConfig id="default">
-    <!-- ========== 日志配置 ========== -->
-    <!-- 最低日志显示级别：0=Debug, 1=Info, 2=Notice, 3=Warn, 4=Error -->
-    <MinLogLevel value="2"/>
-
-    <!-- ========== 繁荣度阈值 ========== -->
-    <!-- 城镇贫困繁荣度阈值，低于此值视为贫困 -->
+    <!-- 繁荣度阈值 -->
     <TownPoorThreshold value="1000"/>
-    <!-- 城镇一般繁荣度阈值，低于此值视为一般 -->
     <TownAverageThreshold value="4000"/>
-    <!-- 城镇富有繁荣度阈值，低于此值视为富有 -->
     <TownRichThreshold value="8000"/>
-    <!-- 城镇非常富有繁荣度阈值，高于此值视为非常富有 -->
     <TownVeryRichThreshold value="12000"/>
-    <!-- 城堡贫困繁荣度阈值，低于此值视为贫困 -->
     <CastlePoorThreshold value="300"/>
-    <!-- 城堡一般繁荣度阈值，低于此值视为一般 -->
     <CastleAverageThreshold value="800"/>
-    <!-- 城堡富有繁荣度阈值，低于此值视为富有 -->
     <CastleRichThreshold value="1500"/>
-    <!-- 城堡非常富有繁荣度阈值，高于此值视为非常富有 -->
     <CastleVeryRichThreshold value="2000"/>
 
-    <!-- ========== 补员公式权重 ========== -->
-    <!-- 补员公式中繁荣度的权重（与 HearthsWeight 之和应为 1） -->
+    <!-- 补员公式权重 -->
     <ProsperityWeight value="0.4"/>
-    <!-- 补员公式中村庄户数的权重（与 ProsperityWeight 之和应为 1） -->
     <HearthsWeight value="0.6"/>
 
-    <!-- ========== 村庄阈值 ========== -->
-    <!-- 村庄最低户数阈值，低于此值的村庄不参与补员计算 -->
+    <!-- 村庄阈值 -->
     <VillageMinHearthThreshold value="100"/>
-    <!-- 村庄满补员户数阈值，达到此值时补员效率为 100% -->
     <VillageMaxReinforcementHearthThreshold value="900"/>
 
-    <!-- ========== 封邑系统 ========== -->
-    <!-- 封邑兵工资豁免天数，征召后此天数内免工资 -->
+    <!-- 封邑系统 -->
     <FiefWageExemptionDays value="28"/>
 
-    <!-- ========== AI 影响系数 ========== -->
-    <!-- AI 对封邑繁荣度的影响系数，AI 征召/解散对繁荣度的影响乘以该值 -->
+    <!-- AI 影响系数 -->
     <AiFiefProsperityImpactMultiplier value="0.1"/>
-    <!-- AI 对封邑户数的影响系数，AI 征召/解散对户数的影响乘以该值 -->
     <AiFiefHearthImpactMultiplier value="0.1"/>
 
-    <!-- ========== 志愿兵文化倍率 ========== -->
-    <!-- 瓦兰迪亚志愿兵生成倍率，值越低志愿兵越少（封建部队强，志愿兵少） -->
+    <!-- 志愿兵文化倍率 -->
     <VlandiaVolunteerMultiplier value="0.2"/>
-    <!-- 帝国志愿兵生成倍率（封邑较少，更依赖志愿兵） -->
     <EmpireVolunteerMultiplier value="0.6"/>
-    <!-- 阿塞莱志愿兵生成倍率（封邑较少，同时依赖地方志愿兵） -->
     <AseraiVolunteerMultiplier value="0.7"/>
 
-    <!-- ========== 囚犯逃逸 ========== -->
-    <!-- 玩家定居点囚犯逃逸概率（每日） -->
+    <!-- 囚犯逃逸 -->
     <PlayerSettlementPrisonerEscapeChance value="0.01"/>
   </ModConfig>
 </ModConfigs>

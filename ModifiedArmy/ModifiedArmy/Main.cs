@@ -135,6 +135,15 @@ namespace ModifiedArmy
                 MBObjectManager.Instance.LoadXML("ModConfigs", true);
 
 
+                game.ObjectManager.RegisterType<MercenaryTemplate>(
+                    "MercenaryTemplate",
+                    "MercenaryTemplates",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML("MercenaryTemplates", true);
+
+
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 
                 var msgText = GameTexts.FindText("str_modifiedarmy_initialization_complete");

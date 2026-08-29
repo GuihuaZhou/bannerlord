@@ -19,17 +19,7 @@
   -->
 
   <!-- =============== Empire - 军区制，封邑弱，依赖雇佣兵/志愿兵 =============== -->
-  <FiefPartyTemplate 
-    culture="Culture.empire" 
-    id="empire_town_port" 
-    baseLimit="40" 
-    villageBonus="10" 
-    minWeeklySupplement="5" 
-    maxWeeklySupplement="10" 
-    maxServiceWeeks="5" 
-    returnCooldownWeeks="3" 
-    prosperityCostPerTroop="5" 
-    hearthCostPerTroop="1">
+  <FiefPartyTemplate culture="Culture.empire" id="empire_town_port" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
       <SergeantTroops weight="2">
         <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
@@ -46,17 +36,7 @@
     </TroopComposition>
   </FiefPartyTemplate>
 
-  <FiefPartyTemplate 
-    culture="Culture.empire" 
-    id="empire_town" 
-    baseLimit="40" 
-    villageBonus="10" 
-    minWeeklySupplement="5" 
-    maxWeeklySupplement="10" 
-    maxServiceWeeks="5" 
-    returnCooldownWeeks="3" 
-    prosperityCostPerTroop="5" 
-    hearthCostPerTroop="1">
+  <FiefPartyTemplate culture="Culture.empire" id="empire_town" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
       <SergeantTroops weight="1">
         <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>

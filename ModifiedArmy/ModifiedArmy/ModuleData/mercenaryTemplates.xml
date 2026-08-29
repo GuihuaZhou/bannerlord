@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MercenaryTemplates>
+  <!--
+    雇佣兵模板（Mercenary Templates）
+    定义各文化在酒馆中每天刷新的雇佣兵人数范围。
+
+    属性说明：
+    - culture: 文化 ID（如 Culture.vlandia）
+    - minCount: 每次刷新的最少人数
+    - maxCount: 每次刷新的最多人数
+    - spawnChance: 刷新概率（0-1），越高越容易刷新
+  -->
+
+  <!-- 帝国：东罗马，最依赖雇佣兵 -->
+  <MercenaryTemplate id="empire_mercenary" culture="Culture.empire" minCount="15" maxCount="30" spawnChance="0.8"/>
+
+  <!-- 阿塞莱：阿拉伯佣兵，雇佣兵重要 -->
+  <MercenaryTemplate id="aserai_mercenary" culture="Culture.aserai" minCount="10" maxCount="20" spawnChance="0.6"/>
+
+  <!-- 以下文化雇佣兵较少 -->
+  <MercenaryTemplate id="vlandia_mercenary" culture="Culture.vlandia" minCount="5" maxCount="10" spawnChance="0.3"/>
+  <MercenaryTemplate id="sturgia_mercenary" culture="Culture.sturgia" minCount="5" maxCount="10" spawnChance="0.3"/>
+  <MercenaryTemplate id="battania_mercenary" culture="Culture.battania" minCount="5" maxCount="10" spawnChance="0.3"/>
+  <MercenaryTemplate id="khuzait_mercenary" culture="Culture.khuzait" minCount="5" maxCount="10" spawnChance="0.3"/>
+  <MercenaryTemplate id="nord_mercenary" culture="Culture.nord" minCount="5" maxCount="10" spawnChance="0.3"/>
+
+</MercenaryTemplates>
