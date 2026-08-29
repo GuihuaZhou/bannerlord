@@ -84,7 +84,7 @@ namespace ModifiedArmy.Models.Fief
 
         /// <summary>
         /// 征召时每名士兵消耗的村庄户数（Hearth）。
-        /// 默认 1（对应 CommonConstants.VillageHearthCostPer）。
+        /// 默认 1。
         /// </summary>
         public int HearthCostPerTroop { get; private set; } = 1;
 

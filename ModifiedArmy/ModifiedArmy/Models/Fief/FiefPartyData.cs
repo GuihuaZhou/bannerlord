@@ -276,6 +276,10 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int _totalLimit { get; private set; }
 
+        /// <summary>
+        /// 获取当前定居点使用的部队模板。
+        /// </summary>
+        public FiefPartyTemplate GetFiefPartyTemplate() => _fiefPartyTemplate;
 
         public FiefPartyData() { }
         public FiefPartyData(Settlement settlement)
@@ -1918,21 +1922,13 @@ namespace ModifiedArmy.Models.Fief
             // ============================================================
             // 征召成本：从模板读取
             //
-            // 旧逻辑：
-            //     tmpProsperityCostPerTroop = Town   ? TownProsperityCostPerTier
-            //                              : Castle ? CastleProsperityCostPerTier
-            //     hearthCost += taken * VillageHearthCostPer
-            //
-            // 新逻辑：
-            //     统一使用 _fiefPartyTemplate 中的配置，
-            //     允许每个文化/定居点类型独立配置。
+            // 若无模板（无 fallback），则不扣除繁荣度/户数。
             // ============================================================
             int tmpProsperityCostPerTroop =
                 _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop
-                ?? CommonConstants.VillageHearthCostPer;
+                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
             foreach (var element in _fiefParty.GetTroopRoster())
             {
@@ -2132,8 +2128,7 @@ namespace ModifiedArmy.Models.Fief
                 _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop
-                ?? CommonConstants.VillageHearthCostPer;
+                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
             foreach (var element in selectedRoster.GetTroopRoster())
             {
@@ -2268,8 +2263,7 @@ namespace ModifiedArmy.Models.Fief
                 _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop
-                ?? CommonConstants.VillageHearthCostPer;
+                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
             hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;

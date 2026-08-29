@@ -101,10 +101,6 @@ namespace ModifiedArmy.common
         // 封建部队最大使用周期，即服役的周数
         public static readonly int FIEF_TROOP_MAX_SERVICE_CYCLE = 5;
 
-        // 征召时每名士兵消耗的基础繁荣度成本（与 Tier 无关）
-        // Town 的默认值
-        public static readonly int TownProsperityCostPerTroop = 8;
-
         // 村庄最低户数阈值
         public static readonly float VillageMinHearthThreshold = 100f;
 
@@ -116,11 +112,6 @@ namespace ModifiedArmy.common
 
         // 户数在补员公式中的权重
         public static readonly float HearthsWeight = 0.6f;
-
-        // Castle 的征召基础繁荣度成本
-        public static readonly int CastleProsperityCostPerTroop = 4;
-
-        public static readonly int VillageHearthCostPer = 1;
 
         public static readonly float PlayerSettlementPrisonerEscapeChance = 0.01f;
 

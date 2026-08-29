@@ -330,34 +330,55 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 监听招募事件，扣除定居点繁荣度
+        /// 监听招募事件，扣除定居点繁荣度/户数。
+        ///
+        /// 优先使用对应文化的 FiefPartyTemplate 中的
+        /// ProsperityCostPerTroop / HearthCostPerTroop。
+        ///
+        /// 若无模板则使用默认 fallback 值。
         /// </summary>
-        /// 
+        ///
         private void OnTroopRecruited(
-            Hero recruiter, 
-            Settlement settlement, 
-            Hero recruitmentSource, 
-            CharacterObject troop, 
+            Hero recruiter,
+            Settlement settlement,
+            Hero recruitmentSource,
+            CharacterObject troop,
             int count)
         {
             // 安全检查
             if (settlement == null || count <= 0)
                 return;
 
-            if (troop.Occupation != Occupation.Soldier) 
+            if (troop.Occupation != Occupation.Soldier)
                 return;
+
+            // ============================================================
+            // 从已有的 FiefPartyData 获取 template，
+            // 以读取 ProsperityCostPerTroop / HearthCostPerTroop。
+            //
+            // 若无模板，则不扣除繁荣度/户数。
+            // ============================================================
+            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData) || fiefData == null)
+                return;
+
+            var template = fiefData.GetFiefPartyTemplate();
+            if (template == null)
+                return;
+
+            int prosperityCostPerTroop = template.ProsperityCostPerTroop;
+            int hearthCostPerTroop = template.HearthCostPerTroop;
 
             if (settlement.IsTown)
             {
                 // 扣除繁荣度
-                int prosperityCost = count * CommonConstants.TownProsperityCostPerTroop * troop.Tier;
+                int prosperityCost = count * prosperityCostPerTroop * troop.Tier;
                 settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
                 ModLogger.Debug($"[ProsperityCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {prosperityCost:F1}");
             }
             else if (settlement.IsVillage)
             {
                 // 扣除户数
-                int hearthCost = count * CommonConstants.VillageHearthCostPer;
+                int hearthCost = count * hearthCostPerTroop;
                 settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
                 ModLogger.Debug($"[HearthCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {hearthCost:F1}");
             }
