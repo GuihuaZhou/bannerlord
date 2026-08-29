@@ -59,6 +59,35 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int MaxWeeklySupplement { get; private set; } = 20;
 
+        /// <summary>
+        /// 封邑部队最大服役周期（单位：周）。
+        /// 征召后分遣队（RecruitedTroopDetachmentList）的 WaitCycle 初始值。
+        /// 每周 Tick -1，降至 0 时士兵回归封邑。
+        /// 默认 5 周（对应 CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE）。
+        /// </summary>
+        public int MaxServiceWeeks { get; private set; } = 5;
+
+        /// <summary>
+        /// 解散/归还后的冷却周期（单位：周）。
+        /// ReturnedTroopDetachmentList 的 WaitCycle 初始值。
+        /// 每周 Tick -1，降至 0 时士兵重新进入就绪池。
+        /// 默认 3 周（对应 CommonConstants.RETURN_TROOP_WAIT_CYCLE）。
+        /// </summary>
+        public int ReturnCooldownWeeks { get; private set; } = 3;
+
+        /// <summary>
+        /// 征召时每名士兵每 Tier 消耗的繁荣度。
+        /// Town 默认 8（对应 CommonConstants.TownProsperityCostPerTier）。
+        /// Castle 默认 4（对应 CommonConstants.CastleProsperityCostPerTier）。
+        /// </summary>
+        public int ProsperityCostPerTier { get; private set; } = 4;
+
+        /// <summary>
+        /// 征召时每名士兵消耗的村庄户数（Hearth）。
+        /// 默认 1（对应 CommonConstants.VillageHearthCostPer）。
+        /// </summary>
+        public int HearthCostPerTroop { get; private set; } = 1;
+
         public CultureObject culture { get; private set; }
 
 
@@ -124,6 +153,29 @@ namespace ModifiedArmy.Models.Fief
             VillageBonus = XmlHelper.ReadInt(node, "villageBonus");
             MinWeeklySupplement = XmlHelper.ReadInt(node, "minWeeklySupplement");
             MaxWeeklySupplement = XmlHelper.ReadInt(node, "maxWeeklySupplement");
+
+            // ============================================================
+            // 读取封邑经济/服役参数（可选，向后兼容）
+            //
+            // 若 XML 中未指定，则保留字段默认值，
+            // 从而与 CommonConstants 中的全局常量保持一致。
+            // ============================================================
+            if (node.Attributes?["maxServiceWeeks"] != null)
+            {
+                MaxServiceWeeks = XmlHelper.ReadInt(node, "maxServiceWeeks");
+            }
+            if (node.Attributes?["returnCooldownWeeks"] != null)
+            {
+                ReturnCooldownWeeks = XmlHelper.ReadInt(node, "returnCooldownWeeks");
+            }
+            if (node.Attributes?["prosperityCostPerTier"] != null)
+            {
+                ProsperityCostPerTier = XmlHelper.ReadInt(node, "prosperityCostPerTier");
+            }
+            if (node.Attributes?["hearthCostPerTroop"] != null)
+            {
+                HearthCostPerTroop = XmlHelper.ReadInt(node, "hearthCostPerTroop");
+            }
 
             // 仅解析兵种构成部分
             var compNode = node.SelectSingleNode("TroopComposition");

@@ -1593,19 +1593,26 @@ namespace ModifiedArmy.Models.Fief
             // ============================================================
             // 添加到 ReturnedTroopDetachmentList，
             // 记录处于冷却状态的士兵
+            //
+            // 冷却周期从模板读取（_fiefPartyTemplate.ReturnCooldownWeeks），
+            // 替代原 CommonConstants.RETURN_TROOP_WAIT_CYCLE。
             // ============================================================
+            int returnCooldown =
+                _fiefPartyTemplate?.ReturnCooldownWeeks
+                ?? CommonConstants.RETURN_TROOP_WAIT_CYCLE;
+
             FiefTroopDetachment targetDetachment =
                 ReturnedTroopDetachmentList
                     .FirstOrDefault(
                         d => d != null &&
                             d.WaitCycle ==
-                            CommonConstants.RETURN_TROOP_WAIT_CYCLE);
+                            returnCooldown);
 
             if (targetDetachment == null)
             {
                 targetDetachment =
                     new FiefTroopDetachment(
-                        CommonConstants.RETURN_TROOP_WAIT_CYCLE);
+                        returnCooldown);
 
                 ReturnedTroopDetachmentList.Add(
                     targetDetachment);
@@ -1761,16 +1768,18 @@ namespace ModifiedArmy.Models.Fief
             if (recruitCount <= 0)
                 return 0;
 
-            float baseProsperityCost = 0f;
-
-            if (_settlement.IsTown)
-            {
-                baseProsperityCost = 3f;
-            }
-            else if (_settlement.IsCastle)
-            {
-                baseProsperityCost = 1f;
-            }
+            // ============================================================
+            // 征召基础繁荣度成本：从模板读取
+            //
+            // 旧逻辑：
+            //     Town   = 3
+            //     Castle = 1
+            //
+            // 新逻辑：
+            //     由 _fiefPartyTemplate.ProsperityCostPerTier 决定，
+            //     允许每个文化/定居点类型独立配置。
+            // ============================================================
+            float baseProsperityCost = _fiefPartyTemplate?.ProsperityCostPerTier ?? 0f;
 
             if (baseProsperityCost <= 0f)
                 return 0;
@@ -1906,14 +1915,24 @@ namespace ModifiedArmy.Models.Fief
             int prosperityCost = 0;
             int hearthCost = 0;
 
-            int tmpProsperityCostPerTier = 0;
+            // ============================================================
+            // 征召成本：从模板读取
+            //
+            // 旧逻辑：
+            //     tmpProsperityCostPerTier = Town   ? TownProsperityCostPerTier
+            //                              : Castle ? CastleProsperityCostPerTier
+            //     hearthCost += taken * VillageHearthCostPer
+            //
+            // 新逻辑：
+            //     统一使用 _fiefPartyTemplate 中的配置，
+            //     允许每个文化/定居点类型独立配置。
+            // ============================================================
+            int tmpProsperityCostPerTier =
+                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
 
-            if (_settlement.IsTown)
-                tmpProsperityCostPerTier =
-                    CommonConstants.TownProsperityCostPerTier;
-            else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier =
-                    CommonConstants.CastleProsperityCostPerTier;
+            int tmpHearthCostPerTroop =
+                _fiefPartyTemplate?.HearthCostPerTroop
+                ?? CommonConstants.VillageHearthCostPer;
 
             foreach (var element in _fiefParty.GetTroopRoster())
             {
@@ -1968,7 +1987,7 @@ namespace ModifiedArmy.Models.Fief
                     tmpRecruitSoldierTypeSize[type] += taken;
 
                     hearthCost +=
-                        taken * CommonConstants.VillageHearthCostPer;
+                        taken * tmpHearthCostPerTroop;
                 }
             }
 
@@ -1990,19 +2009,26 @@ namespace ModifiedArmy.Models.Fief
 
             // ============================================================
             // 记录招募的士兵
+            //
+            // 服役周期从模板读取（_fiefPartyTemplate.MaxServiceWeeks），
+            // 替代原 CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE。
             // ============================================================
+            int maxServiceWeeks =
+                _fiefPartyTemplate?.MaxServiceWeeks
+                ?? CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE;
+
             FiefTroopDetachment targetDetachment =
                 RecruitedTroopDetachmentList
                     .FirstOrDefault(
                         d => d != null &&
                             d.WaitCycle ==
-                            CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
+                            maxServiceWeeks);
 
             if (targetDetachment == null)
             {
                 targetDetachment =
                     new FiefTroopDetachment(
-                        CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
+                        maxServiceWeeks);
 
                 RecruitedTroopDetachmentList.Add(
                     targetDetachment);
@@ -2099,11 +2125,15 @@ namespace ModifiedArmy.Models.Fief
             int prosperityCost = 0;
             int hearthCost = 0;
 
-            int tmpProsperityCostPerTier = 0;
-            if (_settlement.IsTown)
-                tmpProsperityCostPerTier = CommonConstants.TownProsperityCostPerTier;
-            else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier = CommonConstants.CastleProsperityCostPerTier;
+            // ============================================================
+            // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
+            // ============================================================
+            int tmpProsperityCostPerTier =
+                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
+
+            int tmpHearthCostPerTroop =
+                _fiefPartyTemplate?.HearthCostPerTroop
+                ?? CommonConstants.VillageHearthCostPer;
 
             foreach (var element in selectedRoster.GetTroopRoster())
             {
@@ -2129,7 +2159,7 @@ namespace ModifiedArmy.Models.Fief
                 // Prosperity 不在这里计算，统一在本次征召完成后计算。
                 // ====================================================
                 hearthCost +=
-                    count * CommonConstants.VillageHearthCostPer;
+                    count * tmpHearthCostPerTroop;
             }
 
             int totalRecruited =
@@ -2149,12 +2179,16 @@ namespace ModifiedArmy.Models.Fief
                 false);
 
             // 添加到 RecruitedTroopDetachmentList
+            int maxServiceWeeks =
+                _fiefPartyTemplate?.MaxServiceWeeks
+                ?? CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE;
+
             FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
-                .FirstOrDefault(d => d != null && d.WaitCycle == CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
+                .FirstOrDefault(d => d != null && d.WaitCycle == maxServiceWeeks);
 
             if (targetDetachment == null)
             {
-                targetDetachment = new FiefTroopDetachment(CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE);
+                targetDetachment = new FiefTroopDetachment(maxServiceWeeks);
                 RecruitedTroopDetachmentList.Add(targetDetachment);
             }
             targetDetachment.AddTroops(tmpRecruitTroops);
@@ -2227,13 +2261,17 @@ namespace ModifiedArmy.Models.Fief
             // 消耗的户数
             int hearthCost = 0;
 
-            int tmpProsperityCostPerTier = 0;
-            if (_settlement.IsTown)
-                tmpProsperityCostPerTier = CommonConstants.TownProsperityCostPerTier;
-            else if (_settlement.IsCastle)
-                tmpProsperityCostPerTier = CommonConstants.CastleProsperityCostPerTier;
+            // ============================================================
+            // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
+            // ============================================================
+            int tmpProsperityCostPerTier =
+                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
 
-            hearthCost += count * CommonConstants.VillageHearthCostPer;
+            int tmpHearthCostPerTroop =
+                _fiefPartyTemplate?.HearthCostPerTroop
+                ?? CommonConstants.VillageHearthCostPer;
+
+            hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
 
             UpdateProsperity(prosperityCost, true);
