@@ -76,11 +76,11 @@ namespace ModifiedArmy.Models.Fief
         public int ReturnCooldownWeeks { get; private set; } = 3;
 
         /// <summary>
-        /// 征召时每名士兵每 Tier 消耗的繁荣度。
-        /// Town 默认 8（对应 CommonConstants.TownProsperityCostPerTier）。
-        /// Castle 默认 4（对应 CommonConstants.CastleProsperityCostPerTier）。
+        /// 征召时每名士兵消耗的基础繁荣度成本。
+        /// 实际计算时可能乘以 Tier 和分段累进倍率。
+        /// Town 默认 8，Castle 默认 4。
         /// </summary>
-        public int ProsperityCostPerTier { get; private set; } = 4;
+        public int ProsperityCostPerTroop { get; private set; } = 4;
 
         /// <summary>
         /// 征召时每名士兵消耗的村庄户数（Hearth）。
@@ -168,9 +168,9 @@ namespace ModifiedArmy.Models.Fief
             {
                 ReturnCooldownWeeks = XmlHelper.ReadInt(node, "returnCooldownWeeks");
             }
-            if (node.Attributes?["prosperityCostPerTier"] != null)
+            if (node.Attributes?["prosperityCostPerTroop"] != null)
             {
-                ProsperityCostPerTier = XmlHelper.ReadInt(node, "prosperityCostPerTier");
+                ProsperityCostPerTroop = XmlHelper.ReadInt(node, "prosperityCostPerTroop");
             }
             if (node.Attributes?["hearthCostPerTroop"] != null)
             {

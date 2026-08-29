@@ -350,7 +350,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlement.IsTown)
             {
                 // 扣除繁荣度
-                int prosperityCost = count * CommonConstants.TownProsperityCostPerTier * troop.Tier;
+                int prosperityCost = count * CommonConstants.TownProsperityCostPerTroop * troop.Tier;
                 settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
                 ModLogger.Debug($"[ProsperityCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {prosperityCost:F1}");
             }

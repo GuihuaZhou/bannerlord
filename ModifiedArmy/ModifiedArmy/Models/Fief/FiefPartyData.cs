@@ -1776,10 +1776,10 @@ namespace ModifiedArmy.Models.Fief
             //     Castle = 1
             //
             // 新逻辑：
-            //     由 _fiefPartyTemplate.ProsperityCostPerTier 决定，
+            //     由 _fiefPartyTemplate.ProsperityCostPerTroop 决定，
             //     允许每个文化/定居点类型独立配置。
             // ============================================================
-            float baseProsperityCost = _fiefPartyTemplate?.ProsperityCostPerTier ?? 0f;
+            float baseProsperityCost = _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0f;
 
             if (baseProsperityCost <= 0f)
                 return 0;
@@ -1919,7 +1919,7 @@ namespace ModifiedArmy.Models.Fief
             // 征召成本：从模板读取
             //
             // 旧逻辑：
-            //     tmpProsperityCostPerTier = Town   ? TownProsperityCostPerTier
+            //     tmpProsperityCostPerTroop = Town   ? TownProsperityCostPerTier
             //                              : Castle ? CastleProsperityCostPerTier
             //     hearthCost += taken * VillageHearthCostPer
             //
@@ -1927,8 +1927,8 @@ namespace ModifiedArmy.Models.Fief
             //     统一使用 _fiefPartyTemplate 中的配置，
             //     允许每个文化/定居点类型独立配置。
             // ============================================================
-            int tmpProsperityCostPerTier =
-                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
+            int tmpProsperityCostPerTroop =
+                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop
@@ -2128,8 +2128,8 @@ namespace ModifiedArmy.Models.Fief
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
-            int tmpProsperityCostPerTier =
-                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
+            int tmpProsperityCostPerTroop =
+                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop
@@ -2264,15 +2264,15 @@ namespace ModifiedArmy.Models.Fief
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
-            int tmpProsperityCostPerTier =
-                _fiefPartyTemplate?.ProsperityCostPerTier ?? 0;
+            int tmpProsperityCostPerTroop =
+                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop
                 ?? CommonConstants.VillageHearthCostPer;
 
             hearthCost += count * tmpHearthCostPerTroop;
-            prosperityCost += count * tmpProsperityCostPerTier * troop.Tier;
+            prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;
 
             UpdateProsperity(prosperityCost, true);
             UpdateHearth(hearthCost, true);
