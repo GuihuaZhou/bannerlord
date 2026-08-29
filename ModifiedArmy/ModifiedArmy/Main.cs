@@ -1,6 +1,7 @@
 ﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using MCM.Abstractions.Base.Global;
+using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Utils;
@@ -123,6 +124,15 @@ namespace ModifiedArmy
                     true,
                     false);
                 MBObjectManager.Instance.LoadXML("FiefPartyTemplates", true);
+
+
+                game.ObjectManager.RegisterType<ModConfig>(
+                    "ModConfig",
+                    "ModConfigs",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML("ModConfigs", true);
 
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);

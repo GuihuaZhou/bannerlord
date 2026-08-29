@@ -1,0 +1,355 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<FiefPartyTemplates>
+  <!--
+    封邑部队模板（Fief Party Templates）
+    定义各文化在城镇（town）、港口城镇（town_port）、城堡（castle）中自动生成的部队构成与规模规则。
+
+    每个 <FiefPartyTemplate> 对应一种定居点类型（如 empire_town），
+    控制该定居点每周向"封邑兵力池"自动补充的士兵种类与数量上限。
+
+    属性说明：
+    - baseLimit: 定居点自身能供养的基础部队人数（不含村庄加成）
+    - villageBonus: 每个附属村庄额外提供的人数加成
+    - minWeeklySupplement: 每周最少补充人数
+    - maxWeeklySupplement: 每周最多补充人数
+    - maxServiceWeeks: 封邑兵最大服役周期（周），默认 5
+    - returnCooldownWeeks: 归还后冷却周期（周），默认 3
+    - prosperityCostPerTroop: 征召时每名士兵消耗的基础繁荣度，默认 4
+    - hearthCostPerTroop: 征召时每名士兵消耗的户数，默认 1
+  -->
+
+  <!-- =============== Empire - 军区制，封邑弱，依赖雇佣兵/志愿兵 =============== -->
+  <FiefPartyTemplate 
+    culture="Culture.empire" 
+    id="empire_town_port" 
+    baseLimit="40" 
+    villageBonus="10" 
+    minWeeklySupplement="5" 
+    maxWeeklySupplement="10" 
+    maxServiceWeeks="5" 
+    returnCooldownWeeks="3" 
+    prosperityCostPerTroop="5" 
+    hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
+      	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
+        <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
+      	<troop id="NPCCharacter.imperial_crossbowman" weight="1"/>
+      </SergeantTroops>
+      <MarineTroops weight="1">
+        <troop id="NPCCharacter.empire_marine_t3" weight="1"/>
+      </MarineTroops>
+      <MilitiaTroops weight="2">
+        <troop id="NPCCharacter.imperial_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate 
+    culture="Culture.empire" 
+    id="empire_town" 
+    baseLimit="40" 
+    villageBonus="10" 
+    minWeeklySupplement="5" 
+    maxWeeklySupplement="10" 
+    maxServiceWeeks="5" 
+    returnCooldownWeeks="3" 
+    prosperityCostPerTroop="5" 
+    hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
+      	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
+        <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
+      	<troop id="NPCCharacter.imperial_crossbowman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="1">
+        <troop id="NPCCharacter.imperial_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.empire" id="empire_castle" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="2" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.imperial_cataphract" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
+      	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
+        <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
+      	<troop id="NPCCharacter.imperial_crossbowman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="3">
+        <troop id="NPCCharacter.imperial_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Aserai - 伊克塔制，灵活征召，依赖奴隶兵 =============== -->
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_town_port" baseLimit="50" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.aserai_infantry" weight="2"/>
+        <troop id="NPCCharacter.aserai_archer" weight="1"/>
+      </SergeantTroops>
+      <MarineTroops weight="1">
+        <troop id="NPCCharacter.aserai_marine_t4" weight="1"/>
+      </MarineTroops>
+      <MilitiaTroops weight="2">
+        <troop id="NPCCharacter.aserai_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_town" baseLimit="50" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.aserai_infantry" weight="2"/>
+        <troop id="NPCCharacter.aserai_archer" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="1">
+        <troop id="NPCCharacter.aserai_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_castle" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="2" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.aserai_faris" weight="1"/>
+      </RetinueTroops>
+      <SlaveTroops weight="1">
+        <troop id="NPCCharacter.aserai_mameluke_regular" weight="1"/>
+      	<troop id="NPCCharacter.aserai_mameluke_axeman" weight="1"/>
+      </SlaveTroops>
+      <MilitiaTroops weight="3">
+        <troop id="NPCCharacter.aserai_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Sturgia - 亲兵制，兵力上限高 =============== -->
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_town_port" baseLimit="90" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.sturgian_spearman" weight="2"/>
+        <troop id="NPCCharacter.sturgian_berzerker" weight="2"/>
+		    <troop id="NPCCharacter.sturgian_archer" weight="1"/>
+      </SergeantTroops>
+      <MarineTroops weight="1">
+        <troop id="NPCCharacter.sturgia_marine_t3" weight="1"/>
+      </MarineTroops>
+      <MilitiaTroops weight="2">
+        <troop id="NPCCharacter.sturgian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_town" baseLimit="90" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.sturgian_spearman" weight="2"/>
+        <troop id="NPCCharacter.sturgian_berzerker" weight="2"/>
+		    <troop id="NPCCharacter.sturgian_archer" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="1">
+        <troop id="NPCCharacter.sturgian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_castle" baseLimit="90" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="3" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.druzhinnik" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.sturgian_spearman" weight="2"/>
+        <troop id="NPCCharacter.sturgian_berzerker" weight="2"/>
+		    <troop id="NPCCharacter.sturgian_archer" weight="1"/>
+		    <troop id="NPCCharacter.sturgian_hardened_brigand" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="3">
+        <troop id="NPCCharacter.sturgian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Vlandia - 西欧采邑制，服役长、征召贵 =============== -->
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town_port" baseLimit="120" villageBonus="30" minWeeklySupplement="10" maxWeeklySupplement="30" maxServiceWeeks="7" returnCooldownWeeks="3" prosperityCostPerTroop="10" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.vlandian_billman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_swordsman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="1"/>
+      </SergeantTroops>
+      <MarineTroops weight="1">
+        <troop id="NPCCharacter.vlandian_marine_t4" weight="1"/>
+      </MarineTroops>
+      <MilitiaTroops weight="2">
+        <troop id="NPCCharacter.vlandian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town" baseLimit="120" villageBonus="30" minWeeklySupplement="10" maxWeeklySupplement="30" maxServiceWeeks="7" returnCooldownWeeks="3" prosperityCostPerTroop="10" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.vlandian_billman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_swordsman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="1">
+        <troop id="NPCCharacter.vlandian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_castle" baseLimit="80" villageBonus="25" minWeeklySupplement="10" maxWeeklySupplement="30" maxServiceWeeks="7" returnCooldownWeeks="3" prosperityCostPerTroop="4" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.vlandian_knight" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.vlandian_billman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_swordsman" weight="1"/>
+        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="1"/>
+      	<troop id="NPCCharacter.vlandian_light_cavalry" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="3">
+        <troop id="NPCCharacter.vlandian_recruit" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Battania - 部落制，依赖乡村，弓箭手传统 =============== -->
+  <FiefPartyTemplate culture="Culture.battania" id="battania_town_port" baseLimit="80" villageBonus="30" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="7" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.battanian_falxman" weight="2"/>
+        <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="1"/>
+      </SergeantTroops>
+      <MarineTroops weight="1">
+        <troop id="NPCCharacter.battanian_marine_t4" weight="1"/>
+      </MarineTroops>
+      <MilitiaTroops weight="2">
+        <troop id="NPCCharacter.battanian_volunteer" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.battania" id="battania_town" baseLimit="70" villageBonus="30" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="7" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.battanian_falxman" weight="2"/>
+        <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="1">
+        <troop id="NPCCharacter.battanian_volunteer" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.battania" id="battania_castle" baseLimit="70" villageBonus="30" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="3" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.battanian_hero" weight="1"/>
+      </RetinueTroops>
+      <MilitiaTroops weight="4">
+        <troop id="NPCCharacter.battanian_volunteer" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Khuzait - 游牧制，冷却快、召之即来 =============== -->
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_town_port" baseLimit="70" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="1" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.khuzait_spear_infantry" weight="1"/>
+        <troop id="NPCCharacter.khuzait_horseman" weight="1"/>
+        <troop id="NPCCharacter.khuzait_archer" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="4">
+        <troop id="NPCCharacter.khuzait_nomad" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_town" baseLimit="70" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="1" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <SergeantTroops weight="1">
+        <troop id="NPCCharacter.khuzait_spear_infantry" weight="1"/>
+        <troop id="NPCCharacter.khuzait_horseman" weight="1"/>
+        <troop id="NPCCharacter.khuzait_archer" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="4">
+        <troop id="NPCCharacter.khuzait_nomad" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_castle" baseLimit="70" villageBonus="40" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="1" prosperityCostPerTroop="3" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.khuzait_torguud" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="1">
+		    <troop id="NPCCharacter.khuzait_spear_infantry" weight="1"/>
+        <troop id="NPCCharacter.khuzait_horseman" weight="1"/>
+        <troop id="NPCCharacter.khuzait_archer" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="3">
+        <troop id="NPCCharacter.khuzait_nomad" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <!-- =============== Nord - 维京全民战士，民兵占比高 =============== -->
+  <FiefPartyTemplate culture="Culture.nord" id="nord_town_port" baseLimit="70" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.nord_jarlsmann" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.nord_spear_warrior" weight="2"/>
+        <troop id="NPCCharacter.nord_marksman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="7">
+        <troop id="NPCCharacter.nord_youngling" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.nord" id="nord_town" baseLimit="70" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="8" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.nord_jarlsmann" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.nord_spear_warrior" weight="2"/>
+		    <troop id="NPCCharacter.nord_marksman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="7">
+        <troop id="NPCCharacter.nord_youngling" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+  <FiefPartyTemplate culture="Culture.nord" id="nord_castle" baseLimit="70" villageBonus="20" minWeeklySupplement="10" maxWeeklySupplement="20" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="3" hearthCostPerTroop="1">
+    <TroopComposition>
+      <RetinueTroops weight="1">
+        <troop id="NPCCharacter.nord_jarlsmann" weight="1"/>
+      </RetinueTroops>
+      <SergeantTroops weight="2">
+        <troop id="NPCCharacter.nord_spear_warrior" weight="2"/>
+        <troop id="NPCCharacter.nord_marksman" weight="1"/>
+      </SergeantTroops>
+      <MilitiaTroops weight="7">
+        <troop id="NPCCharacter.nord_youngling" weight="1"/>
+      </MilitiaTroops>
+    </TroopComposition>
+  </FiefPartyTemplate>
+
+</FiefPartyTemplates>
