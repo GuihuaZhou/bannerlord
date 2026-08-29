@@ -37,5 +37,77 @@
 
     <!-- 囚犯逃逸 -->
     <PlayerSettlementPrisonerEscapeChance value="0.01"/>
+
+    <!-- ========== AI 招募决策 ========== -->
+    <!--
+      三层决策模型：
+      第一层 NeedScore → 判断是否需要招兵
+      第二层 SourcePreference → 选择 Fief/Volunteer/Mercenary
+      第三层 Execute → 执行对应招募路径
+    -->
+    <AiRecruitment>
+      <!-- 招兵紧迫度：NeedScore = w1·ManpowerGap + w2·WarUrgency + w3·EconomicCapacity -->
+      <NeedScore manpowerWeight="0.4" warUrgencyWeight="0.35" economicWeight="0.25"
+                 threshold="0.25" peaceUrgency="0.1" warUrgency="0.7" siegeUrgency="1.0"
+                 economicWeeks="10.0"/>
+      <!-- manpowerWeight: 兵力缺口因子(1 - PartySizeRatio)权重 -->
+      <!-- warUrgencyWeight: 战争紧迫度因子权重 -->
+      <!-- economicWeight: 经济承受力因子权重 -->
+      <!-- threshold: NeedScore 低于此值不触发招募决策 -->
+      <!-- peaceUrgency: 和平期的战争紧迫度值 -->
+      <!-- warUrgency: 战争中的战争紧迫度值 -->
+      <!-- siegeUrgency: 被围攻时的战争紧迫度值 -->
+      <!-- economicWeeks: EconomicCapacity = Gold / (Wage × 此值) -->
+
+      <!-- 文化基础偏好：AI 对三种兵源的偏好权重，决定该文化的典型招募倾向 -->
+      <CulturalPreferences>
+        <!-- Vlandia：西欧采邑制 → 封邑核心，志愿兵极少 -->
+        <Culture id="Culture.vlandia"  fief="0.7" volunteer="0.2" mercenary="0.1"/>
+        <!-- Empire：拜占庭军区制 → 志愿兵为主，封邑弱 -->
+        <Culture id="Culture.empire"   fief="0.1" volunteer="0.1" mercenary="0.8"/>
+        <!-- Aserai：阿拉伯伊克塔 → 雇佣兵+奴隶兵，封邑弱 -->
+        <Culture id="Culture.aserai"   fief="0.2" volunteer="0.3" mercenary="0.5"/>
+        <!-- Sturgia：东欧亲兵制 → 封邑精英 -->
+        <Culture id="Culture.sturgia"  fief="0.6" volunteer="0.3" mercenary="0.1"/>
+        <!-- Battania：凯尔特部落制 → 封邑/志愿兵均衡 -->
+        <Culture id="Culture.battania" fief="0.4" volunteer="0.4" mercenary="0.2"/>
+        <!-- Khuzait：游牧召之即来 → 封邑快速周转 -->
+        <Culture id="Culture.khuzait"  fief="0.5" volunteer="0.3" mercenary="0.2"/>
+        <!-- Nord：维京全民战士 → 志愿兵多 -->
+        <Culture id="Culture.nord"     fief="0.4" volunteer="0.5" mercenary="0.1"/>
+      </CulturalPreferences>
+
+      <!-- 文化身份修正：领主文化与定居点文化匹配/不匹配时的偏好乘数 -->
+      <CulturalIdentity matchFiefBonus="1.3" mismatchVolunteerPenalty="0.5" mismatchMercenaryBonus="1.3"/>
+      <!-- matchFiefBonus: 本文化领主封邑偏好乘数 -->
+      <!-- mismatchVolunteerPenalty: 异文化领主志愿兵偏好乘数 -->
+      <!-- mismatchMercenaryBonus: 异文化领主雇佣兵偏好乘数 -->
+
+      <!-- 情境修正：各情境下三种兵源的偏好乘数，叠加在基础权重上 -->
+      <SituationalModifiers>
+        <!-- 被围攻：封邑/志愿兵慢，雇佣兵即时可用 -->
+        <Situation id="siege"    fief="0.3" volunteer="0.5" mercenary="2.0"/>
+        <!-- 经济紧张（Gold < brokeThreshold × TotalWage）：封邑有工资豁免最省钱 -->
+        <Situation id="broke"    fief="1.2" volunteer="1.0" mercenary="0.3" threshold="3.0"/>
+        <!-- 兵力严重不足（PartySizeRatio < criticalThreshold）：急需即时战力 -->
+        <Situation id="critical" fief="0.5" volunteer="1.0" mercenary="1.5" threshold="0.3"/>
+        <!-- 和平期：不急，养封邑/志愿兵更经济 -->
+        <Situation id="peace"    fief="1.0" volunteer="1.2" mercenary="0.5"/>
+        <!-- 战争中：需要灵活补充 -->
+        <Situation id="war"      fief="1.0" volunteer="0.8" mercenary="1.2"/>
+      </SituationalModifiers>
+
+      <!-- 敌军距离检测 -->
+      <EnemyDetection radius="50.0" strengthRatio="0.5"/>
+      <!-- radius: 检测附近敌军的距离半径 -->
+      <!-- strengthRatio: 敌军总强度 > 己方 × 此值视为威胁 -->
+
+      <!-- 杂项：替代原硬编码的招募条件参数 -->
+      <RecruitmentLimits partySizeRatioCap="0.7" minGoldWageRatio="0.3" randomChance="0.8" mercenarySearchRadius="150"/>
+      <!-- partySizeRatioCap: PartySizeRatio 超过此值不招募 -->
+      <!-- minGoldWageRatio: 最低所需金币占工资比例 -->
+      <!-- randomChance: 随机概率门槛 -->
+      <!-- mercenarySearchRadius: 雇佣兵搜索半径，本国town不限距离，非本国town限此半径 -->
+    </AiRecruitment>
   </ModConfig>
 </ModConfigs>

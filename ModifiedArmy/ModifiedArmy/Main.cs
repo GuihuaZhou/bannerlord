@@ -102,7 +102,7 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
                 campaignStarter.AddBehavior(new FiefWageExemptionManager());
 
-                campaignStarter.AddBehavior(new AiRecruitFiefTroopsBehavior());
+                campaignStarter.AddBehavior(new AiRecruitmentBehavior());
 
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
