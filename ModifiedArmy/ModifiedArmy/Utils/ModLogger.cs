@@ -19,19 +19,15 @@ namespace ModifiedArmy.Tool
     {
         /// <summary>
         /// 最低显示级别。设为 Info，则 Info/Notice/Warn/Error 会显示，Debug 不会。
-        /// 默认为 Notice。
+        /// 默认从 ModConfig 读取，值为 2（Notice）。
         /// </summary>
         private static LogLevel CurrentMinLogLevel
         {
             get
             {
-                //var settings = Main.ModSettings;
-                //if (settings == null) 
-                //    return LogLevel.Info;
-
-                //return settings.MinLogLevel.SelectedValue;
-
-                return LogLevel.Notice;
+                int level = ModifiedArmy.common.ModConfigManager.Instance.GetActiveConfig()?.MinLogLevel ?? 2;
+                if (level < 0 || level > 4) level = 2;
+                return (LogLevel)level;
             }
         }
 

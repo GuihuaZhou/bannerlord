@@ -19,6 +19,11 @@ namespace ModifiedArmy.common
         public string ConfigId => StringId;
 
         /// <summary>
+        /// 最低日志显示级别。0=Debug, 1=Info, 2=Notice, 3=Warn, 4=Error。默认 2（Notice）。
+        /// </summary>
+        public int MinLogLevel { get; private set; } = 2;
+
+        /// <summary>
         /// 城镇贫困繁荣度阈值。低于此值视为贫困城镇。默认 1000。
         /// </summary>
         public float TownPoorThreshold { get; private set; } = 1000f;
@@ -116,6 +121,9 @@ namespace ModifiedArmy.common
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
         {
             base.Deserialize(objectManager, node);
+
+            MinLogLevel = XmlHelper.ReadInt(node, "MinLogLevel");
+            if (MinLogLevel < 0 || MinLogLevel > 4) MinLogLevel = 2;
 
             TownPoorThreshold = ReadFloatVal(node, "TownPoorThreshold", 1000f);
             TownAverageThreshold = ReadFloatVal(node, "TownAverageThreshold", 4000f);

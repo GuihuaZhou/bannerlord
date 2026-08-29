@@ -7,6 +7,10 @@
     使用时拷贝到：Steam/.../Modules/ModifiedArmy/ModuleData/modConfigs.xml
   -->
   <ModConfig id="default">
+    <!-- ========== 日志配置 ========== -->
+    <!-- 最低日志显示级别：0=Debug, 1=Info, 2=Notice, 3=Warn, 4=Error -->
+    <MinLogLevel value="2"/>
+
     <!-- ========== 繁荣度阈值 ========== -->
     <!-- 城镇贫困繁荣度阈值，低于此值视为贫困 -->
     <TownPoorThreshold value="1000"/>
