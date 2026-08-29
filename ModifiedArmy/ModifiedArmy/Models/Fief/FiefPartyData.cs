@@ -539,7 +539,14 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 更新封邑所属村庄的 Hearth。
         ///
-        /// Hearth 不区分玩家和 AI，始终按照实际人数完整变化。
+        /// 玩家：
+        ///     100% Hearth 影响。
+        ///
+        /// AI：
+        ///     按 AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER
+        ///     计算实际 Hearth 影响。
+        ///
+        /// Hearth 总变化会均匀分配到所属村庄。
         /// </summary>
         private void UpdateHearth(
             int hearthCost,
@@ -554,40 +561,88 @@ namespace ModifiedArmy.Models.Fief
             if (villageCount <= 0)
                 return;
 
+            // ============================================================
+            // 玩家 / AI Hearth 影响倍率
+            //
+            // 玩家：100%
+            // AI：使用 AI 系数
+            // ============================================================
+
+            float hearthMultiplier =
+                _settlement.OwnerClan == Clan.PlayerClan
+                    ? 1.0f
+                    : CommonConstants.AI_FIEF_HEARTH_IMPACT_MULTIPLIER;
+
+            // ============================================================
+            // 计算实际 Hearth 变化量
+            //
+            // Hearth 最终需要以整数形式均匀分配给村庄，
+            // 因此在应用倍率后进行四舍五入。
+            // ============================================================
+
+            int actualHearthCost =
+                Math.Max(
+                    0,
+                    (int)MathF.Round(
+                        hearthCost *
+                        hearthMultiplier));
+
+            if (actualHearthCost <= 0)
+                return;
+
+            // ============================================================
+            // 计算总变化量
+            // ============================================================
+
             int sign =
                 isAdd ? 1 : -1;
 
             int totalChange =
-                hearthCost * sign;
+                actualHearthCost * sign;
 
-            // 均匀分配：基础值 + 余数
+            // ============================================================
+            // 均匀分配：
+            // 基础值 + 余数
+            // ============================================================
+
             int baseChange =
                 totalChange / villageCount;
 
             int remainder =
                 totalChange % villageCount;
 
+            // ============================================================
             // 修正负余数
+            // ============================================================
+
             if (remainder < 0)
             {
                 baseChange--;
-                remainder += villageCount;
+
+                remainder +=
+                    villageCount;
             }
 
-            // === 应用基础分配 ===
-            for (int i = 0; i < villageCount; i++)
+            // ============================================================
+            // 应用基础分配
+            // ============================================================
+
+            for (int i = 0;
+                i < villageCount;
+                i++)
             {
                 Village village =
                     _settlement.BoundVillages[i];
 
                 float newHearth =
-                    village.Hearth + baseChange;
+                    village.Hearth +
+                    baseChange;
 
                 if (!isAdd)
                 {
                     newHearth =
                         Math.Max(
-                            CommonConstants.TownProsperityCostPerTier,
+                            CommonConstants.VillageMinHearthThreshold,
                             newHearth);
                 }
 
@@ -595,14 +650,33 @@ namespace ModifiedArmy.Models.Fief
                     newHearth;
             }
 
-            // === 分配余数 ===
-            for (int i = 0; i < remainder; i++)
+            // ============================================================
+            // 分配余数
+            //
+            // remainder 始终为非负数。
+            //
+            // 对于扣除操作，
+            // 前 remainder 个村庄额外 -1。
+            //
+            // 对于恢复操作，
+            // 前 remainder 个村庄额外 +1。
+            // ============================================================
+
+            for (int i = 0;
+                i < remainder;
+                i++)
             {
                 Village village =
                     _settlement.BoundVillages[i];
 
+                float remainderChange =
+                    isAdd
+                        ? 1f
+                        : -1f;
+
                 float newHearth =
-                    village.Hearth + 1f;
+                    village.Hearth +
+                    remainderChange;
 
                 if (!isAdd)
                 {
@@ -616,7 +690,6 @@ namespace ModifiedArmy.Models.Fief
                     newHearth;
             }
         }
-
         private void CalculateLimit()
         {
             if (_totalLimit == 0)
@@ -1768,7 +1841,8 @@ namespace ModifiedArmy.Models.Fief
                     troopsInThisTier;
             }
 
-            return (int)MathF.Round(totalProsperityCost);
+            return (int)MathF.Round(
+                totalProsperityCost);
         }
 
 
@@ -1794,15 +1868,6 @@ namespace ModifiedArmy.Models.Fief
 
             if (_settlement.OwnerClan != targetParty.LeaderHero.Clan)
                 return 0;
-
-            // ============================================================
-            // AI / 玩家分流
-            //
-            // 玩家：支付封邑军事动员成本
-            // AI：不影响 Prosperity / Hearth
-            // ============================================================
-            bool isPlayerRecruitment =
-                targetParty.LeaderHero.Clan == Clan.PlayerClan;
 
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
@@ -1843,15 +1908,12 @@ namespace ModifiedArmy.Models.Fief
 
             int tmpProsperityCostPerTier = 0;
 
-            if (isPlayerRecruitment)
-            {
-                if (_settlement.IsTown)
-                    tmpProsperityCostPerTier =
-                        CommonConstants.TownProsperityCostPerTier;
-                else if (_settlement.IsCastle)
-                    tmpProsperityCostPerTier =
-                        CommonConstants.CastleProsperityCostPerTier;
-            }
+            if (_settlement.IsTown)
+                tmpProsperityCostPerTier =
+                    CommonConstants.TownProsperityCostPerTier;
+            else if (_settlement.IsCastle)
+                tmpProsperityCostPerTier =
+                    CommonConstants.CastleProsperityCostPerTier;
 
             foreach (var element in _fiefParty.GetTroopRoster())
             {
@@ -1905,14 +1967,8 @@ namespace ModifiedArmy.Models.Fief
 
                     tmpRecruitSoldierTypeSize[type] += taken;
 
-                    // ====================================================
-                    // 只有玩家征召才产生经济成本
-                    // ====================================================
-                    if (isPlayerRecruitment)
-                    {
-                        hearthCost +=
-                            taken * CommonConstants.VillageHearthCostPer;
-                    }
+                    hearthCost +=
+                        taken * CommonConstants.VillageHearthCostPer;
                 }
             }
 
@@ -1922,18 +1978,15 @@ namespace ModifiedArmy.Models.Fief
             if (totalRecruited <= 0)
                 return 0;
 
-            if (isPlayerRecruitment)
-            {
-                prosperityCost =
-                    CalculateRecruitmentProsperityCost(totalRecruited);
+            prosperityCost =
+                CalculateRecruitmentProsperityCost(totalRecruited);
 
-                UpdateProsperity(
-                    prosperityCost,
-                    false);
-                UpdateHearth(
-                    hearthCost,
-                    false);
-            }
+            UpdateProsperity(
+                prosperityCost,
+                false);
+            UpdateHearth(
+                hearthCost,
+                false);
 
             // ============================================================
             // 记录招募的士兵

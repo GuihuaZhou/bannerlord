@@ -27,7 +27,7 @@ namespace ModifiedArmy.Patch
                 {
                     town.BuildingsInProgress.Enqueue(nextBuilding);
                     string logMessage = $"[AI Build Decision] {town.Settlement.Name} 决定修建: {nextBuilding.BuildingType.Name}";
-                    ModLogger.Notice(logMessage);
+                    ModLogger.Info(logMessage);
                 }
             }
         }

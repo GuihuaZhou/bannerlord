@@ -118,6 +118,18 @@ namespace ModifiedArmy.common
         public static readonly float PlayerSettlementPrisonerEscapeChance = 0.01f;
 
         // ---- AI 对封地繁荣度的影响系数 ----
-        public static readonly float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER = 0.2f;
+        public static readonly float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER = 0.1f;
+
+        public static readonly float AI_FIEF_HEARTH_IMPACT_MULTIPLIER = 0.1f;
+
+        // ---- 不同文化的志愿兵生成概率倍率 ----
+        // Vlandia：封建部队强，城镇志愿兵生成极低
+        public const float VLANDIA_VOLUNTEER_GENERATION_MULTIPLIER = 0.2f;
+
+        // Empire：封建部队较少，更依赖城镇志愿兵
+        public const float EMPIRE_VOLUNTEER_GENERATION_MULTIPLIER = 0.6f;
+
+        // Aserai：封建部队较少，同时依赖地方志愿兵
+        public const float ASERAI_VOLUNTEER_GENERATION_MULTIPLIER = 0.7f;
     }
 }
