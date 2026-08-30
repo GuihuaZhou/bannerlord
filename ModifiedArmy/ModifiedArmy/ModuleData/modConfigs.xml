@@ -15,6 +15,9 @@
     <CastleRichThreshold value="1500"/>
     <CastleVeryRichThreshold value="2000"/>
 
+    <!-- 日志等级调整 -->
+    <MinLogLevel value="3"/>
+
     <!-- 补员公式权重 -->
     <ProsperityWeight value="0.4"/>
     <HearthsWeight value="0.6"/>
