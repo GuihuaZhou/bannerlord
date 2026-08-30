@@ -495,7 +495,7 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// Hearth 不在此函数中处理。
         /// </summary>
-        private void UpdateProsperity(
+        public void UpdateProsperity(
             float prosperityCost,
             bool isAdd)
         {
@@ -552,7 +552,7 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// Hearth 总变化会均匀分配到所属村庄。
         /// </summary>
-        private void UpdateHearth(
+        public void UpdateHearth(
             int hearthCost,
             bool isAdd)
         {
@@ -1767,7 +1767,7 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// 如果一次征召跨越多个档位，则分段计算。
         /// </summary>
-        private int CalculateRecruitmentProsperityCost(int recruitCount)
+        public int CalculateRecruitmentProsperityCost(int recruitCount)
         {
             if (recruitCount <= 0)
                 return 0;

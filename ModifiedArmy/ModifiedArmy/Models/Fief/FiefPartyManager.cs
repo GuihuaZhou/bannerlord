@@ -361,26 +361,16 @@ namespace ModifiedArmy.Models.Fief
             if (!_fiefDataMap.TryGetValue(settlement, out var fiefData) || fiefData == null)
                 return;
 
-            var template = fiefData.GetFiefPartyTemplate();
-            if (template == null)
-                return;
-
-            int prosperityCostPerTroop = template.ProsperityCostPerTroop;
-            int hearthCostPerTroop = template.HearthCostPerTroop;
-
             if (settlement.IsTown)
             {
                 // 扣除繁荣度
-                int prosperityCost = count * prosperityCostPerTroop * troop.Tier;
-                settlement.Town.Prosperity = Math.Max(0f, settlement.Town.Prosperity - prosperityCost);
-                ModLogger.Debug($"[ProsperityCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {prosperityCost:F1}");
+                int prosperityCost = fiefData.CalculateRecruitmentProsperityCost(count);
+                fiefData.UpdateProsperity(prosperityCost, false);
             }
             else if (settlement.IsVillage)
             {
                 // 扣除户数
-                int hearthCost = count * hearthCostPerTroop;
-                settlement.Village.Hearth = Math.Max(0f, settlement.Village.Hearth - hearthCost);
-                ModLogger.Debug($"[HearthCost] {recruiter?.Name} recruited {count} {troop.Name} from {settlement.Name}, cost: {hearthCost:F1}");
+                fiefData.UpdateHearth(count, false);
             }
         }
     }
