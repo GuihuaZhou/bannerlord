@@ -495,12 +495,12 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// Hearth 不在此函数中处理。
         /// </summary>
-        public void UpdateProsperity(
+        public float UpdateProsperity(
             float prosperityCost,
             bool isAdd)
         {
             if (prosperityCost <= 0f)
-                return;
+                return prosperityCost;
 
             // 玩家 100%，AI 10%
             float prosperityMultiplier =
@@ -538,6 +538,8 @@ namespace ModifiedArmy.Models.Fief
                             actualProsperityCost);
                 }
             }
+
+            return actualProsperityCost;
         }
 
         /// <summary>
@@ -552,18 +554,18 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// Hearth 总变化会均匀分配到所属村庄。
         /// </summary>
-        public void UpdateHearth(
-            int hearthCost,
+        public float UpdateHearth(
+            float hearthCost,
             bool isAdd)
         {
             if (hearthCost <= 0)
-                return;
+                return 0;
 
             int villageCount =
                 _settlement.BoundVillages.Count;
 
             if (villageCount <= 0)
-                return;
+                return 0;
 
             // ============================================================
             // 玩家 / AI Hearth 影响倍率
@@ -584,15 +586,15 @@ namespace ModifiedArmy.Models.Fief
             // 因此在应用倍率后进行四舍五入。
             // ============================================================
 
-            int actualHearthCost =
+            float actualHearthCost =
                 Math.Max(
                     0,
-                    (int)MathF.Round(
+                    MathF.Round(
                         hearthCost *
                         hearthMultiplier));
 
             if (actualHearthCost <= 0)
-                return;
+                return 0;
 
             // ============================================================
             // 计算总变化量
@@ -601,7 +603,7 @@ namespace ModifiedArmy.Models.Fief
             int sign =
                 isAdd ? 1 : -1;
 
-            int totalChange =
+            float totalChange =
                 actualHearthCost * sign;
 
             // ============================================================
@@ -609,10 +611,10 @@ namespace ModifiedArmy.Models.Fief
             // 基础值 + 余数
             // ============================================================
 
-            int baseChange =
+            float baseChange =
                 totalChange / villageCount;
 
-            int remainder =
+            float remainder =
                 totalChange % villageCount;
 
             // ============================================================
@@ -693,7 +695,10 @@ namespace ModifiedArmy.Models.Fief
                 village.Hearth =
                     newHearth;
             }
+
+            return actualHearthCost;
         }
+        
         private void CalculateLimit()
         {
             if (_totalLimit == 0)
@@ -1362,7 +1367,7 @@ namespace ModifiedArmy.Models.Fief
             if (dailyProsperityLoss <= 0f)
                 return;
 
-            UpdateProsperity(
+            dailyProsperityLoss= UpdateProsperity(
                 dailyProsperityLoss,
                 false);
 
@@ -1563,16 +1568,16 @@ namespace ModifiedArmy.Models.Fief
             //
             // Daily Debuff 不参与返还。
             // ============================================================
-            int prosperityToReturn =
+            float prosperityToReturn =
                 CalculateRecruitmentProsperityCost(
-                    tmpReturnTroopCount);
+                    (int)tmpReturnTroopCount);
 
             // ============================================================
             // 返还 Prosperity
             // ============================================================
             if (prosperityToReturn > 0)
             {
-                UpdateProsperity(
+                prosperityToReturn = UpdateProsperity(
                     prosperityToReturn,
                     true);
             }
@@ -1590,7 +1595,7 @@ namespace ModifiedArmy.Models.Fief
             //
             // 剩余 30 不恢复。
             // ============================================================
-            UpdateHearth(
+            float hearthCost = UpdateHearth(
                 tmpReturnTroopCount,
                 true);
 
@@ -1767,7 +1772,7 @@ namespace ModifiedArmy.Models.Fief
         ///
         /// 如果一次征召跨越多个档位，则分段计算。
         /// </summary>
-        public int CalculateRecruitmentProsperityCost(int recruitCount)
+        public float CalculateRecruitmentProsperityCost(int recruitCount)
         {
             if (recruitCount <= 0)
                 return 0;
@@ -1854,7 +1859,7 @@ namespace ModifiedArmy.Models.Fief
                     troopsInThisTier;
             }
 
-            return (int)MathF.Round(
+            return MathF.Round(
                 totalProsperityCost);
         }
 
@@ -1916,8 +1921,8 @@ namespace ModifiedArmy.Models.Fief
             // 记录招募的士兵和数量
             Dictionary<CharacterObject, int> tmpRecruitTroops = new();
 
-            int prosperityCost = 0;
-            int hearthCost = 0;
+            float prosperityCost = 0;
+            float hearthCost = 0;
 
             // ============================================================
             // 征召成本：从模板读取
@@ -1996,10 +2001,10 @@ namespace ModifiedArmy.Models.Fief
             prosperityCost =
                 CalculateRecruitmentProsperityCost(totalRecruited);
 
-            UpdateProsperity(
+            prosperityCost = UpdateProsperity(
                 prosperityCost,
                 false);
-            UpdateHearth(
+            hearthCost = UpdateHearth(
                 hearthCost,
                 false);
 
@@ -2118,8 +2123,8 @@ namespace ModifiedArmy.Models.Fief
                 tmpRecruitSoldierTypeSize[kvp.Key] = 0;
             }
 
-            int prosperityCost = 0;
-            int hearthCost = 0;
+            float prosperityCost = 0;
+            float hearthCost = 0;
 
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
@@ -2166,10 +2171,10 @@ namespace ModifiedArmy.Models.Fief
             prosperityCost =
                 CalculateRecruitmentProsperityCost(totalRecruited);
 
-            UpdateProsperity(
+            prosperityCost = UpdateProsperity(
                 prosperityCost,
                 false);
-            UpdateHearth(
+            hearthCost = UpdateHearth(
                 hearthCost,
                 false);
 
@@ -2252,9 +2257,9 @@ namespace ModifiedArmy.Models.Fief
             _fiefParty.AddToCounts(troop, count, false, 0, 0, true, -1);
 
             // 消耗的繁荣度
-            int prosperityCost = 0;
+            float prosperityCost = 0;
             // 消耗的户数
-            int hearthCost = 0;
+            float hearthCost = 0;
 
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
@@ -2268,8 +2273,8 @@ namespace ModifiedArmy.Models.Fief
             hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;
 
-            UpdateProsperity(prosperityCost, true);
-            UpdateHearth(hearthCost, true);
+            prosperityCost = UpdateProsperity(prosperityCost, true);
+            hearthCost = UpdateHearth(hearthCost, true);
 
             // 4. 更新计数器
             _soldierTypeCounts[type] += count;

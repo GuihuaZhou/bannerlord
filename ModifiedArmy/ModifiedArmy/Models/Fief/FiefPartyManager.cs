@@ -364,7 +364,7 @@ namespace ModifiedArmy.Models.Fief
             if (settlement.IsTown)
             {
                 // 扣除繁荣度
-                int prosperityCost = fiefData.CalculateRecruitmentProsperityCost(count);
+                float prosperityCost = fiefData.CalculateRecruitmentProsperityCost(count);
                 fiefData.UpdateProsperity(prosperityCost, false);
             }
             else if (settlement.IsVillage)
