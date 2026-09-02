@@ -77,36 +77,6 @@ namespace ModifiedArmy
             if (game.GameType is Campaign)
             {
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
-                campaignStarter.AddBehavior(new CampaignReadyBehavior());
-
-                campaignStarter.AddModel(new NewVolunteerModel());
-                campaignStarter.AddModel(new NewPartyWageModel());
-                campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
-                campaignStarter.AddModel(new NewPartySizeLimitModel());
-                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
-                campaignStarter.AddModel(new NewClanTierModel());
-                campaignStarter.AddModel(new NewSettlementMilitiaModel());
-                // //campaignStarter.AddModel(new NewDiplomacyModel());
-                campaignStarter.AddModel(new NewBuildingConstructionModel());
-                campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
-                //campaignStarter.AddModel(new NewMinorFactionsModel());
-                //campaignStarter.AddModel(new FiefSettlementTaxModel());
-
-
-                ////campaignStarter.AddModel(new DebugGarrisonMoraleModel());
-                ////campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());
-
-                //// //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
-
-                campaignStarter.AddBehavior(new FiefPartyManager());
-                campaignStarter.AddBehavior(new FiefMenuBehavior());
-                campaignStarter.AddBehavior(new FiefWageExemptionManager());
-
-                campaignStarter.AddBehavior(new AiRecruitmentBehavior());
-
-
-                campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
-                //campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup",
@@ -143,6 +113,36 @@ namespace ModifiedArmy
                     false);
                 MBObjectManager.Instance.LoadXML("MercenaryTemplates", true);
 
+                campaignStarter.AddBehavior(new CampaignReadyBehavior());
+
+                campaignStarter.AddModel(new NewVolunteerModel());
+                campaignStarter.AddModel(new NewPartyWageModel());
+                campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
+                campaignStarter.AddModel(new NewPartySizeLimitModel());
+                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
+                campaignStarter.AddModel(new NewClanTierModel());
+                campaignStarter.AddModel(new NewSettlementMilitiaModel());
+                // //campaignStarter.AddModel(new NewDiplomacyModel());
+                campaignStarter.AddModel(new NewBuildingConstructionModel());
+                campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
+                //campaignStarter.AddModel(new NewMinorFactionsModel());
+                //campaignStarter.AddModel(new FiefSettlementTaxModel());
+
+
+                ////campaignStarter.AddModel(new DebugGarrisonMoraleModel());
+                ////campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());
+
+                //// //campaignStarter.AddModel(new FiefPartyFoodConsumptionModel());
+
+                campaignStarter.AddBehavior(new FiefPartyManager());
+                campaignStarter.AddBehavior(new FiefMenuBehavior());
+                campaignStarter.AddBehavior(new FiefWageExemptionManager());
+
+                campaignStarter.AddBehavior(new AiRecruitmentBehavior());
+
+
+                campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
+                //campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 

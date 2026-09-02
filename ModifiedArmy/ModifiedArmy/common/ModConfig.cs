@@ -18,12 +18,10 @@ namespace ModifiedArmy.common
         /// 封邑偏好权重。
         /// </summary>
         public float Fief;
-
         /// <summary>
         /// 志愿兵偏好权重。
         /// </summary>
         public float Volunteer;
-
         /// <summary>
         /// 雇佣兵偏好权重。
         /// </summary>
@@ -39,17 +37,14 @@ namespace ModifiedArmy.common
         /// 封邑偏好乘数。
         /// </summary>
         public float Fief;
-
         /// <summary>
         /// 志愿兵偏好乘数。
         /// </summary>
         public float Volunteer;
-
         /// <summary>
         /// 雇佣兵偏好乘数。
         /// </summary>
         public float Mercenary;
-
         /// <summary>
         /// 情境触发阈值（broke: Gold &lt; threshold × Wage; critical: PartySizeRatio &lt; threshold）。仅部分情境使用。
         /// </summary>
@@ -280,36 +275,102 @@ namespace ModifiedArmy.common
         {
             base.Deserialize(objectManager, node);
 
-            MinLogLevel = XmlHelper.ReadInt(node, "MinLogLevel");
-            if (MinLogLevel < 0 || MinLogLevel > 4) MinLogLevel = 2;
+            // ========== Logging ==========
+            XmlNode loggingNode = node.SelectSingleNode("Logging");
+            if (loggingNode != null)
+            {
+                MinLogLevel = ReadIntVal(loggingNode, "MinLogLevel", 2);
+                if (MinLogLevel < 0 || MinLogLevel > 4) MinLogLevel = 2;
+            }
 
-            TownPoorThreshold = ReadFloatVal(node, "TownPoorThreshold", 1000f);
-            TownAverageThreshold = ReadFloatVal(node, "TownAverageThreshold", 4000f);
-            TownRichThreshold = ReadFloatVal(node, "TownRichThreshold", 8000f);
-            TownVeryRichThreshold = ReadFloatVal(node, "TownVeryRichThreshold", 12000f);
+            // ========== SettlementProsperity ==========
+            XmlNode settlementProsperityNode = node.SelectSingleNode("SettlementProsperity");
+            if (settlementProsperityNode != null)
+            {
+                XmlNode townNode = settlementProsperityNode.SelectSingleNode("Town");
+                if (townNode != null)
+                {
+                    TownPoorThreshold = ReadFloatVal(townNode, "PoorThreshold", 1000f);
+                    TownAverageThreshold = ReadFloatVal(townNode, "AverageThreshold", 4000f);
+                    TownRichThreshold = ReadFloatVal(townNode, "RichThreshold", 8000f);
+                    TownVeryRichThreshold = ReadFloatVal(townNode, "VeryRichThreshold", 12000f);
+                }
+                XmlNode castleNode = settlementProsperityNode.SelectSingleNode("Castle");
+                if (castleNode != null)
+                {
+                    CastlePoorThreshold = ReadFloatVal(castleNode, "PoorThreshold", 300f);
+                    CastleAverageThreshold = ReadFloatVal(castleNode, "AverageThreshold", 800f);
+                    CastleRichThreshold = ReadFloatVal(castleNode, "RichThreshold", 1500f);
+                    CastleVeryRichThreshold = ReadFloatVal(castleNode, "VeryRichThreshold", 2000f);
+                }
+            }
 
-            CastlePoorThreshold = ReadFloatVal(node, "CastlePoorThreshold", 300f);
-            CastleAverageThreshold = ReadFloatVal(node, "CastleAverageThreshold", 800f);
-            CastleRichThreshold = ReadFloatVal(node, "CastleRichThreshold", 1500f);
-            CastleVeryRichThreshold = ReadFloatVal(node, "CastleVeryRichThreshold", 2000f);
+            // ========== FiefRecruitment ==========
+            XmlNode fiefRecruitmentNode = node.SelectSingleNode("FiefRecruitment");
+            if (fiefRecruitmentNode != null)
+            {
+                XmlNode weightsNode = fiefRecruitmentNode.SelectSingleNode("Weights");
+                if (weightsNode != null)
+                {
+                    ProsperityWeight = ReadFloatVal(weightsNode, "Prosperity", 0.4f);
+                    HearthsWeight = ReadFloatVal(weightsNode, "Hearths", 0.6f);
+                }
+                XmlNode villageNode = fiefRecruitmentNode.SelectSingleNode("Village");
+                if (villageNode != null)
+                {
+                    VillageMinHearthThreshold = ReadFloatVal(villageNode, "MinHearthThreshold", 100f);
+                    VillageMaxReinforcementHearthThreshold = ReadFloatVal(villageNode, "MaxReinforcementHearthThreshold", 900f);
+                }
+            }
 
-            ProsperityWeight = ReadFloatVal(node, "ProsperityWeight", 0.4f);
-            HearthsWeight = ReadFloatVal(node, "HearthsWeight", 0.6f);
+            // ========== FiefEconomy ==========
+            XmlNode fiefEconomyNode = node.SelectSingleNode("FiefEconomy");
+            if (fiefEconomyNode != null)
+            {
+                XmlNode wageNode = fiefEconomyNode.SelectSingleNode("Wage");
+                if (wageNode != null)
+                {
+                    FiefWageExemptionDays = ReadIntVal(wageNode, "ExemptionDays", 28);
+                }
+                XmlNode aiImpactNode = fiefEconomyNode.SelectSingleNode("AiImpact");
+                if (aiImpactNode != null)
+                {
+                    AiFiefProsperityImpactMultiplier = ReadFloatVal(aiImpactNode, "ProsperityMultiplier", 0.1f);
+                    AiFiefHearthImpactMultiplier = ReadFloatVal(aiImpactNode, "HearthMultiplier", 0.1f);
+                }
+            }
 
-            VillageMinHearthThreshold = ReadFloatVal(node, "VillageMinHearthThreshold", 100f);
-            VillageMaxReinforcementHearthThreshold = ReadFloatVal(node, "VillageMaxReinforcementHearthThreshold", 900f);
+            // ========== VolunteerRecruitment ==========
+            XmlNode volunteerRecruitmentNode = node.SelectSingleNode("VolunteerRecruitment");
+            if (volunteerRecruitmentNode != null)
+            {
+                XmlNode vlandiaNode = volunteerRecruitmentNode.SelectSingleNode("Vlandia");
+                if (vlandiaNode != null)
+                {
+                    VlandiaVolunteerMultiplier = ReadFloatVal(vlandiaNode, "GenerationMultiplier", 0.2f);
+                }
+                XmlNode empireNode = volunteerRecruitmentNode.SelectSingleNode("Empire");
+                if (empireNode != null)
+                {
+                    EmpireVolunteerMultiplier = ReadFloatVal(empireNode, "GenerationMultiplier", 0.6f);
+                }
+                XmlNode aseraiNode = volunteerRecruitmentNode.SelectSingleNode("Aserai");
+                if (aseraiNode != null)
+                {
+                    AseraiVolunteerMultiplier = ReadFloatVal(aseraiNode, "GenerationMultiplier", 0.7f);
+                }
+            }
 
-            FiefWageExemptionDays = XmlHelper.ReadInt(node, "FiefWageExemptionDays");
-            if (FiefWageExemptionDays == 0) FiefWageExemptionDays = 28;
-
-            AiFiefProsperityImpactMultiplier = ReadFloatVal(node, "AiFiefProsperityImpactMultiplier", 0.1f);
-            AiFiefHearthImpactMultiplier = ReadFloatVal(node, "AiFiefHearthImpactMultiplier", 0.1f);
-
-            VlandiaVolunteerMultiplier = ReadFloatVal(node, "VlandiaVolunteerMultiplier", 0.2f);
-            EmpireVolunteerMultiplier = ReadFloatVal(node, "EmpireVolunteerMultiplier", 0.6f);
-            AseraiVolunteerMultiplier = ReadFloatVal(node, "AseraiVolunteerMultiplier", 0.7f);
-
-            PlayerSettlementPrisonerEscapeChance = ReadFloatVal(node, "PlayerSettlementPrisonerEscapeChance", 0.01f);
+            // ========== Prisoners ==========
+            XmlNode prisonersNode = node.SelectSingleNode("Prisoners");
+            if (prisonersNode != null)
+            {
+                XmlNode playerSettlementNode = prisonersNode.SelectSingleNode("PlayerSettlement");
+                if (playerSettlementNode != null)
+                {
+                    PlayerSettlementPrisonerEscapeChance = ReadFloatVal(playerSettlementNode, "EscapeChance", 0.01f);
+                }
+            }
 
             // ========== AI 招募决策（嵌套 XML）==========
             DeserializeAiRecruitment(node);
@@ -319,6 +380,9 @@ namespace ModifiedArmy.common
             TextObject msg = GameTexts.FindText("str_modifiedarmy_config_loaded");
             msg.SetTextVariable("CONFIG_ID", ConfigId);
             ModLogger.Info(msg.ToString());
+
+            // ===== 配置加载验证（一次性）=====
+            ModLogger.Notice($"[ModConfig] AI招募配置已加载: 文化偏好={AiCulturalPrefs.Count}条, 情境修正={AiSituationalMods.Count}条, NeedThreshold={AiNeedThreshold}, RandomChance={AiRecruitRandomChance}");
         }
 
         /// <summary>
@@ -327,20 +391,24 @@ namespace ModifiedArmy.common
         private void DeserializeAiRecruitment(XmlNode modConfigNode)
         {
             XmlNode aiNode = modConfigNode.SelectSingleNode("AiRecruitment");
-            if (aiNode == null) return;
+            if (aiNode == null)
+            {
+                ModLogger.Notice("[ModConfig] 警告：未找到AiRecruitment节点，使用默认值");
+                return;
+            }
 
             // NeedScore
             XmlNode needScoreNode = aiNode.SelectSingleNode("NeedScore");
             if (needScoreNode != null)
             {
-                AiNeedManpowerWeight = ReadAttr(needScoreNode, "manpowerWeight", 0.4f);
-                AiNeedWarUrgencyWeight = ReadAttr(needScoreNode, "warUrgencyWeight", 0.35f);
-                AiNeedEconomicWeight = ReadAttr(needScoreNode, "economicWeight", 0.25f);
-                AiNeedThreshold = ReadAttr(needScoreNode, "threshold", 0.25f);
-                AiNeedPeaceUrgency = ReadAttr(needScoreNode, "peaceUrgency", 0.1f);
-                AiNeedWarUrgency = ReadAttr(needScoreNode, "warUrgency", 0.7f);
-                AiNeedSiegeUrgency = ReadAttr(needScoreNode, "siegeUrgency", 1.0f);
-                AiNeedEconomicWeeks = ReadAttr(needScoreNode, "economicWeeks", 10.0f);
+                AiNeedManpowerWeight = ReadFloatVal(needScoreNode, "ManpowerWeight", 0.4f);
+                AiNeedWarUrgencyWeight = ReadFloatVal(needScoreNode, "WarUrgencyWeight", 0.35f);
+                AiNeedEconomicWeight = ReadFloatVal(needScoreNode, "EconomicWeight", 0.25f);
+                AiNeedThreshold = ReadFloatVal(needScoreNode, "Threshold", 0.25f);
+                AiNeedPeaceUrgency = ReadFloatVal(needScoreNode, "PeaceUrgency", 0.1f);
+                AiNeedWarUrgency = ReadFloatVal(needScoreNode, "WarUrgency", 0.7f);
+                AiNeedSiegeUrgency = ReadFloatVal(needScoreNode, "SiegeUrgency", 1.0f);
+                AiNeedEconomicWeeks = ReadFloatVal(needScoreNode, "EconomicWeeks", 10.0f);
             }
 
             // CulturalPreferences
@@ -354,10 +422,15 @@ namespace ModifiedArmy.common
                     {
                         AiCulturalPrefs[culture] = new AiCulturalPreference
                         {
-                            Fief = ReadAttr(cultureNode, "fief", 0.4f),
-                            Volunteer = ReadAttr(cultureNode, "volunteer", 0.4f),
-                            Mercenary = ReadAttr(cultureNode, "mercenary", 0.2f)
+                            Fief = ReadFloatVal(cultureNode, "Fief", 0.4f),
+                            Volunteer = ReadFloatVal(cultureNode, "Volunteer", 0.4f),
+                            Mercenary = ReadFloatVal(cultureNode, "Mercenary", 0.2f)
                         };
+                    }
+                    else
+                    {
+                        string idAttr = cultureNode.Attributes?["id"]?.Value ?? "unknown";
+                        ModLogger.Notice($"[ModConfig] 警告：文化id='{idAttr}'无法解析，跳过");
                     }
                 }
             }
@@ -366,9 +439,9 @@ namespace ModifiedArmy.common
             XmlNode cultIdNode = aiNode.SelectSingleNode("CulturalIdentity");
             if (cultIdNode != null)
             {
-                AiCultMatchFiefBonus = ReadAttr(cultIdNode, "matchFiefBonus", 1.3f);
-                AiCultMismatchVolunteerPenalty = ReadAttr(cultIdNode, "mismatchVolunteerPenalty", 0.5f);
-                AiCultMismatchMercenaryBonus = ReadAttr(cultIdNode, "mismatchMercenaryBonus", 1.3f);
+                AiCultMatchFiefBonus = ReadFloatVal(cultIdNode, "MatchFiefBonus", 1.3f);
+                AiCultMismatchVolunteerPenalty = ReadFloatVal(cultIdNode, "MismatchVolunteerPenalty", 0.5f);
+                AiCultMismatchMercenaryBonus = ReadFloatVal(cultIdNode, "MismatchMercenaryBonus", 1.3f);
             }
 
             // SituationalModifiers
@@ -382,10 +455,10 @@ namespace ModifiedArmy.common
                     {
                         AiSituationalMods[id] = new AiSituationalModifier
                         {
-                            Fief = ReadAttr(sitNode, "fief", 1.0f),
-                            Volunteer = ReadAttr(sitNode, "volunteer", 1.0f),
-                            Mercenary = ReadAttr(sitNode, "mercenary", 1.0f),
-                            Threshold = ReadAttr(sitNode, "threshold", 0f)
+                            Fief = ReadFloatVal(sitNode, "Fief", 1.0f),
+                            Volunteer = ReadFloatVal(sitNode, "Volunteer", 1.0f),
+                            Mercenary = ReadFloatVal(sitNode, "Mercenary", 1.0f),
+                            Threshold = ReadFloatVal(sitNode, "Threshold", 0f)
                         };
                     }
                 }
@@ -395,18 +468,18 @@ namespace ModifiedArmy.common
             XmlNode enemyNode = aiNode.SelectSingleNode("EnemyDetection");
             if (enemyNode != null)
             {
-                AiEnemyDetectRadius = ReadAttr(enemyNode, "radius", 50.0f);
-                AiEnemyStrengthRatio = ReadAttr(enemyNode, "strengthRatio", 0.5f);
+                AiEnemyDetectRadius = ReadFloatVal(enemyNode, "Radius", 50.0f);
+                AiEnemyStrengthRatio = ReadFloatVal(enemyNode, "StrengthRatio", 0.5f);
             }
 
             // RecruitmentLimits
             XmlNode limitsNode = aiNode.SelectSingleNode("RecruitmentLimits");
             if (limitsNode != null)
             {
-                AiRecruitPartySizeRatioCap = ReadAttr(limitsNode, "partySizeRatioCap", 0.7f);
-                AiRecruitMinGoldWageRatio = ReadAttr(limitsNode, "minGoldWageRatio", 0.3f);
-                AiRecruitRandomChance = ReadAttr(limitsNode, "randomChance", 0.8f);
-                AiMercenarySearchRadius = ReadAttr(limitsNode, "mercenarySearchRadius", 150.0f);
+                AiRecruitPartySizeRatioCap = ReadFloatVal(limitsNode, "PartySizeRatioCap", 0.7f);
+                AiRecruitMinGoldWageRatio = ReadFloatVal(limitsNode, "MinGoldWageRatio", 0.3f);
+                AiRecruitRandomChance = ReadFloatVal(limitsNode, "RandomChance", 0.8f);
+                AiMercenarySearchRadius = ReadFloatVal(limitsNode, "MercenarySearchRadius", 150.0f);
             }
         }
 
@@ -417,6 +490,7 @@ namespace ModifiedArmy.common
         {
             if (culture != null && AiCulturalPrefs.TryGetValue(culture, out var pref))
                 return (pref.Fief, pref.Volunteer, pref.Mercenary);
+
             return (0.4f, 0.4f, 0.2f);
         }
 
@@ -427,6 +501,7 @@ namespace ModifiedArmy.common
         {
             if (situationId != null && AiSituationalMods.TryGetValue(situationId, out var mod))
                 return (mod.Fief, mod.Volunteer, mod.Mercenary);
+
             return (1.0f, 1.0f, 1.0f);
         }
 
@@ -457,6 +532,19 @@ namespace ModifiedArmy.common
         {
             var el = node.SelectSingleNode(elementName);
             if (el?.Attributes?["value"] != null && float.TryParse(el.Attributes["value"].Value, out var v))
+            {
+                return v;
+            }
+            return defaultVal;
+        }
+
+        /// <summary>
+        /// 从子元素中读取 value 属性的 int 值（扁平 XML 格式，兼容旧配置）。
+        /// </summary>
+        private static int ReadIntVal(XmlNode node, string elementName, int defaultVal)
+        {
+            var el = node.SelectSingleNode(elementName);
+            if (el?.Attributes?["value"] != null && int.TryParse(el.Attributes["value"].Value, out var v))
             {
                 return v;
             }

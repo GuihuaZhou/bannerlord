@@ -3,114 +3,214 @@
   <!--
     ModifiedArmy 全局配置
     所有数值通过 TaleWorlds MBObjectManager 系统加载，与 FiefPartyTemplate 模式一致。
+    数值均以子元素 <ElementName value="xxx"/> 格式存储，匹配 ReadFloatVal/ReadIntVal 解析逻辑。
   -->
   <ModConfig id="default">
-    <!-- 繁荣度阈值 -->
-    <TownPoorThreshold value="1000"/>
-    <TownAverageThreshold value="4000"/>
-    <TownRichThreshold value="8000"/>
-    <TownVeryRichThreshold value="12000"/>
-    <CastlePoorThreshold value="300"/>
-    <CastleAverageThreshold value="800"/>
-    <CastleRichThreshold value="1500"/>
-    <CastleVeryRichThreshold value="2000"/>
 
-    <!-- 日志等级调整 -->
-    <MinLogLevel value="3"/>
+    <!-- ========== 日志等级 ========== -->
+    <Logging>
+      <MinLogLevel value="3"/>
+    </Logging>
 
-    <!-- 补员公式权重 -->
-    <ProsperityWeight value="0.4"/>
-    <HearthsWeight value="0.6"/>
+    <!-- ========== 繁荣度阈值 ========== -->
+    <SettlementProsperity>
+      <Town>
+        <PoorThreshold value="1000"/>
+        <AverageThreshold value="4000"/>
+        <RichThreshold value="8000"/>
+        <VeryRichThreshold value="12000"/>
+      </Town>
+      <Castle>
+        <PoorThreshold value="300"/>
+        <AverageThreshold value="800"/>
+        <RichThreshold value="1500"/>
+        <VeryRichThreshold value="2000"/>
+      </Castle>
+    </SettlementProsperity>
 
-    <!-- 村庄阈值 -->
-    <VillageMinHearthThreshold value="100"/>
-    <VillageMaxReinforcementHearthThreshold value="900"/>
+    <!-- ========== 补员公式权重 ========== -->
+    <FiefRecruitment>
+      <Weights>
+        <Prosperity value="0.4"/>
+        <Hearths value="0.6"/>
+      </Weights>
+      <Village>
+        <MinHearthThreshold value="100"/>
+        <MaxReinforcementHearthThreshold value="900"/>
+      </Village>
+    </FiefRecruitment>
 
-    <!-- 封邑系统 -->
-    <FiefWageExemptionDays value="28"/>
+    <!-- ========== 封邑经济 ========== -->
+    <FiefEconomy>
+      <Wage>
+        <ExemptionDays value="28"/>
+      </Wage>
+      <AiImpact>
+        <ProsperityMultiplier value="0.1"/>
+        <HearthMultiplier value="0.1"/>
+      </AiImpact>
+    </FiefEconomy>
 
-    <!-- AI 影响系数 -->
-    <AiFiefProsperityImpactMultiplier value="0.1"/>
-    <AiFiefHearthImpactMultiplier value="0.1"/>
+    <!-- ========== 志愿兵文化倍率 ========== -->
+    <VolunteerRecruitment>
+      <Vlandia>
+        <GenerationMultiplier value="0.2"/>
+      </Vlandia>
+      <Empire>
+        <GenerationMultiplier value="0.6"/>
+      </Empire>
+      <Aserai>
+        <GenerationMultiplier value="0.7"/>
+      </Aserai>
+    </VolunteerRecruitment>
 
-    <!-- 志愿兵文化倍率 -->
-    <VlandiaVolunteerMultiplier value="0.2"/>
-    <EmpireVolunteerMultiplier value="0.6"/>
-    <AseraiVolunteerMultiplier value="0.7"/>
-
-    <!-- 囚犯逃逸 -->
-    <PlayerSettlementPrisonerEscapeChance value="0.01"/>
+    <!-- ========== 囚犯逃逸 ========== -->
+    <Prisoners>
+      <PlayerSettlement>
+        <EscapeChance value="0.01"/>
+      </PlayerSettlement>
+    </Prisoners>
 
     <!-- ========== AI 招募决策 ========== -->
     <!--
       三层决策模型：
-      第一层 NeedScore → 判断是否需要招兵
+      第一层 NeedScore  → 判断是否需要招兵
       第二层 SourcePreference → 选择 Fief/Volunteer/Mercenary
-      第三层 Execute → 执行对应招募路径
+      第三层 Execute  → 执行对应招募路径
     -->
     <AiRecruitment>
+
       <!-- 招兵紧迫度：NeedScore = w1·ManpowerGap + w2·WarUrgency + w3·EconomicCapacity -->
-      <NeedScore manpowerWeight="0.4" warUrgencyWeight="0.35" economicWeight="0.25"
-                 threshold="0.25" peaceUrgency="0.1" warUrgency="0.7" siegeUrgency="1.0"
-                 economicWeeks="10.0"/>
-      <!-- manpowerWeight: 兵力缺口因子(1 - PartySizeRatio)权重 -->
-      <!-- warUrgencyWeight: 战争紧迫度因子权重 -->
-      <!-- economicWeight: 经济承受力因子权重 -->
-      <!-- threshold: NeedScore 低于此值不触发招募决策 -->
-      <!-- peaceUrgency: 和平期的战争紧迫度值 -->
-      <!-- warUrgency: 战争中的战争紧迫度值 -->
-      <!-- siegeUrgency: 被围攻时的战争紧迫度值 -->
-      <!-- economicWeeks: EconomicCapacity = Gold / (Wage × 此值) -->
+      <NeedScore>
+        <ManpowerWeight value="0.4"/>
+        <WarUrgencyWeight value="0.35"/>
+        <EconomicWeight value="0.25"/>
+        <Threshold value="0.25"/>
+        <PeaceUrgency value="0.1"/>
+        <WarUrgency value="0.7"/>
+        <SiegeUrgency value="1.0"/>
+        <EconomicWeeks value="10.0"/>
+      </NeedScore>
+      <!-- ManpowerWeight: 兵力缺口因子(1 - PartySizeRatio)权重 -->
+      <!-- WarUrgencyWeight: 战争紧迫度因子权重 -->
+      <!-- EconomicWeight: 经济承受力因子权重 -->
+      <!-- Threshold: NeedScore 低于此值不触发招募决策 -->
+      <!-- PeaceUrgency: 和平期的战争紧迫度值 -->
+      <!-- WarUrgency: 战争中的战争紧迫度值 -->
+      <!-- SiegeUrgency: 被围攻时的战争紧迫度值 -->
+      <!-- EconomicWeeks: EconomicCapacity = Gold / (Wage × 此值) -->
 
       <!-- 文化基础偏好：AI 对三种兵源的偏好权重，决定该文化的典型招募倾向 -->
       <CulturalPreferences>
         <!-- Vlandia：西欧采邑制 → 封邑核心，志愿兵极少 -->
-        <Culture id="Culture.vlandia"  fief="0.7" volunteer="0.2" mercenary="0.1"/>
+        <Culture id="Culture.vlandia">
+          <Fief value="0.7"/>
+          <Volunteer value="0.2"/>
+          <Mercenary value="0.1"/>
+        </Culture>
         <!-- Empire：拜占庭军区制 → 志愿兵为主，封邑弱 -->
-        <Culture id="Culture.empire"   fief="0.1" volunteer="0.1" mercenary="0.8"/>
+        <Culture id="Culture.empire">
+          <Fief value="0.1"/>
+          <Volunteer value="0.1"/>
+          <Mercenary value="0.8"/>
+        </Culture>
         <!-- Aserai：阿拉伯伊克塔 → 雇佣兵+奴隶兵，封邑弱 -->
-        <Culture id="Culture.aserai"   fief="0.2" volunteer="0.3" mercenary="0.5"/>
+        <Culture id="Culture.aserai">
+          <Fief value="0.2"/>
+          <Volunteer value="0.3"/>
+          <Mercenary value="0.5"/>
+        </Culture>
         <!-- Sturgia：东欧亲兵制 → 封邑精英 -->
-        <Culture id="Culture.sturgia"  fief="0.6" volunteer="0.3" mercenary="0.1"/>
+        <Culture id="Culture.sturgia">
+          <Fief value="0.6"/>
+          <Volunteer value="0.3"/>
+          <Mercenary value="0.1"/>
+        </Culture>
         <!-- Battania：凯尔特部落制 → 封邑/志愿兵均衡 -->
-        <Culture id="Culture.battania" fief="0.4" volunteer="0.4" mercenary="0.2"/>
+        <Culture id="Culture.battania">
+          <Fief value="0.4"/>
+          <Volunteer value="0.4"/>
+          <Mercenary value="0.2"/>
+        </Culture>
         <!-- Khuzait：游牧召之即来 → 封邑快速周转 -->
-        <Culture id="Culture.khuzait"  fief="0.5" volunteer="0.3" mercenary="0.2"/>
+        <Culture id="Culture.khuzait">
+          <Fief value="0.5"/>
+          <Volunteer value="0.3"/>
+          <Mercenary value="0.2"/>
+        </Culture>
         <!-- Nord：维京全民战士 → 志愿兵多 -->
-        <Culture id="Culture.nord"     fief="0.4" volunteer="0.5" mercenary="0.1"/>
+        <Culture id="Culture.nord">
+          <Fief value="0.4"/>
+          <Volunteer value="0.5"/>
+          <Mercenary value="0.1"/>
+        </Culture>
       </CulturalPreferences>
 
       <!-- 文化身份修正：领主文化与定居点文化匹配/不匹配时的偏好乘数 -->
-      <CulturalIdentity matchFiefBonus="1.3" mismatchVolunteerPenalty="0.5" mismatchMercenaryBonus="1.3"/>
-      <!-- matchFiefBonus: 本文化领主封邑偏好乘数 -->
-      <!-- mismatchVolunteerPenalty: 异文化领主志愿兵偏好乘数 -->
-      <!-- mismatchMercenaryBonus: 异文化领主雇佣兵偏好乘数 -->
+      <CulturalIdentity>
+        <MatchFiefBonus value="1.3"/>
+        <MismatchVolunteerPenalty value="0.5"/>
+        <MismatchMercenaryBonus value="1.3"/>
+      </CulturalIdentity>
+      <!-- MatchFiefBonus: 本文化领主封邑偏好乘数 -->
+      <!-- MismatchVolunteerPenalty: 异文化领主志愿兵偏好乘数 -->
+      <!-- MismatchMercenaryBonus: 异文化领主雇佣兵偏好乘数 -->
 
       <!-- 情境修正：各情境下三种兵源的偏好乘数，叠加在基础权重上 -->
       <SituationalModifiers>
         <!-- 被围攻：封邑/志愿兵慢，雇佣兵即时可用 -->
-        <Situation id="siege"    fief="0.3" volunteer="0.5" mercenary="2.0"/>
-        <!-- 经济紧张（Gold < brokeThreshold × TotalWage）：封邑有工资豁免最省钱 -->
-        <Situation id="broke"    fief="1.2" volunteer="1.0" mercenary="0.3" threshold="3.0"/>
-        <!-- 兵力严重不足（PartySizeRatio < criticalThreshold）：急需即时战力 -->
-        <Situation id="critical" fief="0.5" volunteer="1.0" mercenary="1.5" threshold="0.3"/>
+        <Situation id="siege">
+          <Fief value="0.3"/>
+          <Volunteer value="0.5"/>
+          <Mercenary value="2.0"/>
+        </Situation>
+        <!-- 经济紧张（Gold &lt; brokeThreshold × TotalWage）：封邑有工资豁免最省钱 -->
+        <Situation id="broke">
+          <Fief value="1.2"/>
+          <Volunteer value="1.0"/>
+          <Mercenary value="0.3"/>
+          <Threshold value="3.0"/>
+        </Situation>
+        <!-- 兵力严重不足（PartySizeRatio &lt; criticalThreshold）：急需即时战力 -->
+        <Situation id="critical">
+          <Fief value="0.5"/>
+          <Volunteer value="1.0"/>
+          <Mercenary value="1.5"/>
+          <Threshold value="0.3"/>
+        </Situation>
         <!-- 和平期：不急，养封邑/志愿兵更经济 -->
-        <Situation id="peace"    fief="1.0" volunteer="1.2" mercenary="0.5"/>
+        <Situation id="peace">
+          <Fief value="1.0"/>
+          <Volunteer value="1.2"/>
+          <Mercenary value="0.5"/>
+        </Situation>
         <!-- 战争中：需要灵活补充 -->
-        <Situation id="war"      fief="1.0" volunteer="0.8" mercenary="1.2"/>
+        <Situation id="war">
+          <Fief value="1.0"/>
+          <Volunteer value="0.8"/>
+          <Mercenary value="1.2"/>
+        </Situation>
       </SituationalModifiers>
 
       <!-- 敌军距离检测 -->
-      <EnemyDetection radius="50.0" strengthRatio="0.5"/>
-      <!-- radius: 检测附近敌军的距离半径 -->
-      <!-- strengthRatio: 敌军总强度 > 己方 × 此值视为威胁 -->
+      <EnemyDetection>
+        <Radius value="50.0"/>
+        <StrengthRatio value="0.5"/>
+      </EnemyDetection>
+      <!-- Radius: 检测附近敌军的距离半径 -->
+      <!-- StrengthRatio: 敌军总强度 &gt; 己方 × 此值视为威胁 -->
 
       <!-- 杂项：替代原硬编码的招募条件参数 -->
-      <RecruitmentLimits partySizeRatioCap="0.7" minGoldWageRatio="0.3" randomChance="0.8" mercenarySearchRadius="150"/>
-      <!-- partySizeRatioCap: PartySizeRatio 超过此值不招募 -->
-      <!-- minGoldWageRatio: 最低所需金币占工资比例 -->
-      <!-- randomChance: 随机概率门槛 -->
-      <!-- mercenarySearchRadius: 雇佣兵搜索半径，本国town不限距离，非本国town限此半径 -->
+      <RecruitmentLimits>
+        <PartySizeRatioCap value="0.7"/>
+        <MinGoldWageRatio value="0.3"/>
+        <RandomChance value="0.8"/>
+        <MercenarySearchRadius value="150"/>
+      </RecruitmentLimits>
+      <!-- PartySizeRatioCap: PartySizeRatio 超过此值不招募 -->
+      <!-- MinGoldWageRatio: 最低所需金币占工资比例 -->
+      <!-- RandomChance: 随机概率门槛 -->
+      <!-- MercenarySearchRadius: 雇佣兵搜索半径，本国town不限距离，非本国town限此半径 -->
     </AiRecruitment>
   </ModConfig>
 </ModConfigs>
