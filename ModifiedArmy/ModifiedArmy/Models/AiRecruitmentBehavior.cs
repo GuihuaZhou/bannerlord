@@ -70,11 +70,8 @@ namespace ModifiedArmy.Models
             _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
             if (_fiefPartyManager == null) return;
 
-            _config = ModConfigManager.Instance.GetActiveConfig();
-            if (_config == null)
-            {
-                return;
-            }
+            _config = ModConfigManager.Instance?.GetActiveConfig();
+            if (_config == null) return;
 
             foreach (Kingdom kingdom in Kingdom.All)
             {
@@ -117,8 +114,8 @@ namespace ModifiedArmy.Models
                         };
                         candidates.Sort((a, b) => b.score.CompareTo(a.score));
 
-                        string preferences = string.Join(", ", candidates.Select(c => $"{c.source}={c.score:F3}"));
-                        ModLogger.Notice($"[AI招兵] {GetPartyDisplayName(party)} | Need={needScore:F2} | 偏好=[{preferences}]");
+                        // string preferences = string.Join(", ", candidates.Select(c => $"{c.source}={c.score:F3}"));
+                        // ModLogger.Notice($"[AI招兵] {GetPartyDisplayName(party)} | Need={needScore:F2} | 偏好=[{preferences}]");
 
                         string displayName = GetPartyDisplayName(party);
 
@@ -135,11 +132,11 @@ namespace ModifiedArmy.Models
 
                             if (target == null)
                             {
-                                ModLogger.Notice($"[AI招兵] {displayName} | {source}无据点→回退");
+                                // ModLogger.Notice($"[AI招兵] {displayName} | {source}无据点→回退");
                                 continue;
                             }
 
-                            ModLogger.Notice($"[AI招兵] {displayName} | Need={needScore:F2} | 选择={source}({candidates.Find(c => c.source == source).score:F3}) → {target.Name}");
+                            ModLogger.Notice($"[AI招兵] {displayName} 决定前往 {target.Name} 招募 {source}");
                             party.SetMoveGoToSettlement(
                                 target,
                                 MobileParty.NavigationType.Default,
@@ -151,7 +148,7 @@ namespace ModifiedArmy.Models
 
                         if (!dispatched)
                         {
-                            ModLogger.Notice($"[AI招兵] {displayName} | 所有兵源无据点，放弃招募");
+                            ModLogger.Info($"[AI招兵] {displayName} | 所有兵源无据点，放弃招募");
                         }
                     }
                 }
@@ -164,13 +161,14 @@ namespace ModifiedArmy.Models
             var config = ModConfigManager.Instance?.GetActiveConfig();
             if (config == null)
                 return new RecruitmentDecision(false, 0f, RecruitSource.Fief, 0f, 0f, 0f);
-
+            
+            // 在此处return，不会抛异常
             var (needScore, _, _, _) = CalculateNeedScore(party);
+            // 在此处return，会抛异常
             if (needScore < config.AiNeedThreshold)
                 return new RecruitmentDecision(false, needScore, RecruitSource.Fief, 0f, 0f, 0f);
 
             var (preferred, fief, vol, merc) = CalculatePreferredSource(party);
-
             return new RecruitmentDecision(true, needScore, preferred, fief, vol, merc);
         }
 
@@ -186,6 +184,12 @@ namespace ModifiedArmy.Models
 
         private (float score, float manpowerGap, float warUrgency, float economicCapacity) CalculateNeedScore(MobileParty party)
         {
+            if (_config == null)
+                _config = ModConfigManager.Instance.GetActiveConfig();
+
+            if (_fiefPartyManager == null)
+                _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
+
             // 兵力缺口：PartySizeRatio=1 → gap=0（满员），Ratio=0.3 → gap=0.7（严重缺兵）
             float manpowerGap = Math.Max(0f, 1f - party.PartySizeRatio);
 
@@ -197,7 +201,7 @@ namespace ModifiedArmy.Models
                 warUrgency = _config.AiNeedWarUrgency;
             else
                 warUrgency = _config.AiNeedPeaceUrgency;
-
+                
             // 经济承受力：金库 / (周工资 × 周数)，衡量能撑多久
             float gold = party.PartyTradeGold + (party.LeaderHero?.Clan.Gold ?? 0);
             float economicCapacity = party.TotalWage > 0
@@ -247,8 +251,8 @@ namespace ModifiedArmy.Models
             else
                 chosen = RecruitSource.Volunteer;
 
-            string displayName = GetPartyDisplayName(party);
-            ModLogger.Notice($"[AI招兵-偏好] {displayName} | {cultureId} | base=({fiefBase},{volBase},{mercBase}) mod=({fiefMod:F3},{volMod:F3},{mercMod:F3}) → {chosen}({chosen switch { RecruitSource.Fief => fiefScore, RecruitSource.Volunteer => volScore, _ => mercScore }:F4})");
+            // string displayName = GetPartyDisplayName(party);
+            // ModLogger.Notice($"[AI招兵-偏好] {displayName} | {cultureId} | base=({fiefBase},{volBase},{mercBase}) mod=({fiefMod:F3},{volMod:F3},{mercMod:F3}) → {chosen}({chosen switch { RecruitSource.Fief => fiefScore, RecruitSource.Volunteer => volScore, _ => mercScore }:F4})");
 
             return (chosen, fiefScore, volScore, mercScore);
         }
@@ -301,8 +305,8 @@ namespace ModifiedArmy.Models
                 active.Add($"critical");
             }
             
-            string displayName = GetPartyDisplayName(party);
-            ModLogger.Notice($"[AI招兵-情境] {displayName} | [{string.Join("+", active)}] mul=({fiefMod:F3},{volMod:F3},{mercMod:F3})");
+            // string displayName = GetPartyDisplayName(party);
+            // ModLogger.Notice($"[AI招兵-情境] {displayName} | [{string.Join("+", active)}] mul=({fiefMod:F3},{volMod:F3},{mercMod:F3})");
         }
 
         /// <summary>

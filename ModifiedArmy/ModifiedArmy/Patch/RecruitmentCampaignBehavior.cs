@@ -56,11 +56,8 @@ namespace ModifiedArmy.Patch
                     mercenaryData.ChangeMercenaryType(selectedTroop, finalCount);
 
                     // 仅在实际生成雇佣兵时打印，验证 XML 配置是否生效
-                    ModLogger.Notice(
-                        $"[RecruitmentPatches] '{town.Name}' 生成雇佣兵: " +
-                        $"兵种='{selectedTroop.Name}', 数量={finalCount}, " +
-                        $"模板='{template?.TemplateId}', 文化='{town.Culture.StringId}', " +
-                        $"概率={spawnChance:F3}, 数量范围=[{minCount}-{maxCount}]"
+                    ModLogger.Info(
+                        $"[RecruitmentPatches] {town.Name} 更新了 {finalCount} 名 {selectedTroop.Name}"
                     );
 
                     return false;
@@ -152,40 +149,23 @@ namespace ModifiedArmy.Patch
             {
                 if (weight <= 0.01f) continue;
 
-                bool success = RouteRecruitment(__instance, mobileParty, settlement, source);
-                if (success)
+                switch (source)
                 {
-                    ModLogger.Notice(
-                        $"[AI招兵] {mobileParty.Name}@{settlement.Name} | " +
-                        $"兵源={source} | Weight={weight:F3} | Need={decision.NeedScore:F2}");
-                    return false; // 成功招募一种即停止
+                    case RecruitSource.Fief:
+                        TryRecruitFief(mobileParty, settlement);
+                        break;
+
+                    case RecruitSource.Volunteer:
+                        TryRecruitVolunteers(__instance, mobileParty, settlement);
+                        break;
+
+                    case RecruitSource.Mercenary:
+                        TryRecruitLordMercenary(__instance, mobileParty, settlement);
+                        break;
                 }
             }
 
             return false; // 所有候选均失败，跳过原版
-        }
-
-        // ==========================================
-        // 招募路由器：根据兵源类型分发到具体执行函数
-        // ==========================================
-        private static bool RouteRecruitment(
-            RecruitmentCampaignBehavior instance,
-            MobileParty party, Settlement settlement, RecruitSource source)
-        {
-            switch (source)
-            {
-                case RecruitSource.Fief:
-                    return TryRecruitFief(party, settlement);
-
-                case RecruitSource.Volunteer:
-                    return TryRecruitVolunteers(instance, party, settlement);
-
-                case RecruitSource.Mercenary:
-                    return TryRecruitLordMercenary(instance, party, settlement);
-
-                default:
-                    return false;
-            }
         }
 
         private static void ApplyInternal(
@@ -327,6 +307,7 @@ namespace ModifiedArmy.Patch
 		{
 			if (((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f)
 			{
+                int recruitedCount = 0;
 				foreach (Hero hero in settlement.Notables)
 				{
 					if (hero.IsAlive)
@@ -367,6 +348,7 @@ namespace ModifiedArmy.Patch
 										if (characterObject != null && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber && mobileParty.GetAvailableWageBudget() >= Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
 										{
 											GetRecruitVolunteerFromIndividual(instance, mobileParty, characterObject, hero, num4);
+                                            recruitedCount++;
 											break;
 										}
 									}
@@ -375,6 +357,11 @@ namespace ModifiedArmy.Patch
 						}
 					}
 				}
+
+                if (recruitedCount > 0)
+                {
+                    ModLogger.Info($"[志愿兵招募] {mobileParty.MapFaction?.Name} | {mobileParty.ActualClan?.Name} | {mobileParty.Name} 在 {settlement.Name} 招募 {recruitedCount} 名志愿兵");
+                }
 			}
 		}
 
@@ -440,9 +427,19 @@ namespace ModifiedArmy.Patch
             recruited = cost <= 0 ? recruited : MathF.Min(party.PartyTradeGold / cost, recruited);
             recruited = MathF.Min(recruited, party.GetAvailableWageBudget() / wagePerTroop);
 
-            if (recruited <= 0) return false;
+            if (recruited <= 0) 
+                return false;
 
             ApplyRecruitMercenary(instance, party, settlement, troopType, recruited);
+
+            int unitCost = Campaign.Current.Models.PartyWageModel
+                .GetTroopRecruitmentCost(troopType, party.LeaderHero, false).RoundedResultNumber;
+                
+            ModLogger.Notice(
+                $"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在" +
+                $" {settlement.Name} 招募了 {recruited} 名 {troopType.Name}, 花费 {recruited * unitCost}"
+            );
+
             return true;
         }
     }
