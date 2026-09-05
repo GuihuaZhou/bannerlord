@@ -93,4 +93,42 @@ namespace ModifiedArmy.common
 
         public static float PlayerSettlementPrisonerEscapeChance => Cfg?.PlayerSettlementPrisonerEscapeChance ?? 0.01f;
     }
+
+
+    /// <summary>
+    /// 三种兵源类型。
+    /// </summary>
+    public enum RecruitSource
+    {
+        /// <summary>封邑兵 — 需前往自有 town/castle 招募，有工资豁免，消耗繁荣度</summary>
+        Fief,
+        /// <summary>志愿兵 — 需前往自有 town/village 招募，低成本但数量有限</summary>
+        Volunteer,
+        /// <summary>雇佣兵 — 需前往有雇佣兵的城镇招募，即时可用但昂贵</summary>
+        Mercenary
+    }
+
+    /// <summary>
+    /// 招募决策结果，供 Harmony 补丁消费
+    /// </summary>
+    public readonly struct RecruitmentDecision
+    {
+        public readonly bool ShouldRecruit;
+        public readonly float NeedScore;
+        public readonly RecruitSource Preferred;
+        public readonly float FiefWeight;
+        public readonly float VolunteerWeight;
+        public readonly float MercenaryWeight;
+
+        public RecruitmentDecision(bool shouldRecruit, float needScore,
+            RecruitSource preferred, float fief, float vol, float merc)
+        {
+            ShouldRecruit = shouldRecruit;
+            NeedScore = needScore;
+            Preferred = preferred;
+            FiefWeight = fief;
+            VolunteerWeight = vol;
+            MercenaryWeight = merc;
+        }
+    }
 }

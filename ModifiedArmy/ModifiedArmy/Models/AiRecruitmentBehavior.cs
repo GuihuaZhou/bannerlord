@@ -41,7 +41,6 @@ namespace ModifiedArmy.Models
         public override void RegisterEvents()
         {
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
-            CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, AiHourlyTick);
 
             var msg = GameTexts.FindText("str_modifiedarmy_ai_recruit_behavior_loaded");
             ModLogger.Notice(msg.ToString());
@@ -74,7 +73,6 @@ namespace ModifiedArmy.Models
             _config = ModConfigManager.Instance.GetActiveConfig();
             if (_config == null)
             {
-                ModLogger.Notice("[AI招兵] ModConfig为null，跳过");
                 return;
             }
 
@@ -160,48 +158,20 @@ namespace ModifiedArmy.Models
             }
         }
 
-        // ================================================================
-        //  阶段2：每小时执行 — AI领主到达封邑后实际招募
-        // ================================================================
-
-        private void AiHourlyTick(MobileParty party, PartyThinkParams thinkParams)
+        // 
+        public RecruitmentDecision GetRecruitmentDecision(MobileParty party)
         {
-            // 过滤：非领主、在军团中、饥饿
-            if (!party.IsLordParty || party.Army != null) return;
-            if (party.Party.IsStarving) return;
+            var config = ModConfigManager.Instance?.GetActiveConfig();
+            if (config == null)
+                return new RecruitmentDecision(false, 0f, RecruitSource.Fief, 0f, 0f, 0f);
 
-            // 必须当前位于某个定居点内部
-            if (party.CurrentSettlement is not Settlement settlement) return;
-
-            // 必须是自有的 Town 或 Castle
-            if (settlement.OwnerClan != party.LeaderHero?.Clan ||
-                (!settlement.IsTown && !settlement.IsCastle)) return;
-
-            _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-            if (_fiefPartyManager == null) return;
-
-            _config = ModConfigManager.Instance.GetActiveConfig();
-            if (_config == null) return;
-
-            // 封邑无可招募兵源则跳过
-            int availableTroops = _fiefPartyManager.GetAvailableTroopCount(settlement);
-            if (availableTroops <= 0) return;
-
-            // 第一层：NeedScore
             var (needScore, _, _, _) = CalculateNeedScore(party);
-            if (needScore < _config.AiNeedThreshold) return;
+            if (needScore < config.AiNeedThreshold)
+                return new RecruitmentDecision(false, needScore, RecruitSource.Fief, 0f, 0f, 0f);
 
-            // 第二层：只有 Fief 为最优时才招募封邑兵
-            var (preferred, fiefScore, volScore, mercScore) = CalculatePreferredSource(party);
-            if (preferred != RecruitSource.Fief)
-                return;
+            var (preferred, fief, vol, merc) = CalculatePreferredSource(party);
 
-            // 执行封邑招募
-
-            string displayName = GetPartyDisplayName(party);
-
-            ModLogger.Notice($"[AI招兵-到达] {displayName}@{settlement.Name} | 招募封邑兵(可招={availableTroops}, Need={needScore:F2})");
-            _fiefPartyManager.RecruitFiefTroopsFromSettlement(settlement, party);
+            return new RecruitmentDecision(true, needScore, preferred, fief, vol, merc);
         }
 
         // ================================================================
@@ -252,19 +222,6 @@ namespace ModifiedArmy.Models
         //  可用性在执行阶段检查（FindBestXSettlement），不影响偏好得分。
         //  文化身份修正（matchFiefBonus 等）下沉到 settlement 查找阶段。
         // ================================================================
-
-        /// <summary>
-        /// 三种兵源类型。
-        /// </summary>
-        private enum RecruitSource
-        {
-            /// <summary>封邑兵 — 需前往自有 town/castle 招募，有工资豁免，消耗繁荣度</summary>
-            Fief,
-            /// <summary>志愿兵 — 需前往自有 town/village 招募，低成本但数量有限</summary>
-            Volunteer,
-            /// <summary>雇佣兵 — 需前往有雇佣兵的城镇招募，即时可用但昂贵</summary>
-            Mercenary
-        }
 
         /// <summary>
         /// 计算三兵源偏好得分并返回最优兵源。

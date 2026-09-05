@@ -54,23 +54,21 @@ namespace ModifiedArmy
     public class Main : MBSubModuleBase
     {
 
-        //public static Settings ModSettings { get; private set; }
+        // public static Settings ModSettings { get; private set; }
 
-        //protected override void OnSubModuleLoad()
-        //{
-        //    new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
-
-        //    ModSettings = GlobalSettings<Settings>.Instance;
-        //}
-
-        //protected override void OnBeforeInitialModuleScreenSetAsRoot()
-        //{
+        // protected override void OnBeforeInitialModuleScreenSetAsRoot()
+        // {
         //    base.OnBeforeInitialModuleScreenSetAsRoot();
         //    if (Main.ModSettings == null)
         //    {
         //        Main.ModSettings = GlobalSettings<Settings>.Instance;
         //    }
-        //}
+        // }
+
+        protected override void OnSubModuleLoad()
+        {
+           new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
+        }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
