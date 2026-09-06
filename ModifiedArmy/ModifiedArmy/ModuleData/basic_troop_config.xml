@@ -7,6 +7,7 @@
       <troop id="NPCCharacter.imperial_cataphract" barracksLevel="3"/>
     </RetinueTroops>
     <SergeantTroops>
+      <troop id="NPCCharacter.imperial_equite" barracksLevel="1"/>
       <troop id="NPCCharacter.imperial_veteran_infantryman" barracksLevel="1"/>
       <troop id="NPCCharacter.imperial_menavliaton" barracksLevel="1"/>
       <troop id="NPCCharacter.imperial_veteran_archer" barracksLevel="2"/>

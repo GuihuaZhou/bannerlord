@@ -22,6 +22,7 @@
   <FiefPartyTemplate culture="Culture.empire" id="empire_town_port" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
       <SergeantTroops weight="2">
+        <troop id="NPCCharacter.imperial_equite" barracksLevel="1"/>
         <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
       	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
         <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
@@ -39,6 +40,7 @@
   <FiefPartyTemplate culture="Culture.empire" id="empire_town" baseLimit="40" villageBonus="10" minWeeklySupplement="5" maxWeeklySupplement="10" maxServiceWeeks="5" returnCooldownWeeks="3" prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
       <SergeantTroops weight="1">
+        <troop id="NPCCharacter.imperial_equite" barracksLevel="1"/>
         <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
       	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
         <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
@@ -56,6 +58,7 @@
         <troop id="NPCCharacter.imperial_cataphract" weight="1"/>
       </RetinueTroops>
       <SergeantTroops weight="1">
+        <troop id="NPCCharacter.imperial_equite" barracksLevel="1"/>
         <troop id="NPCCharacter.imperial_veteran_infantryman" weight="2"/>
       	<troop id="NPCCharacter.imperial_menavliaton" weight="2"/>
         <troop id="NPCCharacter.imperial_veteran_archer" weight="1"/>
@@ -77,6 +80,10 @@
       <MarineTroops weight="1">
         <troop id="NPCCharacter.aserai_marine_t4" weight="1"/>
       </MarineTroops>
+      <SlaveTroops weight="1">
+        <troop id="NPCCharacter.aserai_mameluke_regular" weight="1"/>
+      	<troop id="NPCCharacter.aserai_mameluke_axeman" weight="1"/>
+      </SlaveTroops>
       <MilitiaTroops weight="2">
         <troop id="NPCCharacter.aserai_recruit" weight="1"/>
       </MilitiaTroops>
@@ -89,6 +96,10 @@
         <troop id="NPCCharacter.aserai_infantry" weight="2"/>
         <troop id="NPCCharacter.aserai_archer" weight="1"/>
       </SergeantTroops>
+      <SlaveTroops weight="1">
+        <troop id="NPCCharacter.aserai_mameluke_regular" weight="1"/>
+      	<troop id="NPCCharacter.aserai_mameluke_axeman" weight="1"/>
+      </SlaveTroops>
       <MilitiaTroops weight="1">
         <troop id="NPCCharacter.aserai_recruit" weight="1"/>
       </MilitiaTroops>
