@@ -114,8 +114,8 @@ namespace ModifiedArmy.Models
                         };
                         candidates.Sort((a, b) => b.score.CompareTo(a.score));
 
-                        // string preferences = string.Join(", ", candidates.Select(c => $"{c.source}={c.score:F3}"));
-                        // ModLogger.Notice($"[AI招兵] {GetPartyDisplayName(party)} | Need={needScore:F2} | 偏好=[{preferences}]");
+                        string preferences = string.Join(", ", candidates.Select(c => $"{c.source}={c.score:F3}"));
+                        ModLogger.Info($"[AI招兵] {GetPartyDisplayName(party)} | Need={needScore:F2} | 偏好=[{preferences}]");
 
                         string displayName = GetPartyDisplayName(party);
 
@@ -132,11 +132,11 @@ namespace ModifiedArmy.Models
 
                             if (target == null)
                             {
-                                // ModLogger.Notice($"[AI招兵] {displayName} | {source}无据点→回退");
+                                ModLogger.Info($"[AI招兵] {displayName} | {source}无据点→回退");
                                 continue;
                             }
 
-                            ModLogger.Notice($"[AI招兵] {displayName} 决定前往 {target.Name} 招募 {source}");
+                            ModLogger.Info($"[AI招兵] {displayName} 决定前往 {target.Name} 招募 {source}");
                             party.SetMoveGoToSettlement(
                                 target,
                                 MobileParty.NavigationType.Default,
@@ -243,6 +243,22 @@ namespace ModifiedArmy.Models
             float volScore = volBase * volMod;
             float mercScore = mercBase * mercMod;
 
+            // 归一化处理 (确保总和为 1.0)
+            float totalScore = fiefScore + volScore + mercScore;
+            if (totalScore > 0.0001f) // 防止除以 0
+            {
+                fiefScore /= totalScore;
+                volScore  /= totalScore;
+                mercScore /= totalScore;
+            }
+            else
+            {
+                // 兜底逻辑：如果所有权重都被压制到 0 (例如极端异常情况)，则平均分配
+                fiefScore = 1f / 3f;
+                volScore  = 1f / 3f;
+                mercScore = 1f / 3f;
+            }
+
             RecruitSource chosen;
             if (fiefScore >= volScore && fiefScore >= mercScore)
                 chosen = RecruitSource.Fief;
@@ -251,8 +267,8 @@ namespace ModifiedArmy.Models
             else
                 chosen = RecruitSource.Volunteer;
 
-            // string displayName = GetPartyDisplayName(party);
-            // ModLogger.Notice($"[AI招兵-偏好] {displayName} | {cultureId} | base=({fiefBase},{volBase},{mercBase}) mod=({fiefMod:F3},{volMod:F3},{mercMod:F3}) → {chosen}({chosen switch { RecruitSource.Fief => fiefScore, RecruitSource.Volunteer => volScore, _ => mercScore }:F4})");
+            string displayName = GetPartyDisplayName(party);
+            ModLogger.Info($"[AI招兵-偏好] {displayName} | {cultureId} | Fief={fiefScore:F3}, Volunteer={volScore:F3}, Mercenary={mercScore:F3} | chosen={chosen}");
 
             return (chosen, fiefScore, volScore, mercScore);
         }
@@ -305,8 +321,8 @@ namespace ModifiedArmy.Models
                 active.Add($"critical");
             }
             
-            // string displayName = GetPartyDisplayName(party);
-            // ModLogger.Notice($"[AI招兵-情境] {displayName} | [{string.Join("+", active)}] mul=({fiefMod:F3},{volMod:F3},{mercMod:F3})");
+            string displayName = GetPartyDisplayName(party);
+            ModLogger.Info($"[AI招兵-情境] {displayName} | [{string.Join("+", active)}] mul=({fiefMod:F3},{volMod:F3},{mercMod:F3})");
         }
 
         /// <summary>

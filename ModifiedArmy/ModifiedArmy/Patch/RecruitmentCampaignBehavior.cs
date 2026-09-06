@@ -143,29 +143,50 @@ namespace ModifiedArmy.Patch
                 (RecruitSource.Volunteer, decision.VolunteerWeight),
                 (RecruitSource.Mercenary, decision.MercenaryWeight)
             };
+            // 按权重从高到低排序
             candidates.Sort((a, b) => b.weight.CompareTo(a.weight));
+            
+            // 衰减因子：每次成功招募后，后续兵权的概率乘以此系数
+            const float DecayFactor = 0.4f; 
+            // 当前概率乘数（初始为 1.0，成功招募后衰减）
+            float currentProbabilityMultiplier = 1.0f;
 
             foreach (var (source, weight) in candidates)
             {
                 if (weight <= 0.01f) continue;
 
-                switch (source)
+                // 将原始权重转换为 [0, 1] 之间的浮点数
+                float recruitProbability = MathF.Clamp(weight, 0f, 1f);
+                // 应用衰减后的最终概率
+                float finalProbability = recruitProbability * currentProbabilityMultiplier;
+                ModLogger.Info($"[AI招募] {mobileParty.MapFaction?.Name} | {mobileParty.ActualClan?.Name} | {mobileParty.Name} 在 {settlement.Name} 尝试招募 {source} 概率: {finalProbability:P2}");
+
+                // 生成随机数，小于权重（概率）则招募
+                if (MBRandom.RandomFloat < finalProbability)
                 {
-                    case RecruitSource.Fief:
-                        TryRecruitFief(mobileParty, settlement);
-                        break;
+                    bool recruited = false;
+                    switch (source)
+                    {
+                        case RecruitSource.Fief:
+                            recruited = TryRecruitFief(mobileParty, settlement);
+                            break;
+                        case RecruitSource.Volunteer:
+                            recruited = TryRecruitVolunteers(__instance, mobileParty, settlement);
+                            break;
+                        case RecruitSource.Mercenary:
+                            recruited = TryRecruitLordMercenary(__instance, mobileParty, settlement, finalProbability);
+                            break;
+                    }
 
-                    case RecruitSource.Volunteer:
-                        TryRecruitVolunteers(__instance, mobileParty, settlement);
-                        break;
-
-                    case RecruitSource.Mercenary:
-                        TryRecruitLordMercenary(__instance, mobileParty, settlement);
-                        break;
+                    // 一旦前面执行了招募，后面的招募概率继续降低
+                    if (recruited)
+                    {
+                        currentProbabilityMultiplier *= DecayFactor;
+                    }
                 }
             }
 
-            return false; // 所有候选均失败，跳过原版
+            return false; // 拦截原版逻辑
         }
 
         private static void ApplyInternal(
@@ -380,8 +401,12 @@ namespace ModifiedArmy.Patch
         // ==========================================
         // 领主雇佣兵招募（原版 else if 内 mercenary 逻辑提取）
         // ==========================================
+
         private static bool TryRecruitLordMercenary(
-            RecruitmentCampaignBehavior instance, MobileParty party, Settlement settlement)
+            RecruitmentCampaignBehavior instance, 
+            MobileParty party, 
+            Settlement settlement,
+            float mercenaryWeight)
         {
             if (!settlement.IsTown) return false;
 
@@ -395,50 +420,40 @@ namespace ModifiedArmy.Patch
                 .GetTroopRecruitmentCost(troopType, party.LeaderHero, false).RoundedResultNumber;
             if (cost >= 5000) return false;
 
-            float fillRatio = (float)party.Party.NumberOfAllMembers / party.Party.PartySizeLimit;
+            float recruitProbability = MathF.Clamp(mercenaryWeight, 0f, 1f);
+            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募概率: {recruitProbability:P2}");
 
-            // 原版概率计算
-            float goldDenominator = cost <= 100 ? 100000f
-                : cost <= 200 ? 125000f
-                : cost <= 400 ? 150000f
-                : cost <= 700 ? 175000f
-                : cost <= 1100 ? 200000f
-                : cost <= 1600 ? 250000f
-                : cost <= 2200 ? 300000f
-                : 400000f;
-
-            float goldProb = MathF.Min(1f, party.PartyTradeGold / goldDenominator);
-            float sizeFactor = MathF.Max(1f, MathF.Min(10f, 1f / fillRatio)) - 1f;
-            float recruitProb = goldProb * goldProb * sizeFactor * 0.25f;
-
-            // 按概率决定招募数量
             int recruited = 0;
             int maxAvailable = mercenaryData.Number;
             int wagePerTroop = Campaign.Current.Models.PartyWageModel.GetCharacterWage(troopType);
 
+            // 对每个可用雇佣兵掷骰子
             for (int j = 0; j < maxAvailable; j++)
             {
-                if (MBRandom.RandomFloat < recruitProb)
+                if (MBRandom.RandomFloat < recruitProbability)
                     recruited++;
             }
 
-            // 多重上限约束
-            recruited = MathF.Min(recruited, party.Party.PartySizeLimit - party.Party.NumberOfAllMembers);
-            recruited = cost <= 0 ? recruited : MathF.Min(party.PartyTradeGold / cost, recruited);
-            recruited = MathF.Min(recruited, party.GetAvailableWageBudget() / wagePerTroop);
+            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 掷骰子招募了 {recruited} 名 {troopType.Name}");
 
-            if (recruited <= 0) 
-                return false;
+            // 约束：空间、金钱、工资预算
+            recruited = MathF.Min(recruited, party.Party.PartySizeLimit - party.Party.NumberOfAllMembers);
+            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前空间约束后人数: {recruited}");
+            recruited = cost <= 0 ? recruited : MathF.Min(party.PartyTradeGold / cost, recruited);
+            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前金钱约束后人数: {recruited}");
+            recruited = MathF.Min(recruited, party.GetAvailableWageBudget() / wagePerTroop);
+            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前工资预算约束后人数: {recruited}");
+
+            if (recruited <= 0) return false;
 
             ApplyRecruitMercenary(instance, party, settlement, troopType, recruited);
 
             int unitCost = Campaign.Current.Models.PartyWageModel
                 .GetTroopRecruitmentCost(troopType, party.LeaderHero, false).RoundedResultNumber;
-                
-            ModLogger.Notice(
-                $"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在" +
-                $" {settlement.Name} 招募了 {recruited} 名 {troopType.Name}, 花费 {recruited * unitCost}"
-            );
+
+            ModLogger.Info(
+                $"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} " +
+                $"在 {settlement.Name} 招募了 {recruited} 名 {troopType.Name}, 花费 {recruited * unitCost}");
 
             return true;
         }
