@@ -1,0 +1,26 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!-- Losing Target Indicator -->
+        <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center" MarginTop="150" IsVisible="@IsLosingTarget" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+            <TextWidget WidthSizePolicy="Fixed" SuggestedWidth="620" HeightSizePolicy="CoverChildren" Brush="AgentHUD.Interaction.Text" Text="@LosingTargetWarningText" />
+
+            <SliderWidget Id="LosingTargetSlider" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="620" SuggestedHeight="18" MarginTop="5" DoNotUpdateHandleSize="true" Filler="Filler" Handle="SliderHandle" MinValueFloat="0" MaxValueFloat="100" ValueFloat="@LosingTargetRatio" Brush="Mission.Detection.Fillbar.Frame">
+              <Children>
+                <Widget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="618" HorizontalAlignment="Left" MarginLeft="1" MarginTop="1" MarginBottom="1" MarginRight="1" ClipContents="true">
+                  <Children>
+                    <BrushWidget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="618" HorizontalAlignment="Left" Sprite="disguise_progress_bar_fill_9" />
+                  </Children>
+                </Widget>
+              </Children>
+            </SliderWidget>
+          </Children>
+        </ListPanel>
+        
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

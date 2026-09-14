@@ -1,0 +1,24 @@
+<Window>
+  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="5">
+    <Children>
+
+      <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
+        <Children>
+          <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="29" SuggestedHeight="37" HorizontalAlignment="Left" VerticalAlignment="Top" MarginTop="4" Brush="Kingdom.OtherWars.Faction.Small.Banner" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true"  />
+
+          <!--Element Image-->
+          <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="6" SuggestedWidth="6" Sprite="Encyclopedia\subpage_ball" MarginTop="12" MarginLeft="6"/>
+
+          <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+            <Children>
+              <!--Element Name-->
+              <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Text="@WarLogText" MarginLeft="15" Brush="Encyclopedia.SubPage.History.Text" Command.LinkClick="ExecuteLink"/>
+              <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Text="@WarLogTimeText" MarginLeft="15" Brush="Encyclopedia.SubPage.History.Text" Brush.FontSize="16" Command.LinkClick="ExecuteLink"/>
+            </Children>
+          </ListPanel>
+        </Children>
+      </ListPanel>
+
+    </Children>
+  </Widget>
+</Window>

@@ -1,0 +1,371 @@
+<Prefab>
+  <Window>
+
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000AA">
+      <Children>
+
+        <!--Marriage Popup-->
+        <Widget Id="MarriagePopupPopupParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1050" SuggestedHeight="900" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Children>
+
+            <!--Canvas-->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="StdAssets\Popup\canvas" />
+
+            <!--Canvas Gradient-->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="StdAssets\Popup\canvas_gradient" />
+
+            <!--Frame Border-->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="frame_9" ExtendLeft="18" ExtendTop="18" ExtendRight="18" ExtendBottom="18" />
+            
+            <!--Title-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="899" SuggestedHeight="85" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="10" Sprite="StdAssets\Popup\popper" Color="#e57121ff">
+              <Children>
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Info.Text" Brush.FontSize="30" Text="@TitleText" Command.LinkClick="ExecuteLink" Command.LinkAlternateClick="ExecuteLink"/>
+              </Children>
+            </Widget>
+            
+            <!--Marriage ClipRect-->
+            <Widget Id="MarriageClipRect" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\MapNotification\marriage_offer_background" ClipContents="true">
+              <Children>
+                
+                <!--Models ListPanel-->
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalSpaced" DoNotAcceptEvents="true">
+                  <Children>
+                    
+                    <!--Our Clan Member Model-->
+                    <CharacterTableauWidget DataSource="{OffereeClanMember\Model}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="1000" VerticalAlignment="Center" BannerCodeText="@BannerCodeText" BodyProperties="@BodyProperties" CharStringId="@CharStringId" ClipContents="false" EquipmentCode="@EquipmentCode" IsFemale="@IsFemale" MountCreationKey="@MountCreationKey" StanceIndex="@StanceIndex" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2" Race="@Race" DoNotAcceptEvents="true"/>
+                  
+                    <!--Other Clan Member Model-->
+                    <CharacterTableauWidget DataSource="{OffererClanMember\Model}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="1000" VerticalAlignment="Center" BannerCodeText="@BannerCodeText" BodyProperties="@BodyProperties" CharStringId="@CharStringId" ClipContents="false" EquipmentCode="@EquipmentCode" IsFemale="@IsFemale" MountCreationKey="@MountCreationKey" StanceIndex="@StanceIndex" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2" Race="@Race" DoNotAcceptEvents="true"/>
+                
+                  </Children>
+                </ListPanel>
+                
+                <!--Models Gradient-->
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="StdAssets\Popup\canvas_gradient" AlphaFactor="2" DoNotAcceptEvents="true"/>
+                
+                <!--Names/Traits/Skills ListPanel-->
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalSpaced" DoNotAcceptEvents="true">
+                  <Children>
+                    
+                    <!--Our Clan Member Container-->
+                    <Widget DataSource="{OffereeClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="400" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                      <Children>
+                        
+                        <!--Name-->
+                        <NavigationScopeTargeter ScopeID="NameScope" ScopeParent="..\Name" ScopeMovements="Horizontal" />
+                        <RichTextWidget Id="Name" Text="@EncyclopediaLinkWithName" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="30" Brush="Info.Text" Brush.FontSize="30" Command.LinkClick="ExecuteHeroLink" Command.LinkAlternateClick="ExecuteHeroLink" GamepadNavigationIndex="0"/>
+                        
+                        <!--Traits-->
+                        <NavigationScopeTargeter ScopeID="TraitsScope" ScopeParent="..\TraitsListPanel" ScopeMovements="Vertical" />
+                        <NavigatableListPanel Id="TraitsListPanel" DataSource="{Traits}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Left" StackLayout.LayoutMethod="VerticalBottomToTop" MarginTop="40" MarginLeft="20">
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" VerticalAlignment="Center" HorizontalAlignment="Center" MarginTop="10">
+                              <Children>
+                                <EncyclopediaHeroTraitVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="75" SuggestedHeight="75" VerticalAlignment="Center" HorizontalAlignment="Center" TraitId="@TraitId" TraitValue="@Value" DoNotAcceptEvents="true"/>
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </NavigatableListPanel>
+
+                        <!--Attributes and Skills-->
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+                            
+                            <!--Attributes-->
+                            <GridWidget DataSource="{Attributes}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" DefaultCellWidth="115" DefaultCellHeight="75" ColumnCount="3" LayoutImp.VerticalLayoutMethod="TopToBottom">
+                              <ItemTemplate>
+                                <!--Attribute ListPanel-->
+                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <Children>
+                                    <!--Attribute "Name (Value)" Text-->
+                                    <TextWidget Text="@AttributeText" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" HorizontalAlignment="Center" VerticalAlignment="Top" Brush.FontSize="18" MarginBottom="2"/>
+                                    <!--Attribute Skills-->
+                                    <NavigationScopeTargeter ScopeID="AttributeSkillsScope" ScopeParent="..\AttributeSkills" ScopeMovements="Horizontal" />
+                                    <NavigatableListPanel Id="AttributeSkills" DataSource="{AttributeSkills}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                                      <ItemTemplate>
+                                        <SkillIconVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" SkillId="@SkillId" MarginBottom="20" UseSmallestVariation="true" MarginLeft="5">
+                                          <Children>
+                                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" HorizontalAlignment="Center" Brush="Encyclopedia.Skill.Text" Brush.FontSize="15" PositionYOffset="20"/>
+                                            <HintWidget DataSource="{Hint}" HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                                          </Children>
+                                        </SkillIconVisualWidget>
+                                      </ItemTemplate>
+                                    </NavigatableListPanel>
+                                  </Children>
+                                </ListPanel>
+                              </ItemTemplate>
+                            </GridWidget>
+
+                            <!--Separator-->
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="250" SuggestedHeight="2" MarginBottom="10" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#FFFFFF55" IsVisible="@HasOtherSkills"/>
+
+                            <!--Other Skills-->
+                            <NavigationScopeTargeter ScopeID="OtherSkillsScope" ScopeParent="..\OtherSkills" ScopeMovements="Horizontal" />
+                            <NavigatableListPanel Id="OtherSkills" DataSource="{OtherSkills}" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="115" HorizontalAlignment="Center" IsVisible="@HasOtherSkills">
+                              <ItemTemplate>
+                                <SkillIconVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" SkillId="@SkillId" MarginBottom="20" UseSmallestVariation="true" MarginLeft="5">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" HorizontalAlignment="Center" Brush="Encyclopedia.Skill.Text" Brush.FontSize="15" PositionYOffset="20"/>
+                                    <HintWidget DataSource="{Hint}" HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                                  </Children>
+                                </SkillIconVisualWidget>
+                              </ItemTemplate>
+                            </NavigatableListPanel>
+
+                          </Children>
+                        </ListPanel>
+                                
+                      </Children>
+                    </Widget>
+
+                    <!--Other Clan Member Container-->
+                    <Widget DataSource="{OffererClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="700" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                      <Children>
+                        
+                        <!--Name-->
+                        <NavigationScopeTargeter ScopeID="NameScope" ScopeParent="..\Name" ScopeMovements="Horizontal" />
+                        <RichTextWidget Id="Name" Text="@EncyclopediaLinkWithName" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="30" Brush="Info.Text" Brush.FontSize="30" Command.LinkClick="ExecuteHeroLink" Command.LinkAlternateClick="ExecuteHeroLink" GamepadNavigationIndex="0"/>
+                        
+                        <!--Traits-->
+                        <NavigationScopeTargeter ScopeID="TraitsScope" ScopeParent="..\TraitsListPanel" ScopeMovements="Vertical" />
+                        <NavigatableListPanel Id="TraitsListPanel" DataSource="{Traits}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalBottomToTop" MarginTop="40" MarginRight="20">
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" VerticalAlignment="Center" HorizontalAlignment="Center" MarginTop="10">
+                              <Children>
+                                <EncyclopediaHeroTraitVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="75" SuggestedHeight="75" VerticalAlignment="Center" HorizontalAlignment="Center" TraitId="@TraitId" TraitValue="@Value" DoNotAcceptEvents="true"/>
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </NavigatableListPanel>
+
+                        <!--Attributes and Skills-->
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+
+                            <!--Attributes-->
+                            <GridWidget DataSource="{Attributes}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" DefaultCellWidth="115" DefaultCellHeight="75" ColumnCount="3" LayoutImp.VerticalLayoutMethod="TopToBottom">
+                              <ItemTemplate>
+                                <!--Attribute ListPanel-->
+                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <Children>
+                                    <!--Attribute "Name (Value)" Text-->
+                                    <TextWidget Text="@AttributeText" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" HorizontalAlignment="Center" VerticalAlignment="Top" Brush.FontSize="18" MarginBottom="2"/>
+                                    <!--Attribute Skills-->
+                                    <NavigationScopeTargeter ScopeID="AttributeSkillsScope" ScopeParent="..\AttributeSkills" ScopeMovements="Horizontal" />
+                                    <NavigatableListPanel Id="AttributeSkills" DataSource="{AttributeSkills}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                                      <ItemTemplate>
+                                        <SkillIconVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" SkillId="@SkillId" MarginBottom="20" UseSmallestVariation="true" MarginLeft="5">
+                                          <Children>
+                                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" HorizontalAlignment="Center" Brush="Encyclopedia.Skill.Text" Brush.FontSize="15" PositionYOffset="20"/>
+                                            <HintWidget DataSource="{Hint}" HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                                          </Children>
+                                        </SkillIconVisualWidget>
+                                      </ItemTemplate>
+                                    </NavigatableListPanel>
+                                  </Children>
+                                </ListPanel>
+                              </ItemTemplate>
+                            </GridWidget>
+
+                            <!--Separator-->
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="250" SuggestedHeight="2" MarginBottom="10" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#FFFFFF55" IsVisible="@HasOtherSkills"/>
+
+                            <!--Other Skills-->
+                            <NavigationScopeTargeter ScopeID="OtherSkillsScope" ScopeParent="..\OtherSkills" ScopeMovements="Horizontal" />
+                            <NavigatableListPanel Id="OtherSkills" DataSource="{OtherSkills}" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="115" HorizontalAlignment="Center" IsVisible="@HasOtherSkills">
+                              <ItemTemplate>
+                                <SkillIconVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" SkillId="@SkillId" MarginBottom="20" UseSmallestVariation="true" MarginLeft="5">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" HorizontalAlignment="Center" Brush="Encyclopedia.Skill.Text" Brush.FontSize="15" PositionYOffset="20"/>
+                                    <HintWidget DataSource="{Hint}" HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                                  </Children>
+                                </SkillIconVisualWidget>
+                              </ItemTemplate>
+                            </NavigatableListPanel>
+
+                          </Children>
+                        </ListPanel>
+                      
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ListPanel>
+                
+                <!--Stats ListPanel-->
+                <ListPanel Id="StatsListPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true">
+                  <Children>
+                
+                    <!--Clan-->
+                    <NavigationScopeTargeter ScopeID="ClanBannerScope" ScopeParent="..\ClanListPanel" ScopeMovements="Horizontal" />
+                    <ListPanel Id="ClanListPanel" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="30" DoNotAcceptEvents="true">
+                      <Children>
+                    
+                        <!--Banner Left-->
+                        <ListPanel DataSource="{OffereeClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="66" HorizontalAlignment="Center" VerticalAlignment="Center" DoNotAcceptEvents="true" StackLayout.LayoutMethod="VerticalBottomToTop">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.FontSize="20" Text="@ClanName"/>
+                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Command.Click="ExecuteClanLink" Command.AlternateClick="ExecuteClanLink" UpdateChildrenStates="true" Brush="Clan.BannerEncyclopediaButton" GamepadNavigationIndex="0">
+                              <Children>
+                                <MaskedTextureWidget DataSource="{ClanBanner}" Brush="Clan.TornBanner" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="66" SuggestedHeight="100" HorizontalAlignment="Center" VerticalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName"/>
+                              </Children>
+                            </ButtonWidget>
+                          </Children>
+                        </ListPanel>
+                    
+                        <!--Text With Dividers-->
+                        <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" MarginLeft="10" MarginRight="10" HorizontalAlignment="Center" VerticalAlignment="Center" ClipContents="true">
+                          <Children>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginRight="5"/>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Text="@ClanText"/>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginLeft="5"/>
+                          </Children>
+                        </ListPanel>
+                    
+                        <!--Banner Right-->
+                        <ListPanel DataSource="{OffererClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="66" HorizontalAlignment="Center" VerticalAlignment="Center" DoNotAcceptEvents="true" StackLayout.LayoutMethod="VerticalBottomToTop">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.FontSize="20" Text="@ClanName"/>
+                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Command.Click="ExecuteClanLink" Command.AlternateClick="ExecuteClanLink" UpdateChildrenStates="true" Brush="Clan.BannerEncyclopediaButton" GamepadNavigationIndex="1">
+                              <Children>
+                                <MaskedTextureWidget DataSource="{ClanBanner}" Brush="Clan.TornBanner" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="66" SuggestedHeight="100" HorizontalAlignment="Center" VerticalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName"/>
+                              </Children>
+                            </ButtonWidget>
+                          </Children>
+                        </ListPanel>
+                  
+                      </Children>
+                    </ListPanel>
+                
+                    <!--Age-->
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" DoNotAcceptEvents="true">
+                      <Children>
+                    
+                        <!--Age Left-->
+                        <TextWidget DataSource="{OffereeClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Right" Text="@AgeString"/>
+                    
+                        <!--Text With Dividers-->
+                        <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" MarginLeft="10" MarginRight="10" HorizontalAlignment="Center" VerticalAlignment="Center" ClipContents="true">
+                          <Children>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginRight="5"/>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Title.Text" Text="@AgeText"/>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginLeft="5"/>
+                          </Children>
+                        </ListPanel>
+                    
+                        <!--Age Right-->
+                        <TextWidget DataSource="{OffererClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Left" Text="@AgeString"/>
+                  
+                      </Children>
+                    </ListPanel>
+                
+                    <!--Occupation-->
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" DoNotAcceptEvents="true">
+                      <Children>
+                    
+                        <!--Occupation Left-->
+                        <TextWidget DataSource="{OffereeClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Right" Text="@OccupationString"/>
+                    
+                        <!--Text With Dividers-->
+                        <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" MarginLeft="10" MarginRight="10" HorizontalAlignment="Center" VerticalAlignment="Center" ClipContents="true">
+                          <Children>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginRight="5"/>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Title.Text" Text="@OccupationText"/>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginLeft="5"/>
+                          </Children>
+                        </ListPanel>
+                    
+                        <!--Occupation Right-->
+                        <TextWidget DataSource="{OffererClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Left" Text="@OccupationString"/>
+                  
+                      </Children>
+                    </ListPanel>
+                
+                    <!--Relation-->
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" DoNotAcceptEvents="true">
+                      <Children>
+                    
+                        <!--Relation Left-->
+                        <RelationTextWidget DataSource="{OffereeClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Right" ZeroColor="#f4e1c4ff" PositiveColor="#00FF00FF" NegativeColor="#FF0000FF" Amount="@Relation"/>
+                    
+                        <!--Text With Dividers-->
+                        <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" MarginLeft="10" MarginRight="10" HorizontalAlignment="Center" VerticalAlignment="Center" ClipContents="true">
+                          <Children>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginRight="5"/>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Title.Text" Text="@RelationText"/>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" MarginLeft="5"/>
+                          </Children>
+                        </ListPanel>
+                    
+                        <!--Relation Right-->
+                        <RelationTextWidget DataSource="{OffererClanMember}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.TextHorizontalAlignment="Left" ZeroColor="#f4e1c4ff" PositiveColor="#00FF00FF" NegativeColor="#FF0000FF" Amount="@Relation"/>
+                  
+                      </Children>
+                    </ListPanel>
+                
+                    <!--Consequences-->
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="30" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true">
+                      <Children>
+                    
+                        <!--Text-->
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.MarriagePopup.Title.Text" Text="@ConsequencesText"/>
+                        
+                        <!--Consequences List-->
+                        <ListPanel DataSource="{ConsequencesList}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true">
+                          <ItemTemplate>
+                            <RichTextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" Brush="Clan.MarriagePopup.Paragraph.Text" Brush.FontSize="20" Brush.TextHorizontalAlignment="Left" Text="@Item"/>
+                          </ItemTemplate>
+                        </ListPanel>
+                  
+                      </Children>
+                    </ListPanel>
+                
+                  </Children>
+                </ListPanel>
+              
+              </Children>
+            </Widget>
+          
+            <!--Control Buttons-->
+            <NavigationScopeTargeter ScopeID="ControlButtonsScope" ScopeParent="..\ControlButtons" ScopeMovements="Horizontal"/>
+            <ListPanel Id="ControlButtons" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="20" StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+
+                <!--Cancel Button-->
+                <Widget Id="ButtonCancelContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="251" SuggestedHeight="64" MarginLeft="20" MarginRight="20" VerticalAlignment="Center">
+                  <Children>
+                    <ButtonWidget Id="MarriagePopupCancelButton" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Cancel.Button" Command.Click="ExecuteDeclineOffer" ExtendCursorAreaLeft="-10" ExtendCursorAreaRight="-10" ExtendCursorAreaTop="-10" ExtendCursorAreaBottom="-10" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="35" VerticalAlignment="Center" Brush="Popup.Button.Text" Text="@ButtonCancelLabel" />
+                        <InputKeyVisualWidget DataSource="{CancelInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="45" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="12" KeyID="@KeyID" IsVisible="@IsVisible" />
+                      </Children>
+                    </ButtonWidget>
+                  </Children>
+                </Widget>
+
+                <!--OK Button-->
+                <Widget Id="ButtonOkContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="251" SuggestedHeight="64" MarginLeft="20" MarginRight="20" VerticalAlignment="Center">
+                  <Children>
+                    <ButtonWidget Id="MarriagePopupOkButton" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Done.Button" Command.Click="ExecuteAcceptOffer" ExtendCursorAreaLeft="-10" ExtendCursorAreaRight="-10" ExtendCursorAreaTop="-10" ExtendCursorAreaBottom="-10" GamepadNavigationIndex="1">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="35" VerticalAlignment="Center" Brush="Popup.Button.Text" Text="@ButtonOkLabel" />
+                        <InputKeyVisualWidget DataSource="{DoneInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="45" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="12" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                      </Children>
+                    </ButtonWidget>
+                  </Children>
+                </Widget>
+
+              </Children>
+            </ListPanel>
+          
+          </Children>
+        </Widget>
+
+      </Children>
+    </Widget>
+
+  </Window>
+</Prefab>

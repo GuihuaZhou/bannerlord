@@ -1,0 +1,27 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="UseSmallVisual" DefaultValue="false" />
+  </Parameters>
+  <Window>
+    <DevelopmentItemButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DevelopmentBackVisualWidget="DevelopmentVisualWidget" IsDaily="true" UpdateChildrenStates="true" IsSelected="@IsDefault">
+      <Children>
+        <NavigationTargetSwitcher FromTarget="..\..\." ToTarget="..\DevelopmentVisualWidget" />
+        <!--Development Visual-->
+        <DevelopmentItemVisualButtonWidget Id="DevelopmentVisualWidget" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" SpriteCode="@VisualCode" IsDisabled="true" IsDaily="true" UseSmallVariant="*UseSmallVisual"/>
+
+        <!--Outer Ring-->
+        <ImageWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.Daily.Project.Ring" IsVisible="*UseSmallVisual"/>
+
+        <!--Hammer-->
+        <!--<DevelopmentQueueVisualIconWidget Id="HammerIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="47" HorizontalAlignment="Right" VerticalAlignment="Bottom" PositionYOffset="10" PositionXOffset="19" Sprite="SPGeneral\TownManagement\project_popup_hammer_icon" QueueIndex="@DevelopmentQueueIndex" QueueIcon="QueueIconWidget" IsVisible="@IsDefault">
+          <Children>
+            <Widget Id="QueueIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="25" SuggestedHeight="16" HorizontalAlignment="Right" VerticalAlignment="Top" PositionXOffset="5" PositionYOffset="8" Sprite="SPGeneral\TownManagement\project_popup_hammer_icon_fallback"/>
+          </Children>
+        </DevelopmentQueueVisualIconWidget>-->
+
+        <TextWidget Id="DevelopmentNameTextWidget" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="150" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="92" Brush="TownManagement.Project.Name.Text" PositionYOffset="20" Text="@Name"/>
+
+      </Children>
+    </DevelopmentItemButtonWidget>
+  </Window>
+</Prefab>

@@ -1,0 +1,13 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <Window>
+    <BrushWidget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="605" SuggestedHeight="88" Brush="Clan.Management.LeftTupleLocked">
+      <Children>
+
+        <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" Brush="Clan.Management.PartyName.Text" Text="@TextToShow"/>
+
+      </Children>
+    </BrushWidget>
+  </Window>
+</Prefab>

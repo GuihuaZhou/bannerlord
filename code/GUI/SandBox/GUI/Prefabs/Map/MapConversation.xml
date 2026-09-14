@@ -1,0 +1,19 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Bottom.Border.Height" Value="67"/>
+    <Constant Name="Top.Border.Height" Value="67"/>
+  </Constants>
+  <Window>
+    <MapConversationScreenButtonWidget Id="MapConversationParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ConversationParent="ConversationParent" IsBarterActive="@IsBarterActive" Command.Click="ExecuteContinue" FrictionEnabled="false" >
+      <Children>
+        <Widget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000FF" />
+        <Widget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <Children>
+            <MapConversationTableauWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Data="@TableauData" IsEnabled="false"/>
+          </Children>
+        </Widget>
+        <SPConversation Id="ConversationParent" DataSource="{DialogController}" />
+      </Children>
+    </MapConversationScreenButtonWidget>
+</Window>
+</Prefab>

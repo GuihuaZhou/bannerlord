@@ -1,0 +1,69 @@
+<Prefab>
+  <Constants>
+    <Constant Name="MainHeroVisual.Padding" Value="5" />
+
+    <Constant Name="Party.Banner.Width" BrushLayer="Default" BrushName="Nameplate.FlatBanner.Party" BrushValueType="Width" />
+    <Constant Name="Party.Banner.Height" BrushLayer="Default" BrushName="Nameplate.FlatBanner.Party" BrushValueType="Height" />
+
+    <Constant Name="Party.Banner.Width.Scaled" MultiplyResult="0.20" Value="!Party.Banner.Width" />
+    <Constant Name="Party.Banner.Height.Scaled" MultiplyResult="0.20" Value="!Party.Banner.Height" />
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.55" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.50" Value="!Banner.Height" />
+
+    <Constant Name="Frame.Height.Scaled" Additive="12" Value="!Banner.Height.Scaled" />
+  </Constants>
+  <Window>
+    <Widget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+      <Children>
+        <Widget DataSource="{Trackers}" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+          <ItemTemplate>
+            <MobilePartyTrackerItemWidget Id="TrackerItemWidget" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Position="@PartyPosition" IsBehind="@IsBehind" IsTrackable="@IsTrackable" IsActive="@IsEnabled" FrameVisualWidget="TrackerParent\FrameVisualWidget" TrackerType="@TrackerType" TrackerImageBrush="Map.Tracker.Images" IsTracked="@IsTracked" >
+              <Children>
+
+                <ButtonWidget Id="TrackerParent" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="120" ClipContents="false" Command.Click="ExecuteGoToPosition" Command.HoverBegin="ExecuteShowTooltip" Command.HoverEnd="ExecuteHideTooltip" UpdateChildrenStates="false">
+                  <Children>
+                    <MaskedTextureWidget Id="FactionVisual" DataSource="{FactionVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="12" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true"  DoNotAcceptEvents="true"/>
+                    <Widget Id="FrameVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Frame.Height.Scaled" HorizontalAlignment="Center" IsEnabled="false" DoNotAcceptEvents="true"/>
+
+                    <!-- Can Toggle Track-->
+                    <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" IsVisible="@CanToggleTrack">
+                      <Children>
+                        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="22" SuggestedHeight="22" IsSelected="@IsTracked" Command.Click="ExecuteToggleTrack" DominantSelectedState="true" UpdateChildrenStates="true" DoNotPassEventsToChildren="true" MarginTop="1">
+                          <Children>
+                            <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="14" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Map.Tracker.Ball"/>
+                          </Children>
+                        </ButtonWidget>
+                      </Children>
+                    </Widget>
+
+                    <!-- Can't Toggle Track -->
+                    <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="6" IsHidden="@CanToggleTrack">
+                      <Children>
+                        <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="12" SuggestedHeight="12" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Map.Tracker.Ball.Fixed"/>
+                      </Children>
+                    </Widget>
+					<ListPanel Id="StatusList" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="10" HorizontalAlignment="Left" StackLayout.LayoutMethod="HorizontalRightToLeft">
+						<Children>
+							<ListPanel DataSource="{Quests}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" IsEnabled="False" StackLayout.LayoutMethod="HorizontalLeftToRight">
+								<ItemTemplate>
+									<QuestMarkerBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="84" QuestMarkerType="@QuestMarkerType" Brush="GameMenu.QuestMarker"/>
+								</ItemTemplate>
+							</ListPanel>
+						</Children>
+					</ListPanel>
+                    <RichTextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="Map.Tracker.Name" MarginTop="100" Text="@Name" ClipContents="false" DoNotAcceptEvents="true"/>
+                  </Children>
+                </ButtonWidget>
+
+              </Children>
+            </MobilePartyTrackerItemWidget>
+          </ItemTemplate>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

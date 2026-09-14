@@ -1,0 +1,18 @@
+<Window>
+  <InventoryItemPreviewWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ItemTableau="Panel\ItemTableau" Sprite="BlankWhiteSquare_9" Color="#000000AA" IsVisible="false" IsPreviewOpen="@IsSelected" >
+    <Children>
+      <NavigationForcedScopeCollectionTargeter CollectionID="InventoryItemPreviewScopeColletion" CollectionParent="..\." />
+      <NavigationScopeTargeter ScopeID="InventoryItemPreviewScopeCollection" ScopeParent="..\PreviewNavigationWidget" />
+      <Widget Id="PreviewNavigationWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" HorizontalAlignment="Center" VerticalAlignment="Center" GamepadNavigationIndex="0" />
+      
+      <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.Click="ExecuteClose" />
+      <BrushWidget Id="Panel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="840" SuggestedHeight="780" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="100" Brush="Frame1Brush" Brush.ColorFactor="1.5">
+        <Children>
+          <ItemTableauWidget DataSource="{ItemTableau}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="750" SuggestedHeight="750" MarginTop="15" HorizontalAlignment="Center" ItemModifierId="@ItemModifierId" StringId="@StringId" BannerCode="@BannerCode"/>
+          <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="27" HorizontalAlignment="Center" Brush="InventoryButtonTextBrush" Brush.FontSize="36" Brush.TextHorizontalAlignment="Center" Text="@ItemName" />
+        </Children>
+      </BrushWidget>
+      <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="84" SuggestedHeight="84" HorizontalAlignment="Center" VerticalAlignment="Top" PositionXOffset="415" PositionYOffset="60" Command.Click="ExecuteClose" Brush="Popup.CloseButton" />
+    </Children>
+  </InventoryItemPreviewWidget>
+</Window>

@@ -1,0 +1,23 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+      <Children>
+        <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Encyclopedia.NoAudioButton" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteOpenTooltip" Command.HoverEnd="ExecuteCloseTooltip" >
+          <Children>
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" >
+              <Children>
+                <!--Settlement Visual-->
+                <Widget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="70" SuggestedHeight="70" HorizontalAlignment="Center" Sprite="Clan\portrait_slot_right_panel" >
+                  <Children>
+                    <Widget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="2" MarginRight="2" MarginTop="2" MarginBottom="2" Sprite="@FileName" IsDisabled="true"/>
+                  </Children>
+                </Widget>
+                <TextWidget WidthSizePolicy="StretchToParent" SuggestedWidth="84" HeightSizePolicy="CoverChildren" MarginTop="5" HorizontalAlignment="Center" Brush="Clan.Village.Name.Text" Text="@Name" />
+              </Children>
+            </ListPanel>
+            </Children>
+        </ButtonWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

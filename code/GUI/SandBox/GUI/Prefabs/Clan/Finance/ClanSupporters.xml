@@ -1,0 +1,59 @@
+<Prefab>
+  <Constants>
+    
+  </Constants>
+  <Window>
+    
+    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" StackLayout.LayoutMethod="VerticalTopToBottom" >
+      <Children>
+        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Clan.RightPanel.Name.Text" MarginBottom="15" Brush.TextHorizontalAlignment="Center" Text="@TitleText" />
+        
+        <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Clan.Supporter.Influence.Description.Text" MarginBottom="15" Brush.TextHorizontalAlignment="Center" Text="@InfluenceBonusDescription" />
+
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="650">
+          <Children>
+            
+            <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="8" AutoHideScrollBars="true" ClipRect="ClipRect" InnerPanel="ClipRect\Supporters" VerticalScrollbar="..\VerticalScrollbar">
+              <Children>
+                <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                  <Children>
+                    <NavigationScopeTargeter ScopeID="ClanSupportersScope" ScopeParent="..\Supporters" ScopeMovements="Horizontal" HasCircularMovement="false" ExtendDiscoveryAreaLeft="100" ExtendDiscoveryAreaRight="350" />
+                    <NavigatableGridWidget Id="Supporters" DataSource="{Supporters}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" SuggestedWidth="350" SuggestedHeight="350" DefaultCellWidth="115" DefaultCellHeight="130" ColumnCount="5">
+                      <ItemTemplate>
+                        
+                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="3" MarginBottom="3" MarginLeft="3" MarginRight="3">
+                          <Children>
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+                                <ImageIdentifierWidget DataSource="{Hero\ImageIdentifier}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="99" SuggestedHeight="75" HorizontalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+
+                                <TextWidget DataSource="{Hero}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="50" Text="@NameText" Brush="Clan.Supporter.Name.Text" />
+                              </Children>
+                            </ListPanel>
+                            
+                            <HintWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteOpenTooltip" Command.HoverEnd="ExecuteCloseTooltip" />
+                          </Children>
+                        </Widget>
+                        
+                      </ItemTemplate>
+                    </NavigatableGridWidget>
+                  </Children>
+                </Widget>
+              </Children>
+            </ScrollablePanel>
+
+            <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedHeight="460" SuggestedWidth="8" HorizontalAlignment="Right" VerticalAlignment="Top" MarginTop="6" MarginBottom="15" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" >
+              <Children>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.2" />
+                <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+              </Children>
+            </ScrollbarWidget>
+            
+          </Children>
+        </Widget>
+        
+
+      </Children>
+    </ListPanel>
+  </Window>
+</Prefab>

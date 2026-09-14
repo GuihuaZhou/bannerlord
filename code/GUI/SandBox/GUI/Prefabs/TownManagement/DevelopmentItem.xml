@@ -1,0 +1,79 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="IsProgressIndicatorEnabled" DefaultValue="false" />
+    <Parameter Name="UseSmallVisual" DefaultValue="false" />
+    <Parameter Name="CanControlBuild" DefaultValue="true" />
+  </Parameters>
+  <Window>
+    <DevelopmentItemButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" SuggestedWidth="120" SuggestedHeight="120" AddToQueueButtonWidget="DevelopmentBackImageWidget\SelectedBlackOverlayWidget\AddToQueueButtonWidget" CanBuild="@CanBuild" Command.OnAddToQueue="ExecuteAddRemoveToQueue" Command.SetAsActive="ExecuteSetAsActiveDevelopment" DevelopmentBackVisualWidget="DevelopmentBackImageWidget" DevelopmentFrontVisualWidget="DevelopmentBackImageWidget\ProgressClipWidget\DevelopmentFrontImageWidget" DevelopmentLevelVisualWidget="DevelopmentLevelVisualBackgroundWidget\DevelopmentLevelVisualWidget" IsProgressShown="*IsProgressIndicatorEnabled" Level="@Level" NameTextWidget="DevelopmentNameTextWidget" Progress="@Progress" ProgressClipWidget="DevelopmentBackImageWidget\ProgressClipWidget" SelectedBlackOverlayWidget="DevelopmentBackImageWidget\SelectedBlackOverlayWidget" SetAsActiveButtonWidget="DevelopmentBackImageWidget\SelectedBlackOverlayWidget\SetAsActiveButtonParentWidget\SetAsActiveButtonWidget" UpdateChildrenStates="true" UseSmallVisual="*UseSmallVisual" IsSelectedItem="@IsSelected">
+      <Children>
+
+        <!--Development Image-->
+        <DevelopmentItemVisualButtonWidget Id="DevelopmentBackImageWidget" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DevelopmentFrontVisualWidget="ProgressClipWidget\DevelopmentFrontImageWidget" IsDaily="false" SpriteCode="@VisualCode" UseSmallVariant="*UseSmallVisual">
+          <Children>
+            <Widget Id="ProgressClipWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Bottom" ClipContents="true">
+              <Children>
+                <Widget Id="DevelopmentFrontImageWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" VerticalAlignment="Bottom" />
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="114" SuggestedHeight="6" HorizontalAlignment="Center" VerticalAlignment="Top" PositionYOffset="-2" Sprite="SPGeneral\TownManagement\progress_bar" />
+              </Children>
+            </Widget>
+            <!--Action Button Navigation Targeters-->
+            <NavigationForcedScopeCollectionTargeter Id="ForcedScopeCollection" CollectionID="DevelopmentItemActionButtonsCollection" CollectionParent="..\." />
+            <NavigationScopeTargeter Id="NavigationScope" ScopeID="DevelopmentItemActionButtonsScope" ScopeMovements="Horizontal" ScopeParent="..\SelectedBlackOverlayWidget" />
+
+            <Widget Id="SelectedBlackOverlayWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" AlphaFactor="0.7" Color="#000000FF" Command.HoverBegin="ExecuteSetAsCurrent" Command.HoverEnd="ExecuteResetCurrent">
+              <Children>
+                
+                <BoolBrushChangerBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="0" SuggestedHeight="0" BooleanCheck="@IsInQueue" TargetWidget="..\AddToQueueButtonWidget" TrueBrush="TownManagement.Development.RemoveFromQueue.Button" FalseBrush="TownManagement.Development.AddToQueue.Button"/>
+                <ButtonWidget Id="AddToQueueButtonWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="37" SuggestedHeight="37" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="15" Brush="TownManagement.Development.AddToQueue.Button" Command.HoverBegin="ExecuteSetAsCurrent" Command.HoverEnd="ExecuteResetCurrent" GamepadNavigationIndex="0">
+                  <Children>
+                    <HintWidget DataSource="{AddRemoveHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                  </Children>
+                </ButtonWidget>
+
+                <Widget Id="SetAsActiveButtonParentWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="37" SuggestedHeight="37" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="15">
+                  <Children>
+                    <ButtonWidget Id="SetAsActiveButtonWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.Development.SetAsActive.Button" IsDisabled="@IsCurrentActiveProject" Command.HoverBegin="ExecuteSetAsCurrent" Command.HoverEnd="ExecuteResetCurrent" GamepadNavigationIndex="1">
+                      <Children>
+                        <HintWidget DataSource="{SetAsActiveHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                      </Children>
+                    </ButtonWidget>
+                    <HintWidget DataSource="{SetAsActiveHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                  </Children>
+                </Widget>
+                
+              </Children>
+            </Widget>
+          </Children>
+        </DevelopmentItemVisualButtonWidget>
+
+        <DevelopmentRingVisualButtonWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.Project.Ring" DominantSelectedState="true" IsSelected="@IsCurrentActiveProject" IsVisible="*UseSmallVisual" OverrideDefaultStateSwitchingEnabled="true" />
+
+        <Widget Id="DevelopmentLevelVisualBackgroundWidget" DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionYOffset="-6" Sprite="SPGeneral\TownManagement\level_plate">
+          <Children>
+            <ImageWidget Id="DevelopmentLevelVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="36" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="TownManamgement.Development.Level.Brush" IsEnabled="false" OverrideDefaultStateSwitchingEnabled="true" />
+          </Children>
+        </Widget>
+
+        <!--Hammer-->
+        <DevelopmentQueueVisualIconWidget Id="HammerIconWidget" DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="47" HorizontalAlignment="Center" VerticalAlignment="Top" PositionYOffset="-17" InProgressIconWidget="InProgressIconWidget" QueueIconWidget="QueueIconWidget" QueueIndex="@DevelopmentQueueIndex" UseSmallVisual="*UseSmallVisual">
+          <Children>
+
+            <!--Queue Hammer-->
+            <Widget Id="QueueIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="47" HorizontalAlignment="Right" VerticalAlignment="Bottom" Sprite="SPGeneral\TownManagement\project_popup_hammer_icon">
+              <Children>
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Top" PositionXOffset="-7" PositionYOffset="2" Brush="TownManagement.Queue.Index.Text" IntText="@DevelopmentQueueIndex" />
+              </Children>
+            </Widget>
+
+            <!--In Progress Hammer-->
+            <BrushWidget Id="InProgressIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="47" HorizontalAlignment="Right" VerticalAlignment="Bottom" Brush="TownManagement.InProgress.HammerWithAnimation" />
+          </Children>
+        </DevelopmentQueueVisualIconWidget>
+
+        <DevelopmentNameTextWidget Id="DevelopmentNameTextWidget" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="150" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="114" Brush="TownManagement.Project.Name.Text" IsInQueue="@IsInQueue" MaxText="@AlreadyAtMaxText" OverrideDefaultStateSwitchingEnabled="true" NameText="@Name" MaxTextStayTime="1.5" />
+        
+      </Children>
+    </DevelopmentItemButtonWidget>
+  </Window>
+</Prefab>

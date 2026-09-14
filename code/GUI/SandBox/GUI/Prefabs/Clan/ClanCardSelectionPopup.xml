@@ -1,0 +1,204 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Popup.Width" Value="1370" />
+    <Constant Name="Popup.Height" Value="720" />
+    <Constant Name="Card.Width" Value="196" />
+    <Constant Name="Card.Inner.Vertical.Margin" Value="2" />
+    <Constant Name="Card.Inner.Horizontal.Margin" Value="2" />
+  </Constants>
+  <Variables>
+    
+  </Variables>
+  <VisualDefinitions>
+    
+  </VisualDefinitions>
+
+  <Window>
+    <!-- General container -->
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsVisible" >			
+      <Children>
+				<NavigationForcedScopeCollectionTargeter CollectionID="ClanCardSelectionPopupCollection" CollectionParent="..\." />
+        <!-- Background Tint -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000FF" AlphaFactor="0.6" />
+        
+        <!-- Popup Container -->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.Width" SuggestedHeight="!Popup.Height" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <Children>
+
+            <!--Done Button-->
+            <Standard.PopupCloseButton VerticalAlignment="Bottom" PositionYOffset="26" Parameter.ButtonAction="ExecuteDone" Parameter.ButtonText="@DoneLbl" Parameter.InputKeyDataSource="{DoneInputKey}" Parameter.DisabledHintDataSource="{DisabledHint}" Parameter.IsEnabled="@IsDoneEnabled"/>
+
+            <!-- Contents Container -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="35" MarginBottom="40" MarginRight="35">
+              <Children>
+                <ImageWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="StdAssets\Popup\order_popup_canvas" />
+                <ImageWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="StdAssets\Popup\canvas_gradient" />
+                <ImageWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="-20" MarginTop="-20" MarginRight="-20" MarginBottom="-20" Sprite="frame_9" />
+                
+                <!-- Popup Title -->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="45" HorizontalAlignment="Center" MarginTop="10" Text="@Title" Brush="InventoryHeaderFontBrush" Brush.FontSize="34" />
+
+                <!-- Action Result -->
+                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="40" VerticalAlignment="Bottom" MarginBottom="12" Brush="ClanCardSelectionPopup.ActionResult.Text" Text="@ActionResult" />
+
+                <!-- Inner Frame -->                
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="60" MarginBottom="60" MarginLeft="40" MarginRight="40" HorizontalAlignment="Center" ClipRect="ClipRect" InnerPanel="ClipRect\ItemList" HorizontalScrollbar="HorizontalScrollbar" AutoHideScrollBars="true" Sprite="scrollable_field_9" Color="#FFFFFFFF">
+                  <Children>
+										<NavigationScopeTargeter ScopeID="ClanCardSelectionPopupScope" ScopeParent="..\ClipRect" ScopeMovements="Horizontal" />
+                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="7" MarginBottom="7" MarginLeft="9" MarginRight="9" ClipContents="true">
+                      <Children>
+                        <ListPanel Id="ItemList" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+                            
+                            <!-- Popup Items -->
+                            <NavigatableListPanel DataSource="{Items}" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                              <ItemTemplate>
+                                <!-- Card Template -->
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" DoNotPassEventsToChildren="@IsDisabled" SuggestedWidth="!Card.Width" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5">
+                                  <Children>
+                                    <CardSelectionPopupButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotPassEventsToChildren="true" Brush="Crafting.Order.Card" IsDisabled="@IsDisabled" IsSelected="@IsSelected" Command.Click="ExecuteSelect" UpdateChildrenStates="true" PropertiesContainer="NormalItemContainer\NormalItemContent\PropertiesContainerParent\PropertiesContainer">
+                                      <Children>
+                                        <!-- Gradient -->
+                                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="250" VerticalAlignment="Bottom" MarginRight="2" MarginLeft="2" MarginBottom="2" Sprite="scrollable_field_gradient_9"/>
+
+                                        <!-- Special Item -->
+                                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" IsVisible="@IsSpecialActionItem" UpdateChildrenStates="true">
+                                          <Children>
+                                            <!-- Special Action Text -->
+                                            <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" Brush="ClanCardSelectionPopup.ItemTitle.Text" Brush.TextVerticalAlignment="Center" Text="@SpecialAction"/>
+                                          </Children>
+                                        </Widget>
+
+                                        <!-- Normal Item -->
+                                        <Widget Id="NormalItemContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true" UpdateChildrenStates="true" IsHidden="@IsSpecialActionItem">
+                                          <Children>
+                                            
+                                            <ListPanel Id="NormalItemContent" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="!Card.Inner.Vertical.Margin" MarginBottom="!Card.Inner.Vertical.Margin" MarginLeft="!Card.Inner.Horizontal.Margin" MarginRight="!Card.Inner.Horizontal.Margin" StackLayout.LayoutMethod="VerticalTopToBottom" UpdateChildrenStates="true">
+                                              <Children>
+
+                                                <!-- Title -->
+                                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" MarginLeft="10" MarginRight="10" MarginTop="7" Brush="ClanCardSelectionPopup.ItemTitle.Text" Text="@Title" />
+
+                                                <!--Image and Sprite-->
+                                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="15" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                                  <Children>
+                                                    <!--Image-->
+                                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="68" SuggestedHeight="51" MarginRight="15" IsVisible="@HasImage" >
+                                                      <Children>
+                                                        <ImageIdentifierWidget DataSource="{Image}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                                                      </Children>
+                                                    </Widget>
+
+                                                    <!--Sprite-->
+                                                    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="51" SuggestedHeight="51" MarginLeft="15" IsVisible="@HasSprite" StackLayout.LayoutMethod="VerticalTopToBottom" >
+                                                      <Children>
+                                                        <!--Skill-->
+                                                        <StringBasedVisibilityWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Center" FirstString="Skill" SecondString="@SpriteType">
+                                                          <Children>
+                                                            <SkillIconVisualWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" SkillId="@SpriteName" UseSmallestVariation="true"/>
+                                                          </Children>
+                                                        </StringBasedVisibilityWidget>
+
+                                                        <!--Workshop-->
+                                                        <StringBasedVisibilityWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="75" SuggestedHeight="56" HorizontalAlignment="Center" FirstString="Workshop" SecondString="@SpriteType">
+                                                          <Children>
+                                                            <ClanWorkshopTypeVisualBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" WorkshopType="@SpriteName" Brush="Clan.Workshop.Type.Image"/>
+                                                          </Children>
+                                                        </StringBasedVisibilityWidget>
+
+                                                        <!--Sprite Label-->
+                                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" Brush="ClanCardSelectionPopup.Property.Text" Brush.FontSize="18" Text="@SpriteLabel" />
+                                                      </Children>
+                                                    </ListPanel>
+                                                  </Children>
+                                                </ListPanel>
+
+                                                <!-- Divider -->
+                                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginLeft="15" MarginRight="15" MarginTop="15" Sprite="BlankWhiteSquare_9" Color="#F09A29FF" />
+
+                                                <!-- Properties -->
+                                                <Widget Id="PropertiesContainerParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="10" MarginRight="10" MarginTop="10" MarginBottom="10" UpdateChildrenStates="true">
+                                                  <Children>
+                                                    <CircularAutoScrollablePanelWidget Id="PropertiesContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipRect="ClipRect" InnerPanel="ClipRect\Properties" ScrollType="ByPixels" ScrollPixelsPerSecond="45" IdleTime="1.65" VerticalScrollbar="..\VerticalScrollbar" UpdateChildrenStates="true">
+                                                      <Children>
+                                                        
+                                                        <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true" UpdateChildrenStates="true">
+                                                          <Children>
+                                                            <ListPanel Id="Properties" DataSource="{Properties}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="-20" StackLayout.LayoutMethod="VerticalTopToBottom" UpdateChildrenStates="true">
+                                                              <ItemTemplate>
+                                                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="15" StackLayout.LayoutMethod="VerticalTopToBottom" UpdateChildrenStates="true">
+                                                                  <Children>
+                                                                    <!-- Properties Title -->
+                                                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="ClanCardSelectionPopup.DescriptionTitle.Text" Text="@Title" />
+
+                                                                    <!-- Properties Value -->
+                                                                    <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="5" Brush="ClanCardSelectionPopup.Property.Text" Text="@Value" />
+                                                                  </Children>
+                                                                </ListPanel>
+                                                                
+                                                              </ItemTemplate>
+                                                            </ListPanel>
+                                                          </Children>
+                                                        </Widget>
+                                                        
+                                                      </Children>
+                                                    </CircularAutoScrollablePanelWidget>
+
+                                                    <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="-4" MarginTop="5" MarginBottom="5" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" IsVisible="false">
+                                                      <Children>
+                                                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.2" Color="#5a4033FF" />
+                                                        <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="4" SuggestedHeight="10" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                                                      </Children>
+                                                    </ScrollbarWidget>
+
+                                                  </Children>
+                                                </Widget>
+
+                                              </Children>
+                                            </ListPanel>
+
+                                          </Children>
+                                        </Widget>
+
+                                      </Children>
+                                    </CardSelectionPopupButtonWidget>
+                                    
+                                    <!-- Hint -->
+                                    <HintWidget DataSource="{DisabledHint}" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="100" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                  </Children>
+                                </Widget>
+                              </ItemTemplate>
+                            </NavigatableListPanel>
+                        
+                          </Children>
+                        </ListPanel>                      
+                      </Children>
+                    </Widget>
+                  
+                    <!-- Scrollbar -->
+                    <ScrollbarWidget Id="HorizontalScrollbar" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="6" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginLeft="15" MarginRight="15" MarginBottom="5" AlignmentAxis="Horizontal" Handle="HorizontalScrollbarHandle" MaxValue="100" MinValue="0">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="6" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.2" Color="#5a4033FF" />
+                        <ImageWidget Id="HorizontalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="10" MarginTop="1" MarginBottom="1" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                      </Children>
+                    </ScrollbarWidget>
+                
+                  </Children>                
+                </ScrollablePanel>
+                
+              </Children>
+            </Widget>
+
+            <!-- Close Button -->
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="70" SuggestedHeight="70" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="Popup.CloseButton" Command.Click="ExecuteCancel">
+              <Children>
+                <InputKeyVisualWidget DataSource="{CancelInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="45" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-10" KeyID="@KeyID" IsVisible="@IsVisible"/>
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </Widget>
+        
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

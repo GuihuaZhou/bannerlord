@@ -1,0 +1,28 @@
+<Prefab>
+  <Constants>
+
+
+  </Constants>
+  <VisualDefinitions>
+
+  </VisualDefinitions>
+  <Window>
+    <Widget Id="MapEventVisualsScreenWidget" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <Widget DataSource="{MapEvents}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <ItemTemplate>
+            <MapEventVisualItemWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Position="@Position" IsVisibleOnMap="@IsVisibleOnMap">
+              <Children>
+
+                <!--Map Event Visual-->
+                <MapEventVisualBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="80" SuggestedHeight="59" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="MapEvent.Visual.Brush" MapEventType="@EventType"/>
+
+              </Children>
+            </MapEventVisualItemWidget>
+          </ItemTemplate>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

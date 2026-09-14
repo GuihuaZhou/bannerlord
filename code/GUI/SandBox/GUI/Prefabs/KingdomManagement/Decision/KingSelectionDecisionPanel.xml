@@ -1,0 +1,117 @@
+<Prefab>
+  <Window>
+
+    <ValueBasedVisibilityWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!--Background Image-->
+        <KingdomDecisionFactionTypeVisualBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.Decision.Faction.Type.Image" FactionName="@FactionName" />
+
+        <!--Background Image Tint-->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#00000090" />
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="30" MarginRight="30" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="20" Brush="Kingdom.DecisionTitleBig.Text" Text="@NameText" ClipContents="false"/>
+
+            <!--Kingdom Banner-->
+            <MaskedTextureWidget DataSource="{FactionBanner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="105" SuggestedHeight="126" HorizontalAlignment="Center" MarginTop="15" Brush="Kingdom.TornBanner" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName"  />
+
+            <!--Settlements Title-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="35" Brush="Kingdom.DecisionTitleMedium.Text" Text="@SettlementsText" ClipContents="false"/>
+
+            <!--Settlement Names-->
+            <Widget Id="SettlementNamesParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" >
+              <Children>
+                <ScrollbarWidget Id="SettlementNamesScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="16" SuggestedHeight="90" HorizontalAlignment="Right" MarginLeft="10" MarginTop="20" Sprite="SPParty\ScrollBar01TrackBG@2x" AlignmentAxis="Vertical" Handle="SettlementNamesScrollbarHandle" IsVisible="false" MaxValue="100" MinValue="0">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.5" />
+                    <ImageWidget Id="SettlementNamesScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" Brush.ColorFactor="1.5" IsVisible="false" />
+                  </Children>
+                </ScrollbarWidget>
+
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginLeft="50" MarginRight="30" MarginBottom="0" AutoHideScrollBars="true" ClipRect="MyClipRect" InnerPanel="MyClipRect\SettlementNames" VerticalScrollbar="..\SettlementNamesScrollbar">
+                  <Children>
+                    <Widget Id="MyClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="90" MarginTop="20" MarginBottom="10" ClipContents="true">
+                      <Children>
+
+                        <RichTextWidget Id="SettlementNames" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="0" Brush="Kingdom.DecisionParagraph.SettlementLink.Text" Command.LinkClick="ExecuteLocationLink" Text="@SettlementsListText" ClipContents="false" HoveredCursorState="RightClickLink"/>
+
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+
+              </Children>
+            </Widget>
+
+
+            <!--Castles Title-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="35" Brush="Kingdom.DecisionTitleMedium.Text" Text="@CastlesText" ClipContents="false"/>
+
+            <!--Castles Names-->
+            <Widget Id="CastleNamesParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" >
+              <Children>
+
+                <ScrollbarWidget Id="CastleNamesScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="16" SuggestedHeight="90" HorizontalAlignment="Right" MarginLeft="10" MarginTop="20" Sprite="SPParty\ScrollBar01TrackBG@2x" AlignmentAxis="Vertical" Handle="CastleNamesScrollbarHandle" IsVisible="false" MaxValue="100" MinValue="0">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.5" />
+                    <ImageWidget Id="CastleNamesScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" Brush.ColorFactor="1.5" IsVisible="false" />
+                  </Children>
+                </ScrollbarWidget>
+
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginLeft="50" MarginRight="30" MarginBottom="0" AutoHideScrollBars="true" ClipRect="CastlesClipRect" InnerPanel="CastlesClipRect\CastleNames" VerticalScrollbar="..\CastleNamesScrollbar">
+                  <Children>
+                    <Widget Id="CastlesClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="90" MarginTop="20" MarginBottom="10" ClipContents="true">
+                      <Children>
+                        <RichTextWidget Id="CastleNames" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="0" Brush="Kingdom.DecisionParagraph.SettlementLink.Text" Command.LinkClick="ExecuteLocationLink" Text="@CastlesListText" ClipContents="false" HoveredCursorState="RightClickLink"/>
+
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+
+              </Children>
+            </Widget>
+
+
+            <!--Strength Title-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="35" Brush="Kingdom.DecisionTitleMedium.Text" Text="@TotalStrengthText" ClipContents="false"/>
+            <!--Total Strength-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="10" Brush="Kingdom.DecisionParagraph.Text" IntText="@TotalStrength" ClipContents="false"/>
+
+            <!--Active Policies Title-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="35" Brush="Kingdom.DecisionTitleMedium.Text" Text="@ActivePoliciesText" ClipContents="false"/>
+            <!--Active Policies-->
+            <Widget Id="PoliciesParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" >
+              <Children>
+
+                <ScrollbarWidget Id="PoliciesScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="16" SuggestedHeight="90" HorizontalAlignment="Right" MarginLeft="10" MarginTop="20" Sprite="SPParty\ScrollBar01TrackBG@2x" AlignmentAxis="Vertical" Handle="PoliciesScrollbarHandle" IsVisible="false" MaxValue="100" MinValue="0">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.5" />
+                    <ImageWidget Id="PoliciesScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" Brush.ColorFactor="1.5" IsVisible="false" />
+                  </Children>
+                </ScrollbarWidget>
+
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginLeft="50" MarginRight="30" MarginBottom="0" AutoHideScrollBars="true" ClipRect="PoliciesClipRect" InnerPanel="PoliciesClipRect\PoliciesText" VerticalScrollbar="..\PoliciesScrollbar">
+                  <Children>
+                    <Widget Id="PoliciesClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="90" MarginTop="20" MarginBottom="10" ClipContents="true">
+                      <Children>
+                        <TextWidget Id="PoliciesText" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="0" Brush="Kingdom.DecisionParagraph.SettlementLink.Text" Text="@ActivePoliciesListText" ClipContents="false"/>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+
+              </Children>
+            </Widget>
+            
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </ValueBasedVisibilityWidget>
+
+  </Window>
+</Prefab>

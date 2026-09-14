@@ -1,0 +1,308 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Header.Width" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Width" />
+    <Constant Name="Clan.Header.Height" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Height" />
+
+    <Constant Name="Clan.Members.Sort.1.Width" BrushLayer="Default" BrushName="Clan.Members.Sort.1" BrushValueType="Width" />
+    <Constant Name="Clan.Members.Sort.1.Height" BrushLayer="Default" BrushName="Clan.Members.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="Clan.Members.Sort.2.Width" BrushLayer="Default" BrushName="Clan.Members.Sort.2" BrushValueType="Width" />
+    <Constant Name="Clan.Members.Sort.2.Height" BrushLayer="Default" BrushName="Clan.Members.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.Collapser.Width" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Collapser.Height" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTuple.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTuple.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTupleLocked.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTupleLocked.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Height" />
+
+    <Constant Name="Scroll.Header.Width" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Width" />
+    <Constant Name="Scroll.Header.Height" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Height" />
+
+    <Constant Name="Popup.CloseButton.Width" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Width" />
+    <Constant Name="Popup.CloseButton.Height" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Height" />
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="LeftPanel" EaseType="EaseOut" EaseFunction="Quint"   TransitionDuration="0.45">
+      <VisualState PositionXOffset="-27" State="Default" />
+    </VisualDefinition>
+    <VisualDefinition Name="RightPanel"  EaseType="EaseOut" EaseFunction="Quint"  TransitionDuration="0.45">
+      <VisualState PositionXOffset="0" State="Default" />
+    </VisualDefinition>
+  </VisualDefinitions>
+
+  <Window>
+    <Widget Id="ClanMembersWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected" DoNotAcceptEvents="true">
+      <Children>
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalRightToLeft" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Right Panel-->
+            <Widget  WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="10" MarginRight="290" IsVisible="@IsAnyValidMemberSelected">
+              <Children>
+                <Widget DataSource="{CurrentSelectedMember}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                  <Children>
+
+                    <!--Lord Visual Model-->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="465" SuggestedHeight="512" HorizontalAlignment="Left">
+                      <Children>
+                        <!--Selected Character Tableau-->
+                        <CharacterTableauWidget DataSource="{HeroModel}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="1000" VerticalAlignment="Bottom" PositionXOffset="-150" PositionYOffset="100" BannerCodeText="@BannerCodeText" BodyProperties="@BodyProperties" CharStringId="@CharStringId" ClipContents="false" EquipmentCode="@EquipmentCode" IsFemale="@IsFemale" MountCreationKey="@MountCreationKey" StanceIndex="@StanceIndex" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2" Race="@Race" DoNotUseCustomScale="true"/>
+                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="123" VerticalAlignment="Bottom" PositionYOffset="20" Sprite="Clan\clan_portrait_shadow" IsEnabled="false" />
+
+                        <!--Pregnancy-->
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="34" SuggestedHeight="34" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="150" PositionYOffset="50" Sprite="SPGeneral\Clan\Status\icon_pregnant" IsVisible="@IsPregnant">
+                          <Children>
+                            <HintWidget DataSource="{PregnantHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                          </Children>
+                        </Widget>
+                      </Children>
+                    </Widget>
+
+                    <!--Stats Vertical Container-->
+                    <Widget DoNotAcceptEvents="true" VisualDefinition="RightPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" PositionXOffset="800" MarginLeft="300">
+                      <Children>
+                        <ListPanel DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="20" MarginRight="20" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+
+                            <!--Name-->
+                            <ListPanel Id="HeroNameParent" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginBottom="15" StackLayout.LayoutMethod="HorizontalLeftToRight" UpdateChildrenStates="true">
+                              <Children>
+                                <ScrollingTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="350" Brush="Clan.RightPanel.Name.Text" Brush.FontSize="30" Text="@Name" />
+                                <NavigationScopeTargeter ScopeID="ClanMembersHeroNameScope" ScopeParent="..\ChangeNameButton" RightNavigationScope="None" ExtendDiscoveryAreaLeft="200" />
+                                <ButtonWidget Id="ChangeNameButton" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren"  HeightSizePolicy="CoverChildren" Command.Click="ExecuteRename" IsEnabled="@IsFamilyMember" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                                  <Children>
+                                    <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="32" SuggestedWidth="32" Brush="SPClan.NameChange.Icon" IsVisible="@IsFamilyMember"/>
+                                  </Children>
+                                </ButtonWidget>
+                              </Children>
+                            </ListPanel>
+
+                            <!--Relation-->
+                            <TextWidget IsHidden="@IsMainHero" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="30" HorizontalAlignment="Center" Brush="Clan.RightPanel.SubName.Text" Brush.TextHorizontalAlignment="Center" Text="@RelationToMainHeroText" />
+
+                            <!--Governor Of-->
+                            <RichTextWidget IsHidden="@IsMainHero" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Center" Brush="Clan.RightPanel.SubName.Text" Command.LinkAlternateClick="ExecuteLocationLink" Command.LinkClick="ExecuteLocationLink" Text="@GovernorOfText" ClipContents="false" />
+
+                            <!--Last Seen Location-->
+                            <ListPanel Id="LastSeenLocationParent" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="50" HorizontalAlignment="Center" UpdateChildrenStates="true">
+                              <Children>
+                                <!--Location Text-->
+                                <RichTextWidget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.Army.Location.Text" Text="@LocationText" UpdateChildrenStates="true" HorizontalAlignment="Center" />
+
+                                <!--Show On Map Button-->
+                                <NavigationScopeTargeter ScopeID="ClanMembersShowOnMapButtonScope" ScopeParent="..\ShowOnMapButton" ExtendDiscoveryAreaLeft="200" ExtendDiscoveryAreaTop="10" ExtendDiscoveryAreaBottom="10" />
+                                <ButtonWidget Id="ShowOnMapButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="33" SuggestedHeight="19" VerticalAlignment="Center" MarginLeft="10" Brush="ShowOnMap.Button" IsVisible="@CanShowLocationOfHero" Command.Click="ExecuteShowOnMap" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                                  <Children>
+                                    <HintWidget DataSource="{ShowOnMapHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                  </Children>
+                                </ButtonWidget>
+
+                                <!--Teleporting Icon-->
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" VerticalAlignment="Center" MarginLeft="10" Sprite="Clan\moving_icon" Color="#8e6e43ff" IsVisible="@IsTeleporting"/>
+
+                                <!--Recall Button-->
+                                <NavigationScopeTargeter ScopeID="ClanMembersRecallButtonScope" ScopeParent="..\RecallButtonParent" RightNavigationScope="None" />
+                                <Widget Id="RecallButtonParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" VerticalAlignment="Center" MarginLeft="10" IsVisible="@IsRecallVisible">
+                                  <Children>
+                                    <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsHidden="@IsRecallEnabled">
+                                      <Children>
+                                        <HintWidget DataSource="{RecallHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                      </Children>
+                                    </Widget>
+
+                                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.Members.RecallIcon" Command.Click="ExecuteRecall" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" IsEnabled="@IsRecallEnabled" GamepadNavigationIndex="0">
+                                      <Children>
+                                        <HintWidget DataSource="{RecallHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                      </Children>
+                                    </ButtonWidget>
+                                  </Children>
+                                </Widget>
+
+                                <!--Talk Button-->
+                                <NavigationScopeTargeter ScopeID="ClanMembersTalkToHeroButtonScope" ScopeParent="..\TalkToHeroButton" RightNavigationScope="ClanMembersRecallButtonScope" ExtendDiscoveryAreaLeft="200" />
+                                <Widget Id="TalkToHeroButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="@IsTalkVisible">
+                                  <Children>
+                                    <HintWidget DataSource="{TalkHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+
+                                    <ButtonWidget Id="TalkToHeroButton" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.Members.TalkIcon" Command.Click="ExecuteTalk" IsEnabled="@IsTalkEnabled" GamepadNavigationIndex="0">
+                                      <Children>
+                                        <HintWidget DataSource="{TalkHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                      </Children>
+                                    </ButtonWidget>
+                                  </Children>
+                                </Widget>
+                              </Children>
+                            </ListPanel>
+
+                            <!--Margin If We Have Main Hero To Cover Up Last 3 Text Widgets Area, Giving Us Equal Height For Widgets Come After This-->
+                            <Widget MarginTop="90" IsVisible="@IsMainHero" />
+                            <!--Traits Header-->
+                            <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="30" Brush="Kingdom.TitleSmall.Text" Text="@TraitsText"/>
+
+                            <!--Traits List-->
+                            <NavigationScopeTargeter ScopeID="ClanMembersTraitsScope" ScopeParent="..\Traits" ScopeMovements="Horizontal" RightNavigationScope="None" ExtendDiscoveryAreaLeft="100" ExtendDiscoveryAreaRight="100" ExtendChildrenCursorAreaLeft="-10" ExtendChildrenCursorAreaRight="-10" ExtendChildrenCursorAreaTop="-10" ExtendChildrenCursorAreaBottom="-10" />
+                            <NavigatableListPanel Id="Traits" DataSource="{Traits}" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="75" HorizontalAlignment="Center">
+                              <ItemTemplate>
+                                <EncyclopediaHeroTraitVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="74" SuggestedHeight="75" MarginLeft="-7" MarginRight="-7" TraitId="@TraitId" TraitValue="@Value">
+                                  <Children>
+                                    <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                  </Children>
+                                </EncyclopediaHeroTraitVisualWidget>
+                              </ItemTemplate>
+                            </NavigatableListPanel>
+
+                            <!--Divider Between Traits and Skills-->
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="4" PositionXOffset="-3" Sprite="Clan\divider_mid" MarginLeft="100" MarginRight="100" MarginTop="25"/>
+
+                            <!--Skills Header-->
+                            <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Text="@SkillsText" Brush="Kingdom.TitleSmall.Text" MarginTop="15"/>
+
+                            <!--Skills List-->
+                            <NavigationScopeTargeter ScopeID="MembersSkillsScope" ScopeParent="..\SkillGrid" ScopeMovements="Horizontal" AlternateScopeMovements="Vertical" AlternateMovementStepSize="6" HasCircularMovement="false" RightNavigationScope="None" ExtendDiscoveryAreaLeft="150" ExtendDiscoveryAreaRight="200"/>
+                            <NavigatableGridWidget Id="SkillGrid" DataSource="{Skills}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="20" DefaultCellWidth="70" DefaultCellHeight="90" ColumnCount="6">
+                              <ItemTemplate>
+                                <SkillIconVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="44" SuggestedHeight="44" SkillId="@SkillId" MarginBottom="20" UseSmallVariation="true" MarginLeft="5">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" Brush="Encyclopedia.Skill.Text" Brush.FontSize="20" Brush.FontColor="#F4E1C4FF" PositionYOffset="25"/>
+                                    <HintWidget DataSource="{Hint}" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                                  </Children>
+                                </SkillIconVisualWidget>
+                              </ItemTemplate>
+                            </NavigatableGridWidget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="4" PositionXOffset="-3" Sprite="Clan\divider_mid" MarginLeft="100" MarginRight="100"/>
+
+                          </Children>
+                        </ListPanel>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </Widget>
+
+              </Children>
+            </Widget>
+
+            <!--Left Panel-->
+            <BrushListPanel VisualDefinition="LeftPanel" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" VerticalAlignment="Bottom" MarginLeft="44" MarginTop="6" MarginBottom="9" PositionXOffset="-400" Brush="Frame1Brush" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+
+                <!--Horizontal Header Section-->
+                <NavigationScopeTargeter ScopeID="SortButtonsScope" ScopeParent="..\SortButtons" ScopeMovements="Horizontal"/>
+                <ListPanel Id="SortButtons" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" RenderLate="true" DataSource="{SortController}">
+                  <Children>
+
+                    <SortButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Members.Sort.1.Width" SuggestedHeight="!Clan.Members.Sort.1.Height" Brush="Clan.Members.Sort.1" Command.Click="ExecuteSortByName" IsSelected="@IsNameSelected" SortState="@NameState" SortVisualWidget="TextWidget\NameSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget Id="TextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.LeftPanel.Header.Text" ClipContents="false" Text="@NameText">
+                          <Children>
+                            <BrushWidget Id="NameSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="20" Brush="ArmyManagement.Sort.ArrowBrush" />
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </SortButtonWidget>
+
+                    <SortButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Members.Sort.2.Width" SuggestedHeight="!Clan.Members.Sort.2.Height" Brush="Clan.Members.Sort.2" Command.Click="ExecuteSortByLocation" IsSelected="@IsLocationSelected" SortState="@LocationState" SortVisualWidget="TextWidget\LocationSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+                      <Children>
+                        <TextWidget Id="TextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.LeftPanel.Header.Text" ClipContents="false" Text="@LocationText">
+                          <Children>
+                            <BrushWidget Id="LocationSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="20" Brush="ArmyManagement.Sort.ArrowBrush" />
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </SortButtonWidget>
+
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Scroll.Header.Width" SuggestedHeight="!Scroll.Header.Height" Sprite="StdAssets\scroll_header" ExtendRight="3" ExtendTop="6" ExtendLeft="3" ExtendBottom="4" HorizontalAlignment="Right" />
+                  </Children>
+                </ListPanel>
+
+                <!--Horizontal, List and Scrollbar Group-->
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent">
+                  <Children>
+
+                    <ScrollablePanel Id="ClanElementsScrollablePanel" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginBottom="3" AutoHideScrollBars="true" ClipRect="ClanElementsRect" InnerPanel="ClanElementsRect\ClanElementsListPanel" MouseScrollAxis="Vertical" VerticalScrollbar="..\ClanElementsScrollbar\Scrollbar">
+                      <Children>
+
+                        <NavigationScopeTargeter ScopeID="ClanMembersScope" ScopeParent="..\ClanElementsRect" ScopeMovements="Vertical" IsDefaultNavigationScope="true" DoNotAutoNavigateAfterSort="true" />
+                        <Widget Id="ClanElementsRect" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" ClipContents="true">
+                          <Children>
+
+                            <NavigatableListPanel Id="ClanElementsListPanel" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MinIndex="0" StepSize="1000">
+                              <Children>
+
+                                <!--Family Header-->
+                                <NavigationAutoScrollWidget TrackedWidget="..\FamilyHeader" />
+                                <ScrollablePanelFixedHeaderWidget Id="FamilyHeader" FixedHeader="..\..\..\FamilyToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" HeaderHeight="!Clan.Management.Collapser.Height"/>
+
+                                <!--Family List-->
+                                <NavigatableListPanel Id="FamilyList" DataSource="{Family}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+                                  <ItemTemplate>
+                                    <ClanLordTuple />
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                                <!--Companions Header-->
+                                <NavigationAutoScrollWidget TrackedWidget="..\CompanionsHeader" />
+                                <ScrollablePanelFixedHeaderWidget Id="CompanionsHeader" FixedHeader="..\..\..\CompanionsToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" HeaderHeight="!Clan.Management.Collapser.Height" AdditionalBottomOffset="!Clan.Management.Collapser.Height"/>
+
+                                <!--Companions List-->
+                                <NavigatableListPanel Id="CompanionsList" DataSource="{Companions}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+                                  <ItemTemplate>
+                                    <ClanLordTuple />
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                              </Children>
+                            </NavigatableListPanel>
+
+                          </Children>
+                        </Widget>
+
+                        <!--Family Toggle Button-->
+                        <PartyHeaderToggleWidget Id="FamilyToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" SuggestedHeight="!Clan.Management.Collapser.Height" CollapseIndicator="FamilyCollapser\FamilyCollapseIndicator" ListPanel="..\ClanElementsRect\ClanElementsListPanel\FamilyList" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Management.Collapser" RenderLate="true" WidgetToClose="..\ClanElementsRect\ClanElementsListPanel\FamilyList">
+                          <Children>
+                            <ListPanel Id="FamilyCollapser" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                              <Children>
+                                <BrushWidget Id="FamilyCollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="-2" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Management.Collapser.Text" Text="@FamilyText" />
+                              </Children>
+                            </ListPanel>
+                          </Children>
+                        </PartyHeaderToggleWidget>
+
+                        <!--Companions Toggle Button-->
+                        <PartyHeaderToggleWidget Id="CompanionsToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" SuggestedHeight="!Clan.Management.Collapser.Height" CollapseIndicator="CompanionCollapser\CompanionCollapseIndicator" ListPanel="..\ClanElementsRect\ClanElementsListPanel\CompanionsList" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Management.Collapser" RenderLate="true" WidgetToClose="..\ClanElementsRect\ClanElementsListPanel\CompanionsList">
+                          <Children>
+                            <ListPanel Id="CompanionCollapser" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                              <Children>
+                                <BrushWidget Id="CompanionCollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="-2" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Management.Collapser.Text" Text="@CompanionsText" />
+                              </Children>
+                            </ListPanel>
+                          </Children>
+                        </PartyHeaderToggleWidget>
+
+                      </Children>
+                    </ScrollablePanel>
+
+                    <Standard.VerticalScrollbar Id="ClanElementsScrollbar" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginLeft="2" MarginRight="2" MarginBottom="3" />
+                  </Children>
+                </ListPanel>
+
+              </Children>
+            </BrushListPanel>
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

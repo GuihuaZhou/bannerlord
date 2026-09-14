@@ -1,0 +1,52 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="IsDividerEnabled" DefaultValue="true"/>
+
+  </Parameters>
+  <Constants>
+    <Constant Name="Recruitment.Owner.Width" BrushName="Recruitment.Owner.Brush" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Recruitment.Owner.Height" BrushName="Recruitment.Owner.Brush" BrushLayer="Default" BrushValueType="Height"/>
+
+    <Constant Name="Recruitment.Owner.Padding" Value="10"/>
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="135" >
+      <Children>
+
+        <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\NavigatableList" />
+        <NavigatableListPanel Id="NavigatableList" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" UseSelfIndexForMinimum="true">
+          <Children>
+            
+            <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="!Recruitment.Owner.Height" SuggestedWidth="!Recruitment.Owner.Width" Sprite="SPGeneral\SPRecruitment\portrait_patron"  VerticalAlignment="Center" MarginBottom="15">
+              <Children>
+
+                <GameMenuPartyItemButtonWidget Id="PartyItemWidget" DoNotPassEventsToChildren="true" DataSource="{Owner}" Command.AlternateClick="ExecuteOpenEncyclopedia" Command.HoverBegin="ExecuteFocus" Command.HoverEnd="ExecuteUnfocus" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="!Recruitment.Owner.Height" SuggestedWidth="!Recruitment.Owner.Width" VerticalAlignment="Top" HorizontalAlignment="Left"  Relation="@RelationToPlayer" RelationBackgroundWidget="RelationBackgroundWidget" PartyBackgroundBrush="GameMenu.Tableau.Background.Party" CharacterBackgroundBrush="GameMenu.Tableau.Background.Character" BackgroundImageWidget="BackgroundImageWidget">
+                  <Children>
+                    <ImageWidget Id="BackgroundImageWidget" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" MarginLeft="4" MarginRight="4" MarginTop="4" MarginBottom="4"/>
+                    <ImageIdentifierWidget DataSource="{ImageIdentifier}" ImageId="@Id" AdditionalArgs="@AdditionalArgs" TextureProviderName="@TextureProviderName" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" MarginTop="!Recruitment.Owner.Padding" MarginBottom="5" MarginLeft="!Recruitment.Owner.Padding" MarginRight="!Recruitment.Owner.Padding" IsDisabled="true" IsPartyItem="false"/>
+                    <HintWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true"/>
+                  </Children>
+                </GameMenuPartyItemButtonWidget>
+
+              </Children>
+            </Widget>
+
+            <NavigatableListPanel DataSource = "{Troops}" StackLayout.LayoutMethod = "HorizontalLeftToRight" WidthSizePolicy = "CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Left" MarginLeft="45" UseSelfIndexForMinimum="true" >
+              <ItemTemplate>
+                <RecruitTroopPanel MarginRight="15"/>
+              </ItemTemplate>
+            </NavigatableListPanel>
+            
+          </Children>
+        </NavigatableListPanel>
+
+        <TextWidget DataSource="{Owner}" Text="@NameText" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="28" SuggestedWidth="180" Brush="Recruitment.Notable.Name.Text" VerticalAlignment="Bottom" Brush.FontSize="15" PositionYOffset="16" PositionXOffset="-20" IsDisabled="true" MarginBottom="13">
+        </TextWidget>
+
+        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "Fixed" SuggestedHeight="14" VerticalAlignment="Bottom" Sprite="SPGeneral\SPRecruitment\divider_horizontal"  PositionYOffset="10" IsDisabled="true" IsVisible="*IsDividerEnabled">
+        </Widget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

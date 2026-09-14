@@ -1,0 +1,92 @@
+<Prefab>
+  <Constants>
+    <Constant Name="HorizontalSpacingBetweenStones" Value="3"/>
+    <Constant Name="Stage.Margin.Top" Value="34"/>
+    <Constant Name="Stage.Margin.Top.ProgressCircle" Value="!Stage.Margin.Top" Additive="7"/>
+    <Constant Name="Stage.Indicatior.Size" Value="25"/>
+    <Constant Name="StageTask.ProgressBar.InnerVerticalMargin" Value="15"/>
+    <Constant Name="StageTask.ProgressBar.InnerHorizontalMargin" Value="15"/>
+    <Constant Name="StageTask.ProgressStone.Width" BrushName="StageTask.ProgressStone" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="StageTask.ProgressStone.Height" BrushName="StageTask.ProgressStone" BrushLayer="Default" BrushValueType="Height"/>
+  </Constants>
+  <Window>
+    <QuestStageItemWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" Command.ResetGlow="ExecuteResetUpdated" IsNew="@IsNew">
+      <Children>
+        <ListPanel Id="QuestInnerContentParentListPanel" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" StackLayout.LayoutMethod = "VerticalTopToBottom">
+          <Children>
+
+            <Widget Id="QuestInnerContent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren"  HorizontalAlignment="Center" VerticalAlignment="Center" >
+              <Children>
+                <BoolStateChangerWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="13" SuggestedHeight="13" VerticalAlignment="Center" MarginTop="30" BooleanCheck="@IsNew" FalseState="Default" TrueState="Highlighted" Brush="StageTask.ItemIndicator" UseGlobalTimeForAnimation="true" />
+                <RichTextWidget HeightSizePolicy="CoverChildren" WidthSizePolicy="StretchToParent" VerticalAlignment="Top" HorizontalAlignment="Right" Brush="QuestStage.DaysAgo.Text" Brush.FontSize="20" Brush.TextHorizontalAlignment="Right" Brush.TextVerticalAlignment="Top" Text="@DateText" IsVisible="true"/>
+                <!--<Widget HeightSizePolicy="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="!Stage.Indicatior.Size" SuggestedWidth="!Stage.Indicatior.Size"  MarginTop="!Stage.Margin.Top.ProgressCircle" IsVisible="@IsNew" />-->
+                <RichTextWidget HeightSizePolicy="CoverChildren" WidthSizePolicy="StretchToParent" VerticalAlignment="Top" Brush="QuestStageTextBrush" Command.LinkClick="ExecuteLink" Brush.TextHorizontalAlignment="Left" Brush.TextVerticalAlignment="Top" Text="@DescriptionText" MarginLeft="45" MarginRight="15" MarginTop="!Stage.Margin.Top" IsVisible="true"/>
+              </Children>
+            </Widget>
+
+            <Widget DataSource="{StageTask}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center">
+              <Children>
+
+                <!--Two Way Progress-->
+                <ValueBasedVisibilityWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center" WatchType="Equal" IndexToBeVisible="3"  MarginBottom="50" IndexToWatch="@ProgressType">
+                  <Children>
+                    <SliderWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="350" SuggestedHeight="65" HorizontalAlignment="Center" Brush="StageTask.TwoWayProgress.Fill" DoNotUpdateHandleSize="true" Handle="SliderHandle" IsDiscrete="true" Locked="false" MaxValueInt="@TargetProgress" MinValueInt="@NegativeTargetProgress" ValueInt="@CurrentProgress" MarginTop="10" IsEnabled="false">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" Sprite="Quest\twoway_frame" PositionYOffset="0" PositionXOffset="2" />
+                        <Widget Id="SliderHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="75" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="Quest\twoway_progress_bar_indicator" IsEnabled="false">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" PositionYOffset="50" MarginTop="10" IntText="@CurrentProgress"/>
+                          </Children>
+                        </Widget>
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="-360" IntText="@NegativeTargetProgress"/>
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="360" IntText="@TargetProgress"/>
+                      </Children>
+                    </SliderWidget>
+                  </Children>
+                </ValueBasedVisibilityWidget>
+
+                <!--Discrete Progress-->
+                <ValueBasedVisibilityWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center" WatchType="Equal" IndexToBeVisible="2" IndexToWatch="@ProgressType">
+                  <Children>
+                    <!--Task Progress Bar-->
+                    <QuestProgressVisualWidget  TargetProgress="@TargetProgress" CurrentProgress="@CurrentProgress" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" ProgressStoneWidth="!StageTask.ProgressStone.Width" ProgressStoneHeight="!StageTask.ProgressStone.Height" HorizontalSpacingBetweenStones="!HorizontalSpacingBetweenStones" VerticalAlignment="Top" HorizontalAlignment="Center" MarginTop="10" Sprite="quest_progress_frame_9" Brush.AlphaFactor="0.8" BarWidget="Bar" SliderWidget="Slider" IsValid="@IsValid" CheckboxVisualWidget="..\..\..\CheckboxVisual">
+                      <Children>
+                        <ListPanel Id="Bar" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="!StageTask.ProgressBar.InnerVerticalMargin" MarginBottom="!StageTask.ProgressBar.InnerVerticalMargin" MarginLeft="!StageTask.ProgressBar.InnerHorizontalMargin" MarginRight="!StageTask.ProgressBar.InnerHorizontalMargin"/>
+
+                        <Widget Id="Slider" WidthSizePolicy="Fixed" SuggestedWidth="700" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center" AlphaFactor="0.8" Locked="true">
+                          <Children>
+                            <SliderWidget WidthSizePolicy="Fixed" SuggestedWidth="660" HeightSizePolicy="Fixed" SuggestedHeight="60" DoNotUpdateHandleSize="true" Filler="Filler" Handle="Handle" HorizontalAlignment="Center" IsDiscrete="true" MaxValueInt="@TargetProgress" MinValueInt="0" ValueInt="@CurrentProgress">
+                              <Children>
+                                <Widget Id="Filler" WidthSizePolicy="Fixed" SuggestedWidth="670" HeightSizePolicy="Fixed" SuggestedHeight="20" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="General\Slider\slider_fill" AlphaFactor="0.8"/>
+                                <Widget Id="Handle" WidthSizePolicy="Fixed" SuggestedWidth="1" HeightSizePolicy="Fixed" SuggestedHeight="1" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                              </Children>
+                            </SliderWidget>
+                          </Children>
+                        </Widget>
+                      </Children>
+                    </QuestProgressVisualWidget>
+                  </Children>
+                </ValueBasedVisibilityWidget>
+              </Children>
+            </Widget>
+
+            <!--Task Checkbox-->
+            <Widget Id="CheckboxVisual" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="500" SuggestedHeight="41" VerticalAlignment="Top" HorizontalAlignment="Center">
+              <Children>
+                <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="41" SuggestedHeight="34" HorizontalAlignment="Center" Sprite="Quest\icon_quest_done_checkmark"/>
+              </Children>
+            </Widget>
+
+            <!--Task Name-->
+            <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "CoverChildren" SuggestedWidth="500" VerticalAlignment="Top" HorizontalAlignment="Center" IsVisible="@HasATask">
+              <Children>
+                <RichTextWidget DataSource="{StageTask}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Text="@TaskName" Brush="QuestStageTextBrush" Command.LinkClick="ExecuteLink"/>
+              </Children>
+            </Widget>
+
+          </Children>
+        </ListPanel>
+      </Children>
+    </QuestStageItemWidget>
+  </Window>
+</Prefab>

@@ -1,0 +1,50 @@
+<Prefab>
+	<Window>
+		<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+			<Children>
+
+				<MissionSuspicionFillerBrushWidget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" HorizontalAlignment="Center" PositionYOffset="-120" DetectionFillContainer="DecetionSliderContainer\DetectionSlider\DetectionFillAndBackgroundContainer\DetectionFillContainer"  ExclamationMark="CircledDetectionIconFrame\ExclamationMark" CircleIcon="CircledDetectionIconFrame\CircledDisguiseIcon" IsVisible="@HasDetection" CurrentSuspicionRatio="@CurrentDetectionLevelRatio" >
+					<Children>
+
+						<!-- Detection Bar -->
+						<Widget Id="DecetionSliderContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="266" SuggestedHeight="32" VerticalAlignment="Center" HorizontalAlignment="Center">
+							<Children>
+								<FillBarWidget Id="DetectionSlider" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="12" MarginRight="15" MarginTop="3" MarginBottom="3" FillWidget="DetectionFillAndBackgroundContainer\DetectionFillContainer" MaxAmountAsFloat="@MaximumDetectionLevel" InitialAmountAsFloat="@CurrentDetectionLevel">
+									<Children>
+										<Widget Id="DetectionFillAndBackgroundContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" >
+											<Children>
+												<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Mission\Detection\bg_non_gradient" />
+
+												<Widget Id="DetectionFillContainer" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" ClipContents="true" >
+													<Children>
+														<BrushWidget Id="DetectionFill" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="266" HorizontalAlignment="Left" Brush="Mission.Disguise.Suspicion.Fillbar.Filler" />
+														
+														<BrushWidget  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="21" HorizontalAlignment="Right" Brush="Mission.Disguise.Suspicion.Fillbar.Highlight"/>
+													</Children>
+												</Widget>
+											</Children>
+										</Widget>
+										
+									</Children>
+								</FillBarWidget>
+								<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Mission\Detection\frame"/>
+							</Children>
+						</Widget>
+						
+						<!--Circled Detection Icon-->
+						<Widget Id="CircledDetectionIconFrame" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="64" SuggestedHeight="58" VerticalAlignment="Center" HorizontalAlignment="Center" PositionXOffset="145" >
+							<Children>
+								<BrushWidget Id="CircledDisguiseIcon" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" HorizontalAlignment="Center" Brush="Mission.Disguise.Suspicion.CircledDisguiseIcon"  PositionXOffset="-5" />
+								
+								<BrushWidget Id="ExclamationMark" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="39" SuggestedHeight="58" VerticalAlignment="Center" HorizontalAlignment="Left" PositionXOffset="-3"  PositionYOffset="-2" Brush="Mission.Disguise.Suspicion.ExclamationMark"/>
+								
+							</Children>
+						</Widget>
+						
+					</Children>
+				</MissionSuspicionFillerBrushWidget>
+
+		</Children>
+	</Widget>
+</Window>
+</Prefab>

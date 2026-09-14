@@ -1,0 +1,71 @@
+<Prefab>
+  <Constants>
+    <Contstant Name="Governor.Selection.Margin" Value="12" />
+  </Constants>
+	<Parameters>
+		<Parameter Name="PopupDataSource" DefaultValue="" />
+	</Parameters>
+  <Window>
+    <AutoClosePopupWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+				<NavigationForcedScopeCollectionTargeter CollectionParent="..\." />
+        <NavigationScopeTargeter ScopeID="TownManagementGovernorSelectionScope" ScopeParent="..\Background" ScopeMovements="Horizontal" AlternateScopeMovements="Vertical" AlternateMovementStepSize="7" />
+        <AutoClosePopupClosingWidget Target="..\Background\Scroll\ClipRect\InnerList" IncludeChildren="true" IncludeTarget="false"/>
+
+        <Widget Id="Background" DataSource="*PopupDataSource" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="1150" MaxHeight="275" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="360" MarginTop="405" Sprite="governor_popup_9" ExtendLeft="13" ExtendTop="5" ExtendRight="13" ExtendBottom="14">
+          <Children>
+
+            <ScrollablePanel Id="Scroll" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="870" MarginTop="10" MarginLeft="10" MarginRight="10" MarginBottom="10" AutoHideScrollBars="true" ClipRect="ClipRect" InnerPanel="ClipRect\InnerList" VerticalScrollbar="..\ScrollbarParent\VerticalScrollbar">
+              <Children>
+
+                <Widget Id="ClipRect" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="1000" MaxHeight="250" ClipContents="true">
+                  <Children>
+
+                    <!--Governor Selection Popup-->
+                    <NavigatableGridWidget Id="InnerList" DataSource="{AvailableGovernors}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="!Governor.Selection.Margin" MarginRight="!Governor.Selection.Margin" MarginTop="!Governor.Selection.Margin" MarginBottom="!Governor.Selection.Margin" DefaultCellWidth="120" DefaultCellHeight="120" ColumnCount="7">
+                      <ItemTemplate>
+
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="5" MarginRight="5" StackLayout.LayoutMethod="VerticalTopToBottom" HorizontalAlignment="Center" VerticalAlignment="Top">
+                          <Children>
+
+                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="117" SuggestedHeight="83" MarginTop="5" MarginBottom="5" Brush="TownManagement.GovernorPopup.Governor.Background" Command.Click="OnSelection" UpdateChildrenStates="true">
+                              <Children>
+                                <ImageIdentifierWidget DataSource="{Visual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" marginLeft="5" marginRight="5" />
+                                <HintWidget DataSource="{GovernorHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                                <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.GovernorPopup.GoldFrame" />
+                              </Children>
+                            </ButtonWidget>
+
+                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="117" SuggestedHeight="30" HorizontalAlignment="Center" Brush="TownManagement.GovernorPopup.Name.Text" Text="@Name" />
+
+                          </Children>
+                        </ListPanel>
+
+                      </ItemTemplate>
+                    </NavigatableGridWidget>
+                    
+                  </Children>
+                </Widget>
+
+              </Children>
+            </ScrollablePanel>
+
+            <DimensionSyncWidget Id="ScrollbarParent" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" DimensionToSync="HorizontalAndVertical" WidgetToCopyHeightFrom="..\Scroll" PaddingAmount="10" ScrollbarParent="..\." >
+              <Children>
+                <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" VerticalAlignment="Center" MarginTop="24" MarginBottom="15" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" >
+                  <Children>
+                    <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Brush="TownManagement.Scrollbar.VerticalLine" />
+                    <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="TownManagement.Scrollbar.Handle" />
+                  </Children>
+                </ScrollbarWidget>
+              </Children>
+            </DimensionSyncWidget>
+
+          </Children>
+        </Widget>
+
+      </Children>
+    </AutoClosePopupWidget>
+  </Window>
+</Prefab>

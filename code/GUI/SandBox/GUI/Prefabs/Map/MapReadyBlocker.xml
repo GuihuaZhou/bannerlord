@@ -1,0 +1,9 @@
+<Prefab>
+  <Window>
+    <Widget Id="MapReadyBlockerScreenWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000FF" IsVisible="@IsActive" GamepadNavigationIndex="0">
+			<Children>
+				<NavigationScopeTargeter ScopeID="MapReadyBlockerScope" ScopeParent="..\." />
+			</Children>
+    </Widget>
+  </Window>
+</Prefab>

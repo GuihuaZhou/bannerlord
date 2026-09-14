@@ -1,0 +1,298 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="CancelButton.Width" BrushLayer="Default" BrushName="Popup.Cancel.Button" BrushValueType="Width" />
+    <Constant Name="CancelButton.Height" BrushLayer="Default" BrushName="Popup.Cancel.Button" BrushValueType="Height" />
+
+    <Constant Name="Save.Property.MinWidth" Value="30" />
+
+    <Constant Name="Save.Tuple.Width" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Width" />
+    <Constant Name="Save.Tuple.Height" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Height" />
+
+    <Constant Name="LeftPanel.Width" Value="694" />
+
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="LeftPanel" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.45">
+      <VisualState PositionXOffset="-6" State="Default" />
+    </VisualDefinition>
+    <VisualDefinition Name="RightPanel" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.45">
+      <VisualState PositionXOffset="0" State="Default" />
+    </VisualDefinition>
+    <VisualDefinition Name="BottomPanel" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.45">
+      <VisualState PositionYOffset="0" State="Default" />
+    </VisualDefinition>
+    <VisualDefinition Name="TopPanel" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.45">
+      <VisualState PositionYOffset="0" State="Default" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <Widget Id="SaveLoadScreen" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+        
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" PositionXOffset="0" Sprite="SaveLoadBackground" />
+        
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <Children>
+
+            <!--Left Side-->
+            <Widget VisualDefinition="LeftPanel"  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!LeftPanel.Width" SuggestedHeight="1080" VerticalAlignment="Center" Sprite="General\CharacterCreation\character_creation_panel" PositionXOffset="-550" HorizontalFlip="true" DoNotUseCustomScaleAndChildren="true">
+              <Children>
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Top" MarginRight="22" MarginTop="15" Brush="Stage.Title.Text" ClipContents="false" Text="@TitleText" />
+
+                <NavigationScopeTargeter ScopeID="SearchButton" ScopeParent="..\SearchBar" ScopeMovements="Vertical" HasCircularMovement="false" />
+                <BrushWidget Id="SearchBar" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="460" SuggestedHeight="55" VerticalAlignment="Top" HorizontalAlignment="Center" MarginTop="118" MarginRight="44" Brush="SaveLoad.Search.Button" IsVisible="@IsSearchAvailable">
+                  <Children>
+                    <EditableTextWidget UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="10" MarginBottom="10" MarginLeft="10" MarginRight="10" Brush="SaveLoad.Search.InputText" DefaultSearchText="@SearchPlaceholderText" Text="@SearchText" GamepadNavigationIndex="0" />
+                  </Children>
+                </BrushWidget>
+								
+                <Widget Id="InnerPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="580" SuggestedHeight="750" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="38" PositionYOffset="37">
+                  <Children>
+
+                    <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" VerticalAlignment="Bottom" AutoHideScrollBars="true" MarginRight="11" ClipRect="MyClipRect" InnerPanel="MyClipRect\SavedGamesList" VerticalScrollbar="..\SavedGamesScrollbar">
+                      <Children>
+
+                        <!--Left Panel-->
+												<NavigationScopeTargeter ScopeID="SaveList" ScopeParent="..\MyClipRect" ScopeMovements="Vertical" HasCircularMovement="true" />
+                        <Widget Id="MyClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                          <Children>
+
+                            <!--Left Panel Parent ListPanel-->
+                            <ListPanel Id="SavedGamesList" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Save.Tuple.Width" SuggestedHeight="!Save.Tuple.Height" IsVisible="@IsSaving">
+                                  <Children>
+
+                                    <!--New Save Game Button-->
+																		<NavigationAutoScrollWidget TrackedWidget="..\NewSaveButton" />
+                                    <ButtonWidget Id="NewSaveButton" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" Brush="SaveLoad.Tuple" Command.Click="ExecuteCreateNewSaveGame" IsEnabled="@CanCreateNewSave" GamepadNavigationIndex="0">
+                                      <Children>
+                                        <TextWidget WidthSizePolicy="CoverChildren" MarginLeft="25" HeightSizePolicy="StretchToParent" Text="@CreateNewSaveSlotText" Brush="SaveLoad.Tuple.Title.Text"/>
+                                      </Children>
+                                    </ButtonWidget>
+
+                                    <HintWidget DataSource="{CreateNewSaveHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+                                  </Children>
+                                </Widget>
+
+                                <!--Saved Games List-->
+                                <NavigatableListPanel DataSource="{SaveGroups}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MinIndex="1" StepSize="1000">
+                                  <ItemTemplate>
+                                    <SavedGameGroup DoNotUseCustomScaleAndChildren="true"/>
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                              </Children>
+                            </ListPanel>
+
+                          </Children>
+                        </Widget>
+                      </Children>
+                    </ScrollablePanel>
+
+                    <ScrollbarWidget Id="SavedGamesScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="10" HorizontalAlignment="Right" VerticalAlignment="Top" MarginTop="2" MarginBottom="2" AlignmentAxis="Vertical" Handle="SavedGamesScrollbarHandle" MaxValue="100" MinValue="0">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#C99C85FF" AlphaFactor="0.2" />
+                        <ImageWidget Id="SavedGamesScrollbarHandle" WidthSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="Saveload.Scrollbar.Handle">
+                        </ImageWidget>
+                      </Children>
+                    </ScrollbarWidget>
+
+                  </Children>
+                </Widget>
+                
+                <ListPanel Id="ActionButtonContainer" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" PositionYOffset="10" MarginRight="42" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="60">
+                  <Children>
+
+                    <!--Cancel Button-->
+                    <ButtonWidget Id="CancelButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!CancelButton.Width" SuggestedHeight="!CancelButton.Height" Brush="Popup.Cancel.Button" Command.Click="ExecuteDone">
+                      <Children>
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Button.Text" Text="@CancelText" VerticalAlignment="Center" HorizontalAlignment="Center" >
+                          <Children>
+                            <InputKeyVisualWidget DataSource="{CancelInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-45" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </ButtonWidget>
+
+                    <!--Load Button-->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!CancelButton.Width" SuggestedHeight="!CancelButton.Height">
+                      <Children>
+                        <ButtonWidget Id="LoadButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!CancelButton.Width" SuggestedHeight="!CancelButton.Height" Brush="Popup.Done.Button" IsEnabled="@IsActionEnabled" Command.Click="ExecuteLoadSave">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Button.Text" Text="@SaveLoadText" VerticalAlignment="Center" HorizontalAlignment="Center">
+                              <Children>
+                                <InputKeyVisualWidget DataSource="{DoneInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-45" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                              </Children>
+                            </TextWidget>
+                          </Children>
+                        </ButtonWidget>
+                        <HintWidget DataSource="{CurrentSelectedSave\DisabledReasonHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+                      </Children>
+                    </Widget>
+                    
+                  </Children>
+                </ListPanel>
+                
+              </Children>
+            </Widget>
+            <!--Right Side-->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsAnyItemSelected">
+              <Children>
+
+                <!--Main Hero Tableau-->
+                <SaveLoadMainHeroVisualWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="300" DefaultVisualWidget="DefaultVisualWidget" SaveLoadHeroTableau="SaveLoadHeroTableauWidget" IsVisualDisabledForMemoryPurposes="@IsVisualDisabled">
+                  <Children>
+                    <Widget Id="DefaultVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="535" SuggestedHeight="750" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="130" Sprite="SaveLoad\main_hero_save_silhouette"/>
+                    <SaveLoadHeroTableauWidget Id="SaveLoadHeroTableauWidget" DataSource="{CurrentSelectedSave}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HeroVisualCode="@MainHeroVisualCode" BannerCode="@BannerTextCode"/>
+                  </Children>
+                </SaveLoadMainHeroVisualWidget>
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginLeft="100" MarginBottom="150" MarginRight="200" Brush="Stage.Selection.Description.Text" Text="@VisualDisabledText" DoNotAcceptEvents="true"/>
+                
+                <Widget VisualDefinition="TopPanel" DataSource="{CurrentSelectedSave}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="887" SuggestedHeight="150" Sprite="StdAssets\tabbar_long" HorizontalAlignment="Center" MarginRight="250" PositionYOffset="-300">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="434" SuggestedHeight="55" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="5" Sprite="StdAssets\tabbar_long_namebox">
+                      <Children>
+                        <ScrollingTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="6" MarginRight="6" Brush="SaveLoad.Title.Text" Text="@CharacterNameText" ScrollPerTick="60"/>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="6" MarginRight="6" Brush="SaveLoad.Title.CorruptedText" Text="@CorruptedSaveText" IsVisible="@IsCorrupted"/>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </Widget>
+
+
+                <ListPanel VisualDefinition="BottomPanel" DataSource="{CurrentSelectedSave}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" HorizontalAlignment="Center"  VerticalAlignment="Bottom" MarginRight="250" PositionYOffset="300" >
+                  <Children>
+
+                    <!--Game Time and Level-->
+                    <ListPanel Id="GameTimeLevelListPanel" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="300" HorizontalAlignment="Center" PositionYOffset="50">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush.FontColor="#F4E1C4FF" Brush.FontSize="28" Text="@GameTimeText"/>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush.FontColor="#F4E1C4FF" Brush.FontSize="28" Text="@LevelText"/>
+                      </Children>
+                    </ListPanel>
+
+                    <!--Bottom Panel Saved Game Properties-->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="887" SuggestedHeight="150" HorizontalAlignment="Center" VerticalAlignment="Bottom" VerticalFlip="true" Sprite="StdAssets\tabbar_long">
+                      <Children>
+                        <ListPanel DataSource="{SavedGameProperties}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="120" MarginRight="120" StackLayout.LayoutMethod="HorizontalCentered">
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" VerticalAlignment="Bottom" MarginBottom="13" MarginLeft="5" MarginRight="5" UpdateChildrenStates="true" DoNotPassEventsToChildren="true">
+                              <Children>
+                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <Children>
+                                    <SelectedStateBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="60" SuggestedHeight="40" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="4" Brush="SaveLoad.Property.Icon" SelectedState="@PropertyType"/>
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Stage.Selection.Description.Text" Text="@Value"/>
+                                  </Children>
+                                </ListPanel>
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </ListPanel>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ListPanel>
+
+                <ListPanel DataSource="{CurrentSelectedSave}" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="280" HorizontalAlignment="Right" MarginTop="15" MarginBottom="15" DoNotAcceptEvents="true" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+
+                    <!--Top Right Loaded Modules List-->
+                    <Widget VisualDefinition="RightPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginBottom="20" MarginRight="5" PositionXOffset="500" DoNotAcceptEvents="true">
+                      <Children>
+
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true">
+                          <Children>
+
+                            <!--Modules List Headers-->
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Text="@ModulesText"/>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Text="@SaveVersionAsString"/>
+                              </Children>
+                            </ListPanel>
+
+                            <!--Modules List Items-->
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="10" DoNotAcceptEvents="true">
+                              <Children>
+
+                                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AutoHideScrollBars="true" VerticalAlignment="Center" ClipRect="ClipRect" InnerPanel="ClipRect\List" VerticalScrollbar="..\VerticalScrollbar" >
+                                  <Children>
+
+                                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                                      <Children>
+
+                                        <ListPanel Id="List" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Top" StackLayout.LayoutMethod="VerticalTopToBottom" IsHidden="@IsCorrupted">
+                                          <Children>
+                                            <ListPanel DataSource="{LoadedModulesInSave}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MarginRight="20">
+                                              <ItemTemplate>
+                                                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="10" MarginBottom="10" >
+                                                  <Children>
+                                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Stage.Selection.Description.Text" Brush.FontColor="#F4E1C4FF" Brush.FontSize="20" Text="@Definition" Brush.TextHorizontalAlignment="Left" MarginRight="5" VerticalAlignment="Top"/>
+                                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Stage.Selection.Description.Text" Brush.FontColor="#F4E1C4FF" Brush.FontSize="20" Text="@Seperator" VerticalAlignment="Center" />
+                                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Stage.Selection.Description.Text" Brush.FontColor="#B57A1EFF" Brush.FontSize="20" Text="@Value" Brush.TextHorizontalAlignment="Left" MarginLeft="5" VerticalAlignment="Top"/>
+                                                  </Children>
+                                                </ListPanel>
+                                              </ItemTemplate>
+                                            </ListPanel>
+                                          </Children>
+                                        </ListPanel>
+
+                                      </Children>
+                                    </Widget>
+
+                                  </Children>
+                                </ScrollablePanel>
+
+                                <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" VerticalAlignment="Center" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0">
+                                  <Children>
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" AlphaFactor="0.2" Color="#5a4033FF" />
+                                    <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="10" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                                  </Children>
+                                </ScrollbarWidget>
+
+                              </Children>
+                            </Widget>
+
+                          </Children>
+                        </ListPanel>
+
+                        <!--Delete Save Button-->
+                        <ButtonWidget Id="DeleteButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!CancelButton.Width" SuggestedHeight="!CancelButton.Height" HorizontalAlignment="Center" VerticalAlignment="Bottom" Brush="Popup.Delete.Button" Command.Click="ExecuteDelete">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Popup.Button.Text" Text="@DeleteText" VerticalAlignment="Center" HorizontalAlignment="Center" >
+                              <Children>
+                                <InputKeyVisualWidget DataSource="{..\DeleteInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="50" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-45" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                              </Children>
+                            </TextWidget>
+                          </Children>
+                        </ButtonWidget>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ListPanel>
+
+              </Children>
+            </Widget>
+
+
+          </Children>
+        </ListPanel>
+
+        <ImageWidget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Saveload.Blocker" IsEnabled="@IsBusyWithAnAction" >
+          <Children>
+            <Standard.CircleLoadingWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Parameter.Period="0.5" IsVisible="@IsLoadingSaves" />
+          </Children>
+        </ImageWidget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -1,0 +1,17 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <Window>
+    <Widget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+      <Children>
+        <DisguiseMarkerBrushWidget DataSource="{TargetAgent}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" Position="@ScreenPosition" OffenseTypeIdentifier="@OffenseTypeIdentifier" Brush="Mission.Disguise.Marker.Target" />
+
+        <Widget DataSource="{HostileAgents}" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+          <ItemTemplate>
+            <DisguiseMarkerBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" Position="@ScreenPosition" OffenseTypeIdentifier="@OffenseTypeIdentifier" Brush="Mission.Disguise.Marker.Generic" />
+          </ItemTemplate>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

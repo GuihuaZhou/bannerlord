@@ -1,0 +1,16 @@
+<Window>
+  <EncyclopediaFilterListItemButtonWidget IsSelected ="@IsSelected" DoNotPassEventsToChildren="true" HeightSizePolicy ="Fixed" WidthSizePolicy="StretchToParent" SuggestedHeight="36" ToggleIndicator="ToggleIndicatorParent\ToggleIndicator" ButtonType="Toggle" Brush="Encyclopedia.FilterListButton" Command.Click="ExecuteOnFilterActivated">
+    <Children>
+
+      <Widget Id="ToggleIndicatorParent" DoNotPassEventsToChildren="true"  Sprite = "Encyclopedia\list_filters_checkbox" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="44" SuggestedWidth = "44" VerticalAlignment="Center" IsEnabled="false">
+        <Children>
+          <Widget Id="ToggleIndicator" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" Sprite="Encyclopedia\list_filters_checkbox_full" IsDisabled="true">
+          </Widget>
+        </Children>
+      </Widget>
+
+      <ScrollingTextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" SuggestedHeight="35" MarginLeft ="43" Text="@Name" Brush="EncyclopediaList.Filter.Name.Text" Brush.FontSize="30" IsDisabled="true" PositionYOffset="0"/>
+
+    </Children>
+  </EncyclopediaFilterListItemButtonWidget>
+</Window>

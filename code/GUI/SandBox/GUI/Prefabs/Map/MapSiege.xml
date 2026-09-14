@@ -1,0 +1,115 @@
+<Prefab>
+  <Constants>
+    <Constant Name="HingesTopBottomMargin" Value="280" />
+    <Constant Name="Text.Width" Value="500" />
+    <Constant Additive="!Text.Width" Name="InfoPanel.Width" Value="50" />
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="Menu" TransitionDuration="0.25">
+      <VisualState PositionXOffset="12" State="Default" />
+      <VisualState PositionXOffset="-550" State="Disabled" />
+    </VisualDefinition>
+    <VisualDefinition Name="InfoPanel" TransitionDuration="0.25">
+      <VisualState SuggestedWidth="!InfoPanel.Width" SuggestedHeight="170" PositionXOffset="50" PositionYOffset="-270" State="Default" />
+      <VisualState SuggestedWidth="!InfoPanel.Width" SuggestedHeight="0" PositionXOffset="50" PositionYOffset="-270" State="Disabled" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <MapSiegeScreenWidget Id="MapSiegeScreenWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DeployableSiegeMachinesPopup="DeployableSiegeMachinesPopup" DoNotAcceptEvents="true">
+      <Children>
+
+        <!--Hinges-->
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="19" SuggestedHeight="608" MarginTop="!HingesTopBottomMargin" Sprite="StdAssets\game_menu_hinges" />
+        <Widget Id="TitleContainerWidget" VisualDefinition="Menu" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="343" SuggestedHeight="60" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-500" PositionYOffset="-360" MarginLeft="65" Sprite="SPGeneral\GameMenu\name_stone">
+          <Children>
+            <TextWidget Id="TitleTextWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" PositionYOffset="13" Brush="GameMenu.Text" Brush.FontSize="30" Text="@TitleText" />
+          </Children>
+        </Widget>
+
+        <GameMenuWidget VisualDefinition="Menu" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="440" SuggestedHeight="800" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-500" PositionYOffset="50" MarginLeft="15" MarginTop="50" SpriteName="@BackgroundCopy" Sprite="@Background" MenuId="@MenuId" Brush="GameMenu.Border" IsNight="@IsNight" TitleContainerWidget="..\TitleContainerWidget" TitleTextWidget="..\TitleContainerWidget\TitleTextWidget">
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+              <Children>
+                <ScrollablePanel Id="ScrollablePanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" VerticalAlignment="Top" MarginTop="30" MarginBottom="10" AutoHideScrollBars="true" ClipRect="ClipRect" InnerPanel="ClipRect\ItemListPanel" VerticalScrollbar="..\ScrollbarContainer\Scrollbar">
+                  <Children>
+
+                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+
+                            <!--Deployment Targets-->
+                            <ListPanel DataSource="{DeploymentTargets}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+                                <GridWidget DataSource="{RangedDeploymentTargets}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" MarginTop="5" ColumnCount="5" DefaultCellHeight="70" DefaultCellWidth="70">
+                                  <ItemTemplate>
+                                    <MapSiegeMachineButton IsDeploymentTarget="true" />
+                                  </ItemTemplate>
+                                </GridWidget>
+                                <GridWidget DataSource="{MeleeDeploymentTargets}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" MarginTop="5" ColumnCount="5" DefaultCellHeight="70" DefaultCellWidth="70">
+                                  <ItemTemplate>
+                                    <MapSiegeMachineButton IsDeploymentTarget="true" />
+                                  </ItemTemplate>
+                                </GridWidget>
+                              </Children>
+                            </ListPanel>
+
+                            <!--Seperator-->
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="12" MarginLeft="20" MarginRight="20" Sprite="StdAssets\subpage_divider" />
+
+                            <!--Queue Grid-->
+                            <GridWidget Id="QueueItemsGrid" DataSource="{QueueItems}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" MarginTop="5" ColumnCount="5" DefaultCellHeight="70" DefaultCellWidth="70">
+                              <ItemTemplate>
+                                <MapSiegeMachineButton />
+                              </ItemTemplate>
+                            </GridWidget>
+
+                          </Children>
+                        </ListPanel>
+
+                        <!--Siege Menu Action Button List-->
+                        <ListPanel Id="ItemListPanel" DataSource="{ItemList}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <ItemTemplate>
+                            <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="GameMenu.Button" Command.Click="ExecuteAction">
+                              <Children>
+                                <RichTextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" VerticalAlignment="Center" PositionYOffset="-3" Brush="GameMenu.Text" Brush.FontSize="25" Brush.TextVerticalAlignment="Center" IsEnabled="@IsEnabled" Text="@ActionText" />
+                                <HintWidget DataSource="{ItemHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="40" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                              </Children>
+                            </ButtonWidget>
+                          </ItemTemplate>
+                        </ListPanel>
+
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+
+                <Widget Id="ScrollbarContainer" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" IsVisible="*ScrollbarVisible">
+                  <Children>
+                    <ScrollbarWidget Id="Scrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="20" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="0" MarginTop="20" MarginBottom="10" Sprite="scrollbar_9" AlignmentAxis="Vertical" Handle="ScrollbarHandle" MaxValue="100" MinValue="0" ValueInt="*ScrollbarValueInt">
+                      <Children>
+                        <Widget Id="ScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" HorizontalAlignment="Left" VerticalAlignment="Top" Sprite="scroll_button_9" />
+                      </Children>
+                    </ScrollbarWidget>
+                  </Children>
+                </Widget>
+
+              </Children>
+            </Widget>
+          </Children>
+        </GameMenuWidget>
+
+        <!--Deployable Siege Machines Popup-->
+        <BrushWidget Id="DeployableSiegeMachinesPopup" DataSource="{DeploymentTargets}" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Frame1Brush">
+          <Children>
+            <GridWidget DataSource="{DeployableSiegeMachines}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" ColumnCount="4" DefaultCellHeight="70" DefaultCellWidth="70">
+              <ItemTemplate>
+                <MapSiegeMachineButton />
+              </ItemTemplate>
+            </GridWidget>
+          </Children>
+        </BrushWidget>
+      </Children>
+    </MapSiegeScreenWidget>
+  </Window>
+</Prefab>

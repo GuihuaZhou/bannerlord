@@ -1,0 +1,35 @@
+<Prefab>
+	<Window>
+		<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsCounterActive">
+			<Children>
+				<!-- Stealth Fail Time Bar -->
+				<ListPanel Id="StealthFailSliderContainer" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="300" VerticalAlignment="Top" HorizontalAlignment="Center" PositionYOffset="80" StackLayout.LayoutMethod = "VerticalTopToBottom">
+					<Children>
+						<TextWidget Text="@CountDownText" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="BoundaryCrossing.CountdownText" MarginBottom="5" />
+						
+						<FillBarWidget Id="StealthFailSlider" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" FillWidget="StealthFillAndBackgroundContainer\StealthFillContainer" MaxAmountAsFloat="@FailCounterMaxTime" InitialAmountAsFloat="@FailCounterElapsedTime" SuggestedHeight="8">
+							<Children>
+								<Widget Id="StealthFillAndBackgroundContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" >
+									<Children>
+										<Widget Id="StealthFillContainer" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" ClipContents="true" >
+											<Children>
+												<Widget Id="DetectionFill" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="rounded_canvas_9" Color="#F4E1C4FF"/>
+												
+												<Widget  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="21" HorizontalAlignment="Right" Sprite="General\Mission\Detection\bar_slide_highlight" Color="#F4E1C4FF"/>
+											</Children>
+										</Widget>
+										
+										<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="rounded_canvas_9" Color="#F4E1C4FF" AlphaFactor="0.3" ColorFactor="0.7"/>
+									</Children>
+								</Widget>
+
+								<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="rounded_frame_9" Color="#000000FF"/>
+							</Children>
+						</FillBarWidget>
+					</Children>
+				</ListPanel>
+
+			</Children>
+		</Widget>
+	</Window>
+</Prefab>

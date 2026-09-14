@@ -1,0 +1,45 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="PartyToggle.Width" BrushLayer="Default" BrushName="Party.Toggle.Left" BrushValueType="Width" />
+    <Constant Name="PartyToggle.Height" BrushLayer="Default" BrushName="Party.Toggle.Left" BrushValueType="Height" />
+    
+    <Constant Name="Save.Tuple.Width" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Width" />
+    <Constant Name="Save.Tuple.Height" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.43" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.43" Value="!Banner.Height"/>
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+    
+  </Constants>
+  <Window>
+    <NavigatableListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" SuggestedWidth="!Save.Tuple.Width" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true" IsHidden="@IsFilteredOut">
+      <Children>
+        
+        <PartyHeaderToggleWidget Id="HeaderToggle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!PartyToggle.Width" SuggestedHeight="!PartyToggle.Height" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="SaveLoad.Collapser" CollapseIndicator="Description\CollapseIndicator" ListPanel="..\SaveList" RenderLate="true" WidgetToClose="..\SaveList" IsRelevant="true" ExtendCursorAreaLeft="-25" ExtendCursorAreaRight="-25" ExtendCursorAreaTop="3" ExtendCursorAreaBottom="3">
+          <Children>
+
+            <ListPanel Id="Description" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" IsDisabled="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+                <BrushWidget Id="CollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="5" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginRight="5" Brush="Party.Text.Toggle" Text="@IdentifierID" />
+              </Children>
+            </ListPanel>
+          </Children>
+        </PartyHeaderToggleWidget>
+        
+        <NavigatableListPanel Id="SaveList" DataSource="{SavedGamesList}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate>
+            <SavedGameTuple DoNotUseCustomScaleAndChildren="true"/>
+          </ItemTemplate>
+        </NavigatableListPanel>
+
+      </Children>
+    </NavigatableListPanel>
+  </Window>
+</Prefab>

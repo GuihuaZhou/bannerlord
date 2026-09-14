@@ -1,0 +1,35 @@
+<Prefab>
+  <Window>
+    <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" HorizontalAlignment="Center">
+      <Children>
+        <ListPanel DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" VerticalAlignment="Bottom" HorizontalAlignment="Right" MarginBottom="5" MarginRight="10" StackLayout.LayoutMethod="HorizontalRightToLeft" UpdateChildrenStates="true">
+          <Children>
+            <ButtonWidget DoNotPassEventsToChildren="true" Command.Click="ExecuteGoToNextItem" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" IsEnabled="@IsNextButtonEnabled" UpdateChildrenStates="true">
+              <Children>
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" UpdateChildrenStates="true">
+                  <Children>
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="80" VerticalAlignment="Center" MarginRight="5" Brush="Encyclopedia.QuickNavigation.Button.Text" Brush.TextHorizontalAlignment="Right" Text="@NextButtonLabel"/>
+                    <ImageWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="48" SuggestedWidth="41" VerticalAlignment="Bottom" MarginRight="5" Brush="Encyclopedia.Next.Page.Navigation.Button"/>
+                  </Children>
+                </ListPanel>
+                <HintWidget DoNotAcceptEvents="true" DataSource="{NextButtonHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+              </Children>
+            </ButtonWidget>
+
+            <ButtonWidget DoNotPassEventsToChildren="true" Command.Click="ExecuteGoToPreviousItem" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" MarginRight="20" IsEnabled="@IsPreviousButtonEnabled" UpdateChildrenStates="true">
+              <Children>
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" UpdateChildrenStates="true">
+                  <Children>
+                    <ImageWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="48" SuggestedWidth="41" VerticalAlignment="Bottom" MarginRight="5" Brush="Encyclopedia.Previous.Page.Navigation.Button"/>
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="110" VerticalAlignment="Center" Brush="Encyclopedia.QuickNavigation.Button.Text" Brush.TextHorizontalAlignment="Left" Text="@PreviousButtonLabel"/>
+                  </Children>
+                </ListPanel>
+                <HintWidget DoNotAcceptEvents="true" DataSource="{PreviousButtonHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </ListPanel>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

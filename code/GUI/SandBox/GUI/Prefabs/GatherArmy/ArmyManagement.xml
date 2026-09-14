@@ -1,0 +1,183 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="ArmyManagement.Frame.Width" BrushLayer="Default" BrushName="ArmyManagement.Frame" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Frame.Height" BrushLayer="Default" BrushName="ArmyManagement.Frame" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Panel.Left.Width" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Left" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Panel.Left.Height" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Left" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Panel.Right.Width" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Right" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Panel.Right.Height" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Right" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.1_2.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.1_2" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.1_2.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.1_2" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.1.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.1" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.1.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.2.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.2" BrushValueType="Width" Additive="12" />
+    <Constant Name="ArmyManagement.Sort.2.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.3.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.3" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.3.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.3" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.4.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.4" BrushValueType="Width" Additive="-4" />
+    <Constant Name="ArmyManagement.Sort.4.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.4" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.5.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.5" BrushValueType="Width" Additive="3" />
+    <Constant Name="ArmyManagement.Sort.5.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.5" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.6.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.6" BrushValueType="Width" Additive="-4" />
+    <Constant Name="ArmyManagement.Sort.6.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.6" BrushValueType="Height" />
+
+    <Constant Name="CloseButtons.Margin.Top" Additive="65" Value="!ArmyManagement.Frame.Height" />
+
+    <Constant Name="GuideAlphaFactor" Value="0" />
+
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000CC">
+      <Children>
+
+				<NavigationForcedScopeCollectionTargeter CollectionID="ArmyManagementCollection" CollectionParent="..\." />
+        <!--Tutorial Notification Frame-->
+        <ElementNotificationWidget DataSource="{TutorialNotification}" ElementID="@ElementID" TutorialFrameWidget="TutorialFrameWidget">
+          <Children>
+            <TutorialHighlightItemBrushWidget Id="TutorialFrameWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TutorialHighlightBrush" IsDisabled="true" IsVisible="false" />
+          </Children>
+        </ElementNotificationWidget>
+
+        <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedWidth="!ArmyManagement.Frame.Width" SuggestedHeight="!ArmyManagement.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="ArmyManagement.Frame">
+          <Children>
+
+            <!--Top Panel Name Text-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="161" HorizontalAlignment="Center" PositionYOffset="-20" Sprite="StdAssets\tabbar_popup" IsDisabled="true">
+              <Children>
+                <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginBottom="50" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@TitleText" />
+              </Children>
+            </Widget>
+
+            <!-- Panels -->
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Center" StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+                <!--Left Panel-->
+                <ArmyManagementLeftPanel />
+
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="60" SuggestedHeight="100" />
+
+                <!--Right Panel-->
+                <ArmyManagementRightPanel />
+              </Children>
+            </ListPanel>
+
+
+            <!--Total Strength-->
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" HorizontalAlignment="Right" MarginBottom="45" MarginRight="75" StackLayout.LayoutMethod="HorizontalRightToLeft">
+              <Children>
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="35" Brush="ArmyManagement.Army.TotalCostAndStrength.PositiveValue" IntText="@TotalStrength" MarginLeft="5"/>
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="35" Brush="ArmyManagement.Army.TotalCostAndStrength.Title" Text="@TotalStrengthText" />
+              </Children>
+            </ListPanel>
+
+            <!--Total Influence Cost-->
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="70" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="30" StackLayout.LayoutMethod="VerticalTopToBottom" >
+              <Children>
+                <!--Total Cost Text-->
+                <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" Brush="ArmyManagement.Army.TotalCostAndStrength.Title" Text="@TotalCostText" />
+
+                <!--Affordable Influence Cost-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" PositionXOffset="-8" Brush="ArmyManagement.Army.TotalCostAndStrength.PositiveValue" Text="@TotalCostNumbersText" IsVisible="@CanAffordInfluenceCost">
+                  <Children>
+					  <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="36" SuggestedHeight="36" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="-30" PositionYOffset="0">
+						  <Children>
+							  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Icons\Influence@2x" ImageFit.Type="Contain" ImageFit.VerticalAlignment="Center" ImageFit.HorizontalAlignment="Center" />
+                  </Children>
+					  </Widget>
+                  </Children>
+                </TextWidget>
+
+                <!--Unaffordable Influence Cost-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" PositionXOffset="-8" Brush="ArmyManagement.Army.TotalCostAndStrength.NegativeValue" Text="@TotalCostNumbersText" IsHidden="@CanAffordInfluenceCost">
+                  <Children>
+					  <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="36" SuggestedHeight="36" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="-30" PositionYOffset="0" >
+						  <Children>
+							  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Icons\Influence@2x" ImageFit.Type="Contain" ImageFit.VerticalAlignment="Center" ImageFit.HorizontalAlignment="Center" />
+                  </Children>
+					  </Widget>
+                  </Children>
+                </TextWidget>
+              </Children>
+            </ListPanel>
+
+            <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="220" PositionYOffset="46" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@PlayerHasArmy">
+              <Children>
+
+                <!--Cohesion Text-->
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                  <Children>
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="35" Brush="ArmyManagement.Army.TotalCostAndStrength.Title" Text="@CohesionText"/>
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="35" MarginLeft="5" Brush="ArmyManagement.Army.TotalCostAndStrength.PositiveValue" IntText="@NewCohesion" />
+                  </Children>
+                </ListPanel>
+
+                <!--Cohesion Bar-->
+                <Widget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="23" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Army\slider_boxy_canvas">
+                  <Children>
+
+                    <FillBarWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="5" MarginRight="5" FillWidget="FillWidget" InitialAmount="@NewCohesion" MaxAmount="100">
+                      <Children>
+                        <BrushWidget Id="FillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="180" SuggestedHeight="15" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Army\slider_boxy_fill" Brush.HueFactor="15" Brush.SaturationFactor="-30" />
+                      </Children>
+                    </FillBarWidget>
+
+                    <HintWidget DataSource="{CohesionHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+
+                  </Children>
+                </Widget>
+
+              </Children>
+            </ListPanel>
+
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="185" SuggestedHeight="60" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="30" PositionYOffset="64" IsVisible="@PlayerHasArmy">
+              <Children>
+
+                <!--Boost Cohesion Button-->
+                <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent">
+                  <Children>
+                    <NavigationScopeTargeter ScopeID="ArmyManagementBoostCohesionButtonScope" ScopeParent="..\ArmyManagementBoostCohesionButton" ExtendDiscoveryAreaLeft="500"/>
+                    <ButtonWidget Id="ArmyManagementBoostCohesionButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="75" VerticalAlignment="Center" Brush="ArmyManagement.Army.AddCoherenceButton" Command.Click="ExecuteBoostCohesionManual" IsEnabled="@CanBoostCohesion" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ArmyManagement.Army.TotalCostAndStrength.Title" Text="@CohesionBoostAmountText" ClipContents="false"/>
+                        <HintWidget DataSource="{BoostCohesionHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                      </Children>
+                    </ButtonWidget>
+                    <HintWidget DataSource="{BoostCohesionHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                  </Children>
+                </Widget>
+
+                <!--Boost Cohesion Cost-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Top" MarginLeft="80" Brush="ArmyManagement.Army.TotalCostAndStrength.Title" Brush.TextHorizontalAlignment="Left" Brush.TextVerticalAlignment="Center" IntText="@CohesionBoostCost">
+                  <Children>
+					  <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="36" SuggestedHeight="36" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="-30">
+						  <Children>
+							  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Icons\Influence@2x" ImageFit.Type="Contain" ImageFit.VerticalAlignment="Center" ImageFit.HorizontalAlignment="Center" />
+                  </Children>
+					  </Widget>
+                  </Children>
+                </TextWidget>
+
+              </Children>
+            </Widget>
+
+          </Children>
+        </BrushWidget>
+
+        <!--Close Buttons-->
+        <Standard.TriplePopupCloseButtons MarginTop="!CloseButtons.Margin.Top" VerticalAlignment="Center" Parameter.ResetInputKeyDataSource="{ResetInputKey}" Parameter.CancelInputKeyDataSource="{CancelInputKey}" Parameter.DoneInputKeyDataSource="{DoneInputKey}" Parameter.CancelButtonAction="ExecuteCancel" Parameter.CancelButtonText="@CancelText" Parameter.DoneButtonAction="ExecuteDone" Parameter.DoneButtonText="@DoneText" Parameter.IsDoneEnabled="@CanConfirm" Parameter.DoneButtonHintDataSource="{DoneHint}" Parameter.ResetButtonAction="ExecuteReset" />
+
+      </Children>
+    </Widget>
+
+  </Window>
+</Prefab>

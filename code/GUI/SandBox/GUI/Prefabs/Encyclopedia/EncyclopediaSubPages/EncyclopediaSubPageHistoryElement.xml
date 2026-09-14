@@ -1,0 +1,17 @@
+<Window>
+  <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginTop="5">
+    <Children>
+      <!--Element Image-->
+      <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="6" SuggestedWidth="6" Sprite="Encyclopedia\subpage_ball" MarginTop="15" HorizontalAlignment="Left"/>
+
+      <ListPanel WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+        <Children>
+          <!--Element Name-->
+          <RichTextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" Text="@HistoryEventText" MarginLeft="15" Brush="Encyclopedia.SubPage.History.Text" Command.LinkClick="ExecuteLink"/>
+          <RichTextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" Text="@HistoryEventTimeText" MarginLeft="15" Brush="Encyclopedia.SubPage.History.Text" Brush.FontSize="16" Command.LinkClick="ExecuteLink"/>
+        </Children>
+      </ListPanel>
+
+    </Children>
+  </Widget>
+</Window>

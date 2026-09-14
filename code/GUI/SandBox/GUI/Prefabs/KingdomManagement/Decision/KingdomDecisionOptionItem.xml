@@ -1,0 +1,182 @@
+<Prefab>
+  <Parameters>
+
+    <Parameter Name="IsOptionForAbstain" DefaultValue="false" />
+
+  </Parameters>
+  <Constants>
+    <Constant Name="Kingdom.Voter.Percent.Divider.Width" BrushLayer="Default" BrushName="Kingdom.Voter.PercentageIndicator" BrushValueType="Width" />
+    <Constant Name="Kingdom.Voter.Percent.Divider.Height" BrushLayer="Default" BrushName="Kingdom.Voter.PercentageIndicator" BrushValueType="Height" />
+
+    <Constant Name="Kingdom.Voter.Tuple.Width" BrushLayer="Default" BrushName="Kingdom.Voter.Tuple" BrushValueType="Width" MultiplyResult="0.70" />
+    <Constant Name="Kingdom.Voter.Tuple.Height" BrushLayer="Default" BrushName="Kingdom.Voter.Tuple" BrushValueType="Height" MultiplyResult="0.70" />
+    <Constant Name="Kingdom.Voter.Brush" BooleanCheck="*IsOptionForAbstain" OnFalse="Kingdom.Voter.Tuple" OnTrue="Kingdom.Voter.Abstain.Tuple" />
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.30" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.38" Value="!Banner.Height" />
+
+  </Constants>
+  <Window>
+    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+      <Children>
+
+        <!--<TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Kingdom.Voter.Tuple.Width" SuggestedHeight="24" Text="RELATION CHANGE" />-->
+
+				<!-- Empty Navigation Widget-->
+        <Widget Id="DecisionItemParent" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="30">
+          <Children>
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center">
+              <Children>
+
+                <!--Sponsor-->
+                <Widget DataSource="{Sponsor}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="108" SuggestedHeight="82" VerticalAlignment="Center" HorizontalAlignment="Center">
+                  <Children>
+                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" HoveredCursorState="RightClickLink">
+                      <Children>
+
+                        <!--Sponsor Clan Banner-->
+                        <MaskedTextureWidget DataSource="{ClanBanner_9}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Right" MarginRight="10" MarginTop="0" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true"  />
+                        <ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="95" SuggestedHeight="70" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginRight="5" Sprite="@SponsorWeightImagePath" ColorFactor="1.8"  IsDisabled="true" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <!--Sponsor Name-->
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="128" SuggestedHeight="36" VerticalAlignment="Bottom" PositionXOffset="-10" PositionYOffset="26" Brush="Kingdom.DecisionParagraph.Text" Text="@NameText" />
+                  </Children>
+                </Widget>
+
+                <HintWidget DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Command.HoverBegin="ExecuteShowSupporterTooltip" Command.HoverEnd="ExecuteHideSupporterTooltip" MarginLeft="5">
+                  <Children>
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" >
+                      <Children>
+                        <DecisionSupporterGridWidget DataSource="{SupportersOfThisOption}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MinHeight="100" IsEnabled="false" MoreTextWidget="..\MoreTextWidget" DefaultCellWidth="50" DefaultCellHeight="50" ColumnCount="2" VisibleCount="4" >
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="33" VerticalAlignment="Center" HorizontalAlignment="Center" ValueFactor="-20" ClipContents="true">
+                              <Children>
+                                <ImageIdentifierWidget DataSource="{Visual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="50" SuggestedHeight="33" HorizontalAlignment="Center" VerticalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsEnabled="false" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="5" Sprite="@SupportWeightImagePath" ColorFactor="1.8"  IsDisabled="true" />
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </DecisionSupporterGridWidget>
+                        <TextWidget Id="MoreTextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" MarginLeft="5" Brush="Kingdom.DecisionParagraph.Text" Brush.FontSize="28"/>
+                      </Children>
+                    </ListPanel>
+                  </Children>
+                </HintWidget>
+              </Children>
+            </ListPanel>
+          </Children>
+        </Widget>
+
+        <HintWidget DataSource="{OptionHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint">
+          <Children>
+            <ButtonWidget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Kingdom.Voter.Tuple.Width" SuggestedHeight="!Kingdom.Voter.Tuple.Height" Brush="!Kingdom.Voter.Brush" Command.Click="ExecuteSelection" IsEnabled="@CanBeChosen" IsSelected="@IsSelected" UpdateChildrenStates="true">
+              <Children>
+
+                <KingdomDecisionOptionWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginLeft="2" MarginRight="5" IsOptionSelected="@IsSelected" IsPlayerSupporter="@IsPlayerSupporter" SealVisualWidget="VerticalLayoutPanel\SupportAndSealWidget\SealVisualWidget" StrengthWidget="VerticalLayoutPanel\SupportAndSealWidget\StrengthWidget" IsKingsOption="@IsKingsOutcome" IsAbstain="@IsOptionForAbstain" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                  <Children>
+
+                    <ListPanel Id="VerticalLayoutPanel" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom" UpdateChildrenStates="true">
+                      <Children>
+
+                        <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" MarginTop="65" VerticalAlignment="Center" Brush="Kingdom.Voter.TupleName.Text" Text="@Name"/>
+                        <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" HorizontalAlignment="Center" SuggestedWidth="240" MarginBottom="0" Brush="Kingdom.Voter.TupleDescription.Text" Text="@Description"/>
+                        <Widget Id="SupportAndSealWidget" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="150">
+                          <Children>
+														
+                            <DecisionSupportStrengthListPanel Id="StrengthWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" MarginBottom="90" MarginRight="5" CurrentIndex="@CurrentSupportWeightIndex" IsOptionSelected="@IsSelected" IsPlayerSupporter="@IsPlayerSupporter" StackLayout.LayoutMethod="HorizontalLeftToRight" StrengthButton0="StrengthButton0" IsKingsOutcome="@IsKingsOutcome" StrengthButton0Text="StrengthButton0\StrengthButton0Text" StrengthButton1="StrengthButton1" StrengthButton1Text="StrengthButton1\StrengthButton1Text" StrengthButton2="StrengthButton2" StrengthButton2Text="StrengthButton2\StrengthButton2Text">
+                              <Children>
+
+                                <!--Strength 0-->
+                                <ButtonWidget DoNotPassEventsToChildren="true" Id="StrengthButton0" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="68" SuggestedHeight="55" VerticalAlignment="Center" MarginRight="15" Brush="Kingdom.VoteStrength1.Button" Command.Click="OnSupportStrengthChange" CommandParameter.Click="0" IsEnabled="@IsSupportOption1Enabled" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                                  <Children>
+                                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" UpdateChildrenStates="true">
+                                      <Children>
+                                        <TextWidget DoNotAcceptEvents="true" Id="StrengthButton1Text" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.Voter.SupportAmount.Text" Text="@SupportOption1Text" />
+                                        <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="16" VerticalAlignment="Center" PositionYOffset="-2" Brush="Kingdom.VoteStrengthInfluence.Icon" />
+                                      </Children>
+                                    </ListPanel>
+
+                                  </Children>
+                                </ButtonWidget>
+
+
+                                <!--Strength 1-->
+                                <ButtonWidget DoNotPassEventsToChildren="true" Id="StrengthButton1" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="72" SuggestedHeight="60" VerticalAlignment="Center" MarginRight="15" Brush="Kingdom.VoteStrength2.Button" Command.Click="OnSupportStrengthChange" CommandParameter.Click="1" IsEnabled="@IsSupportOption2Enabled" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+                                  <Children>
+                                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" UpdateChildrenStates="true">
+                                      <Children>
+                                        <TextWidget DoNotAcceptEvents="true"  Id="StrengthButton1Text" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.Voter.SupportAmount.Text" Text="@SupportOption2Text" />
+                                        <BrushWidget DoNotAcceptEvents="true"  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="16" VerticalAlignment="Center" PositionYOffset="-2" Brush="Kingdom.VoteStrengthInfluence.Icon" />
+                                      </Children>
+                                    </ListPanel>
+                                  </Children>
+                                </ButtonWidget>
+
+
+                                <!--Strength 2-->
+                                <ButtonWidget DoNotPassEventsToChildren="true" Id="StrengthButton2" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="68" SuggestedHeight="55" VerticalAlignment="Center" Brush="Kingdom.VoteStrength3.Button" Command.Click="OnSupportStrengthChange" CommandParameter.Click="2" IsEnabled="@IsSupportOption3Enabled" UpdateChildrenStates="true" GamepadNavigationIndex="2">
+                                  <Children>
+                                    <ListPanel DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" UpdateChildrenStates="true">
+                                      <Children>
+                                        <TextWidget DoNotAcceptEvents="true"  Id="StrengthButton1Text" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.Voter.SupportAmount.Text" Text="@SupportOption3Text" />
+                                        <BrushWidget DoNotAcceptEvents="true"  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="16" VerticalAlignment="Center" PositionYOffset="-2" Brush="Kingdom.VoteStrengthInfluence.Icon"/>
+                                      </Children>
+                                    </ListPanel>
+                                  </Children>
+                                </ButtonWidget>
+
+                              </Children>
+                            </DecisionSupportStrengthListPanel>
+
+                            <Widget Id="SealVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="150" SuggestedHeight="150" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="30" Sprite="SPKingdom\king_seal" IsVisible="false"/>
+
+                          </Children>
+                        </Widget>
+
+                      </Children>
+                    </ListPanel>
+
+                  </Children>
+                </KingdomDecisionOptionWidget>
+
+                <TutorialHighlightItemBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TutorialHighlightBrush" IsEnabled="false" IsHighlightEnabled="@IsHighlightEnabled" IsVisible="false"/>
+              </Children>
+            </ButtonWidget>
+          </Children>
+        </HintWidget>
+
+        <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Center" MarginBottom="10">
+          <Children>
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="255" SuggestedHeight="67" VerticalAlignment="Center" Sprite="SPKingdom\Decision\progress_bar_base" IsEnabled="false" IsHidden="@IsOptionForAbstain">
+              <Children>
+                <!--Win Percentage-->
+                <FillBarWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="204" SuggestedHeight="24" HorizontalAlignment="Center" VerticalAlignment="Center" ChangeWidget="ChangeWidget" CurrentAmount="@WinPercentage" DividerWidget="DividerWidget" FillWidget="FillWidget" InitialAmount="@InitialPercentage" IsEnabled="false" MaxAmount="100" ShowNegativeChange="true">
+                  <Children>
+                    <Widget Id="FillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="255" SuggestedHeight="67" VerticalAlignment="Center" ClipContents="true">
+                      <Children>
+                        <Widget Id="FillVisual" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="203" SuggestedHeight="20" VerticalAlignment="Center" Sprite="SPKingdom\Decision\progress_bar_fill_positive" Color="#B88A41FF" ColorFactor="4" />
+                      </Children>
+                    </Widget>
+                    <Widget Id="ChangeWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="203" SuggestedHeight="19" VerticalAlignment="Center" Sprite="SPKingdom\voter_progress_bar_change_sharp_cornered" />
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="266" SuggestedHeight="67" VerticalAlignment="Center" HorizontalAlignment="Center" Sprite="SPKingdom\Decision\progress_bar_frame" IsEnabled="false" IsHidden="@IsOptionForAbstain"/>
+                    <Widget Id="DividerWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Kingdom.Voter.Percent.Divider.Width" SuggestedHeight="!Kingdom.Voter.Percent.Divider.Height" VerticalAlignment="Center"  Sprite="progress_bar_indicator_9" ExtendLeft="6" ExtendBottom="5" ExtendTop="5" ExtendRight="6" />
+                  </Children>
+                </FillBarWidget>
+
+              </Children>
+            </Widget>
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionYOffset="10" Brush="Kingdom.Voter.Totals.Text" Text="@WinPercentageStr" />
+          </Children>
+        </Widget>
+
+
+      </Children>
+    </ListPanel>
+  </Window>
+</Prefab>

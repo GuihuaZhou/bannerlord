@@ -1,0 +1,25 @@
+<Prefab>
+	<Parameters>
+		<Parameter Name="OnMission" DefaultValue="false" />
+	</Parameters>
+	<Constants>
+	</Constants>
+	<VisualDefinitions>
+	</VisualDefinitions>
+	<Window>
+		<TournamentMatchWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" IsVisible="@IsValid" Brush="Tournament.Match" MarginTop="13" MarginBottom="13" MarginLeft="4" MarginRight="4" State="@State">
+			<Children>
+			
+				<ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" StackLayout.LayoutMethod="VerticalBottomToTop">
+					<Children>
+						<Tournament.Team DataSource="{Team1}" Parameter.OnMission="*OnMission"/>
+						<Tournament.Team DataSource="{Team2}" Parameter.OnMission="*OnMission"/>
+						<Tournament.Team DataSource="{Team3}" Parameter.OnMission="*OnMission"/>
+						<Tournament.Team DataSource="{Team4}" Parameter.OnMission="*OnMission"/>
+					</Children>
+				</ListPanel>
+			
+			</Children>								
+		</TournamentMatchWidget>
+	</Window>
+</Prefab>

@@ -1,0 +1,44 @@
+<Window>
+  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+    <Children>
+
+      <Widget DataSource="{Targets}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+        <ItemTemplate>
+
+          <AgentAlarmStateWidget UpdateChildrenStates="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Position="@ScreenPosition" WSign="@WSign" AlarmState="@AlarmState" Command.OnRemove="ExecuteRemove" IsVisible="@IsSuspected">
+            <Children>
+
+              <FillBarVerticalWidget Id="AgentAlarmProgressBar" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="36" SuggestedHeight="52" HorizontalAlignment="Right" VerticalAlignment="Bottom" FillWidget="Canvas\Frame\FillParent\FillClipRect" InitialAmount="@AlarmProgress" IsDirectionUpward="true" MaxAmount="100" >
+                <Children>
+                  <BrushWidget Id="Canvas" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Mission.Stealth.Cautiousness.Fillbar.Canvas">
+                    <Children>
+                      <BrushWidget Id="Frame" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Mission.Stealth.Cautiousness.Fillbar.Frame">
+                        <Children>
+                          <Widget Id="FillParent" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="36" VerticalAlignment="Bottom" PositionYOffset="-10" >
+                            <Children>
+                              <Widget Id="FillClipRect" UpdateChildrenStates="true" ClipContents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" PositionYOffset="2" VerticalAlignment="Bottom" >
+                                <Children>
+                                  <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="51" PositionYOffset="7" VerticalAlignment="Bottom" Brush="Mission.Stealth.Cautiousness.Fillbar.Filler" />
+                                </Children>
+                              </Widget>
+                            </Children>
+                          </Widget>
+                        </Children>
+                      </BrushWidget>
+                    </Children>
+                  </BrushWidget>
+
+                </Children>
+              </FillBarVerticalWidget>
+            </Children>
+          </AgentAlarmStateWidget>
+
+        </ItemTemplate>
+      </Widget>
+
+      <!-- Safe Area Indicator -->
+      <BoolStateChangerWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="45" HorizontalAlignment="Right" VerticalAlignment="Bottom" PositionXOffset="-330" PositionYOffset="-95" Brush="Mission.Stealth.SafeArea.Icon" BooleanCheck="@IsMainAgentInSafeArea" TrueState="Active" FalseState="Default"/>
+
+    </Children>
+  </Widget>
+</Window> 

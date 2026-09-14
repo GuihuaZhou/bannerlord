@@ -1,0 +1,55 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="Save.Tuple.Width" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Width" />
+    <Constant Name="Save.Tuple.Height" BrushLayer="Default" BrushName="SaveLoad.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.43" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.43" Value="!Banner.Height"/>
+
+  </Constants>
+  <Window>
+    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Save.Tuple.Width" HorizontalAlignment="Center" SuggestedHeight="!Save.Tuple.Height" IsSelected="@IsSelected" Command.DoubleClick="ExecuteSaveLoad" Command.Click="ExecuteSelection" UpdateChildrenStates="true" DoNotPassEventsToChildren="true" MarginBottom="-5" IsHidden="@IsFilteredOut" >
+      <Children>
+
+        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SaveLoad.Tuple" IsHidden="@IsDisabled" />
+
+        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SaveLoad.Tuple.Invalid" IsVisible="@IsDisabled" />
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" UpdateChildrenStates="true">
+          <Children>
+
+            <MaskedTextureWidget DataSource="{ClanBanner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="9" Brush="Flat.Tuple.Banner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+
+            <!--Name Text-->
+            <BoolBrushChangerBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" BooleanCheck="@IsCorrupted" TrueBrush="SaveLoad.Tuple.Title.CorruptedText" FalseBrush="SaveLoad.Tuple.Title.Text" TargetWidget="SaveNameTextWidget" HorizontalAlignment="Left" MarginLeft="25" IsDisabled="true" DoNotAcceptEvents="true" ClipContents="true" >
+              <Children>
+                <TextWidget Id="SaveNameTextWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Text="@NameText" />
+              </Children>
+            </BoolBrushChangerBrushWidget>
+
+            <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" MarginTop="20" MarginRight="10" StackLayout.LayoutMethod="VerticalTopToBottom" DoNotAcceptEvents="true" UpdateChildrenStates="true">
+              <Children>
+
+                <!--Game Time Text-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" Brush="SaveLoad.Tuple.RealTime.Text" Text="@RealTimeText1" MarginTop="7" DoNotAcceptEvents="true"/>
+
+                <!--Real Time Text-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="3" HorizontalAlignment="Right" Brush="SaveLoad.Tuple.RealTime.Text" Text="@RealTimeText2" DoNotAcceptEvents="true"/>
+
+              </Children>
+            </ListPanel>
+
+          </Children>
+        </ListPanel>
+
+        <HintWidget DataSource="{DisabledReasonHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+
+      </Children>
+    </ButtonWidget>
+
+  </Window>
+</Prefab>

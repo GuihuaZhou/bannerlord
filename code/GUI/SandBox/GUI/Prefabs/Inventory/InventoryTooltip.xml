@@ -1,0 +1,49 @@
+<Prefab>
+	<Constants>
+
+	</Constants>
+	<Window>
+		<ListPanel Id="InventoryTooltip" DoNotAcceptEvents="true" DataSource="{ItemMenu}" IsHidden="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+			<Children>
+
+				<Widget Id="TargetItemTooltip" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" ExtendTop="10" ExtendLeft="10" ExtendRight="10" ExtendBottom="10" Sprite="inventory_tooltip_9" >
+					<Children>
+						<TextWidget Text="@ItemName" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" MaxWidth="280" SuggestedHeight="65" MarginTop="5" MarginBottom="20" MarginLeft="20" MarginRight="20" HorizontalAlignment="Center" Brush="InventoryDefaultFontBrush" Brush.FontSize="26" Brush.TextColor="#E1E1E1FF" Brush.TextVerticalAlignment="Center" Brush.TextHorizontalAlignment="Center"/>
+						<Widget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="155" SuggestedHeight="81" MarginTop="75" MarginLeft="20" MarginRight="20" HorizontalAlignment="Center" Sprite="Inventory\portrait_cart">
+							<Children>
+								<!--<ItemTableauWidget DoNotAcceptEvents="true" DataSource="{Tableau}" HeightSizePolicy="Fixed" WidthSizePolicy="Fixed" SuggestedWidth="81" SuggestedHeight="81" HorizontalAlignment="Center" ItemModifierId="@ItemModifierId" StringId="@StringId" />-->
+								<ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="2" MarginBottom="2" MarginLeft="2" MarginRight="2" ImageId="@Id" TextureProviderName="@TextureProviderName" AdditionalArgs="@AdditionalArgs" LoadingIconWidget="LoadingIconWidget">
+									<Children>
+										<Standard.CircleLoadingWidget HorizontalAlignment="Center" VerticalAlignment="Center" Id="LoadingIconWidget"/>
+									</Children>
+								</ImageIdentifierWidget>
+							</Children>
+						</Widget>
+						<InventoryTooltipInnerContent Parameter.ItemFlagsDataSource="{TargetItemFlagList}" Parameter.PropertiesDataSource="{TargetItemProperties}" MarginTop="160" MarginBottom="10"/>
+					</Children>
+				</Widget>
+
+				<!--Compared Item (Right Side)-->
+				<Widget Id="ComparedItemTooltip" IsVisible="@IsComparing" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom">
+					<Children>
+						<Widget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" ExtendTop="10" ExtendLeft="10" ExtendRight="10" ExtendBottom="10" Sprite="inventory_tooltip_9">
+							<Children>
+								<TextWidget Text="@ComparedItemName" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" MaxWidth="280" SuggestedHeight="65" MarginTop="5" MarginBottom="20" MarginLeft="20" MarginRight="20" HorizontalAlignment="Center" Brush="InventoryDefaultFontBrush" Brush.FontSize="26" Brush.TextColor="#E1E1E1FF" Brush.TextVerticalAlignment="Center" Brush.TextHorizontalAlignment="Center"/>
+                <Widget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="128" SuggestedHeight="67" MarginTop="75" HorizontalAlignment="Center" Sprite="Inventory\portrait_cart">
+									<Children>
+										<ImageIdentifierWidget DataSource="{ComparedImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="2" MarginBottom="2" MarginLeft="2" MarginRight="2" ImageId="@Id" TextureProviderName="@TextureProviderName" AdditionalArgs="@AdditionalArgs" LoadingIconWidget="LoadingIconWidget">
+											<Children>
+												<Standard.CircleLoadingWidget HorizontalAlignment="Center" VerticalAlignment="Center" Id="LoadingIconWidget"/>
+											</Children>
+										</ImageIdentifierWidget>
+									</Children>
+								</Widget>
+								<InventoryTooltipInnerContent Parameter.IsComparedItem="true" Parameter.IsPlayerItem="@IsPlayerItem" Parameter.ItemFlagsDataSource="{ComparedItemFlagList}" Parameter.PropertiesDataSource="{ComparedItemProperties}" MarginTop="145" MarginBottom="10" />
+							</Children>
+						</Widget>
+					</Children>
+				</Widget>
+			</Children>
+		</ListPanel>
+	</Window>
+</Prefab>

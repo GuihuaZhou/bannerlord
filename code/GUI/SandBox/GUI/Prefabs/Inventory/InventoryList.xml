@@ -1,0 +1,155 @@
+<Prefab>
+  <Constants>
+    <Constant Name="SidePanel.Width" Value="!Toggle.Width" Additive="24"/>
+    <Constant Name="SidePanel.NegativeWidth" Value="!SidePanel.Width" MultiplyResult="-1"/>
+
+    <Constant Name="Toggle.Brush" BooleanCheck="*IsPlayerItem" OnTrue="Party.Toggle.Right" OnFalse="Party.Toggle.Left"/>
+    <Constant Name="Toggle.Margin" Value="30"/>
+    <Constant Name="Toggle.Width" BrushName="Inventory.Tuple.Left" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Toggle.Height" BrushName="Inventory.Tuple.Left" BrushLayer="Default" BrushValueType="Height"/>
+    <Constant Name="Toggle.Shadow.Height" SpriteName="PartyScreen\button_collapser_shadow" SpriteValueType="Height"/>
+
+    <Constant Name="SidePanel.Stats.MarginTop" Value="90" />
+    <Constant Name="SidePanel.MarginTop" Value="25" />
+    <Constant Name="SidePanel.MarginBottom" Value="70" />
+
+    <Constant Name="SidePanel.ScrollablePanel.Width" Value="!Toggle.Width" Additive="20" />
+
+    <Constant Name="SidePanel.ScrollablePanel.MarginHorizontal" Value="2" />
+    <Constant Name="SidePanel.ScrollablePanel.MarginLeft" BooleanCheck="*IsPlayerItem" OnTrue="!SidePanel.ScrollablePanel.MarginHorizontal" OnFalse="0" />
+    <Constant Name="SidePanel.ScrollablePanel.MarginRight" BooleanCheck="*IsPlayerItem" OnTrue="0" OnFalse="!SidePanel.ScrollablePanel.MarginHorizontal" />
+    <Constant Name="SidePanel.ScrollablePanel.MarginTop" Value="48" />
+    <Constant Name="SidePanel.ScrollablePanel.MarginBottom" Value="1" />
+
+    <Constant Name="Scrollbar.Margin" Value="2" />
+
+    <Constant Name="SortButtonsXOffset" BooleanCheck="*IsPlayerItem" OnTrue="-1" OnFalse="-4" />
+
+    <Constant Name="Scrollbar.HorizontalAlignment" BooleanCheck="*IsPlayerItem" OnTrue="Right" OnFalse="Left"/>
+    <Constant Name="SidePanel.ScrollablePanel.HorizontalAlignment" BooleanCheck="*IsPlayerItem" OnTrue="Left" OnFalse="Right"/>
+
+    <Constant Name="Inventory.SidePanel.SortTextYOffset" Value="-3" />
+
+    <Constant Name="Inventory.SidePanel.TypeSort" BooleanCheck="*IsPlayerItem" OnTrue="Inventory.SidePanel.TypeSort.Right" OnFalse="Inventory.SidePanel.TypeSort.Left" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Right.Width" BrushName="Inventory.SidePanel.TypeSort.Right" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Right.Height" BrushName="Inventory.SidePanel.TypeSort.Right" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Left.Width" BrushName="Inventory.SidePanel.TypeSort.Left" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Left.Height" BrushName="Inventory.SidePanel.TypeSort.Left" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Width" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.TypeSort.Right.Width" OnFalse="!Inventory.SidePanel.TypeSort.Left.Width" />
+    <Constant Name="Inventory.SidePanel.TypeSort.Height" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.TypeSort.Right.Height" OnFalse="!Inventory.SidePanel.TypeSort.Left.Height" />
+
+    <Constant Name="Inventory.SidePanel.NameSort" BooleanCheck="*IsPlayerItem" OnTrue="Inventory.SidePanel.NameSort.Right" OnFalse="Inventory.SidePanel.NameSort.Left" />
+    <Constant Name="Inventory.SidePanel.NameSort.Right.Width" BrushName="Inventory.SidePanel.NameSort.Right" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.NameSort.Right.Height" BrushName="Inventory.SidePanel.NameSort.Right" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.NameSort.Left.Width" BrushName="Inventory.SidePanel.NameSort.Left" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.NameSort.Left.Height" BrushName="Inventory.SidePanel.NameSort.Left" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.NameSort.Width" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.NameSort.Right.Width" OnFalse="!Inventory.SidePanel.NameSort.Left.Width" />
+    <Constant Name="Inventory.SidePanel.NameSort.Height" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.NameSort.Right.Height" OnFalse="!Inventory.SidePanel.NameSort.Left.Height" />
+
+    <Constant Name="Inventory.SidePanel.CountSort" BooleanCheck="*IsPlayerItem" OnTrue="Inventory.SidePanel.CountSort.Right" OnFalse="Inventory.SidePanel.CountSort.Left" />
+    <Constant Name="Inventory.SidePanel.CountSort.Right.Width" BrushName="Inventory.SidePanel.CountSort.Right" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.CountSort.Right.Height" BrushName="Inventory.SidePanel.CountSort.Right" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.CountSort.Left.Width" BrushName="Inventory.SidePanel.CountSort.Left" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.CountSort.Left.Height" BrushName="Inventory.SidePanel.CountSort.Left" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.CountSort.Width" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.CountSort.Right.Width" OnFalse="!Inventory.SidePanel.CountSort.Left.Width" />
+    <Constant Name="Inventory.SidePanel.CountSort.Height" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.CountSort.Right.Height" OnFalse="!Inventory.SidePanel.CountSort.Left.Height" />
+
+    <Constant Name="Inventory.SidePanel.ValueSort" BooleanCheck="*IsPlayerItem" OnTrue="Inventory.SidePanel.ValueSort.Right" OnFalse="Inventory.SidePanel.ValueSort.Left" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Right.Width" BrushName="Inventory.SidePanel.ValueSort.Right" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Right.Height" BrushName="Inventory.SidePanel.ValueSort.Right" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Left.Width" BrushName="Inventory.SidePanel.ValueSort.Left" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Left.Height" BrushName="Inventory.SidePanel.ValueSort.Left" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Width" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.ValueSort.Right.Width" OnFalse="!Inventory.SidePanel.ValueSort.Left.Width" />
+    <Constant Name="Inventory.SidePanel.ValueSort.Height" BooleanCheck="*IsPlayerItem" OnTrue="!Inventory.SidePanel.ValueSort.Right.Height" OnFalse="!Inventory.SidePanel.ValueSort.Left.Height" />
+  </Constants>
+
+  <Parameters>
+    <Parameter Name="ListDataSource" DefaultValue="" />
+    <Parameter Name="SortDataSource" DefaultValue="" />
+    <Parameter Name="IsPlayerItem" DefaultValue="true" />
+    <Parameter Name="ListTag" DefaultValue="asd" />
+    <Parameter Name="NavigationMinIndex" DefaultValue="" />
+    <Parameter Name="NavigationMaxIndex" DefaultValue="" />
+    <Parameter Name="IsDefaultNavigationScope" DefaultValue="false" />
+    <Parameter Name="ListScopeID" DefaultValue="InventoryListDefaultItemsScope" />
+    <Parameter Name="HeadersScopeID" DefaultValue="InventoryListDefaultHeadersScope" />
+  </Parameters>
+
+  <VisualDefinitions>
+    <VisualDefinition Name="ButtonText" TransitionDuration = "0.0">
+      <VisualState State="Default" PositionXOffset="0" PositionYOffset="-2" />
+      <VisualState State="Pressed" PositionXOffset="0" PositionYOffset="-1" />
+    </VisualDefinition>
+  </VisualDefinitions>
+
+  <Window>
+    <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="!SidePanel.Width">
+      <Children>
+
+        <ScrollablePanel Id="InventoryListScrollablePanel" HeightSizePolicy ="StretchToParent" WidthSizePolicy="Fixed" SuggestedWidth="!Toggle.Width" InnerPanel="MyClipRect\InnerPanelParent" ClipRect="MyClipRect" MarginTop="!SidePanel.ScrollablePanel.MarginTop" MarginBottom="!SidePanel.ScrollablePanel.MarginBottom" MarginLeft="!SidePanel.ScrollablePanel.MarginLeft" MarginRight="!SidePanel.ScrollablePanel.MarginRight" HorizontalAlignment="!SidePanel.ScrollablePanel.HorizontalAlignment" VerticalAlignment="Bottom" VerticalScrollbar="..\Scrollbar\Scrollbar" AutoHideScrollBars="true" AcceptDrop="true" Command.Drop="ExecuteTransferWithParameters" CommandParameter.Drop="*ListTag" ClipContents="true">
+          <Children>
+            <NavigationScopeTargeter ScopeID="*ListScopeID" ScopeParent="..\MyClipRect" ScopeMovements="Vertical" HasCircularMovement="false" DownNavigationScope="*HeadersScopeID" IsDefaultNavigationScope="*IsDefaultNavigationScope" ForceGainNavigationBasedOnDirection="true" ForceGainNavigationOnClosestChild="true" DoNotAutoNavigateAfterSort="true" NavigateFromScopeEdges="true" DoNotAutoCollectChildScopes="true" />
+            <Widget Id="MyClipRect" WidthSizePolicy = "Fixed" SuggestedWidth="!SidePanel.ScrollablePanel.Width" HeightSizePolicy = "StretchToParent" ClipContents = "true" HorizontalAlignment="Center">
+              <Children>
+                <ListPanel Id="InnerPanelParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+
+                    <InventoryListPanel Id="InnerPanel" DataSource="*ListDataSource" StackLayout.LayoutMethod="VerticalTopToBottom" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MinIndex="*NavigationMinIndex" MaxIndex="*NavigationMaxIndex" StepSize="10" EmptyNavigationWidget="..\..\..\MyClipRect">
+                      <ItemTemplate>
+                        <InventoryItemTuple Parameter.IsPlayerItem="*IsPlayerItem"/>
+                      </ItemTemplate>
+                    </InventoryListPanel>
+
+                    <!--Bottom Margin Widget-->
+                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="10"/>
+                  </Children>
+                </ListPanel>
+              </Children>
+            </Widget>
+          </Children>
+        </ScrollablePanel>
+
+        <Standard.VerticalScrollbar Id="Scrollbar" HorizontalAlignment="!Scrollbar.HorizontalAlignment" VerticalAlignment="Bottom" MarginRight="!Scrollbar.Margin" HeightSizePolicy ="StretchToParent"  MarginTop="!SidePanel.ScrollablePanel.MarginTop" MarginBottom="!SidePanel.ScrollablePanel.MarginBottom"/>
+
+        <!--Headers-->
+				<NavigationScopeTargeter ScopeID="*HeadersScopeID" ScopeParent="..\Headers" ScopeMovements="Horizontal" HasCircularMovement="false" UpNavigationScope="*ListScopeID" NavigateFromScopeEdges="true" />
+        <ListPanel Id="Headers" DataSource="*SortDataSource" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" RenderLate="true">
+          <Children>
+
+            <SortButtonWidget DoNotPassEventsToChildren="true" SuggestedWidth="!Inventory.SidePanel.TypeSort.Width" SuggestedHeight="!Inventory.SidePanel.TypeSort.Height" VerticalAlignment="Center" Brush="!Inventory.SidePanel.TypeSort" Command.Click="ExecuteSortByType" IsSelected="@IsTypeSelected" SortState="@TypeState" SortVisualWidget="TypeSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+              <Children>
+                <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" Brush="InventoryDefaultFontBrush" ClipContents="false" Text="@TypeText" />
+                <BrushWidget Id="TypeSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" PositionXOffset="!Inventory.SidePanel.SortTextYOffset" Brush="Inventory.SortArrow" />
+              </Children>
+            </SortButtonWidget>
+
+            <SortButtonWidget DoNotPassEventsToChildren="true" SuggestedWidth="!Inventory.SidePanel.NameSort.Width" SuggestedHeight="!Inventory.SidePanel.NameSort.Height" VerticalAlignment="Center" Brush="!Inventory.SidePanel.NameSort" Command.Click="ExecuteSortByName" IsSelected="@IsNameSelected" SortState="@NameState" SortVisualWidget="NameSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+              <Children>
+                <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" Brush="InventoryDefaultFontBrush" ClipContents="false" Text="@NameText" />
+                <BrushWidget Id="NameSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" PositionXOffset="!Inventory.SidePanel.SortTextYOffset" Brush="Inventory.SortArrow" />
+              </Children>
+            </SortButtonWidget>
+
+            <SortButtonWidget DoNotPassEventsToChildren="true" SuggestedWidth="!Inventory.SidePanel.CountSort.Width" SuggestedHeight="!Inventory.SidePanel.CountSort.Height" VerticalAlignment="Center" Brush="!Inventory.SidePanel.CountSort" Command.Click="ExecuteSortByQuantity" IsSelected="@IsQuantitySelected" SortState="@QuantityState" SortVisualWidget="QuantitySortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="2">
+              <Children>
+                <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" Brush="InventoryDefaultFontBrush" ClipContents="false" Text="@QuantityText" />
+                <BrushWidget Id="QuantitySortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" PositionXOffset="!Inventory.SidePanel.SortTextYOffset" Brush="Inventory.SortArrow" />
+              </Children>
+            </SortButtonWidget>
+
+            <SortButtonWidget DoNotPassEventsToChildren="true" SuggestedWidth="!Inventory.SidePanel.ValueSort.Width" SuggestedHeight="!Inventory.SidePanel.ValueSort.Height" VerticalAlignment="Center" Brush="!Inventory.SidePanel.ValueSort" Command.Click="ExecuteSortByCost" IsSelected="@IsCostSelected" SortState="@CostState" SortVisualWidget="CostSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="3">
+              <Children>
+                <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" Brush="InventoryDefaultFontBrush" ClipContents="false" Text="@CostText" />
+                <BrushWidget Id="CostSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionYOffset="!Inventory.SidePanel.SortTextYOffset" PositionXOffset="!Inventory.SidePanel.SortTextYOffset" Brush="Inventory.SortArrow" />
+              </Children>
+            </SortButtonWidget>
+
+          </Children>
+        </ListPanel>
+
+        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="38" VerticalAlignment="Bottom" Sprite="Inventory\dropshadow_for_header" VerticalFlip="true" IsDisabled="true"/>
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="38" VerticalAlignment="Top" MarginTop="!SidePanel.ScrollablePanel.MarginTop" Sprite="Inventory\dropshadow_for_header" IsDisabled="true"/>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

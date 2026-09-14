@@ -1,0 +1,166 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="Banner.Width" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Width" />
+    <Constant Name="Banner.Height" BrushLayer="Default" BrushName="Flat.Tuple.Banner.Small" BrushValueType="Height" />
+
+    <Constant Name="Banner.Width.Scaled" MultiplyResult="0.30" Value="!Banner.Width" />
+    <Constant Name="Banner.Height.Scaled" MultiplyResult="0.38" Value="!Banner.Height" />
+
+  </Constants>
+  <Window>
+    <ValueBasedVisibilityWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+      <Children>
+
+        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="560" SuggestedHeight="1012" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionYOffset="10" Brush="Encyclopedia.SubPage.Settlement.Image" Sprite="@SettlementImageID" Brush.ColorFactor="0.2"/>
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Kingdom.DecisionTitleBig.Text" MarginTop="20" ClipContents="false" Text="@SettlementName"/>
+
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Kingdom.DecisionTitleMedium.Text" Text="@DetailsText" MarginTop="20" MarginBottom="20" ClipContents="false"/>
+
+            <!--Owner Title-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="24" VerticalAlignment="Bottom" MarginBottom="5" Brush="Kingdom.DecisionParagraph.Text" Text="@OwnerText" />
+            
+            <!--Owner Info-->
+            <Widget DataSource="{Owner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="130" SuggestedHeight="100" HorizontalAlignment="Center" MarginBottom="24">
+              <Children>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.NoAudioButton" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" HoveredCursorState="RightClickLink">
+                  <Children>
+
+                    <!--Owner Clan Banner-->
+                    <MaskedTextureWidget DataSource="{ClanBanner_9}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Banner.Width.Scaled" SuggestedHeight="!Banner.Height.Scaled" HorizontalAlignment="Right" VerticalAlignment="Top" MarginTop="10" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true"  />
+
+                    <!--Owner Face-->
+                    <ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                  </Children>
+                </ButtonWidget>
+
+                <!--Owner Name-->
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="24" VerticalAlignment="Bottom" PositionYOffset="30" Brush="Kingdom.DecisionParagraph.Text" Text="@NameText" />
+              </Children>
+            </Widget>
+
+            <!--Stats Horizontal Container-->
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="80" MarginTop="20">
+              <Children>
+
+                <!--Left List-->
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+
+                    <!--Walls-->
+                    <ListPanel DataSource="{WallsHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+                      <Children>
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_wall_big" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center"  Brush="Kingdom.DecisionParagraph2.Text" Text="@WallsText" />
+                      </Children>
+                    </ListPanel>
+
+                    <!--Loyalty-->
+                    <ListPanel DataSource="{LoyaltyHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+                      <Children>
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_loyalty" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center"  Brush="Kingdom.DecisionParagraph2.Text" Text="@LoyaltyText"/>
+                      </Children>
+                    </ListPanel>
+
+                    <!--Prosperity-->
+                    <ListPanel DataSource="{ProsperityHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_prosperity_big" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.DecisionParagraph2.Text" Text="@ProsperityText" />
+                      </Children>
+                    </ListPanel>
+
+                    <!--Militia-->
+                    <ListPanel DataSource="{MilitasHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_militia_big" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.DecisionParagraph2.Text" Text="@MilitasText" />
+                      </Children>
+                    </ListPanel>
+
+                  </Children>
+                </ListPanel>
+
+                <!--Right List-->
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" >
+                  <Children>
+
+                    <!--Security-->
+                    <ListPanel DataSource="{SecurityHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+                      <Children>
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_security" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.DecisionParagraph2.Text" Text="@SecurityText"/>
+                      </Children>
+                    </ListPanel>
+
+                    <!--Garrison-->
+                    <ListPanel DataSource="{GarrisonHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+                      <Children>
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_garrison_big" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.DecisionParagraph2.Text" Text="@GarrisonText" />
+                      </Children>
+                    </ListPanel>
+
+                    <!--Food-->
+                    <ListPanel DataSource="{FoodHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+                      <Children>
+                        <Widget DataSource="{..}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Settlement\icon_food_big" />
+                        <RichTextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="Kingdom.DecisionParagraph2.Text" Text="@FoodText" />
+                      </Children>
+                    </ListPanel>
+
+                  </Children>
+                </ListPanel>
+
+              </Children>
+            </ListPanel>
+
+            <!--Notables Title-->
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="20" Brush="Kingdom.DecisionTitleMedium.Text" Text="@NotableCharactersText" ClipContents="false" IsVisible="@HasNotables"/>
+
+            <!--Notables Grid-->
+            <GridWidget Id="NotablesGrid" DataSource="{NotableCharacters}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" MarginTop="10" DefaultCellWidth="68" DefaultCellHeight="55" ColumnCount="6" IsVisible="@HasNotables">
+              <ItemTemplate>
+
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="58" SuggestedHeight="44" Brush="Encyclopedia.NoAudioButton" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" HoveredCursorState="RightClickLink">
+                  <Children>
+
+                    <ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+
+                  </Children>
+                </ButtonWidget>
+
+              </ItemTemplate>
+            </GridWidget>
+
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Kingdom.DecisionTitleMedium.Text" Text="@BoundSettlementText" MarginTop="10" ClipContents="false"/>
+
+            <!--Settlements Grid-->
+            <GridWidget Id="SettlementsGrid" DataSource="{BoundVillages}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" SuggestedWidth="350" SuggestedHeight="350" HorizontalAlignment="Center" MarginTop="10" DefaultCellWidth="100" DefaultCellHeight="140" ColumnCount="4">
+              <ItemTemplate>
+
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="70" SuggestedHeight="70" HorizontalAlignment="Center" Brush="Encyclopedia.NoAudioButton" Command.Click="ExecuteLink" HoveredCursorState="RightClickLink">
+                  <Children>
+
+                    <Widget Id="VillageImage" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="60" SuggestedHeight="60" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="@FileName" />
+                    <HintWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" PositionYOffset="70" Brush="Kingdom.DecisionParagraph.Text" Brush.FontSize="18" Text="@NameText" ClipContents="false" />
+
+                  </Children>
+                </ButtonWidget>
+
+              </ItemTemplate>
+            </GridWidget>
+
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </ValueBasedVisibilityWidget>
+  </Window>
+</Prefab>

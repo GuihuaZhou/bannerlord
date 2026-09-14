@@ -1,0 +1,29 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Management.Slot.Width" BrushLayer="Default" BrushName="Clan.Management.Slot" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Slot.Height" BrushLayer="Default" BrushName="Clan.Management.Slot" BrushValueType="Height" />
+
+    <Constant Name="Clan.Item.Tuple.Width" BrushLayer="Default" BrushName="Clan.Item.Tuple" BrushValueType="Width" />
+    <Constant Name="Clan.Item.Tuple.Height" BrushLayer="Default" BrushName="Clan.Item.Tuple" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <!--Supporter Item-->
+    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Item.Tuple.Width" SuggestedHeight="!Clan.Item.Tuple.Height" Brush="Clan.Item.Tuple" Command.Click="ExecuteSelect" IsSelected="@IsSelected">
+      <Children>
+        
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="10" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Name-->
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="94" Brush="Clan.Tuple.Name.Text" Text="@Name"/>
+
+            <!--Income-->
+            <RichTextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="90" HorizontalAlignment="Right" Brush="Clan.Tuple.Name.Text" Text="@TotalInfluence"/>
+
+          </Children>
+        </ListPanel>
+        
+      </Children>
+    </ButtonWidget>
+  </Window>
+</Prefab>

@@ -1,0 +1,9 @@
+<Prefab>
+  <Window>
+    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" Command.Click="ExecuteLink" DoNotPassEventsToChildren="true" >
+      <Children>
+        <ImageIdentifierWidget DataSource="{Visual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+      </Children>
+    </ButtonWidget>
+  </Window>
+</Prefab>

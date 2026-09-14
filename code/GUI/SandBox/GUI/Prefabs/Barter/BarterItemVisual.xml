@@ -1,0 +1,19 @@
+<Prefab>
+  <Window>
+    <BarterItemVisualBrushWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" FiefImagePath="@FiefFileName" HasVisualIdentifier="@HasVisualIdentifier" ImageIdentifierWidget="ImageIdentifierWidget" MaskedTextureWidget="MaskedTextureWidget" SpriteWidget="SpriteClipWidget\SpriteWidget" Type="@BarterableType" SpriteClipWidget="SpriteClipWidget">
+      <Children>
+
+        <MaskedTextureWidget Id="MaskedTextureWidget" DataSource="{VisualIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Barter.Masked.Brush" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName"  />
+
+        <ImageIdentifierWidget Id="ImageIdentifierWidget" DataSource="{VisualIdentifier}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsBig="true"/>
+
+        <Widget Id="SpriteClipWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <Children>
+            <BrushWidget Id="SpriteWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="36" SuggestedHeight="36" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Barter.Item.Visual"/>
+          </Children>
+        </Widget>
+
+      </Children>
+    </BarterItemVisualBrushWidget>
+  </Window>
+</Prefab>

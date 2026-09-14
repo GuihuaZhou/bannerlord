@@ -1,0 +1,36 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Marker.Offset" Value="6"/>
+  </Constants>
+  <Window>
+    <Widget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+      <Children>
+        <DisguiseMarkerAlternativeBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="48" Position="@ScreenPosition" AlarmState="@AlarmState" AlarmProgress="@AlarmProgress" OffenseTypeIdentifier="@OffenseTypeIdentifier" BackgroundGlowWidget="BackgroundGlowWidget" FrameWidget="FillBarWidget\Frame" FillBarWidget="FillBarWidget" AlarmedHeight="60" DefaultHeight="35" IsVisible="@IsInVision">
+          <Children>
+            <!-- Fillbar -->
+            <FillBarVerticalWidget Id="FillBarWidget" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="!Marker.Offset" MarginRight="!Marker.Offset" MarginTop="!Marker.Offset" MarginBottom="!Marker.Offset1" FillWidget="Frame\FillParent\FillClipRect" InitialAmount="@AlarmProgress" IsDirectionUpward="true" MaxAmount="100">
+              <Children>
+                <BrushWidget Id="Frame" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Mission.Stealth.Cautiousness.Frame">
+                  <Children>
+                    <Widget Id="FillParent" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="12" VerticalAlignment="Bottom" PositionYOffset="-7" >
+                      <Children>
+                        <Widget Id="FillClipRect" UpdateChildrenStates="true" ClipContents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" VerticalAlignment="Bottom" >
+                          <Children>
+                            <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" PositionYOffset="7" VerticalAlignment="Bottom" Brush="Mission.Stealth.Cautiousness.Fillbar.Filler" />
+                          </Children>
+                        </Widget>
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </BrushWidget>
+              </Children>
+            </FillBarVerticalWidget>
+            
+          </Children>
+        </DisguiseMarkerAlternativeBrushWidget>
+        
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

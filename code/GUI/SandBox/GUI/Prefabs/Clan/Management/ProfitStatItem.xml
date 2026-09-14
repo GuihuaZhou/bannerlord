@@ -1,0 +1,43 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+      <Children>
+        <Widget Id="ProfitStatWidgetParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+          <Children>
+
+            <!--Every element is a left to right ListPanel-->
+            <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+              <Children>
+                <!--Icon-->
+                <FiefProfitTypeVisualBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="Clan.Fief.Profit.Type.Image" Type="@Type">
+                  <Children>
+                    <!--Governor icon-->
+                    <Widget IsEnabled="@ShowGovernorPortrait" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                      <Children>
+                        <ImageIdentifierWidget DataSource="{GovernorVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="27" SuggestedWidth="36" MarginBottom="4" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" DoNotAcceptEvents="true" HideWhenNull="true" VerticalAlignment="Center" />
+                      </Children>
+                    </Widget>
+                  </Children>
+                </FiefProfitTypeVisualBrushWidget>
+
+                <!--Name-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" MaxWidth="175" VerticalAlignment="Center" Brush="Clan.Stat.Name.Text" Text="@Name"/>
+
+                <!--Separator Character-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" VerticalAlignment="Center" MarginLeft="5" MarginRight="5" Brush="Clan.Stat.Seperator.Text" Text="@ColonText"/>
+
+                <!--Change Amount-->
+                <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" VerticalAlignment="Center" Brush="Settlement.Property.PositiveChange.Text" Amount="@Value" NegativeBrushName="Clan.Stat.NegativeChange.Text" PositiveBrushName="Clan.Stat.PositiveChange.Text" UseParentheses="false" IsVisible="false"/>
+                
+                <!--Gold Icon-->
+                <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" Sprite="General\Icons\Coin@2x" VerticalAlignment="Center" />
+              </Children>
+            </ListPanel>
+
+            <HintWidget DataSource="{Hint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="false" />
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

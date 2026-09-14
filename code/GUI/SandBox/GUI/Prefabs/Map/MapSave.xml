@@ -1,0 +1,9 @@
+<Prefab>
+  <Window>
+    <Widget Id="MapSiegeScreenWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare" Color="#000000CC" IsVisible="@IsActive">
+      <Children>
+        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Text="@SavingText"/>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -1,0 +1,31 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!-- Quest Bar -->
+        <Widget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" HorizontalAlignment="Center" MarginTop="150" IsVisible="@HasQuestLevel">
+          <Children>
+
+            <Widget Id="Background" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="550" SuggestedHeight="12" VerticalAlignment="Center" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#000000FF" AlphaFactor="0.9">
+              <Children>
+                <ValueComparisonStateChangerWidget WatchType="Equals" FirstValueFloat="@CurrentQuestLevel" SecondValueFloat="@MaximumQuestLevel" TrueState="Glow" FalseState="Default" TargetWidget="..\DetectionSlider" IsVisible="false" />
+                <SliderWidget Id="DetectionSlider" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="-2" MarginBottom="-2" MarginLeft="-2" MarginRight="-2" DoNotUpdateHandleSize="true" Filler="Filler" Handle="SliderHandle" MinValueFloat="@MinimumQuestLevel" MaxValueFloat="@MaximumQuestLevel" ValueFloat="@CurrentQuestLevel" Brush="Mission.Detection.Fillbar.Frame">
+                  <Children>
+                    <Widget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="322" HorizontalAlignment="Left" MarginLeft="1" MarginTop="1" MarginBottom="1" MarginRight="1" ClipContents="true">
+                      <Children>
+                        <MissionSuspicionFillerBrushWidget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="322" HorizontalAlignment="Left" Brush="Mission.Stealth.Suspicion.Fillbar.Filler" CurrentSuspicionRatio="@CurrentQuestLevelRatio" ColorChangeDuration="0.2" />
+                      </Children>
+                    </Widget>
+                  </Children>
+                </SliderWidget>
+              </Children>
+            </Widget>
+
+          </Children>
+        </Widget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

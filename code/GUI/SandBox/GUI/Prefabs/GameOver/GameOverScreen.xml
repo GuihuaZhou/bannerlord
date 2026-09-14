@@ -1,0 +1,156 @@
+<Prefab>
+  <Variables>
+  </Variables>
+  <VisualDefinitions>
+    <VisualDefinition Name="BottomMenu" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.45">
+      <VisualState PositionYOffset="6" State="Default" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <GameOverScreenWidget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" ConceptVisualWidget="ParentLayout\LeftSideWidget\ConceptBrushWidget" BannerBrushWidget="ParentLayout\RightSideWidget\RightSideListPanel\BannerAndTitle\BannerBrushWidget" BannerFrameBrushWidget1="ParentLayout\RightSideWidget\RightSideListPanel\BannerAndTitle\BannerFrameBrushWidget1Parent\BannerFrameBrushWidget1" BannerFrameBrushWidget2="ParentLayout\RightSideWidget\RightSideListPanel\BannerAndTitle\BannerFrameBrushWidget2Parent\BannerFrameBrushWidget2" GameOverReason="@ReasonAsString">
+      <Children>
+        <Standard.Background />
+
+        <SelectedStateBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="GameOver.Background" SelectedState="@ReasonAsString"/>
+
+        <ListPanel Id="ParentLayout"  HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+
+            <!--Left Side-->
+            <Widget Id="LeftSideWidget" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent">
+              <Children>
+
+                <BrushWidget Id="ConceptBrushWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="887" SuggestedHeight="890" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            
+              </Children>
+            </Widget>
+
+            <!--Right Side-->
+            <Widget Id="RightSideWidget" HeightSizePolicy ="StretchToParent" WidthSizePolicy="Fixed" SuggestedWidth="920" MarginRight="50">
+              <Children>
+
+                <ListPanel Id="RightSideListPanel" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom" MarginTop="10">
+                  <Children>
+
+                    <!--Banners and Title-->
+                    <Widget Id="BannerAndTitle" HeightSizePolicy ="Fixed" WidthSizePolicy="StretchToParent" SuggestedHeight="156">
+                      <Children>
+
+                        <BrushWidget Id="BannerBrushWidget" HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedWidth="956" SuggestedHeight="88" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                          <Children>
+                            <TextWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="53" SuggestedWidth="438" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="GameOver.Popper.Text" Text="@TitleText"/>
+                          </Children>
+                        </BrushWidget>
+
+                        <MaskedTextureWidget Id="BannerFrameBrushWidget1Parent" DataSource="{ClanBanner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="116" SuggestedHeight="156" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="110" Brush="GameOver.Banner.Shield" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" OverlayTextureScale="0.7">
+                          <Children>
+                            <BrushWidget Id="BannerFrameBrushWidget1" DataSource="{..}" HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="156" SuggestedWidth="116" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                          </Children>
+                        </MaskedTextureWidget>
+
+                        <MaskedTextureWidget Id="BannerFrameBrushWidget2Parent" DataSource="{ClanBanner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="116" SuggestedHeight="156" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="110" Brush="GameOver.Banner.Shield" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" OverlayTextureScale="0.7" >
+                          <Children>
+                            <BrushWidget Id="BannerFrameBrushWidget2" DataSource="{..}" HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="156" SuggestedWidth="116" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                          </Children>
+                        </MaskedTextureWidget>
+
+                      </Children>
+                    </Widget>
+
+                    <!--Statistics Title-->
+                    <TextWidget HeightSizePolicy ="CoverChildren" WidthSizePolicy="StretchToParent" Brush="GameOver.Statistics.Title.Text" Text="@StatisticsTitle"/>
+
+                    <!--Stat Panel-->
+                    <ListPanel HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight" >
+                      <Children>
+
+                        <!--Vertical Category Selection-->
+                        <NavigationScopeTargeter ScopeID="GameOverVerticalSelectionScope" ScopeParent="..\VerticalSelections" ScopeMovements="Vertical" />
+                        <NavigatableListPanel Id="VerticalSelections" DataSource="{Categories}" HeightSizePolicy ="CoverChildren" WidthSizePolicy="Fixed" SuggestedWidth="83" StackLayout.LayoutMethod="VerticalTopToBottom" >
+                          <ItemTemplate>
+                            <GameOverCategoryButtonWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedWidth="83" SuggestedHeight="62" MarginBottom="15" IsSelected="@IsSelected" Brush="GameOver.Category.Button" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" Command.Click="ExecuteSelectCategory" CategoryID="@ID">
+                              <Children>
+                                <GameOverCategoryIconBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="83" SuggestedHeight="62" HorizontalAlignment="Center" VerticalAlignment="Center" CategoryID="@ID"/>
+                              </Children>
+                            </GameOverCategoryButtonWidget>
+                          </ItemTemplate>
+                        </NavigatableListPanel>
+
+                        <!--Stat Area-->
+                        <Widget DataSource="{Categories}" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" MarginLeft="25">
+                          <ItemTemplate>
+                            <ListPanel HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@IsSelected">
+                              <Children>
+                                <!--Category Title-->
+                                <TextWidget HeightSizePolicy ="CoverChildren" WidthSizePolicy="StretchToParent" Brush="GameOver.Stat.Category.Title.Text" MarginBottom="15" Text="@Name"/>
+
+                                <ListPanel HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                  <Children>
+
+                                    <ScrollablePanel Id="ScrollablePanel" HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" InnerPanel="ClipRect\InnerPanel" ClipRect="ClipRect" VerticalScrollbar="..\ScrollbarContainer\Scrollbar" MarginTop="10" MarginBottom="10" AutoHideScrollBars="true">
+                                      <Children>
+                                        <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true" MarginTop="5" MarginBottom="5">
+                                          <Children>
+                                            <Widget Id="InnerPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginRight="15">
+                                              <Children>
+
+                                                <!--Stat Items-->
+                                                <ListPanel DataSource="{Items}" WidthSizePolicy="StretchToParent" HeightSizePolicy ="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                                  <ItemTemplate>
+
+                                                    <!--Stat Item-->
+                                                    <ListPanel HeightSizePolicy ="CoverChildren" WidthSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight" MarginBottom="20">
+                                                      <Children>
+                                                        <TextWidget HeightSizePolicy ="CoverChildren" WidthSizePolicy="CoverChildren" MaxWidth="400" Brush="GameOver.Stat.Definition.Text" Text="@DefinitionText"/>
+                                                        <Widget HeightSizePolicy ="Fixed" WidthSizePolicy="StretchToParent" SuggestedHeight="2" VerticalAlignment="Top" PositionYOffset="18" Sprite="BlankWhiteSquare" MarginLeft="5" MarginRight="5" AlphaFactor="0.2"/>
+                                                        <TextWidget HeightSizePolicy ="CoverChildren" WidthSizePolicy="CoverChildren" MaxWidth="350" Brush="GameOver.Stat.Value.Text" Text="@ValueText"/>
+                                                        <SelectedStateBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="25" SuggestedHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="GameOver.Stat.Type.Visual" SelectedState="@StatTypeAsString"/>
+                                                      </Children>
+                                                    </ListPanel>
+
+                                                  </ItemTemplate>
+                                                </ListPanel>
+                                              </Children>
+                                            </Widget>
+                                          </Children>
+                                        </Widget>
+                                      </Children>
+                                    </ScrollablePanel>
+
+                                    <Widget HeightSizePolicy="StretchToParent" WidthSizePolicy="CoverChildren" Id="ScrollbarContainer">
+                                      <Children >
+                                        <ScrollbarWidget Id="Scrollbar" HeightSizePolicy="StretchToParent" WidthSizePolicy="Fixed" MinValue="0" MaxValue="100" SuggestedWidth="20" MarginLeft="0" MarginBottom="10" AlignmentAxis="Vertical" HorizontalAlignment="Left" MarginTop="20" VerticalAlignment="Top" Handle="ScrollbarHandle" >
+                                          <Children>
+                                            <Widget Id="ScrollbarBed" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Sprite="slider_thin_bed_vertical_9" Color="#fec157ff" />
+                                            <Widget Id="ScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" MinHeight="15" SuggestedWidth="20" HorizontalAlignment="Center" Sprite="slider_thin_vertical_9" Color="#fec157ff"/>
+                                          </Children>
+                                        </ScrollbarWidget>
+
+                                      </Children>
+                                    </Widget>
+                                  </Children>
+                                </ListPanel>
+
+                              </Children>
+                            </ListPanel>
+                          </ItemTemplate>
+                        </Widget>
+
+                      </Children>
+                    </ListPanel>
+
+                    <!--Close Screen Button-->
+                    <Standard.DialogCloseButtons VisualDefinition="BottomMenu" PositionYOffset="100" Parameter.CancelButtonAction="ExecuteClose" Parameter.CancelButtonText="@CloseText" Parameter.CancelInputKeyDataSource="{CloseInputKey}" Parameter.ShowDone="false" />
+                  </Children>
+                </ListPanel>
+
+
+              </Children>
+            </Widget>
+
+          </Children>
+        </ListPanel>
+      </Children>
+    </GameOverScreenWidget>
+  </Window>
+</Prefab>

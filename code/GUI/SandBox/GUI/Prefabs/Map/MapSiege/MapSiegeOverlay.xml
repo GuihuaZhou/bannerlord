@@ -1,0 +1,95 @@
+<Prefab>
+  <Variables>
+  </Variables>
+  <Constants>
+
+  </Constants>
+  <VisualDefinitions>
+
+  </VisualDefinitions>
+  <Window>
+    <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <Widget DataSource="{PointsOfInterest}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <ItemTemplate>
+            <MapSiegePOIBrushWidget DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HideTooltip="ExecuteHideTooltip" Command.OnSelection="ExecuteSelection" Command.ShowTooltip="ExecuteShowTooltip" ConstructionBrush="MapSiege.Machine.Construction.Brush" ConstructionControllerWidget="..\..\ConstructionControllerWidget" HammerAnimWidget="HammerAnimWidget" IsConstructing="@IsConstructing" IsPlayerSidePOI="@IsPlayerSidePOI" IsVisible="@HasItem" MachineType="@MachineType" MachineTypeIconWidget="MachineCircle\MachineIconParent\MachineTypeIconWidget" NormalBrush="MapSiege.Machine.Normal.Brush" ScreenPosition="@Position" Slider="SliderParent\Slider" IsInVisibleRange="@IsInVisibleRange" IsPOISelected="@IsSelected" QueueIndex="@QueueIndex">
+              <Children>
+
+                <Widget Id="SliderParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="76" SuggestedHeight="13" HorizontalAlignment="Right" VerticalAlignment="Bottom" Sprite="BlankWhiteSquare" Color="#272624FF" IsEnabled="false">
+                  <Children>
+                    <SliderWidget Id="Slider" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="70" SuggestedHeight="9" HorizontalAlignment="Center" VerticalAlignment="Center" Filler="Filler" Handle="Handle" MaxValueFloat="@MaxHitpoints" MinValueFloat="0" ValueFloat="@CurrentHitpoints">
+                      <Children>
+                        <BrushWidget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="11" SuggestedHeight="9" HorizontalAlignment="Left" VerticalAlignment="Center" />
+                        <BrushWidget Id="Handle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1" SuggestedHeight="1" HorizontalAlignment="Left" VerticalAlignment="Center" IsEnabled="false" IsVisible="false" />
+                      </Children>
+                    </SliderWidget>
+                  </Children>
+                </Widget>
+
+                <!--Machine Circle Icon-->
+                <Widget Id="MachineCircle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" HorizontalAlignment="Right" VerticalAlignment="Bottom" PositionYOffset="9" MarginRight="72" Sprite="BlankWhiteCircle" Color="@SideSecondaryColor">
+                  <Children>
+                    <Widget Id="MachineIconParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="33" SuggestedHeight="33" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteCircle" Color="@SidePrimaryColor">
+                      <Children>
+                        <!--Machine Type Icon-->
+                        <Widget Id="MachineTypeIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="27" SuggestedHeight="20.7" HorizontalAlignment="Center" VerticalAlignment="Center" Color="@SideSecondaryColor" />
+                      </Children>
+                    </Widget>
+                  </Children>
+                </Widget>
+
+                <BrushWidget Id="HammerAnimWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" VerticalAlignment="Center" PositionXOffset="-10" PositionYOffset="-5" Brush="MapSiege.Construction.HammerWithAnimation" IsVisible="@IsConstructing">
+                  <Children>
+                    <MapSiegeQueueIndexTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Bottom" Brush.FontSize="20" IntText="@QueueIndex" />
+                  </Children>
+                </BrushWidget >
+              </Children>
+            </MapSiegePOIBrushWidget>
+
+          </ItemTemplate>
+        </Widget>
+
+        <!--Preparation Slider-->
+        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="200" IsHidden="@IsPreparationsCompleted" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Text="@PreparationTitleText" MarginTop="10" ClipContents="false"/>
+
+            <SliderWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="338" SuggestedHeight="42" VerticalAlignment="Center" DoNotUpdateHandleSize="true" Filler="Filler" Handle="SliderHandle" MaxValueFloat="1" MinValueFloat="0" MarginBottom="20" MarginTop="5" MarginLeft="30" MarginRight="30" ValueFloat="@PreparationProgress">
+              <Children>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="362" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_canvas" IsEnabled="false" />
+                <Widget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" ClipContents="true">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" />
+                  </Children>
+                </Widget>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_frame" IsEnabled="false" />
+                <Widget Id="SliderHandle" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="38" HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="false" />
+              </Children>
+            </SliderWidget>
+          </Children>
+        </ListPanel>
+        
+        <MapSiegeConstructionControllerWidget Id="ConstructionControllerWidget" DataSource="{ProductionController}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" IsVisible="@IsEnabled">
+          <Children>
+            <ListPanel DataSource="{PossibleProductionMachines}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <ItemTemplate>
+                <MapSiegeMachineButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="61" SuggestedHeight="61" MarginBottom="2" Brush="MapSiege.Construction.Button" Command.Click="OnSelection" Command.HoverBegin="ExecuteShowTooltip" Command.HoverEnd="ExecuteHideTooltip" MachineID="@MachineID">
+                  <Children>
+                    <OrderSiegeMachineItemButtonWidget Id="MachineIconWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" IsHidden="@IsReserveOption" MachineIconWidget="..\MachineIconWidget" MachineClass="@MachineID" Brush="CustomBattle.Siege.MachineIcon" IsEnabled="false">
+                      <Children>
+                        <AutoHideZeroTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginLeft="3" Brush="MapSiege.Reserve.Number.Text" IntText="@NumberOfMachines" />
+                      </Children>
+                    </OrderSiegeMachineItemButtonWidget>
+                    <TextWidget Id="ReserveCancelTextWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" Text="@ActionText" Brush.FontSize="15" IsVisible="@IsReserveOption" />
+                  </Children>
+                </MapSiegeMachineButtonWidget>
+              </ItemTemplate>
+            </ListPanel>
+          </Children>
+        </MapSiegeConstructionControllerWidget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

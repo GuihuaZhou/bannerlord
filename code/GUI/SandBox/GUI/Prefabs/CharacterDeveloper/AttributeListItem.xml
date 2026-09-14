@@ -1,0 +1,26 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="HasExtraSkills" DefaultValue="false" />
+  </Parameters>
+  <Constants>
+
+    <Constant Name="CharacterDeveloper.AttributeButtonBackground.Width" BrushLayer="Default" BrushName="CharacterDeveloper.AttributeButtonBackground" BrushValueType="Width" />
+    <Constant Name="CharacterDeveloper.AttributeButtonBackground.Height" BooleanCheck="*HasExtraSkills" OnTrue="!CharacterDeveloper.AttributeButtonBackground.Height.Small" OnFalse="!CharacterDeveloper.AttributeButtonBackground.Height.Default" />
+    
+    <Constant Name="CharacterDeveloper.AttributeButtonBackground.Height.Default" BrushLayer="Default" BrushName="CharacterDeveloper.AttributeButtonBackground" BrushValueType="Height" />
+    <Constant Name="CharacterDeveloper.AttributeButtonBackground.Height.Small" BrushLayer="Default" BrushName="CharacterDeveloper.AttributeButtonBackground" BrushValueType="Height" MultiplyResult="0.857" />
+
+    <Constant Name="Attribute.AddAttribute.Button.Width" BrushLayer="Default" BrushName="Attribute.AddAttribute.Button" BrushValueType="Width" />
+    <Constant Name="Attribute.AddAttribute.Button.Height" BrushLayer="Default" BrushName="Attribute.AddAttribute.Button" BrushValueType="Height" />
+
+  </Constants>
+  <Window>
+    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!CharacterDeveloper.AttributeButtonBackground.Width" SuggestedHeight="!CharacterDeveloper.AttributeButtonBackground.Height" VerticalAlignment="Top" Brush="CharacterDeveloper.AttributeButtonBackground" HorizontaAlignment="Center" UpdateChildrenStates="false" DoNotPassEventsToChildren="true" Command.Click="ExecuteInspectAttribute">
+      <Children>
+        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" Brush="CharacterDeveloper.GridAttributeName.Text" MarginLeft="5" MarginRight="5"  MarginTop="13"  Text="@Name" />
+        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" Brush="CharacterDeveloper.GridAttributeLevel.Text" IsDisabled="@IsAttributeAtMax"  Brush.FontSize="40" IntText="@AttributeValue" MarginBottom="10"/>
+        
+      </Children>
+    </ButtonWidget>
+  </Window>
+</Prefab>

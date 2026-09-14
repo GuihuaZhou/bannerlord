@@ -1,0 +1,169 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="ArmyManagement.Frame.Width" BrushLayer="Default" BrushName="ArmyManagement.Frame" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Frame.Height" BrushLayer="Default" BrushName="ArmyManagement.Frame" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Panel.Left.Width" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Left" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Panel.Left.Height" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Left" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Panel.Right.Width" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Right" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Panel.Right.Height" BrushLayer="Frame" BrushName="ArmyManagement.Panel.Right" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.1.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.1" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.1.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.2.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.2" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.2.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.3.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.3" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.3.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.3" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.4.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.4" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.4.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.4" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.5.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.5" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.5.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.5" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Sort.6.Width" BrushLayer="Default" BrushName="ArmyManagement.Sort.6" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Sort.6.Height" BrushLayer="Default" BrushName="ArmyManagement.Sort.6" BrushValueType="Height" />
+
+    <Constant Name="CloseButtons.Margin.Top" Additive="45" Value="!ArmyManagement.Frame.Height" />
+
+    <Constant Name="GuideAlphaFactor" Value="0" />
+
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000CC">
+      <Children>
+
+        <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="637" SuggestedHeight="809" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Brush">
+          <Children>
+
+            <!--Top Panel Name Text-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="161" HorizontalAlignment="Center" PositionYOffset="-141" Sprite="StdAssets\tabbar_popup" VerticalFlip="true" IsDisabled="true">
+              <Children>
+                <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="68" HorizontalAlignment="Center" MarginTop="40" VerticalAlignment="Center" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@TitleText" />
+              </Children>
+            </Widget>
+
+            <NavigationScopeTargeter ScopeID="CampaignOptionsScope" ScopeParent="..\CampaignOptions" ScopeMovements="Vertical" HasCircularMovement="true" IsDefaultNavigationScope="true" />
+            <ListPanel Id="CampaignOptions" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom"  MarginTop="0">
+              <Children>
+
+                <ScrollablePanel Id="ScrollablePanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AutoHideScrollBars="true" ClipRect="ClipRect" InnerPanel="ClipRect\CampaignOptionsList" VerticalScrollbar="..\..\VerticalScrollbar">
+                  <Children>
+
+                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+
+                        <NavigatableListPanel Id="CampaignOptionsList" DataSource="{OptionsController\Options}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MinIndex="0" MaxIndex="50" >
+                          <ItemTemplate>
+
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="15" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+
+                                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="SPOptions.OptionName.Text" Text="@Name" IsHidden="@HideOptionName"/>
+
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint">
+                                  <Children>
+                                    <NavigationTargetSwitcher WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" FromTarget="..\..\." ToTarget="..\\Option" />
+                                    <CharacterCreationOptionsItemWidget DataSource="{..}" Id="Option" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" DoNotAcceptEvents="true" Type="@OptionType" BooleanOptionWidget="BooleanOption" NumericOptionWidget="RangeOption" SelectionOptionWidget="SelectionOption" ActionOptionWidget="ActionOption" IsDisabled="@IsDisabled" UpdateChildrenStates="true">
+                                      <Children>
+
+                                        <NavigationAutoScrollWidget TrackedWidget="..\BooleanOption" ScrollTarget="..\..\." />
+                                        <Widget Id="BooleanOption" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Center" IsVisible="false" UpdateChildrenStates="true">
+                                          <Children>
+                                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@ValueAsBoolean" IsDisabled="@IsDisabled" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true">
+                                              <Children>
+                                                <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+                                              </Children>
+                                            </ButtonWidget>
+                                          </Children>
+                                        </Widget>
+
+                                        <NavigationAutoScrollWidget TrackedWidget="..\RangeOption" ScrollTarget="..\..\." />
+                                        <ListPanel Id="RangeOption" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" IsVisible="false" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                          <Children>
+
+                                            <SliderWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="338" SuggestedHeight="42" VerticalAlignment="Center" Filler="Filler" Handle="SliderHandle" MaxValueFloat="@MaxRange" MinValueFloat="@MinRange" ValueFloat="@ValueAsRange" IsDiscrete="@IsDiscrete" DoNotUpdateHandleSize="true">
+                                              <Children>
+                                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="362" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_canvas" IsEnabled="false" />
+                                                <Widget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" ClipContents="true">
+                                                  <Children>
+                                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" />
+                                                  </Children>
+                                                </Widget>
+                                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_frame" IsEnabled="false" />
+                                                <ImageWidget Id="SliderHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="38" HorizontalAlignment="Left" VerticalAlignment="Center" Brush="SPOptions.Slider.Handle" DoNotAcceptEvents="true"/>
+                                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+                                              </Children>
+                                            </SliderWidget>
+
+                                            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="SPOptions.Slider.Value.Text" IsEnabled="false" Text="@ValueAsString" />
+
+                                          </Children>
+                                        </ListPanel>
+
+                                        <NavigationAutoScrollWidget TrackedWidget="..\SelectionOption" ScrollTarget="..\..\." />
+                                        <Standard.DropdownWithHorizontalControl Id="SelectionOption" VerticalAlignment="Center" IsVisible="false" HorizontalAlignment="Center" Parameter.SelectorDataSource="{SelectionSelector}" Parameter.HintDataSource="{..\Hint}" Parameter.IsEnabled="@IsEnabled" />
+
+                                        <NavigationAutoScrollWidget TrackedWidget="..\ActionOption" ScrollTarget="..\..\." />
+                                        <Widget Id="ActionOption" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Center" ExtendCursorAreaLeft="24" ExtendCursorAreaRight="24" IsVisible="false">
+                                          <Children>
+                                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="338" SuggestedHeight="42" HorizontalAlignment="Left" VerticalAlignment="Center" Command.Click="ExecuteAction" UpdateChildrenStates="true">
+                                              <Children>
+                                                <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="362" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="SPOptions.GameKey.Button.Canvas" IsEnabled="false" />
+                                                <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="SPOptions.GameKey.Button.Frame" IsEnabled="false" />
+                                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Dropdown.Center.Text" VerticalAlignment="Center" MarginTop="5" Text="@Name" />
+                                                <HintWidget DataSource="{Hint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                                              </Children>
+                                            </ButtonWidget>
+                                          </Children>
+                                        </Widget>
+
+                                      </Children>
+                                    </CharacterCreationOptionsItemWidget>
+                                  </Children>
+                                </HintWidget>
+
+                              </Children>
+                            </ListPanel>
+
+                          </ItemTemplate>
+                        </NavigatableListPanel>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ScrollablePanel>
+
+                <!--Done Button-->
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="64" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="0" Brush="Popup.Done.Button.NineGrid" Command.Click="ExecuteDone" UpdateChildrenStates="true" GamepadNavigationIndex="10000">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@DoneText" />
+                  </Children>
+                </ButtonWidget>
+
+              </Children>
+            </ListPanel>
+
+            <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="6" MarginBottom="60" MarginTop="15" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" >
+              <Children>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.2" />
+                <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+              </Children>
+            </ScrollbarWidget>
+
+
+          </Children>
+        </BrushWidget>
+
+
+      </Children>
+    </Widget>
+
+  </Window>
+</Prefab>

@@ -1,0 +1,167 @@
+<Prefab>
+  <Constants>
+    <Constant Name="GatherArmy.Button.Width" BrushLayer="Default" BrushName="MapBar.GatherArmy.Button" BrushValueType="Width" />
+    <Constant Name="GatherArmy.Button.Height" BrushLayer="Default" BrushName="MapBar.GatherArmy.Button" BrushValueType="Height" />
+
+    <Constant Name="GatherArmy.Icon.Width" BrushLayer="Default" BrushName="MapBar.GatherArmy.Icon" BrushValueType="Width" />
+    <Constant Name="GatherArmy.Icon.Height" BrushLayer="Default" BrushName="MapBar.GatherArmy.Icon" BrushValueType="Height" />
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="Overlay" EaseType="EaseOut" EaseFunction="Quint" TransitionDuration="0.4">
+      <VisualState PositionYOffset="71" State="MapExtendedOverlayNormal" />
+      <VisualState PositionYOffset="106" State="MapNormalOverlayNormal" />
+      <VisualState PositionYOffset="0" State="MapNormalOverlayExtended" />
+      <VisualState PositionYOffset="0" State="MapExtendedOverlayExtended" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <ArmyOverlayWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" PageControlWidget="OverlayWidget\GridControlWidget" ArmyListGridWidget="OverlayWidget\GridControlWidget\PartyList" ExtendButton="OverlayWidget\ExtendButtonWidget" IsInfoBarExtended="@IsInfoBarExtended" Overlay="OverlayWidget" PopupWidget="PopupParent\Popup">
+      <Children>
+
+        <!--Tutorial Notification Frame-->
+        <ElementNotificationWidget DataSource="{TutorialNotification}" ElementID="@ElementID" TutorialFrameWidget="TutorialFrameWidget">
+          <Children>
+            <TutorialHighlightItemBrushWidget Id="TutorialFrameWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TutorialHighlightBrush" IsDisabled="true" IsVisible="false" />
+          </Children>
+        </ElementNotificationWidget>
+
+        <Widget Id="OverlayWidget" VisualDefinition="Overlay" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="450" SuggestedHeight="229" HorizontalAlignment="Right" VerticalAlignment="Bottom" PositionYOffset="0" Sprite="SPGeneral\MapOverlay\Army\army_overlay_base">
+          <Children>
+
+            <NavigationScopeTargeter ScopeID="ArmyOverlayTopControlsScope" ScopeParent="..\ArmyOverlayTopControls" ScopeMovements="Horizontal" DownNavigationScope="ArmyOverlayGridScope"/>
+            <ListPanel Id="ArmyOverlayTopControls" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="40" MarginTop="25">
+              <Children>
+
+                <!--Army Management Button-->
+                <Widget Id="ArmyOverlayArmyManagementButtonParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!GatherArmy.Button.Width" SuggestedHeight="!GatherArmy.Button.Height" VerticalAlignment="Center" MarginLeft="-10">
+                  <Children>
+                    <ButtonWidget Id="ArmyOverlayArmyManagementButton" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="MapBar.GatherArmy.Button" Command.Click="ExecuteOpenArmyManagement" IsVisible="@IsPlayerArmyLeader" IsEnabled="@CanManageArmy" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <BrushWidget Id="ArmyIcon" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!GatherArmy.Icon.Width" SuggestedHeight="!GatherArmy.Icon.Height" HorizontalAlignment="Right" PositionXOffset="-7" VerticalAlignment="Center" Brush="MapBar.GatherArmy.Icon" />
+                        <HintWidget DataSource="{ManageArmyHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                      </Children>
+                    </ButtonWidget>
+                    <HintWidget DataSource="{ManageArmyHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                  </Children>
+                </Widget>
+
+                <!--Cohesion Bar-->
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="125" SuggestedHeight="23" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="10">
+                  <Children>
+                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="SPGeneral\MapOverlay\Army\slider_boxy_canvas" IsEnabled="@CanManageArmy" Command.Click="ExecuteOpenArmyManagement" GamepadNavigationIndex="1">
+                      <Children>
+
+                        <ArmyOverlayCohesionFillBarWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="119" SuggestedHeight="20" HorizontalAlignment="Center" VerticalAlignment="Center" FillWidget="FillWidget" InitialAmount="@Cohesion" IsArmyLeader="@IsPlayerArmyLeader" IsCohesionWarningEnabled="@IsCohesionWarningEnabled" MaxAmount="100">
+                          <Children>
+                            <BrushWidget Id="FillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="119" SuggestedHeight="15" VerticalAlignment="Center" Brush="ArmyOverlay.Cohesion.Fill" Brush.HueFactor="15" Brush.SaturationFactor="-30" />
+                          </Children>
+                        </ArmyOverlayCohesionFillBarWidget>
+
+                      </Children>
+                    </ButtonWidget>
+
+                    <HintWidget DataSource="{CohesionHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                  </Children>
+                </Widget>
+
+                <ListPanel DataSource="{FoodHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" GamepadNavigationIndex="2">
+                  <Children>
+                    <!--Food Icon-->
+                    <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="25" SuggestedHeight="26" VerticalAlignment="Center" Sprite="General\Icons\Food" Color="#D4AF37FF" />
+
+                    <!--Food Label-->
+                    <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="45" MaxHeight="40" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="ArmyOverlay.PageControl.Text" Brush.FontSize="18" IntText="@Food" />
+
+                  </Children>
+                </ListPanel>
+
+                <ListPanel DataSource="{ManCountHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" GamepadNavigationIndex="3">
+                  <Children>
+                    <!--Man Count Icon-->
+                    <Widget Id="ManCountIcon" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="26" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="5" Sprite="MapBar\mapbar_icon4" Color="#D4AF37FF" />
+
+                    <!--Man Count Label-->
+                    <TextWidget DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="55" MaxHeight="40" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="ArmyOverlay.PageControl.Text" Brush.FontSize="18" Text="@ManCountText" />
+                  </Children>
+                </ListPanel>
+
+              </Children>
+            </ListPanel>
+
+            <ContainerPageControlWidget Id="GridControlWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="70" Container="PartyList" ItemPerPage="15" LoopNavigation="true" NextPageButton="NextButton" PageText="PageText">
+              <Children>
+
+                <NavigationScopeTargeter ScopeID="ArmyOverlayGridScope" ScopeParent="..\PartyList" ScopeMovements="Horizontal" AlternateScopeMovements="Vertical" AlternateMovementStepSize="5" ExtendDiscoveryAreaTop="-5" NavigateFromScopeEdges="true" UseDiscoveryAreaAsScopeEdges="true" RightNavigationScope="None" />
+                <NavigatableGridWidget Id="PartyList" DataSource="{PartyList}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="35" DefaultCellWidth="72" DefaultCellHeight="52" ColumnCount="5" MinIndex="0" MaxIndex="1000">
+                  <ItemTemplate>
+
+                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="72" SuggestedHeight="53" HorizontalAlignment="Left" Sprite="SPGeneral\MapOverlay\Army\portrait_small">
+                          <Children>
+
+                            <GameMenuPartyItemButtonWidget Name="@NameText" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="72" SuggestedHeight="53" BackgroundImageWidget="BackgroundImageWidget" CharacterBackgroundBrush="GameMenu.Tableau.Background.Character" Command.Click="ExecuteSetAsContextMenuItem" Command.HoverBegin="ExecuteOpenTooltip" Command.HoverEnd="ExecuteCloseTooltip" CurrentCharacterImageWidget="RelationBackgroundWidget\CharacterImage" Description="@DescriptionText" IsMergedWithArmy="@IsMergedWithArmy" IsPartyItem="true" Location="@LocationText" PartyBackgroundBrush="GameMenu.Tableau.Background.Party" Relation="@Relation" RelationBackgroundWidget="RelationBackgroundWidget" UpdateChildrenStates="true">
+                              <Children>
+
+                                <ImageWidget Id="BackgroundImageWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="2" MarginRight="2" MarginTop="2" MarginBottom="2" />
+
+                                <Widget Id="RelationBackgroundWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5">
+                                  <Children>
+                                    <ImageIdentifierWidget Id="CharacterImage" DataSource="{Visual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                                  </Children>
+                                </Widget>
+
+                                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="5" MarginTop="5" Brush="ArmyOverlay.ArmyValues.Text" Text="@PartySizeLbl" />
+                                <ValueBasedVisibilityWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Top" MarginLeft="8" MarginRight="6" MarginTop="15" WatchType="BiggerThan" IndexToWatch="@ShipCount" IndexToBeVisible="0">
+                                  <Children>
+                                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                      <Children>
+                                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="15" SuggestedHeight="11.8" VerticalAlignment="Center" Sprite="SPGeneral\Ships\ship_icon_medium" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="25" Brush="ArmyOverlay.ArmyValues.Text" Brush.TextHorizontalAlignment="Right" IntText="@ShipCount" />
+                                      </Children>
+                                    </ListPanel>
+                                  </Children>
+                                </ValueBasedVisibilityWidget>
+                                
+                                <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="25" SuggestedHeight="23" HorizontalAlignment="Left" VerticalAlignment="Top" MarginRight="5" MarginTop="5" Sprite="SPGeneral\MapOverlay\Army\icon_state_ontheway" IsHidden="@IsMergedWithArmy" />
+
+                                <!-- Quest Markers -->
+                                <ListPanel DataSource="{Quests}" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginBottom="2">
+                                  <ItemTemplate>
+                                    <QuestMarkerBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="22" QuestMarkerType="@QuestMarkerType" Brush="GameMenu.QuestMarker" />
+                                  </ItemTemplate>
+                                </ListPanel>
+
+                              </Children>
+                            </GameMenuPartyItemButtonWidget>
+
+                            <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="78" SuggestedHeight="59" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\MapOverlay\Army\leader_frame" IsVisible="@IsLeader" />
+                          </Children>
+                        </Widget>
+
+                      </Children>
+                    </Widget>
+
+                  </ItemTemplate>
+                </NavigatableGridWidget>
+
+                <ButtonWidget Id="NextButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="29" SuggestedHeight="39" HorizontalAlignment="Right" VerticalAlignment="Top" MarginBottom="10" MarginRight="5" Brush="EncounterDefenderPageButton" GamepadNavigationIndex="1001" />
+                <TextWidget Id="PageText" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="10" MarginTop="35" Brush="EncounterTextBrush" Brush.FontSize="16" IsDisabled="true" Text="" />
+
+              </Children>
+            </ContainerPageControlWidget>
+
+            <!--Extend Button-->
+            <NavigationScopeTargeter ScopeID="ArmyOverlayExtendButtonScope" ScopeParent="..\ExtendButtonWidget" ScopeMovements="Horizontal" DownNavigationScope="MapBarExtendButtonScope" LeftNavigationScope="ArmyOverlayTopControlsScope" FollowMobileTargets="true"/>
+            <ButtonWidget Id="ExtendButtonWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="34" HorizontalAlignment="Right" MarginTop="27" Brush="MapInfoBarExtendButtonBrush" GamepadNavigationIndex="0" />
+
+          </Children>
+        </Widget>
+
+        <!--Popup Widget-->
+        <OverlayPopup Id="PopupParent" />
+
+      </Children>
+    </ArmyOverlayWidget>
+  </Window>
+</Prefab>

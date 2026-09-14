@@ -1,0 +1,83 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Header.Width" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Width" />
+    <Constant Name="Clan.Header.Height" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.1.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.1" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.1.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.2.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.2" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.2.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.3.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.3" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.3.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.3" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.Collapser.Width" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Collapser.Height" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTuple.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTuple.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTupleLocked.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTupleLocked.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Height" />
+
+    <Constant Name="Scroll.Header.Width" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Width" />
+    <Constant Name="Scroll.Header.Height" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Height" />
+
+    <Constant Name="Kingdom.Item.Tuple.Width" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Width" />
+    <Constant Name="Kingdom.Item.Tuple.Height" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+
+  </Constants>
+
+  <Window>
+    <Widget Id="ClanPartiesWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected" DoNotAcceptEvents="true">
+      <Children>
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalRightToLeft" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Right Panel-->
+            <ClanPartiesRightPanel />
+
+            <!--Left Panel-->
+            <ClanPartiesLeftPanel />
+
+          </Children>
+        </ListPanel>
+
+        <!--Role Assignee Selection Popup-->
+        <ClanPartyRoleSelectionPopupWidget DataSource="{CurrentSelectedParty}" Id="PartyRoleSelectionWidget" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" SuggestedWidth="320" IsVisible="@IsRoleSelectionPopupVisible">
+          <Children>
+            <NavigationForcedScopeCollectionTargeter CollectionParent="..\." />
+            <NavigationScopeTargeter ScopeID="RoleSelectionPopupScope" ScopeMovements="Horizontal" AlternateScopeMovements="Vertical" AlternateMovementStepSize="5" ScopeParent="..\." ForceUseNavigation="true" />
+            <AutoClosePopupClosingWidget Target="..\HeroMembersListPanelBackground\HeroMembersListPanel" IncludeChildren="true" IncludeTarget="false"/>
+
+            <BrushWidget Id="HeroMembersListPanelBackground" DataSource="{LastOpenedRoleSelection}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" Brush="SPClan.RoleSelectionPopup.Background">
+              <Children>
+
+                <NavigatableGridWidget Id="HeroMembersListPanel" DataSource="{Members}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" DefaultCellWidth="49" DefaultCellHeight="46" HorizontalAlignment="Left" ColumnCount="5" LayoutImp.HorizontalLayoutMethod="LeftToRight">
+                  <ItemTemplate>
+                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" Command.Click="ExecuteAssignHeroToRole" UpdateChildrenStates="true">
+                      <Children>
+                        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.GoldFrame" />
+                        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.GovernorPopup.Governor.Background" />
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="StdAssets\none" IsVisible="@IsRemoveAssigneeOption"/>
+                        <ImageIdentifierWidget DataSource="{Member\Visual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                        <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="false" />
+                      </Children>
+                    </ButtonWidget>
+                  </ItemTemplate>
+                </NavigatableGridWidget>
+
+              </Children>
+            </BrushWidget>
+
+          </Children>
+        </ClanPartyRoleSelectionPopupWidget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

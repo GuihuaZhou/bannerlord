@@ -1,0 +1,19 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <VisualDefinitions>
+  </VisualDefinitions>
+  <Window>
+    <MapSiegeMachineButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="52" Brush="SiegeMachineBaseBrush" ColoredImageClipWidget="ColoredImageClip" Command.Click="ExecuteAction" MachineID="@Machine" Progress="@Progress" UncompletedImageWidget="UncompletedImageWidget" UpdateChildrenStates="true">
+      <Children>
+        <BrushWidget Id="UncompletedImageWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SiegeMachineNotCompletedBrush" />
+        <Widget Id="ColoredImageClip" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="52" VerticalAlignment="Bottom" ClipContents="true" UpdateChildrenStates="true">
+          <Children>
+            <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="52" VerticalAlignment="Bottom" Brush="SiegeMachineButtonBrush" />
+          </Children>
+        </Widget>
+        <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+      </Children>
+    </MapSiegeMachineButtonWidget>
+  </Window>
+</Prefab>

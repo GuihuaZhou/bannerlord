@@ -1,0 +1,65 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="IsRightSideItem" DefaultValue="false" />
+    <Parameter Name="TransferButtonHintSource" DefaultValue="" />
+    <Parameter Name="ToggleValueLbl" DefaultValue="" />
+    <Parameter Name="ToggleTitleLbl" DefaultValue="" />
+    <Parameter Name="TransferAllAction" DefaultValue="" />
+  </Parameters>
+  <Constants>
+    <Constant Name="Toggle.Brush" BooleanCheck="*IsRightSideItem" OnFalse="Barter.LeftPanel.Toggle" OnTrue="Barter.RightPanel.Toggle" />
+    
+    <Constant Name="TransferAllButton.Width" BrushLayer="Default" BrushName="InventoryBuyAllButton" BrushValueType="Width" />
+    <Constant Name="TransferAllButton.Height" BrushLayer="Default" BrushName="InventoryBuyAllButton" BrushValueType="Height" />
+
+
+    <Constant Name="BarterToggle.Margin" Value="30" />
+    <Constant Name="BarterToggle.Width" BrushLayer="Default" BrushName="Barter.LeftPanel.Toggle" BrushValueType="Width" />
+    <Constant Name="BarterToggle.Height" BrushLayer="Default" BrushName="Barter.LeftPanel.Toggle" BrushValueType="Height" />
+    <Constant Name="BarterToggle.Shadow.Height" SpriteName="PartyScreen\button_collapser_shadow" SpriteValueType="Height" />
+    <Constant Name="BarterToggle.Pressed.Width" BrushLayer="Pressed" BrushName="Barter.LeftPanel.Toggle" BrushValueType="Width" />
+    <Constant Name="ToggleLabel.Margin" Value="260" />
+    <Constant Name="SidePanel.ScrollablePanel.Width" Additive="20" Value="!BarterToggle.Width" />
+    <Constant Name="Barter.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Barter.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+
+    <Constant Name="InnerPanel.Margin.Top" Value="!TopBackground.Height" Additive="5"/>
+    <Constant Name="Prisoners.MarginTop" Value="4" />
+
+    <Constant Name="BarterToggle.LabelContainer.Margin" Value="10" />
+    <Constant Name="Transfer.Button.HorizontalMargin" Value="5" />
+
+    <Constant Name="Transfer.Button.HorizontalAlignment" BooleanCheck="*IsRightSideItem" OnFalse="Right" OnTrue="Left" />
+    <Constant Name="Transfer.Button.Brush" BooleanCheck="*IsRightSideItem" OnFalse="ButtonLeftDoubleArrowBrush1" OnTrue="ButtonRightDoubleArrowBrush1" />
+
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="Toggle" TransitionDuration="0.045">
+      <VisualState SuggestedWidth="!BarterToggle.Width" State="Default" />
+      <VisualState SuggestedWidth="!BarterToggle.Pressed.Width" State="Pressed" />
+      <VisualState SuggestedWidth="!BarterToggle.Width" State="Selected" />
+      <VisualState SuggestedWidth="!BarterToggle.Width" State="Hovered" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <PartyHeaderToggleWidget VisualDefinition="Toggle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!BarterToggle.Width" SuggestedHeight="!BarterToggle.Height" VerticalAlignment="Top" MarginTop="!Prisoners.MarginTop" Brush="!Toggle.Brush" CollapseIndicator="Description\CollapseIndicator" Command.Drop="ExecuteTransferWithParameters" UpdateChildrenStates="true">
+      <Children>
+
+        <ListPanel Id="Description" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginBottom="!BarterToggle.LabelContainer.Margin" IsDisabled="true" StackLayout.LayoutMethod="HorizontalLeftToRight" UpdateChildrenStates="true" DoNotPassEventsToChildren="true">
+          <Children>
+            <BrushWidget Id="CollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Barter.Toggle.ExpandIndicator.Width" SuggestedHeight="!Barter.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="5" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginRight="5" Brush="Party.Text.Toggle" Text="*ToggleTitleLbl" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="5" Brush="Party.Text.Toggle" Text="*ToggleValueLbl" />
+          </Children>
+        </ListPanel>
+
+        <ButtonWidget Id="TransferAll" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!TransferAllButton.Width" SuggestedHeight="!TransferAllButton.Height" HorizontalAlignment="!Transfer.Button.HorizontalAlignment" VerticalAlignment="Center" MarginRight="!Transfer.Button.HorizontalMargin" MarginLeft="!Transfer.Button.HorizontalMargin" Brush="!Transfer.Button.Brush" Command.Click="*TransferAllAction">
+          <Children>
+            <HintWidget DataSource="*TransferButtonHintSource" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true"/>
+          </Children>
+        </ButtonWidget>
+
+      </Children>
+    </PartyHeaderToggleWidget>
+  </Window>
+</Prefab>

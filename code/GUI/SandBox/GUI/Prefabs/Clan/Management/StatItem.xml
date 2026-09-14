@@ -1,0 +1,34 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <Widget Id="StatWidgetParent" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40">
+          <Children>
+
+            <!--Every element is a left to right ListPanel-->
+            <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent">
+              <Children>
+                <!--Icon-->
+                <FiefStatTypeVisualBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="40" Brush="Clan.Fief.Stat.Type.Image" Type="@Type" />
+
+                <!--Name-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MaxWidth="130" Brush="Clan.Stat.Name.Text" Text="@Name"/>
+
+                <!--Separator Character-->
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" Brush="Clan.Stat.Seperator.Text" Text="@ColonText"/>
+
+                <!--Value-->
+                <SettlementStatTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MaxWidth="85" Brush="Clan.Stat.Value.Text" IsWarning="@IsWarning" Text="@Value" />
+
+                <!--Change Amount-->
+                <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginLeft="3" Brush="Settlement.Property.PositiveChange.Text" Amount="@ChangeAmount" NegativeBrushName="Clan.Stat.NegativeChange.Text" PositiveBrushName="Clan.Stat.PositiveChange.Text" UseParentheses="true" IsVisible="false"/>
+              </Children>
+            </ListPanel>
+
+            <HintWidget DataSource="{Hint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

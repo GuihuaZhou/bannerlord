@@ -1,0 +1,226 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Header.Width" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Width" />
+    <Constant Name="Clan.Header.Height" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Height" />
+
+    <Constant Name="Clan.Other.Sort.1.Width" BrushLayer="Default" BrushName="Clan.Other.Sort.1" BrushValueType="Width" />
+    <Constant Name="Clan.Other.Sort.1.Height" BrushLayer="Default" BrushName="Clan.Other.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="Clan.Other.Sort.2.Width" BrushLayer="Default" BrushName="Clan.Other.Sort.2" BrushValueType="Width" />
+    <Constant Name="Clan.Other.Sort.2.Height" BrushLayer="Default" BrushName="Clan.Other.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="Clan.Other.Sort.3.Width" BrushLayer="Default" BrushName="Clan.Other.Sort.3" BrushValueType="Width" />
+    <Constant Name="Clan.Other.Sort.3.Height" BrushLayer="Default" BrushName="Clan.Other.Sort.3" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.Collapser.Width" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Collapser.Height" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTuple.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTuple.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTupleLocked.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTupleLocked.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Height" />
+
+    <Constant Name="Scroll.Header.Width" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Width" />
+    <Constant Name="Scroll.Header.Height" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Height" />
+
+    <Constant Name="Kingdom.Item.Tuple.Width" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Width" />
+    <Constant Name="Kingdom.Item.Tuple.Height" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <Widget Id="ClanIncomeWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected" DoNotAcceptEvents="true">
+      <Children>
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Left Panel-->
+            <BrushListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Bottom" MarginTop="6" MarginBottom="9" MarginLeft="17" Brush="Frame1Brush" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+
+                <!--Horizontal Header Section-->
+                <NavigationScopeTargeter ScopeID="SortButtonsScope" ScopeParent="..\SortButtons" ScopeMovements="Horizontal"/>
+                <ListPanel Id="SortButtons" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" RenderLate="true" DataSource="{SortController}">
+                  <Children>
+
+                    <SortButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Other.Sort.1.Width" SuggestedHeight="!Clan.Other.Sort.1.Height" Brush="Clan.Other.Sort.1" Command.Click="ExecuteSortByName" IsSelected="@IsNameSelected" SortState="@NameState" SortVisualWidget="TextWidget\NameSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget Id="TextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.LeftPanel.Header.Text" ClipContents="false" Text="@NameText">
+                          <Children>
+                            <BrushWidget Id="NameSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="20" Brush="ArmyManagement.Sort.ArrowBrush" />
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </SortButtonWidget>
+
+                    <SortButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Other.Sort.2.Width" SuggestedHeight="!Clan.Other.Sort.2.Height" Brush="Clan.Other.Sort.2" Command.Click="ExecuteSortByLocation" IsSelected="@IsLocationSelected" SortState="@LocationState" SortVisualWidget="TextWidget\LocationSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+                      <Children>
+                        <TextWidget Id="TextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.LeftPanel.Header.Text" ClipContents="false" Text="@LocationText">
+                          <Children>
+                            <BrushWidget Id="LocationSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="20" Brush="ArmyManagement.Sort.ArrowBrush" />
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </SortButtonWidget>
+
+                    <SortButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Other.Sort.3.Width" SuggestedHeight="!Clan.Other.Sort.3.Height" Brush="Clan.Other.Sort.3" Command.Click="ExecuteSortByIncome" IsSelected="@IsIncomeSelected" SortState="@IncomeState" SortVisualWidget="TextWidget\IncomeSortVisualWidget" UpdateChildrenStates="true" GamepadNavigationIndex="2">
+                      <Children>
+                        <TextWidget Id="TextWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Clan.LeftPanel.Header.Text" ClipContents="false" Text="@IncomeText">
+                          <Children>
+                            <BrushWidget Id="IncomeSortVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" PositionXOffset="20" Brush="ArmyManagement.Sort.ArrowBrush" />
+                          </Children>
+                        </TextWidget>
+                      </Children>
+                    </SortButtonWidget>
+
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Scroll.Header.Width" SuggestedHeight="!Scroll.Header.Height" Sprite="StdAssets\scroll_header" ExtendRight="3" ExtendTop="6" ExtendLeft="3" ExtendBottom="4" HorizontalAlignment="Right" />
+                  </Children>
+                </ListPanel>
+
+                <!--Horizontal, List and Scrollbar Group-->
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent">
+                  <Children>
+
+                    <ScrollablePanel Id="ClanElementsScrollablePanel" WidthSizePolicy="CoverChildren" MinWidth="!Kingdom.Item.Tuple.Width" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginBottom="3" AutoHideScrollBars="true" ClipRect="ClanElementsRect" InnerPanel="ClanElementsRect\ClanElementsListPanel" MouseScrollAxis="Vertical" VerticalScrollbar="..\ClanElementsScrollbar\Scrollbar">
+                      <Children>
+
+                        <NavigationScopeTargeter ScopeID="ClanIncomeScope" ScopeParent="..\ClanElementsRect" ScopeMovements="Vertical" IsDefaultNavigationScope="true" DoNotAutoNavigateAfterSort="true" />
+                        <Widget Id="ClanElementsRect" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" ClipContents="true">
+                          <Children>
+
+                            <NavigatableListPanel Id="ClanElementsListPanel" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MinIndex="0" StepSize="1000">
+                              <Children>
+
+                                <!--Workshops Header-->
+                                <NavigationAutoScrollWidget TrackedWidget="..\WorkshopsHeader" />
+                                <ScrollablePanelFixedHeaderWidget Id="WorkshopsHeader" FixedHeader="..\..\..\WorkshopsToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" HeaderHeight="!Clan.Management.Collapser.Height"/>
+
+                                <!--Incomes List-->
+                                <NavigatableListPanel Id="WorkshopsList" DataSource="{Incomes}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+                                  <ItemTemplate>
+                                    <ClanIncomeTuple />
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                                <!--Alleys Header-->
+                                <NavigationAutoScrollWidget TrackedWidget="..\AlleysHeader" />
+                                <ScrollablePanelFixedHeaderWidget Id="AlleysHeader" FixedHeader="..\..\..\AlleysToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" HeaderHeight="!Clan.Management.Collapser.Height"/>
+
+                                <!--Alley List-->
+                                <NavigatableListPanel Id="AlleyList" DataSource="{Alleys}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+                                  <ItemTemplate>
+                                    <ClanAlleyTuple />
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                                <!--Supporters Header-->
+                                <NavigationAutoScrollWidget TrackedWidget="..\SupportersHeader" />
+                                <ScrollablePanelFixedHeaderWidget Id="SupportersHeader" FixedHeader="..\..\..\SupportersToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" HeaderHeight="!Clan.Management.Collapser.Height" AdditionalBottomOffset="!Clan.Management.Collapser.Height"/>
+
+                                <!--Supporters List-->
+                                <NavigatableListPanel Id="SupportersList" DataSource="{SupporterGroups}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+                                  <ItemTemplate>
+                                    <ClanSupporterGroupTuple />
+                                  </ItemTemplate>
+                                </NavigatableListPanel>
+
+                              </Children>
+                            </NavigatableListPanel>
+
+                          </Children>
+                        </Widget>
+
+                        <!--Workshops Toggle Button-->
+                        <PartyHeaderToggleWidget Id="WorkshopsToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" SuggestedHeight="!Clan.Management.Collapser.Height" CollapseIndicator="WorkshopsCollapser\WorkshopsCollapseIndicator" ListPanel="..\ClanElementsRect\ClanElementsListPanel\WorkshopsList" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Management.Collapser" RenderLate="true" WidgetToClose="..\ClanElementsRect\ClanElementsListPanel\WorkshopsList">
+                          <Children>
+                            <ListPanel Id="WorkshopsCollapser" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                              <Children>
+                                <BrushWidget Id="WorkshopsCollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="-2" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Management.Collapser.Text" Text="@WorkshopText" />
+                              </Children>
+                            </ListPanel>
+                          </Children>
+                        </PartyHeaderToggleWidget>
+
+                        <!--Alleys Toggle Button-->
+                        <PartyHeaderToggleWidget Id="AlleysToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" SuggestedHeight="!Clan.Management.Collapser.Height" CollapseIndicator="AlleyCollapser\AleyCollapseIndicator" ListPanel="..\ClanElementsRect\ClanElementsListPanel\AlleyList" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Management.Collapser" RenderLate="true" WidgetToClose="..\ClanElementsRect\ClanElementsListPanel\AlleyList">
+                          <Children>
+                            <ListPanel Id="AlleyCollapser" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                              <Children>
+                                <BrushWidget Id="AleyCollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="-2" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Management.Collapser.Text" Text="@AlleysText" />
+                              </Children>
+                            </ListPanel>
+                          </Children>
+                        </PartyHeaderToggleWidget>
+
+                        <!--Supporters Toggle Button-->
+                        <PartyHeaderToggleWidget Id="SupportersToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.Collapser.Width" SuggestedHeight="!Clan.Management.Collapser.Height" CollapseIndicator="SupportersCollapser\SupportersCollapseIndicator" ListPanel="..\ClanElementsRect\ClanElementsListPanel\SupportersList" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="Clan.Management.Collapser" RenderLate="true" WidgetToClose="..\ClanElementsRect\ClanElementsListPanel\SupportersList">
+                          <Children>
+                            <ListPanel Id="SupportersCollapser" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" >
+                              <Children>
+                                <BrushWidget Id="SupportersCollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" PositionYOffset="-2" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Management.Collapser.Text" Text="@SupportersText" />
+                              </Children>
+                            </ListPanel>
+                          </Children>
+                        </PartyHeaderToggleWidget>
+
+                      </Children>
+                    </ScrollablePanel>
+
+                    <Standard.VerticalScrollbar Id="ClanElementsScrollbar" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginRight="2" MarginLeft="2" MarginBottom="3"/>
+                  </Children>
+                </ListPanel>
+
+
+              </Children>
+            </BrushListPanel>
+
+            <!--Right Panel-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="650" MarginLeft="200" MarginRight="290" IsVisible="@IsAnyValidIncomeSelected">
+              <Children>
+
+                <Widget DataSource="{CurrentSelectedIncome}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                  <Children>
+                    <ClanIncomeWorkshop />
+                  </Children>
+                </Widget>
+              </Children>
+            </Widget>
+
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="650" MarginLeft="200" IsVisible="@IsAnyValidSupporterSelected" >
+              <Children>
+
+                <Widget DataSource="{CurrentSelectedSupporterGroup}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                  <Children>
+                    <ClanSupporters />
+                  </Children>
+                </Widget>
+              </Children>
+            </Widget>
+
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="650" MarginLeft="200" IsVisible="@IsAnyValidAlleySelected" >
+              <Children>
+
+                <Widget DataSource="{CurrentSelectedAlley}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                  <Children>
+                    <ClanAlleyItem />
+                  </Children>
+                </Widget>
+              </Children>
+            </Widget>
+
+
+            <!--<TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="200" Text="@NoAdditionalIncomesText" IsHidden="@IsAnyValidIncomeSelected" />-->
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

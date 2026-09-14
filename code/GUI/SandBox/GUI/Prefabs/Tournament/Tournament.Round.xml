@@ -1,0 +1,39 @@
+<Prefab>
+	<Constants>
+		<Constant Name="Category.Width" Value="370" />
+	</Constants>
+	<VisualDefinitions>
+	</VisualDefinitions>
+	<Window>
+		<Widget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth = "!Category.Width">
+			<Children>
+			
+				<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="40" Sprite="SPGeneral\SPScoreboard\reward_band" AlphaFactor="0.8">
+					<Children>
+						<TextWidget Text="@Name" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ScoreboardDefaultFontBrush" Brush.TextHorizontalAlignment="Center"/>
+					</Children>
+				</Widget>
+
+				<Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" MarginTop="45" Sprite="Disabled" Color="#AAAAAAFF" AlphaFactor="0.2">
+					<Children>
+					
+						<ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Top" StackLayout.LayoutMethod="VerticalTopToBottom">
+							<Children>
+								<Tournament.Match DataSource="{Match1}"/>
+								<Tournament.Match DataSource="{Match2}"/>
+								<Tournament.Match DataSource="{Match3}"/>
+								<Tournament.Match DataSource="{Match4}"/>
+								<Tournament.Match DataSource="{Match5}"/>
+								<Tournament.Match DataSource="{Match6}"/>
+								<Tournament.Match DataSource="{Match7}"/>
+								<Tournament.Match DataSource="{Match8}"/>
+							</Children>
+						</ListPanel>
+
+					</Children>
+				</Widget>
+
+			</Children>								
+		</Widget>
+	</Window>
+</Prefab>

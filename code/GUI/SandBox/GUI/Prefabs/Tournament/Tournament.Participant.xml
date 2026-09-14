@@ -1,0 +1,45 @@
+<Prefab>
+  <Parameters>
+    <Parameter Name="OnMission" DefaultValue="false" />
+  </Parameters>
+  <Constants>
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="TournamentParticipant" TransitionDuration = "0.2">
+      <VisualState State = "Dead" PositionXOffset = "-450"/>
+      <VisualState State = "Default" PositionXOffset = "0"/>
+      <VisualState State = "Current" PositionXOffset = "0"/>
+      <VisualState State = "Over" PositionXOffset = "0"/>
+    </VisualDefinition>
+    <VisualDefinition Name="TournamentParticipantChild" DelayOnBegin="0.2" TransitionDuration = "0.4">
+      <VisualState State = "Dead" SuggestedHeight="0"/>
+      <VisualState State = "Default" SuggestedHeight="30"/>
+      <VisualState State = "Current" SuggestedHeight="30"/>
+      <VisualState State = "Over" SuggestedHeight="30"/>
+    </VisualDefinition>
+    <VisualDefinition Name="TournamentParticipantParent" DelayOnBegin="0.2" TransitionDuration = "0.4">
+      <VisualState State = "Dead" MarginTop="0" MarginBottom="0"/>
+      <VisualState State = "Default" MarginTop="2" MarginBottom="2"/>
+      <VisualState State = "Current" MarginTop="2" MarginBottom="2"/>
+      <VisualState State = "Over" MarginTop="2" MarginBottom="2"/>
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="2" MarginBottom="2" IsVisible="@IsInitialized" VisualDefinition="TournamentParticipantParent">
+      <Children>
+        <TournamentParticipantBrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Tournament.Participant" Brush.Color="@TeamColor" IsDead="@IsDead" VisualDefinition="TournamentParticipant" UpdateChildrenStates = "true" OnMission="*OnMission" DoNotPassEventsToChildren="true" Command.ClickEvent="ExecuteOpenEncyclopedia" IsMainHero="@IsMainHero" NameTextWidget="ParentWidget\NameTextWidget" MainHeroTextBrush="Tournament.MainHero.Participant.Text" NormalTextBrush="Tournament.Participant.Text">
+          <Children>
+            <Widget Id="ParentWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" IsVisible="@IsValid" VisualDefinition="TournamentParticipantChild">
+              <Children>
+                <ImageIdentifierWidget Id="CharacterImage" DataSource="{Visual}" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="45" SuggestedHeight="30" MarginLeft="5" ImageId="@Id" AdditionalArgs="@AdditionalArgs" TextureProviderName="@TextureProviderName" />
+                <ScrollingTextWidget Id="NameTextWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Text="@Name" Brush="Tournament.Participant.Text" MarginLeft="60" MarginRight="25" />
+                <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="25" HorizontalAlignment="Right" Text="@Score" Brush="Tournament.Participant.Text" Brush.TextHorizontalAlignment="Center"/>
+              </Children>
+            </Widget>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" IsHidden="@IsValid" />
+          </Children>
+        </TournamentParticipantBrushWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

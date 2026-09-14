@@ -1,0 +1,37 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <Window>
+    <Widget Id="Properties" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="10">
+      <Children>
+
+        <NavigationScopeTargeter ScopeID="LeftSidePropertiesScope" ScopeParent="..\LeftSideProperties" ScopeMovements="Vertical" ForceGainNavigationOnClosestChild="true"/>
+        <NavigatableListPanel Id="LeftSideProperties" DataSource="{LeftSideProperties}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="0" PositionXOffset="32" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <ItemTemplate>
+            <Widget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+              <Children>
+                <IconBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="Encyclopedia.Settlement.Description.Type.BaseBrush" IconBrush="Encyclopedia.Settlement.Description.Type.Brush" IconID="@TypeString" UseStylesFromSourceIcon="true" />
+                <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Right" MarginLeft="35" Brush="Encyclopedia.SubPage.Element.Properties.Text" Text="@StatText"/>
+                <HintWidget DataSource="{BasicTooltipViewModel}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+              </Children>
+            </Widget>
+          </ItemTemplate>
+        </NavigatableListPanel>
+
+        <NavigationScopeTargeter ScopeID="RightSidePropertiesScope" ScopeParent="..\RightSideProperties" ScopeMovements="Vertical" ForceGainNavigationOnClosestChild="true"/>
+        <NavigatableListPanel Id="RightSideProperties" DataSource="{RightSideProperties}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginTop="0" PositionXOffset="225" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <ItemTemplate>
+            <Widget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+              <Children>
+                <IconBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="Encyclopedia.Settlement.Description.Type.BaseBrush" IconBrush="Encyclopedia.Settlement.Description.Type.Brush" IconID="@TypeString" UseStylesFromSourceIcon="true" />
+                <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Right"  MarginLeft="35" Brush="Encyclopedia.SubPage.Element.Properties.Text" Text="@StatText"/>
+                <HintWidget DataSource="{BasicTooltipViewModel}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+              </Children>
+            </Widget>
+          </ItemTemplate>
+        </NavigatableListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

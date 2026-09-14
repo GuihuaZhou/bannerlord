@@ -1,0 +1,136 @@
+<Prefab>
+  <Constants>
+	<Constant Name="ClanFinance.Background.Width" BrushName="Quest.Background" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="ClanFinance.Background.Height" BrushName="Quest.Background" BrushLayer="Default" BrushValueType="Height"/>
+  
+    <Constant Name="Clan.Finance.Collapser.Width" BrushName="Clan.Finance.Collapser" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Clan.Finance.Collapser.Height" BrushName="Clan.Finance.Collapser" BrushLayer="Default" BrushValueType="Height"/>
+
+    <Constant Name="Clan.Finance.LeftTuple.Width" BrushName="Clan.Finance.LeftTuple" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Clan.Finance.LeftTuple.Height" BrushName="Clan.Finance.LeftTuple" BrushLayer="Default" BrushValueType="Height"/>
+
+    <Constant Name="Clan.Management.LeftTupleLocked.Width" BrushName="Clan.Management.LeftTupleLocked" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Clan.Management.LeftTupleLocked.Height" BrushName="Clan.Management.LeftTupleLocked" BrushLayer="Default" BrushValueType="Height"/>
+
+  </Constants>
+  <Window>
+    <Widget Id="ClanFinanceScreenWidget" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" IsVisible="@IsSelected" >
+      <Children>
+		
+		
+        <ListPanel HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent">
+          <Children>
+
+            <!--Left Panel-->
+            <BrushWidget HeightSizePolicy="StretchToParent" WidthSizePolicy="Fixed" SuggestedWidth="850" HorizontalAlignment="Left" VerticalAlignment="Bottom" MarginRight="20" Brush="Frame1Brush" MarginTop="18" MarginBottom="5">
+              <Children>
+
+                <Widget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedHeight="74" SuggestedWidth="1266" Sprite="Clan\clan_header" HorizontalAlignment="Right" PositionYOffset="-9"/>
+
+                <Standard.VerticalScrollbar Id="ClanElementsScrollbar" HorizontalAlignment="Left" VerticalAlignment="Bottom" HeightSizePolicy ="StretchToParent" MarginTop="55"/>
+
+                <ScrollablePanel Id="ClanElementsScrollablePanel"  HeightSizePolicy ="StretchToParent"  WidthSizePolicy="StretchToParent" InnerPanel="ClanFinanceElementsRect\ClanFinanceElementsListPanel" ClipRect="ClanFinanceElementsRect" MouseScrollAxis="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalScrollbar="..\ClanFinanceElementsScrollbar\Scrollbar" MarginTop="55" MarginLeft="23" MarginRight="5" AutoHideScrollBars="true">
+                  <Children>
+
+                    <Widget Id="ClanFinanceElementsRect" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" ClipContents = "true">
+                      <Children>
+
+                        <ListPanel Id="ClanFinanceElementsListPanel" StackLayout.LayoutMethod = "VerticalTopToBottom" WidthSizePolicy = "StretchToParent" HeightSizePolicy="CoverChildren">
+                          <Children>
+                            
+                            <!--Income Items List-->
+                            <ListPanel DataSource="{Incomes}" Id="IncomeItemList" StackLayout.LayoutMethod = "VerticalTopToBottom" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren">
+                              <ItemTemplate>
+
+                                <ClanIncomeItem />
+                              </ItemTemplate>
+                            </ListPanel>
+
+                          </Children>
+                        </ListPanel>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ScrollablePanel>
+
+              </Children>
+            </BrushWidget>
+            
+            <!--Right Panel-->
+            <Widget HeightSizePolicy="StretchToParent" WidthSizePolicy="StretchToParent" HorizontalAlignment="Right" VerticalAlignment="Center">
+              <Children>
+
+                <ScrollbarWidget HeightSizePolicy ="StretchToParent" WidthSizePolicy="Fixed" Id="ClanFinanceElementsScrollbar" SuggestedWidth="20" MinValue = "0" MaxValue = "100" MarginLeft="10" MarginBottom="15" MarginTop="15" AlignmentAxis="Vertical" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="HintBG@2x_9" Handle = "ClanFincanceElementsScrollbarHandle" IsVisible="false">
+                  <Children>
+                    <Widget Id="ClanFincanceElementsScrollbarHandle" WidthSizePolicy = "StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment = "Center" Sprite="ScrollBar01Track@2x_9">
+                    </Widget>
+                  </Children>
+                </ScrollbarWidget>
+
+
+                <ScrollablePanel Id="ClanElementsScrollablePanel"  HeightSizePolicy ="StretchToParent"  WidthSizePolicy="StretchToParent" InnerPanel="ClanFinanceElementsRect\ClanFinanceElementsListPanel" ClipRect="ClanFinanceElementsRect" MouseScrollAxis="Vertical" VerticalAlignment="Center" HorizontalAlignment="Center" VerticalScrollbar="..\ClanFinanceElementsScrollbar" MarginLeft="40" MarginRight="110" MarginTop="15" AutoHideScrollBars="true">
+                  <Children>
+
+                    <Widget Id="ClanFinanceElementsRect" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" ClipContents = "true">
+                      <Children>
+
+
+                        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginTop="150">
+                          <Children>
+                            <!--Total Income Label-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="550" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Left"  Brush="Clan.Finance.TotalIncome.Text" Brush.TextHorizontalAlignment="Right" Text="@TotalIncomeText"/>
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="280" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" Brush="Clan.Finance.TotalIncome.Text" Brush.TextHorizontalAlignment="Left" Brush.FontColor="#9BC65EFF" Text="@TotalIncomeValueText"/>
+                          </Children>
+                        </Widget>
+
+
+                        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginTop="200">
+                          <Children>
+                            <!--Total Expenses Label-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="550" HeightSizePolicy = "CoverChildren"  HorizontalAlignment="Left"  Brush="Clan.Finance.TotalExpenses.Text" Brush.TextHorizontalAlignment="Right" Text="@TotalExpensesText"/>
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="280" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" Brush="Clan.Finance.TotalExpenses.Text" Brush.TextHorizontalAlignment="Left" Brush.FontColor="#E0835FFF" Text="@TotalExpensesValueText"/>
+                          </Children>
+                        </Widget>
+
+                        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginTop="330">
+                          <Children>
+                            <!--Daily Change Label-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="550" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Left"  Brush="Clan.Finance.DailyChange.Text" Brush.TextHorizontalAlignment="Right" Text="@DailyChangeText"/>
+                            <!--<TextWidget Id="NegativeMarkWidget" WidthSizePolicy = "CoverChildren" HeightSizePolicy = "CoverChildren" Text ="-" />-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="280" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" Brush="Clan.Finance.DailyChange.Text" Brush.TextHorizontalAlignment="Left" Text="@DailyChangeValueText"/>
+                          </Children>
+                        </Widget>
+
+                        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginBottom="130" VerticalAlignment="Bottom" >
+                          <Children>
+                            <!--Current Gold Label-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="350" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Brush.TextHorizontalAlignment="Right" Text="@CurrentGoldText"/>
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="500" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" Brush="Clan.Finance.CurrentGold.Text" Brush.TextHorizontalAlignment="Left" IntText="@CurrentGold"/>
+                          </Children>
+                        </Widget>
+
+                        <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" MarginBottom="80" VerticalAlignment="Bottom" >
+                          <Children>
+                            <!--Expected Gold Label-->
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="350" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Brush.TextHorizontalAlignment="Right" Text="@ExpectedGoldText"/>
+                            <TextWidget WidthSizePolicy = "Fixed" SuggestedWidth="500" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" Brush="Clan.Finance.CurrentGold.Text" Brush.TextHorizontalAlignment="Left" IntText="@ExpectedGold"/>
+                          </Children>
+                        </Widget>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ScrollablePanel>
+
+              </Children>
+            </Widget>
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -1,0 +1,38 @@
+<Prefab>
+  <Variables>
+  </Variables>
+  <VisualDefinitions>
+    <VisualDefinition Name="Menu" TransitionDuration = "0.25">
+      <VisualState State = "Default" PositionXOffset="0"/>
+      <VisualState State = "Disabled" PositionXOffset="-550"/>
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <BrushWidget  VisualDefinition="Menu" PositionXOffset="-550" HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" HorizontalAlignment="Left" VerticalAlignment="Top" SuggestedWidth="525" SuggestedHeight="800" PositionYOffset="100" Brush="Frame1Brush" Sprite="@Background">
+      <Children>
+        <Widget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center"  MarginTop="25" MarginBottom="25" MarginLeft="25" MarginRight="25">
+          <Children>
+            <TextWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="85" Text="@PrimaryText" PositionYOffset="50">
+            </TextWidget>
+            <TextWidget HeightSizePolicy ="Fixed" WidthSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="85" Text="@SecondaryText" PositionYOffset="135">
+            </TextWidget>
+            <ListPanel DataSource = "{MenuItemList}" Id="MyInnerPanel" StackLayout.LayoutMethod = "VerticalTopToBottom" WidthSizePolicy = "StretchToParent"  SuggestedHeight = "700" VerticalAlignment="Top" MarginTop="235">
+              <ItemTemplate>
+                <Widget WidthSizePolicy = "StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="90" HorizontalAlignment = "Center">
+                  <Children>
+                    <ButtonWidget DoNotPassEventsToChildren="true" Command.Click = "ExecuteAction" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth = "475" SuggestedHeight = "60" HorizontalAlignment = "Center" Brush = "ButtonBrush">
+                      <Children>
+                        <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" Brush.FontSize="26" Text="@ActionText">
+                        </TextWidget>
+                      </Children>
+                    </ButtonWidget>
+                  </Children>
+                </Widget>
+              </ItemTemplate>
+            </ListPanel>
+          </Children>
+        </Widget>
+      </Children>
+    </BrushWidget>
+  </Window>
+</Prefab>

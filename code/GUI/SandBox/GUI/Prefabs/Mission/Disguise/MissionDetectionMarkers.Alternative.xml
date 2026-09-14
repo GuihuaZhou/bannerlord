@@ -1,0 +1,17 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <Window>
+    <Widget HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+      <Children>
+        <MissionDetectionMarkers.Alternative.Marker.Item DataSource="{TargetAgent}" />
+
+        <Widget DataSource="{HostileAgents}" HeightSizePolicy ="StretchToParent" WidthSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+          <ItemTemplate>
+            <MissionDetectionMarkers.Alternative.Marker.Item />
+          </ItemTemplate>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

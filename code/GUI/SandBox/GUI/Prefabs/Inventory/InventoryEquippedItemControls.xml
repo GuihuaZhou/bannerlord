@@ -1,0 +1,55 @@
+<Prefab>
+	<Constants>
+		<Constant Name="Inventory.EquipedItemControls.Background.Width" BrushName="Inventory.EquipedItemControls.Background" BrushLayer="Default" BrushValueType="Width"/>
+		<Constant Name="Inventory.EquipedItemControls.Background.NegativeWidth" BrushName="Inventory.EquipedItemControls.Background" BrushLayer="Default" BrushValueType="Width" MultiplyResult="-1"/>
+		<Constant Name="Inventory.EquipedItemControls.Background.Height" BrushName="Inventory.EquipedItemControls.Background" BrushLayer="Default" BrushValueType="Height"/>
+	</Constants>
+	<VisualDefinitions>
+		<VisualDefinition Name="SlideAnimation" TransitionDuration = "0.2">
+			<VisualState State = "Default" PositionXOffset = "0" />
+			<VisualState State = "LeftHidden" PositionXOffset = "!Inventory.EquipedItemControls.Background.NegativeWidth" />
+			<VisualState State = "LeftVisible" PositionXOffset = "-10" />
+			<VisualState State = "RightHidden" PositionXOffset = "!Inventory.EquipedItemControls.Background.Width" />
+			<VisualState State = "RightVisible" PositionXOffset = "6" />
+		</VisualDefinition>
+	</VisualDefinitions>
+	<Window>
+    <InventoryEquippedItemControlsBrushWidget VisualDefinition="SlideAnimation" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Inventory.EquipedItemControls.Background.Width" SuggestedHeight="!Inventory.EquipedItemControls.Background.Height" Brush="Inventory.EquipedItemControls.Background" ForcedScopeCollection="Panel\ScopeCollection" NavigationScope="Panel\ScopeTargeter">
+			<Children>
+				<ListPanel Id="Panel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+					<Children>
+						<NavigationForcedScopeCollectionTargeter Id="ScopeCollection" CollectionID="EquippedItemForcedScopeCollection" CollectionParent="..\." IsCollectionDisabled="true" />
+						<NavigationScopeTargeter Id="ScopeTargeter" ScopeID="EquippedItemControlsScope" ScopeParent="..\." ScopeMovements="Horizontal" />
+						<Widget Id="SellContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" MarginLeft="19" VerticalAlignment="Center" Sprite="Inventory\toolbox_icon_bed">
+							<Children>
+								<ButtonWidget Id="Button" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" Command.Click="ExecuteSellSingle" Brush="ButtonRightArrowBrush1" GamepadNavigationIndex="0">
+									<Children>
+										<HintWidget DoNotAcceptEvents="true" DataSource="{SellHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent"/>
+									</Children>
+								</ButtonWidget>
+							</Children>
+						</Widget>
+						<Widget Id="UnequipContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" MarginLeft="2" VerticalAlignment="Center" Sprite="Inventory\toolbox_icon_bed">
+							<Children>
+								<ButtonWidget Id="Button" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" Command.Click="ExecuteUnequipItem"  Brush="InventoryUnequipButton" GamepadNavigationIndex="1">
+									<Children>
+										<HintWidget DoNotAcceptEvents="true" DataSource="{UnequipHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent"/>
+									</Children>
+								</ButtonWidget>
+							</Children>
+						</Widget>
+						<Widget Id="ViewContainer" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" MarginLeft="2" MarginRight="10" VerticalAlignment="Center" Sprite="Inventory\toolbox_icon_bed">
+							<Children>
+								<ButtonWidget Id="Button" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" Command.Click="ExecutePreviewItem" Brush="InventoryInspectButton" GamepadNavigationIndex="2">
+									<Children>
+										<HintWidget DoNotAcceptEvents="true" DataSource="{PreviewHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent"/>
+									</Children>
+								</ButtonWidget>
+							</Children>
+						</Widget>
+					</Children>
+				</ListPanel>
+			</Children>
+		</InventoryEquippedItemControlsBrushWidget>
+	</Window>
+</Prefab>

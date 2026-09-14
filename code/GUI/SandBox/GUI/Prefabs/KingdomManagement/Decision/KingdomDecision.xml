@@ -1,0 +1,149 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Kingdom.Header.Policies.Width" BrushLayer="Default" BrushName="Kingdom.Header.Policies" BrushValueType="Width" />
+    <Constant Name="Kingdom.Header.Policies.Height" BrushLayer="Default" BrushName="Kingdom.Header.Policies" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000CC" IsVisible="@IsActive" IsEnabled="true">
+      <Children>
+
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="436" SuggestedHeight="88"  HorizontalAlignment="Center" VerticalAlignment="Center" MarginBottom="975" Sprite="SPKingdom\Decision\namestone">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="100" HorizontalAlignment="Center" VerticalAlignment="Top" Brush="Kingdom.DecisionTitleBig.Text" Text="@TitleText"/>
+          </Children>
+        </Widget>
+
+        <KingdomDecisionPopupWidget DataSource="{CurrentDecision}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.FinalDone="ExecuteDone" IsKingsDecisionDone="@IsKingsDecisionOver">
+          <Children>
+
+            <BrushWidget Id="ParentContainer" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="900" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Canvas" DoNotAcceptEvents="true" >
+              <Children>
+
+                <!--Left and Right panel layout-->
+                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent">
+                  <Children>
+
+                    <!--Left Panel-->
+                    <ValueBasedVisibilityWidget WidthSizePolicy="Fixed" SuggestedWidth="470" HeightSizePolicy="StretchToParent" WatchType="BiggerThan" IndexToBeVisible="0" IndexToWatch="@DecisionType">
+                      <Children>
+                        <SettlementDecisionPanel IndexToBeVisible="1" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <ClanExpelDecisionPanel IndexToBeVisible="2" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <PolicyDecisionPanel IndexToBeVisible="3" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <DeclareWarDecisionPanel IndexToBeVisible="4" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <MakePeaceDecisionPanel IndexToBeVisible="5" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <KingSelectionDecisionPanel IndexToBeVisible="6" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <StartAllianceDecisionPanel IndexToBeVisible="7" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <AcceptCallToWarAgreementDecisionPanel IndexToBeVisible="8" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <ProposeCallToWarAgreementDecisionPanel IndexToBeVisible="9" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                        <TradeAgreementDecisionPanel IndexToBeVisible="10" IndexToWatch="@DecisionType" WatchType="Equal"/>
+                      </Children>
+                    </ValueBasedVisibilityWidget>
+
+                    <!--Right Panel-->
+                    <Widget WidthSizePolicy="Fixed" SuggestedWidth="1370" HeightSizePolicy="StretchToParent">
+                      <Children>
+
+                        <NavigationForcedScopeCollectionTargeter CollectionID="KingdomDecisionCollection" CollectionParent="..\." />
+
+                        <RichTextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" Brush="Kingdom.DecisionTitleBig.Text" MarginTop="15" MarginLeft="20" MarginRight="20" SuggestedHeight="55" Text="@TitleText" />
+
+                        <!--Options-->
+                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="55" DoNotAcceptEvents="true">
+                          <Children>
+                            <ListPanel DataSource="{DecisionOptionsList}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center">
+                              <ItemTemplate>
+                                <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+                                  <Children>
+                                    <NavigationScopeTargeter ScopeID="DecisionItemScope" ScopeParent="..\." ScopeMovements="Horizontal" />
+                                    <KingdomDecisionOptionItem Parameter.IsOptionForAbstain="@IsOptionForAbstain"/>
+                                  </Children>
+                                </Widget>
+                              </ItemTemplate>
+                            </ListPanel>
+                          </Children>
+                        </Widget>
+
+                        <!--Stage and Next Button Container-->
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Bottom" StackLayout.LayoutMethod="VerticalTopToBottom" MarginBottom="50">
+                          <Children>
+                            <!--Stages-->
+                            <Widget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="130" SuggestedHeight="60" HorizontalAlignment="Center" MarginBottom="25" Command.HoverBegin="ExecuteShowStageTooltip" Command.HoverEnd="ExecuteHideStageTooltip">
+                              <Children>
+
+                                <Widget Id="FillCanvasWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="6" VerticalAlignment="Center" MarginRight="50" MarginLeft="50" Sprite="General\CharacterCreation\creation_progress_bar_canvas">
+                                  <Children>
+                                    <Widget Id="FillWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="6" VerticalAlignment="Center" Sprite="General\CharacterCreation\creation_progress_bar_fill" />
+                                  </Children>
+                                </Widget>
+
+                                <CharacterCreationStageSelectionBarListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="130" SuggestedHeight="60" CurrentStageIndex="@CurrentStageIndex" StackLayout.LayoutMethod="HorizontalSpaced" StageButtonTemplate="StageButtonTemplateButtonWidget" TotalStagesCount="2" FullButtonBrush="Stages.Bar.Full.Button" EmptyButtonBrush="Stages.Bar.Empty.Button" FullBrightButtonBrush="Stages.Bar.FullCurrent.Button" BarFillWidget="..\FillCanvasWidget\FillWidget" BarCanvasWidget="..\FillCanvasWidget" >
+                                  <Children>
+                                    <ButtonWidget Id="StageButtonTemplateButtonWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="59" SuggestedHeight="59" Brush="ButtonSimpleBrush" />
+                                  </Children>
+                                </CharacterCreationStageSelectionBarListPanel>
+
+                              </Children>
+                            </Widget>
+
+
+                            <!--Next Stage Button-->
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="227" SuggestedHeight="40" HorizontalAlignment="Center">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.Voter.DoneButton" Command.Click="ExecuteFinalSelection" IsEnabled="@CanEndDecision" UpdateChildrenStates="true">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MaxWidth="220" Brush="Kingdom.GeneralButtons.Text" HorizontalAlignment="Center" Text="@DoneText">
+                                      <Children>
+                                        <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren"  HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-40" PositionYOffset="-1" IsVisible="@CanEndDecision">
+                                          <Children>
+                                            <InputKeyVisualWidget DataSource="{DoneInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                                          </Children>
+                                        </Widget>
+                                      </Children>
+                                    </TextWidget>
+                                    <HintWidget DataSource="{EndDecisionHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                  </Children>
+                                </ButtonWidget>
+                                <HintWidget IsEnabled="false" DataSource="{EndDecisionHint}" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                              </Children>
+                            </Widget>
+
+                          </Children>
+                        </ListPanel>
+
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginBottom="15" HorizontalAlignment="Left" MarginLeft="25" StackLayout.LayoutMethod="VerticalTopToBottom" IsEnabled="false" >
+                          <Children>
+                            <!--Influence Cost-->
+                            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Kingdom.DecisionParagraph.Text" Text="@InfluenceCostText"/>
+                            <!--Relation Change Text-->
+                            <AutoHideRichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Kingdom.Decision.RelationChange.Text" Brush.TextHorizontalAlignment="Left" Text="@RelationChangeText" WidgetToHideIfEmpty="..\..\IncreaseRelationIconWidget" />
+                          </Children>
+                        </ListPanel>
+
+                      </Children>
+                    </Widget>
+
+                  </Children>
+                </ListPanel>
+
+
+                <DimensionSyncWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" DimensionToSync="Horizontal" WidgetToCopyHeightFrom="..\..\ParentContainer" IsEnabled="false">
+                  <Children>
+                    <!--<Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="512" SuggestedHeight="645" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="StdAssets\Popup\canvas" />-->
+                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Frame1.Border" IsEnabled="false" />
+                  </Children>
+                </DimensionSyncWidget>
+
+
+                <!--Vertical Separator-->
+                <ValueBasedVisibilityWidget  WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="55" SuggestedHeight="943" HorizontalAlignment="Left" MarginLeft="445" VerticalAlignment="Center" MarginBottom="25" Sprite="SPKingdom\Decision\decision_popup_divider" WatchType="BiggerThan" IndexToBeVisible="0" IndexToWatch="@DecisionType"/>
+
+              </Children>
+            </BrushWidget>
+
+          </Children>
+        </KingdomDecisionPopupWidget>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

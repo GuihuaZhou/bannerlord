@@ -1,0 +1,90 @@
+<Prefab>
+  <Constants>
+
+    <Constant Name="ArmyManagement.Boost.Tuple.Width" BrushLayer="Default" BrushName="ArmyManagement.Army.Tuple" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Boost.Tuple.Height" BrushLayer="Default" BrushName="ArmyManagement.Army.Tuple" BrushValueType="Height" />
+
+    <Constant Name="ArmyManagement.Boost.Panel.Width" Value="610" />
+    <Constant Name="ArmyManagement.Boost.Panel.Height" Value="800" />
+
+    <Constant Name="Popup.CloseButton.Width" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Width" />
+    <Constant Name="Popup.CloseButton.Height" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <Widget Id="ParentWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000CC">
+      <Children>
+
+        <BoostCohesionPopupWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!ArmyManagement.Boost.Panel.Width" SuggestedHeight="!ArmyManagement.Boost.Panel.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Canvas" ClosePopupButton="..\ClosePopupWidget">
+          <Children>
+
+            <!--Inner Panel-->
+            <Widget Id="InnerPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+              <Children>
+
+
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="623" SuggestedHeight="144" HorizontalAlignment="Center" MarginTop="53" Sprite="SPKingdom\voter_header_bottom" VerticalFlip="true">
+                  <Children>
+
+                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Text="@CohesionText" Brush="ArmyManagement.Boost.Text"/>
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Text="@CohesionChangeText" Brush="ArmyManagement.Boost.Text"/>
+
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="270" SuggestedHeight="37" HorizontalAlignment="Center" Sprite="SPKingdom\voter_progress_bar_canvas">
+                          <Children>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="255" SuggestedHeight="24" HorizontalAlignment="Center" VerticalAlignment="Center">
+                              <Children>
+                                <FillBarWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="255" SuggestedHeight="24" HorizontalAlignment="Center" VerticalAlignment="Center" CurrentAmount="@NewCohesion" FillWidget="FillWidget" InitialAmount="@Cohesion" MaxAmount="100">
+                                  <Children>
+                                    <Widget Id="FillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="255" SuggestedHeight="19" VerticalAlignment="Center" Sprite="voter_progress_bar_fill_9" />
+                                  </Children>
+                                </FillBarWidget>
+                              </Children>
+                            </Widget>
+
+                          </Children>
+                        </Widget>
+
+                      </Children>
+                    </ListPanel>
+
+                  </Children>
+                </Widget>
+
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="943" SuggestedHeight="55" HorizontalAlignment="Right" PositionYOffset="-3" Sprite="SPKingdom\header_policies" />
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="10" Text="@BoostTitleText" Brush="ArmyManagement.Boost.Text" />
+
+                <ListPanel Id="BoostList" DataSource="{CohesionBoostEvents}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="180" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <ItemTemplate>
+
+                    <BoostItemButtonWidget Id="BoostButtonItem" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!ArmyManagement.Boost.Tuple.Width" SuggestedHeight="!ArmyManagement.Boost.Tuple.Height" Brush="ArmyManagement.Army.Tuple" BoostCurrencyIconWidget="BoostInfoContainer\BoostCurrencyIconWidget" BoostCurrencyType="@CurrencyType" Command.Click="ExecuteEvent" IsEnabled="@IsEnabled">
+                      <Children>
+                        <ListPanel Id="BoostInfoContainer" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center">
+                          <Children>
+                            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Text="@SpendText" Brush="ArmyManagement.Boost.Text"/>
+                            <BrushWidget Id="BoostCurrencyIconWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="45" VerticalAlignment="Center" Brush="ArmyManagement.Boost.CurrencyBrush" />
+                            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Text="@GainText" Brush="ArmyManagement.Boost.Text"/>
+                          </Children>
+                        </ListPanel>
+                      </Children>
+                    </BoostItemButtonWidget>
+
+                  </ItemTemplate>
+                </ListPanel>
+
+              </Children>
+            </Widget>
+
+            <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="!ArmyManagement.Boost.Panel.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1.Border" IsEnabled="false" />
+
+          </Children>
+        </BoostCohesionPopupWidget>
+
+        <!--Close Popup Button-->
+        <ButtonWidget Id="ClosePopupWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.CloseButton.Width" SuggestedHeight="!Popup.CloseButton.Height" HorizontalAlignment="Center" VerticalAlignment="Center" PositionXOffset="300" PositionYOffset="-410" Brush="Popup.CloseButton" Command.Click="OnCloseBoost" />
+
+      </Children>
+    </Widget>
+
+  </Window>
+</Prefab>

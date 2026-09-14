@@ -1,0 +1,95 @@
+<Prefab>
+  <Constants>
+    
+    <Constant Name="ArmyManagement.Army.Cart.Width" BrushLayer="Default" BrushName="ArmyManagement.Army.Cart" BrushValueType="Width" />
+    <Constant Name="ArmyManagement.Army.Cart.Button.Height" BrushLayer="Default" BrushName="ArmyManagement.Army.Cart" BrushValueType="Height" />
+    <Constant Name="ArmyManagement.Army.Cart.Height" Additive="40" Value="!ArmyManagement.Army.Cart.Button.Height" />
+
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!ArmyManagement.Army.Cart.Width" SuggestedHeight="!ArmyManagement.Army.Cart.Height">
+      <Children>
+        <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\CartButton" />
+        <ButtonWidget Id="CartButton" DoNotAcceptEvents="@IsTransferDisabled" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="!ArmyManagement.Army.Cart.Button.Height" Brush="ArmyManagement.Army.Cart" Command.HoverBegin="ExecuteSetFocused" Command.HoverEnd="ExecuteSetUnfocused">
+          <Children>
+
+            <!--Party Leader Face-->
+            <ImageIdentifierWidget DataSource="{LordFace}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="111" SuggestedHeight="79" HorizontalAlignment="Center" MarginTop="7" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsEnabled="false">
+              <Children>
+
+                <ListPanel DataSource="{..}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" VerticalAlignment="Top">
+                  <Children>
+                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="5">
+                      <Children>
+                        <!--Party Strength-->
+                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" Brush="ArmyManagement.Army.Cart.Value" Brush.FontSize="16" IntText="@Strength" />
+
+                        <!--Ship Count-->
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" PositionXOffset="-5" IsVisible="@HasShip">
+                          <Children>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="15" SuggestedHeight="15" VerticalAlignment="Center" Sprite="SPGeneral\Ships\ship_icon_small" Color="#F4E1C4FF" />
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" MarginLeft="2" Brush="ArmyManagement.Army.Cart.Value" Brush.FontSize="16" IntText="@ShipCount" />
+                          </Children>
+                        </ListPanel>
+                      </Children>
+                    </Widget>
+                    
+                    <!--Remove Button Padding-->
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="10" IsHidden="@IsTransferDisabled"/>
+                  </Children>
+                </ListPanel>
+
+              </Children>
+            </ImageIdentifierWidget>
+
+            <!--Party Leader Name-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="18" Brush="ArmyManagement.Army.Cart.Name" IsEnabled="false" Text="@LeaderNameText" />
+
+          </Children>
+        </ButtonWidget>
+
+        <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="40" VerticalAlignment="Bottom" MarginRight="15" MarginLeft="15" IsEnabled="false" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+
+            <!--Party Distance-->
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" Brush="ArmyManagement.Army.Cart.Value" Text="@DistanceText" />
+            <!--Party Draft Cost Widget-->
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IsHidden="@IsTransferDisabled">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ArmyManagement.Army.Cart.Value" Brush.FontSize="18" IsVisible="@IsAlreadyWithPlayer" Text="@InArmyText" />
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsHidden="@IsAlreadyWithPlayer" StackLayout.LayoutMethod="HorizontalCentered">
+                  <Children>
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" Brush="ArmyManagement.Army.Cart.Value" Brush.FontSize="18" MarginTop="5" IntText="@Cost" />
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="17" VerticalAlignment="Center">
+                      <Children>
+						  <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" VerticalAlignment="Center" PositionXOffset="-5" PositionYOffset="3">
+							  <Children>
+								  <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="General\Icons\Influence@2x" ImageFit.Type="Contain" ImageFit.VerticalAlignment="Center" ImageFit.HorizontalAlignment="Center" />
+							  </Children>
+						  </Widget>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ListPanel>
+              </Children>
+            </ListPanel>
+
+          </Children>
+        </ListPanel>
+
+        <!--Remove Button-->
+        <ButtonWidget Id="RemoveCrossButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" HorizontalAlignment="Right" Brush="ArmyManagement.Army.Cart.Remove" Command.Click="ExecuteAction" IsHidden="@IsTransferDisabled">
+          <Children>
+            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" IsVisible="@IsFocused">
+              <Children>
+                <InputKeyVisualWidget DataSource="{RemoveInputKey}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" PositionXOffset="-40" KeyID="@KeyID" IsVisible="@IsVisible"/>
+              </Children>
+            </Widget>
+          </Children>
+        </ButtonWidget>
+        
+      </Children>
+    </Widget>
+    
+  </Window>
+</Prefab>

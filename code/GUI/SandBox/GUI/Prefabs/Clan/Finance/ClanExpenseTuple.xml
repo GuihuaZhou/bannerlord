@@ -1,0 +1,70 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Finance.LeftTuple.Width" BrushName="Clan.Finance.LeftTuple" BrushLayer="Default" BrushValueType="Width"/>
+    <Constant Name="Clan.Finance.LeftTuple.Height" BrushName="Clan.Finance.LeftTuple" BrushLayer="Default" BrushValueType="Height"/>
+  </Constants>
+  <Window>
+
+    <BrushWidget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="!Clan.Finance.LeftTuple.Height" SuggestedWidth="!Clan.Finance.LeftTuple.Width" Brush="Clan.Finance.LeftTuple" PositionYOffset="-4">
+      <Children>
+        
+        <!--Expense Visual-->
+        <ImageIdentifierWidget DataSource="{Visual}" ImageId="@Id" AdditionalArgs="@AdditionalArgs" TextureProviderName="@TextureProviderName" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="75" SuggestedWidth="107" VerticalAlignment="Bottom" HorizontalAlignment="Left" MarginLeft="20" MarginBottom="6" IsDisabled="true"/>
+
+
+        <!--Expense Item Name Widget-->
+        <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="40" SuggestedWidth="190" HorizontalAlignment="Left" MarginLeft="135">
+          <Children>
+            <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" Brush="Clan.Management.PartyName.Text" Text="@Name" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left"/>
+          </Children>
+        </Widget>
+
+
+        <!--Expense Item Morale Widget-->
+        <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "CoverChildren" SuggestedWidth="55" HorizontalAlignment="Left" VerticalAlignment="Bottom" MarginLeft="138" MarginBottom="18">
+          <Children>
+            <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="36" SuggestedWidth="36" VerticalAlignment="Center" Sprite="General\Icons\Morale@2x"/>
+            <TextWidget WidthSizePolicy = "CoverChildren" HeightSizePolicy = "CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" IntText="@Morale" Brush="Clan.Management.SettlementTrait.Text"/>
+            <HintWidget DataSource="{MoraleHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="36" VerticalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+          </Children>
+        </Widget>
+
+
+        <!--Expense Item Party Size Widget-->
+        <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "CoverChildren" SuggestedWidth="90" HorizontalAlignment="Left" VerticalAlignment="Bottom" MarginLeft="207" MarginBottom="18">
+          <Children>
+            <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="32" SuggestedWidth="43" VerticalAlignment="Center" Sprite="General\Icons\Party@2x"/>
+            <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "CoverChildren" Text="@PartySize" Brush="Clan.Management.SettlementTrait.Text" Brush.TextHorizontalAlignment="Right" VerticalAlignment="Center"/>
+            <HintWidget DataSource="{PartySizeHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="32" VerticalAlignment="Center" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint"/>
+          </Children>
+        </Widget>
+
+        <!--Payment Ratio Slider-->
+        <ClanFinancePaymentSliderWidget DoNotUpdateHandleSize="true" IsDiscrete = "true" ValueInt="@PaymentRatioValue" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight = "42" SuggestedWidth = "338" HorizontalAlignment = "Right" VerticalAlignment="Center" MarginRight="110" MinValueInt = "0" MaxValueInt = "100" Handle = "SliderHandle" Filler="Filler" CurrentSize="@PartyCurrentSize" TargetSize="@PartyTargetSize" SizeLimit="@PartySizeLimit" CurrentRatioIndicatorWidget="CurrentRatioIndicatorWidget" InitialFillWidget="InitialFillWidget" NewIncreaseFillWidget="NewIncreaseFillWidget" NewDecreaseFillWidget="NewDecreaseFillWidget">
+          <Children>
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy = "StretchToParent" HeightSizePolicy = "Fixed" SuggestedHeight="30" VerticalAlignment="Center" Sprite="slider_fill_red_9" />
+            <Widget Id="Filler" DoNotAcceptEvents="true" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="10" SuggestedHeight="30"  VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#52C635AA"/>
+            <Widget Id="InitialFillWidget" DoNotAcceptEvents="true" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="10" SuggestedHeight="30" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#601D17AA"/>
+            <Widget Id="NewIncreaseFillWidget" DoNotAcceptEvents="true" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="10" SuggestedHeight="30"  VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#217028AA" />
+            <Widget Id="NewDecreaseFillWidget" DoNotAcceptEvents="true" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedWidth="10" SuggestedHeight="30"  VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#E82B1BAA" />
+            <Widget Id="CurrentRatioIndicatorWidget" DoNotAcceptEvents="true" WidthSizePolicy = "Fixed" HeightSizePolicy = "Fixed" SuggestedHeight="45" SuggestedWidth="12" VerticalAlignment="Center" Sprite="Clan\slider_white_tick" />
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_frame" IsEnabled="false" />
+            <ImageWidget Id="SliderHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="38" HorizontalAlignment="Left" VerticalAlignment="Center" Brush="SPOptions.Slider.Handle" DoNotAcceptEvents="true"/>
+            <HintWidget DataSource="{ExpenseControlHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight = "36" SuggestedWidth = "370" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+          </Children>
+        </ClanFinancePaymentSliderWidget>
+
+
+        <!--Expense Label-->
+        <Widget WidthSizePolicy = "Fixed" HeightSizePolicy = "StretchToParent" SuggestedWidth="120" HorizontalAlignment="Right" IsEnabled="false" MarginRight="15">
+          <Children>
+            <TextWidget WidthSizePolicy = "StretchToParent" HeightSizePolicy = "StretchToParent" Text="@ExpenseValueText" Brush="Clan.Finance.Settlement.ExpenseText" Brush.TextHorizontalAlignment="Right">
+            </TextWidget>
+          </Children>
+        </Widget>
+
+      </Children>
+    </BrushWidget>
+
+  </Window>
+</Prefab>
