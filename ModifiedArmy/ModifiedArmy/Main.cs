@@ -65,10 +65,27 @@ namespace ModifiedArmy
         //    }
         // }
 
+        private UIExtender _uiExtender;
+
         protected override void OnSubModuleLoad()
         {
-           new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
+            base.OnSubModuleLoad();
+
+            Assembly assembly = Assembly.GetExecutingAssembly();
+
+            // Harmony
+            new Harmony("com.mod.ModifiedArmy").PatchAll(assembly);
+
+            // UIExtenderEx
+            _uiExtender = new UIExtender("ModifiedArmy");
+            _uiExtender.Register(assembly);
+            _uiExtender.Enable();
         }
+
+        // protected override void OnSubModuleLoad()
+        // {
+        //     new Harmony("com.mod.ModifiedArmy").PatchAll(Assembly.GetExecutingAssembly());
+        // }
 
         protected override void OnGameStart(Game game, IGameStarter gameStarterObject)
         {
