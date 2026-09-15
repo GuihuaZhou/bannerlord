@@ -1,7 +1,7 @@
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
-using ModifiedArmy.Models.Fief;
-using System.Linq;
+using ModifiedArmy.Models;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Clans;
 using TaleWorlds.Library;
@@ -9,418 +9,375 @@ using TaleWorlds.Library;
 namespace ModifiedArmy.UI.KingdomClan
 {
     /// <summary>
-    /// Kingdom Clan 页面战争潜力数据扩展。
+    /// Kingdom Management -> Clans 页面
+    /// Clan 详情扩展。
+    ///
+    /// 所有战争潜力相关数据统一由 WarPotentialModel 提供。
+    /// UI 层只负责读取和显示，不再重复计算。
     /// </summary>
     [ViewModelMixin("Refresh")]
     public class KingdomClanItemVMMixin
         : BaseViewModelMixin<KingdomClanItemVM>
     {
+        private readonly KingdomClanItemVM _vm;
+
+
+        // =============================================================
+        // Backing Fields
+        // =============================================================
+
         private int _warPotential;
 
         private int _fiefTroops;
+
         private int _garrisonTroops;
+
         private int _fieldTroops;
 
         private int _clanWealth;
+
         private int _dailyIncome;
+
         private int _partyDailyWage;
 
-        public KingdomClanItemVMMixin(KingdomClanItemVM viewModel)
-            : base(viewModel)
+
+        // =============================================================
+        // Constructor
+        // =============================================================
+
+        public KingdomClanItemVMMixin(
+            KingdomClanItemVM vm)
+            : base(vm)
         {
-            RefreshWarInfo();
+            _vm = vm;
+
+            RefreshWarPotentialData();
         }
 
-        // =====================================================================
-        // 战争潜力
-        // =====================================================================
 
+        // =============================================================
+        // Properties
+        // =============================================================
+
+        /// <summary>
+        /// 最终战争潜力。
+        /// </summary>
         [DataSourceProperty]
         public int WarPotential
         {
-            get => _warPotential;
+            get
+            {
+                return _warPotential;
+            }
             set
             {
-                if (_warPotential == value)
-                    return;
+                if (value != _warPotential)
+                {
+                    _warPotential = value;
 
-                _warPotential = value;
-                ViewModel?.OnPropertyChanged(nameof(WarPotential));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "WarPotential");
+                }
             }
         }
 
-        // =====================================================================
-        // 军事资源
-        // =====================================================================
 
+        /// <summary>
+        /// 军役兵力。
+        /// </summary>
         [DataSourceProperty]
         public int FiefTroops
         {
-            get => _fiefTroops;
+            get
+            {
+                return _fiefTroops;
+            }
             set
             {
-                if (_fiefTroops == value)
-                    return;
+                if (value != _fiefTroops)
+                {
+                    _fiefTroops = value;
 
-                _fiefTroops = value;
-                ViewModel?.OnPropertyChanged(nameof(FiefTroops));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "FiefTroops");
+                }
             }
         }
 
+
+        /// <summary>
+        /// 驻军兵力。
+        /// </summary>
         [DataSourceProperty]
         public int GarrisonTroops
         {
-            get => _garrisonTroops;
+            get
+            {
+                return _garrisonTroops;
+            }
             set
             {
-                if (_garrisonTroops == value)
-                    return;
+                if (value != _garrisonTroops)
+                {
+                    _garrisonTroops = value;
 
-                _garrisonTroops = value;
-                ViewModel?.OnPropertyChanged(nameof(GarrisonTroops));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "GarrisonTroops");
+                }
             }
         }
 
+
+        /// <summary>
+        /// 当前机动兵力。
+        /// </summary>
         [DataSourceProperty]
         public int FieldTroops
         {
-            get => _fieldTroops;
+            get
+            {
+                return _fieldTroops;
+            }
             set
             {
-                if (_fieldTroops == value)
-                    return;
+                if (value != _fieldTroops)
+                {
+                    _fieldTroops = value;
 
-                _fieldTroops = value;
-                ViewModel?.OnPropertyChanged(nameof(FieldTroops));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "FieldTroops");
+                }
             }
         }
 
-        // =====================================================================
-        // 财政资源
-        // =====================================================================
 
+        /// <summary>
+        /// Clan 总财富。
+        /// </summary>
         [DataSourceProperty]
         public int ClanWealth
         {
-            get => _clanWealth;
+            get
+            {
+                return _clanWealth;
+            }
             set
             {
-                if (_clanWealth == value)
-                    return;
+                if (value != _clanWealth)
+                {
+                    _clanWealth = value;
 
-                _clanWealth = value;
-                ViewModel?.OnPropertyChanged(nameof(ClanWealth));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "ClanWealth");
+                }
             }
         }
 
+
+        /// <summary>
+        /// Clan 每日收入。
+        /// </summary>
         [DataSourceProperty]
         public int DailyIncome
         {
-            get => _dailyIncome;
+            get
+            {
+                return _dailyIncome;
+            }
             set
             {
-                if (_dailyIncome == value)
-                    return;
+                if (value != _dailyIncome)
+                {
+                    _dailyIncome = value;
 
-                _dailyIncome = value;
-                ViewModel?.OnPropertyChanged(nameof(DailyIncome));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "DailyIncome");
+                }
             }
         }
 
+
+        /// <summary>
+        /// Clan 当前所有 WarParty 的每日工资。
+        ///
+        /// 注意：
+        /// 这里显示的是当前基础工资，
+        /// 不是 WarPotentialModel 内部的战时 ×2 工资。
+        /// </summary>
         [DataSourceProperty]
         public int PartyDailyWage
         {
-            get => _partyDailyWage;
+            get
+            {
+                return _partyDailyWage;
+            }
             set
             {
-                if (_partyDailyWage == value)
-                    return;
+                if (value != _partyDailyWage)
+                {
+                    _partyDailyWage = value;
 
-                _partyDailyWage = value;
-                ViewModel?.OnPropertyChanged(nameof(PartyDailyWage));
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "PartyDailyWage");
+                }
             }
         }
 
-        // =====================================================================
-        // Refresh
-        // =====================================================================
 
+        // =============================================================
+        // UIExtender Refresh Hook
+        // =============================================================
+
+        /// <summary>
+        /// KingdomClanItemVM.Refresh() 执行后，
+        /// UIExtenderEx 会调用此方法。
+        ///
+        /// 每次 Clan 页面刷新时，
+        /// 重新从 WarPotentialModel 获取动态数据。
+        /// </summary>
         public override void OnRefresh()
         {
-            RefreshWarInfo();
+            RefreshWarPotentialData();
         }
 
-        private void RefreshWarInfo()
+
+        // =============================================================
+        // Refresh
+        // =============================================================
+
+        /// <summary>
+        /// 从 WarPotentialModel 统一获取所有战争潜力相关数据。
+        /// </summary>
+        private void RefreshWarPotentialData()
         {
-            if (ViewModel?.Clan == null || Campaign.Current == null)
+            Clan clan =
+                GetClan();
+
+
+            if (clan == null)
+            {
+                ResetValues();
                 return;
+            }
 
-            Clan clan = ViewModel.Clan;
 
-            // 军事
-            FiefTroops = GetClanFiefTroopCount(clan);
-            GarrisonTroops = GetClanGarrisonTroopCount(clan);
-            FieldTroops = GetClanFieldTroopCount(clan);
+            WarPotentialModel model =
+                WarPotentialModel.Instance;
 
-            // 财政
-            ClanWealth = GetClanWealth(clan);
-            DailyIncome = GetClanDailyIncome(clan);
-            PartyDailyWage = GetClanPartyDailyWage(clan);
 
-            // 战争潜力
-            WarPotential = CalculateWarPotential(
-                FieldTroops,
-                GarrisonTroops,
-                ClanWealth,
-                DailyIncome,
-                PartyDailyWage);
+            if (model == null)
+            {
+                ResetValues();
+                return;
+            }
+
+
+            WarPotentialResult result =
+                model.CalculateWarPotential(clan);
+
+
+            if (result == null)
+            {
+                ResetValues();
+                return;
+            }
+
+
+            // =========================================================
+            // 最终战争潜力
+            // =========================================================
+
+            WarPotential =
+                result.WarPotential;
+
+
+            // =========================================================
+            // 军事资源
+            // =========================================================
+
+            FiefTroops =
+                result.FiefTroops;
+
+
+            GarrisonTroops =
+                result.GarrisonTroops;
+
+
+            FieldTroops =
+                result.FieldTroops;
+
+
+            // =========================================================
+            // 财政资源
+            // =========================================================
+
+            ClanWealth =
+                result.ClanWealth;
+
+
+            DailyIncome =
+                (int)Math.Round(
+                    result.DailyIncome,
+                    MidpointRounding.AwayFromZero);
+
+
+            PartyDailyWage =
+                result.PartyDailyWage;
         }
 
-        // =====================================================================
-        // 战争潜力计算
-        // =====================================================================
+
+        // =============================================================
+        // Clan 获取
+        // =============================================================
 
         /// <summary>
-        /// CurrentMilitaryPower =
-        ///     FieldTroops
-        ///     + GarrisonTroops * 0.25
+        /// 获取 KingdomClanItemVM 当前对应的 Clan。
         ///
-        /// WarDailyWage =
-        ///     PartyDailyWage * 2
-        ///
-        /// WarDailyBurn =
-        ///     max(0, WarDailyWage - DailyIncome)
-        ///
-        /// FinancialEndurance =
-        ///     ClanWealth / WarDailyBurn
-        ///
-        /// FinancialFactor =
-        ///     min(FinancialEndurance / 60, 1)
-        ///
-        /// WarPotential =
-        ///     CurrentMilitaryPower * FinancialFactor
+        /// KingdomClanItemVM 本体持有 Clan 数据，
+        /// 当前 UI 列表项本身就是针对单个 Clan 创建的。
         /// </summary>
-        private static int CalculateWarPotential(
-            int fieldTroops,
-            int garrisonTroops,
-            int clanWealth,
-            int dailyIncome,
-            int partyDailyWage)
+        private Clan GetClan()
         {
-            const float GarrisonFactor = 0.25f;
-            const float WarWageMultiplier = 2f;
-            const float ReferenceWarDays = 60f;
-
-            float currentMilitaryPower =
-                fieldTroops
-                + garrisonTroops * GarrisonFactor;
-
-            float warDailyWage =
-                partyDailyWage * WarWageMultiplier;
-
-            float warDailyBurn =
-                MathF.Max(
-                    0f,
-                    warDailyWage - dailyIncome);
-
-            float financialFactor = 1f;
-
-            if (warDailyBurn > 0f)
+            if (_vm == null)
             {
-                float financialEndurance =
-                    clanWealth / warDailyBurn;
-
-                financialFactor =
-                    MathF.Min(
-                        financialEndurance / ReferenceWarDays,
-                        1f);
+                return null;
             }
 
-            return MathF.Round(
-                currentMilitaryPower * financialFactor);
+
+            return _vm.Clan;
         }
 
-        // =====================================================================
-        // 封建部队
-        // =====================================================================
 
-        private static int GetClanFiefTroopCount(Clan clan)
-        {
-            if (clan == null || Campaign.Current == null)
-                return 0;
-
-            var fiefManager =
-                Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-
-            if (fiefManager == null)
-                return 0;
-
-            int total = 0;
-
-            foreach (var settlement in clan.Settlements)
-            {
-                if (settlement == null)
-                    continue;
-
-                if (!settlement.IsTown &&
-                    !settlement.IsCastle)
-                {
-                    continue;
-                }
-
-                var counts =
-                    fiefManager.GetFiefTroopCounts(settlement);
-
-                if (counts == null)
-                    continue;
-
-                total += counts.Values.Sum();
-            }
-
-            return total;
-        }
-
-        // =====================================================================
-        // 驻军
-        // =====================================================================
-
-        private static int GetClanGarrisonTroopCount(Clan clan)
-        {
-            if (clan == null)
-                return 0;
-
-            int total = 0;
-
-            foreach (var settlement in clan.Settlements)
-            {
-                if (settlement?.Town == null)
-                    continue;
-
-                var garrison =
-                    settlement.Town.GarrisonParty;
-
-                if (garrison == null)
-                    continue;
-
-                total +=
-                    garrison.Party.NumberOfAllMembers;
-            }
-
-            return total;
-        }
-
-        // =====================================================================
-        // 野战部队
-        // =====================================================================
-
-        private static int GetClanFieldTroopCount(Clan clan)
-        {
-            if (clan == null)
-                return 0;
-
-            int total = 0;
-
-            foreach (var warParty in clan.WarPartyComponents)
-            {
-                if (warParty?.Party == null)
-                    continue;
-
-                total +=
-                    warParty.Party.NumberOfAllMembers;
-            }
-
-            return total;
-        }
-
-        // =====================================================================
-        // Clan 财富
-        // =====================================================================
+        // =============================================================
+        // Reset
+        // =============================================================
 
         /// <summary>
-        /// Clan Wealth =
-        /// 所有 Clan Heroes / Companions 实际持有 Gold 的总和。
-        ///
-        /// 不使用 clan.Gold。
+        /// Model 尚未初始化或 Clan 无效时，
+        /// 清空 UI 数据，避免保留上一个 Clan 的旧值。
         /// </summary>
-        private static int GetClanWealth(Clan clan)
+        private void ResetValues()
         {
-            if (clan == null)
-                return 0;
+            WarPotential = 0;
 
-            int total = 0;
+            FiefTroops = 0;
 
-            foreach (Hero hero in clan.Heroes)
-            {
-                if (hero == null)
-                    continue;
+            GarrisonTroops = 0;
 
-                total += hero.Gold;
-            }
+            FieldTroops = 0;
 
-            // 某些 Companion 可能已经存在于 Heroes 中。
-            // Contains 用于防止重复计算。
-            foreach (Hero companion in clan.Companions)
-            {
-                if (companion == null)
-                    continue;
+            ClanWealth = 0;
 
-                if (clan.Heroes.Contains(companion))
-                    continue;
+            DailyIncome = 0;
 
-                total += companion.Gold;
-            }
-
-            return total;
-        }
-
-        // =====================================================================
-        // Clan 每日收入
-        // =====================================================================
-
-        private static int GetClanDailyIncome(Clan clan)
-        {
-            if (clan == null || Campaign.Current == null)
-                return 0;
-
-            var financeModel =
-                Campaign.Current.Models.ClanFinanceModel;
-
-            if (financeModel == null)
-                return 0;
-
-            ExplainedNumber result =
-                financeModel.CalculateClanIncome(
-                    clan,
-                    includeDescriptions: false,
-                    applyWithdrawals: false,
-                    includeDetails: false);
-
-            return MathF.Round(result.ResultNumber);
-        }
-
-        // =====================================================================
-        // Clan Party 每日工资
-        // =====================================================================
-
-        private static int GetClanPartyDailyWage(Clan clan)
-        {
-            if (clan == null)
-                return 0;
-
-            int total = 0;
-
-            foreach (var warParty in clan.WarPartyComponents)
-            {
-                var mobileParty =
-                    warParty?.MobileParty;
-
-                if (mobileParty == null)
-                    continue;
-
-                total += mobileParty.TotalWage;
-            }
-
-            return total;
+            PartyDailyWage = 0;
         }
     }
 }
