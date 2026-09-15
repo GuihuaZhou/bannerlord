@@ -1,0 +1,801 @@
+<Widget
+    Id="ModifiedArmyClanDetailsRoot"
+    WidthSizePolicy="StretchToParent"
+    HeightSizePolicy="StretchToParent"
+    IsVisible="@IsAcceptableItemSelected"
+    MarginBottom="190">
+
+  <Children>
+
+    <!-- ============================================================ -->
+    <!-- Clan Detail Scrollable Page                                  -->
+    <!-- ============================================================ -->
+
+    <ScrollablePanel
+        Id="ModifiedArmyClanDetailsScrollablePanel"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        InnerPanel="ModifiedArmyClanDetailsClipRect\ModifiedArmyClanDetailsContent"
+        ClipRect="ModifiedArmyClanDetailsClipRect"
+        MouseScrollAxis="Vertical"
+        VerticalScrollbar="..\ModifiedArmyClanDetailsScrollbar"
+        VerticalAlignment="Center"
+        HorizontalAlignment="Center"
+        AutoHideScrollBars="true">
+
+      <Children>
+
+        <!-- ======================================================== -->
+        <!-- Clip Rect                                                -->
+        <!-- ======================================================== -->
+
+        <Widget
+            Id="ModifiedArmyClanDetailsClipRect"
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="StretchToParent"
+            ClipContents="true">
+
+          <Children>
+
+            <!-- ==================================================== -->
+            <!-- Scrollable Content                                   -->
+            <!-- ==================================================== -->
+
+            <ListPanel
+                Id="ModifiedArmyClanDetailsContent"
+                WidthSizePolicy="StretchToParent"
+                HeightSizePolicy="CoverChildren"
+                StackLayout.LayoutMethod="VerticalTopToBottom">
+
+              <Children>
+
+                <!-- ================================================= -->
+                <!-- Clan Name                                         -->
+                <!-- ================================================= -->
+
+                <TextWidget
+                    DataSource="{CurrentSelectedClan}"
+                    WidthSizePolicy="Fixed"
+                    HeightSizePolicy="Fixed"
+                    SuggestedWidth="1000"
+                    SuggestedHeight="45"
+                    HorizontalAlignment="Center"
+                    Brush="Kingdom.TitleMedium.Text"
+                    Text="@Name"
+                    ClipContents="false" />
+
+
+                <!-- ================================================= -->
+                <!-- Clan Tier                                         -->
+                <!-- ================================================= -->
+
+                <TextWidget
+                    DataSource="{CurrentSelectedClan}"
+                    WidthSizePolicy="CoverChildren"
+                    HeightSizePolicy="CoverChildren"
+                    HorizontalAlignment="Center"
+                    Brush="Kingdom.ParagraphSmall.Text"
+                    Text="@TierText"
+                    ClipContents="false" />
+
+
+                <!-- ================================================= -->
+                <!-- Banner                                            -->
+                <!-- ================================================= -->
+
+                <MaskedTextureWidget
+                    DataSource="{CurrentSelectedClan\Banner_9}"
+                    WidthSizePolicy="Fixed"
+                    HeightSizePolicy="Fixed"
+                    SuggestedWidth="107"
+                    SuggestedHeight="128"
+                    MarginTop="5"
+                    HorizontalAlignment="Center"
+                    VerticalAlignment="Top"
+                    Brush="Kingdom.TornBanner.Big"
+                    AdditionalArgs="@AdditionalArgs"
+                    ImageId="@Id"
+                    TextureProviderName="@TextureProviderName" />
+
+
+                <!-- ================================================= -->
+                <!-- Members + Fiefs                                   -->
+                <!-- ================================================= -->
+
+                <ListPanel
+                    Id="ModifiedArmyClanMembersAndFiefs"
+                    WidthSizePolicy="StretchToParent"
+                    HeightSizePolicy="CoverChildren"
+                    StackLayout.LayoutMethod="HorizontalLeftToRight"
+                    UpdateChildrenStates="true">
+
+                  <Children>
+
+                    <!-- ================================================= -->
+                    <!-- LEFT COLUMN                                       -->
+                    <!-- Members + War Potential                           -->
+                    <!-- ================================================= -->
+
+                    <ListPanel
+                        Id="MembersList"
+                        WidthSizePolicy="StretchToParent"
+                        HeightSizePolicy="CoverChildren"
+                        StackLayout.LayoutMethod="VerticalTopToBottom"
+                        UpdateChildrenStates="true">
+
+                      <Children>
+
+                        <!-- ============================================= -->
+                        <!-- Members Header                                -->
+                        <!-- ============================================= -->
+
+                        <ListPanel
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            UpdateChildrenStates="true"
+                            DoNotPassEventsToChildren="true"
+                            MarginRight="30"
+                            MarginLeft="30">
+
+                          <Children>
+
+                            <TextWidget
+                                WidthSizePolicy="CoverChildren"
+                                HeightSizePolicy="CoverChildren"
+                                Text="@MembersText"
+                                Brush="Kingdom.TitleMedium.Text"
+                                Brush.FontSize="32"
+                                MarginLeft="5"
+                                VerticalAlignment="Center"
+                                ClipContents="false" />
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="2"
+                                MarginLeft="10"
+                                VerticalAlignment="Bottom"
+                                MarginBottom="10"
+                                Sprite="GradientDivider_9"
+                                AlphaFactor="0.4" />
+
+                          </Children>
+
+                        </ListPanel>
+
+
+                        <!-- ============================================= -->
+                        <!-- Members Grid                                  -->
+                        <!-- ============================================= -->
+
+                        <NavigationScopeTargeter
+                            ScopeID="KingdomClanRightPanelMembersContext"
+                            ScopeParent="..\MembersGridWidget"
+                            ScopeMovements="Horizontal"
+                            AlternateScopeMovements="Vertical"
+                            AlternateMovementStepSize="6" />
+
+                        <NavigatableGridWidget
+                            Id="MembersGridWidget"
+                            DataSource="{CurrentSelectedClan\Members}"
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            SuggestedWidth="350"
+                            DefaultCellWidth="100"
+                            DefaultCellHeight="110"
+                            HorizontalAlignment="Center"
+                            ColumnCount="6"
+                            LayoutImp.VerticalLayoutMethod="TopToBottom"
+                            MarginLeft="32"
+                            MarginRight="20"
+                            MarginTop="5"
+                            MarginBottom="10">
+
+                          <ItemTemplate>
+
+                            <ButtonWidget
+                                DoNotPassEventsToChildren="true"
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="90"
+                                SuggestedHeight="65"
+                                Brush.ValueFactor="-50"
+                                ClipContents="false"
+                                Command.AlternateClick="ExecuteLink"
+                                HoveredCursorState="RightClickLink">
+
+                              <Children>
+
+                                <MaskedTextureWidget
+                                    DataSource="{ClanBanner_9}"
+                                    WidthSizePolicy="Fixed"
+                                    HeightSizePolicy="Fixed"
+                                    SuggestedWidth="!Banner.Width.Scaled"
+                                    SuggestedHeight="!Banner.Height.Scaled"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Top"
+                                    Brush="Flat.Tuple.Banner.Small.Hero"
+                                    AdditionalArgs="@AdditionalArgs"
+                                    ImageId="@Id"
+                                    TextureProviderName="@TextureProviderName"
+                                    IsDisabled="true" />
+
+                                <ImageIdentifierWidget
+                                    DataSource="{ImageIdentifier}"
+                                    WidthSizePolicy="Fixed"
+                                    HeightSizePolicy="Fixed"
+                                    SuggestedWidth="85"
+                                    SuggestedHeight="61"
+                                    PositionYOffset="-1"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Center"
+                                    AdditionalArgs="@AdditionalArgs"
+                                    ImageId="@Id"
+                                    TextureProviderName="@TextureProviderName"
+                                    IsEnabled="false" />
+
+                                <HintWidget
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="StretchToParent"
+                                    Command.HoverBegin="ExecuteBeginHint"
+                                    Command.HoverEnd="ExecuteEndHint"
+                                    IsEnabled="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="CoverChildren"
+                                    MaxHeight="40"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="16"
+                                    PositionYOffset="65"
+                                    Text="@NameText"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </ButtonWidget>
+
+                          </ItemTemplate>
+
+                        </NavigatableGridWidget>
+
+
+                        <!-- ============================================= -->
+                        <!-- War Potential                                  -->
+                        <!-- ============================================= -->
+
+                        <ListPanel
+                            Id="WarPotentialPanel"
+                            DataSource="{CurrentSelectedClan}"
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            StackLayout.LayoutMethod="VerticalTopToBottom"
+                            MarginLeft="32"
+                            MarginRight="30"
+                            MarginTop="10"
+                            MarginBottom="25">
+
+                          <Children>
+
+                            <!-- ========================================= -->
+                            <!-- Header                                    -->
+                            <!-- ========================================= -->
+
+                            <ListPanel
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="CoverChildren"
+                                DoNotPassEventsToChildren="true">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="战争潜力"
+                                    Brush="Kingdom.TitleMedium.Text"
+                                    Brush.FontSize="32"
+                                    VerticalAlignment="Center"
+                                    ClipContents="false" />
+
+                                <Widget
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="Fixed"
+                                    SuggestedHeight="2"
+                                    MarginLeft="10"
+                                    VerticalAlignment="Bottom"
+                                    MarginBottom="8"
+                                    Sprite="GradientDivider_9"
+                                    AlphaFactor="0.4" />
+
+                              </Children>
+
+                            </ListPanel>
+
+
+                            <!-- ========================================= -->
+                            <!-- 战争潜力                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="30">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="战争潜力"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="20"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@WarPotential"
+                                    Brush="Kingdom.TitleMedium.Text"
+                                    Brush.FontSize="23"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 军役兵力                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="27">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="军役兵力"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@FiefTroops"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 驻军兵力                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="27">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="驻军兵力"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@GarrisonTroops"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 机动兵力                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="27">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="机动兵力"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@FieldTroops"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 家族财富                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="31"
+                                MarginTop="4">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="家族财富"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@ClanWealth"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 每日收入                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="27">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="每日收入"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@DailyIncome"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+
+                            <!-- ========================================= -->
+                            <!-- 部队工资                                  -->
+                            <!-- ========================================= -->
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="27">
+
+                              <Children>
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Left"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Left"
+                                    Text="部队工资"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="CoverChildren"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Right"
+                                    VerticalAlignment="Center"
+                                    Brush.TextHorizontalAlignment="Right"
+                                    IntText="@PartyDailyWage"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="18"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </Widget>
+
+                          </Children>
+
+                        </ListPanel>
+
+                      </Children>
+
+                    </ListPanel>
+
+
+                    <!-- ================================================= -->
+                    <!-- RIGHT COLUMN                                      -->
+                    <!-- Fiefs                                             -->
+                    <!-- ================================================= -->
+
+                    <ListPanel
+                        Id="FiefsList"
+                        WidthSizePolicy="StretchToParent"
+                        HeightSizePolicy="CoverChildren"
+                        StackLayout.LayoutMethod="VerticalTopToBottom"
+                        UpdateChildrenStates="true">
+
+                      <Children>
+
+                        <!-- ============================================= -->
+                        <!-- Fiefs Header                                  -->
+                        <!-- ============================================= -->
+
+                        <ListPanel
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            UpdateChildrenStates="true"
+                            DoNotPassEventsToChildren="true"
+                            MarginRight="30"
+                            MarginLeft="30">
+
+                          <Children>
+
+                            <TextWidget
+                                WidthSizePolicy="CoverChildren"
+                                HeightSizePolicy="CoverChildren"
+                                Text="@FiefsText"
+                                Brush="Kingdom.TitleMedium.Text"
+                                Brush.FontSize="32"
+                                MarginLeft="5"
+                                VerticalAlignment="Center"
+                                ClipContents="false" />
+
+                            <Widget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="Fixed"
+                                SuggestedHeight="2"
+                                MarginLeft="10"
+                                VerticalAlignment="Bottom"
+                                MarginBottom="10"
+                                Sprite="GradientDivider_9"
+                                AlphaFactor="0.4" />
+
+                          </Children>
+
+                        </ListPanel>
+
+
+                        <!-- ============================================= -->
+                        <!-- Fiefs Grid                                    -->
+                        <!-- ============================================= -->
+
+                        <NavigationScopeTargeter
+                            ScopeID="KingdomClanRightPanelFiefsContext"
+                            ScopeParent="..\FiefsGridWidget"
+                            ScopeMovements="Horizontal"
+                            AlternateScopeMovements="Vertical"
+                            AlternateMovementStepSize="6" />
+
+                        <NavigatableGridWidget
+                            Id="FiefsGridWidget"
+                            DataSource="{CurrentSelectedClan\Fiefs}"
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            DefaultCellWidth="100"
+                            DefaultCellHeight="110"
+                            HorizontalAlignment="Center"
+                            ColumnCount="6"
+                            LayoutImp.VerticalLayoutMethod="TopToBottom"
+                            MarginLeft="15"
+                            MarginRight="20"
+                            MarginTop="35"
+                            MarginBottom="20">
+
+                          <ItemTemplate>
+
+                            <ButtonWidget
+                                DoNotPassEventsToChildren="true"
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="75"
+                                SuggestedHeight="75"
+                                HorizontalAlignment="Center"
+                                ClipContents="false"
+                                Command.AlternateClick="ExecuteLink"
+                                HoveredCursorState="RightClickLink">
+
+                              <Children>
+
+                                <Widget
+                                    WidthSizePolicy="Fixed"
+                                    HeightSizePolicy="Fixed"
+                                    SuggestedWidth="65"
+                                    SuggestedHeight="65"
+                                    HorizontalAlignment="Center"
+                                    VerticalAlignment="Top"
+                                    Sprite="@VisualPath"
+                                    IsEnabled="false" />
+
+                                <HintWidget
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="StretchToParent"
+                                    Command.HoverBegin="ExecuteBeginHint"
+                                    Command.HoverEnd="ExecuteEndHint"
+                                    IsEnabled="false" />
+
+                                <TextWidget
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="CoverChildren"
+                                    HorizontalAlignment="Center"
+                                    Brush="Kingdom.ParagraphSmall.Text"
+                                    Brush.FontSize="16"
+                                    PositionYOffset="65"
+                                    Text="@FiefName"
+                                    ClipContents="false" />
+
+                              </Children>
+
+                            </ButtonWidget>
+
+                          </ItemTemplate>
+
+                        </NavigatableGridWidget>
+
+                      </Children>
+
+                    </ListPanel>
+
+                  </Children>
+
+                </ListPanel>
+
+
+                <!-- ================================================= -->
+                <!-- Bottom Padding                                    -->
+                <!-- ================================================= -->
+
+                <Widget
+                    WidthSizePolicy="StretchToParent"
+                    HeightSizePolicy="Fixed"
+                    SuggestedHeight="40" />
+
+              </Children>
+
+            </ListPanel>
+
+          </Children>
+
+        </Widget>
+
+      </Children>
+
+    </ScrollablePanel>
+
+
+    <!-- ============================================================ -->
+    <!-- Single Scrollbar                                             -->
+    <!-- ============================================================ -->
+
+    <ScrollbarWidget
+        Id="ModifiedArmyClanDetailsScrollbar"
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="StretchToParent"
+        SuggestedWidth="18"
+        HorizontalAlignment="Right"
+        VerticalAlignment="Center"
+        MarginRight="5"
+        MarginTop="15"
+        MarginBottom="15"
+        AlignmentAxis="Vertical"
+        Handle="ModifiedArmyClanDetailsScrollbarHandle"
+        MinValue="0"
+        MaxValue="100">
+
+      <Children>
+
+        <Widget
+            Id="ModifiedArmyClanDetailsScrollbarBed"
+            WidthSizePolicy="Fixed"
+            HeightSizePolicy="StretchToParent"
+            SuggestedWidth="2"
+            HorizontalAlignment="Center"
+            Sprite="BlankWhiteSquare_9"
+            AlphaFactor="0.4"
+            Color="#ECC79BFF" />
+
+        <ImageWidget
+            Id="ModifiedArmyClanDetailsScrollbarHandle"
+            WidthSizePolicy="Fixed"
+            HeightSizePolicy="Fixed"
+            MinHeight="40"
+            SuggestedWidth="8"
+            SuggestedHeight="60"
+            HorizontalAlignment="Center"
+            Brush="Kingdom.Scrollbar.Handle" />
+
+      </Children>
+
+    </ScrollbarWidget>
+
+  </Children>
+
+</Widget>
