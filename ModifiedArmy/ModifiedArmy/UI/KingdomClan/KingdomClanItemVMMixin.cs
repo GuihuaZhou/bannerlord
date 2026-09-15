@@ -9,20 +9,21 @@ using TaleWorlds.Library;
 namespace ModifiedArmy.UI.KingdomClan
 {
     /// <summary>
-    /// 给原版 KingdomClanItemVM 增加战争潜力相关原始数据显示。
-    ///
-    /// 军力：
-    /// 封建部队 / 驻军 / 野战部队
-    ///
-    /// 财富：
-    /// Clan财富总额 / Clan每日收入 / Clan Party每日工资总额
+    /// Kingdom Clan 页面战争潜力数据扩展。
     /// </summary>
     [ViewModelMixin("Refresh")]
     public class KingdomClanItemVMMixin
         : BaseViewModelMixin<KingdomClanItemVM>
     {
-        private string _militaryInfo = string.Empty;
-        private string _financialInfo = string.Empty;
+        private int _warPotential;
+
+        private int _fiefTroops;
+        private int _garrisonTroops;
+        private int _fieldTroops;
+
+        private int _clanWealth;
+        private int _dailyIncome;
+        private int _partyDailyWage;
 
         public KingdomClanItemVMMixin(KingdomClanItemVM viewModel)
             : base(viewModel)
@@ -30,45 +31,120 @@ namespace ModifiedArmy.UI.KingdomClan
             RefreshWarInfo();
         }
 
+        // =====================================================================
+        // 战争潜力
+        // =====================================================================
+
         [DataSourceProperty]
-        public string MilitaryInfo
+        public int WarPotential
         {
-            get => _militaryInfo;
+            get => _warPotential;
             set
             {
-                if (value == _militaryInfo)
+                if (_warPotential == value)
                     return;
 
-                _militaryInfo = value;
+                _warPotential = value;
+                ViewModel?.OnPropertyChanged(nameof(WarPotential));
+            }
+        }
 
-                if (ViewModel != null)
-                {
-                    ViewModel.OnPropertyChanged(nameof(MilitaryInfo));
-                }
+        // =====================================================================
+        // 军事资源
+        // =====================================================================
+
+        [DataSourceProperty]
+        public int FiefTroops
+        {
+            get => _fiefTroops;
+            set
+            {
+                if (_fiefTroops == value)
+                    return;
+
+                _fiefTroops = value;
+                ViewModel?.OnPropertyChanged(nameof(FiefTroops));
             }
         }
 
         [DataSourceProperty]
-        public string FinancialInfo
+        public int GarrisonTroops
         {
-            get => _financialInfo;
+            get => _garrisonTroops;
             set
             {
-                if (value == _financialInfo)
+                if (_garrisonTroops == value)
                     return;
 
-                _financialInfo = value;
-
-                if (ViewModel != null)
-                {
-                    ViewModel.OnPropertyChanged(nameof(FinancialInfo));
-                }
+                _garrisonTroops = value;
+                ViewModel?.OnPropertyChanged(nameof(GarrisonTroops));
             }
         }
 
-        /// <summary>
-        /// KingdomClanItemVM.Refresh() 执行后自动刷新。
-        /// </summary>
+        [DataSourceProperty]
+        public int FieldTroops
+        {
+            get => _fieldTroops;
+            set
+            {
+                if (_fieldTroops == value)
+                    return;
+
+                _fieldTroops = value;
+                ViewModel?.OnPropertyChanged(nameof(FieldTroops));
+            }
+        }
+
+        // =====================================================================
+        // 财政资源
+        // =====================================================================
+
+        [DataSourceProperty]
+        public int ClanWealth
+        {
+            get => _clanWealth;
+            set
+            {
+                if (_clanWealth == value)
+                    return;
+
+                _clanWealth = value;
+                ViewModel?.OnPropertyChanged(nameof(ClanWealth));
+            }
+        }
+
+        [DataSourceProperty]
+        public int DailyIncome
+        {
+            get => _dailyIncome;
+            set
+            {
+                if (_dailyIncome == value)
+                    return;
+
+                _dailyIncome = value;
+                ViewModel?.OnPropertyChanged(nameof(DailyIncome));
+            }
+        }
+
+        [DataSourceProperty]
+        public int PartyDailyWage
+        {
+            get => _partyDailyWage;
+            set
+            {
+                if (_partyDailyWage == value)
+                    return;
+
+                _partyDailyWage = value;
+                ViewModel?.OnPropertyChanged(nameof(PartyDailyWage));
+            }
+        }
+
+        // =====================================================================
+        // Refresh
+        // =====================================================================
+
         public override void OnRefresh()
         {
             RefreshWarInfo();
@@ -81,44 +157,93 @@ namespace ModifiedArmy.UI.KingdomClan
 
             Clan clan = ViewModel.Clan;
 
-            // =========================================================
             // 军事
-            // =========================================================
+            FiefTroops = GetClanFiefTroopCount(clan);
+            GarrisonTroops = GetClanGarrisonTroopCount(clan);
+            FieldTroops = GetClanFieldTroopCount(clan);
 
-            int fiefTroops = GetClanFiefTroopCount(clan);
-            int garrisonTroops = GetClanGarrisonTroopCount(clan);
-            int fieldTroops = GetClanFieldTroopCount(clan);
-
-            // =========================================================
             // 财政
-            // =========================================================
+            ClanWealth = GetClanWealth(clan);
+            DailyIncome = GetClanDailyIncome(clan);
+            PartyDailyWage = GetClanPartyDailyWage(clan);
 
-            int clanWealth = GetClanWealth(clan);
-            int dailyIncome = GetClanDailyIncome(clan);
-            int partyDailyWage = GetClanPartyDailyWage(clan);
+            // 战争潜力
+            WarPotential = CalculateWarPotential(
+                FieldTroops,
+                GarrisonTroops,
+                ClanWealth,
+                DailyIncome,
+                PartyDailyWage);
+        }
 
-            // =========================================================
-            // UI
-            // =========================================================
+        // =====================================================================
+        // 战争潜力计算
+        // =====================================================================
 
-            MilitaryInfo =
-                $"军力（封建 / 驻军 / 野战）：{fiefTroops} / {garrisonTroops} / {fieldTroops}";
+        /// <summary>
+        /// CurrentMilitaryPower =
+        ///     FieldTroops
+        ///     + GarrisonTroops * 0.25
+        ///
+        /// WarDailyWage =
+        ///     PartyDailyWage * 2
+        ///
+        /// WarDailyBurn =
+        ///     max(0, WarDailyWage - DailyIncome)
+        ///
+        /// FinancialEndurance =
+        ///     ClanWealth / WarDailyBurn
+        ///
+        /// FinancialFactor =
+        ///     min(FinancialEndurance / 60, 1)
+        ///
+        /// WarPotential =
+        ///     CurrentMilitaryPower * FinancialFactor
+        /// </summary>
+        private static int CalculateWarPotential(
+            int fieldTroops,
+            int garrisonTroops,
+            int clanWealth,
+            int dailyIncome,
+            int partyDailyWage)
+        {
+            const float GarrisonFactor = 0.25f;
+            const float WarWageMultiplier = 2f;
+            const float ReferenceWarDays = 60f;
 
-            FinancialInfo =
-                $"财富（总额 / 收入 / 工资）：{clanWealth} / {dailyIncome} / {partyDailyWage}";
+            float currentMilitaryPower =
+                fieldTroops
+                + garrisonTroops * GarrisonFactor;
+
+            float warDailyWage =
+                partyDailyWage * WarWageMultiplier;
+
+            float warDailyBurn =
+                MathF.Max(
+                    0f,
+                    warDailyWage - dailyIncome);
+
+            float financialFactor = 1f;
+
+            if (warDailyBurn > 0f)
+            {
+                float financialEndurance =
+                    clanWealth / warDailyBurn;
+
+                financialFactor =
+                    MathF.Min(
+                        financialEndurance / ReferenceWarDays,
+                        1f);
+            }
+
+            return MathF.Round(
+                currentMilitaryPower * financialFactor);
         }
 
         // =====================================================================
         // 封建部队
         // =====================================================================
 
-        /// <summary>
-        /// 获取 Clan 所有城镇/城堡的封建部队总数。
-        ///
-        /// 使用 FiefPartyManager.GetFiefTroopCounts()。
-        /// 该接口返回每种 SoldierType 的实际数量，
-        /// 将所有类型数量求和，再对 Clan 所有封邑累加。
-        /// </summary>
         private static int GetClanFiefTroopCount(Clan clan)
         {
             if (clan == null || Campaign.Current == null)
@@ -137,8 +262,11 @@ namespace ModifiedArmy.UI.KingdomClan
                 if (settlement == null)
                     continue;
 
-                if (!settlement.IsTown && !settlement.IsCastle)
+                if (!settlement.IsTown &&
+                    !settlement.IsCastle)
+                {
                     continue;
+                }
 
                 var counts =
                     fiefManager.GetFiefTroopCounts(settlement);
@@ -156,18 +284,6 @@ namespace ModifiedArmy.UI.KingdomClan
         // 驻军
         // =====================================================================
 
-        /// <summary>
-        /// 获取 Clan 所有城镇/城堡驻军人数。
-        ///
-        /// 与原版 Clan 管理页面获取 Garrison 的方式一致：
-        ///
-        /// Clan.Settlements
-        ///     -> Settlement.Town
-        ///     -> GarrisonParty
-        ///
-        /// NumberOfAllMembers 包含当前 Party 的全部成员，
-        /// 不包含俘虏。
-        /// </summary>
         private static int GetClanGarrisonTroopCount(Clan clan)
         {
             if (clan == null)
@@ -180,13 +296,14 @@ namespace ModifiedArmy.UI.KingdomClan
                 if (settlement?.Town == null)
                     continue;
 
-                var garrisonParty =
+                var garrison =
                     settlement.Town.GarrisonParty;
 
-                if (garrisonParty == null)
+                if (garrison == null)
                     continue;
 
-                total += garrisonParty.Party.NumberOfAllMembers;
+                total +=
+                    garrison.Party.NumberOfAllMembers;
             }
 
             return total;
@@ -196,24 +313,6 @@ namespace ModifiedArmy.UI.KingdomClan
         // 野战部队
         // =====================================================================
 
-        /// <summary>
-        /// 获取 Clan 所有 War Party 的士兵总人数。
-        ///
-        /// 使用 Clan.WarPartyComponents。
-        ///
-        /// 这是原版 Clan 管理页面 Parties 列表本身使用的数据源，
-        /// 因此：
-        ///
-        /// 包含：
-        /// - 玩家/领主主力 Party
-        /// - Clan 其他成员 Party
-        ///
-        /// 不包含：
-        /// - Caravan
-        /// - Garrison
-        ///
-        /// 正好符合战争潜力设计中的 Clan Party。
-        /// </summary>
         private static int GetClanFieldTroopCount(Clan clan)
         {
             if (clan == null)
@@ -221,24 +320,27 @@ namespace ModifiedArmy.UI.KingdomClan
 
             int total = 0;
 
-            foreach (var warPartyComponent in clan.WarPartyComponents)
+            foreach (var warParty in clan.WarPartyComponents)
             {
-                if (warPartyComponent?.Party == null)
+                if (warParty?.Party == null)
                     continue;
 
-                total += warPartyComponent.Party.NumberOfAllMembers;
+                total +=
+                    warParty.Party.NumberOfAllMembers;
             }
 
             return total;
         }
 
         // =====================================================================
-        // Clan Wealth
+        // Clan 财富
         // =====================================================================
 
         /// <summary>
-        /// Clan 当前财政储备。
+        /// Clan Wealth =
+        /// 所有 Clan Heroes / Companions 实际持有 Gold 的总和。
         ///
+        /// 不使用 clan.Gold。
         /// </summary>
         private static int GetClanWealth(Clan clan)
         {
@@ -255,12 +357,13 @@ namespace ModifiedArmy.UI.KingdomClan
                 total += hero.Gold;
             }
 
+            // 某些 Companion 可能已经存在于 Heroes 中。
+            // Contains 用于防止重复计算。
             foreach (Hero companion in clan.Companions)
             {
                 if (companion == null)
                     continue;
 
-                // 避免理论上的重复统计
                 if (clan.Heroes.Contains(companion))
                     continue;
 
@@ -271,35 +374,9 @@ namespace ModifiedArmy.UI.KingdomClan
         }
 
         // =====================================================================
-        // Clan Daily Income
+        // Clan 每日收入
         // =====================================================================
 
-        /// <summary>
-        /// 获取 Clan 原版财政模型计算出的每日收入。
-        ///
-        /// CalculateClanIncome 会计算收入项目，例如：
-        /// - Settlement income
-        /// - Party / Caravan income
-        /// - Workshop income
-        /// - Mercenary income
-        /// - Tribute income
-        /// - Kingdom budget income
-        /// - Ruling clan policy income
-        /// 等。
-        ///
-        /// applyWithdrawals = false：
-        /// 仅计算，不实际修改任何钱包或累计值。
-        ///
-        /// 注意：
-        /// 这里是 Income，不是 GoldChange。
-        /// 所以不会把工资等 Expense 再扣一次。
-        /// 这正好符合：
-        ///
-        /// WarDailyBalance =
-        /// DailyIncome - PartyDailyWage × 2
-        ///
-        /// 的设计。
-        /// </summary>
         private static int GetClanDailyIncome(Clan clan)
         {
             if (clan == null || Campaign.Current == null)
@@ -311,32 +388,20 @@ namespace ModifiedArmy.UI.KingdomClan
             if (financeModel == null)
                 return 0;
 
-            ExplainedNumber income =
+            ExplainedNumber result =
                 financeModel.CalculateClanIncome(
                     clan,
                     includeDescriptions: false,
                     applyWithdrawals: false,
                     includeDetails: false);
 
-            return MathF.Round(income.ResultNumber);
+            return MathF.Round(result.ResultNumber);
         }
 
         // =====================================================================
-        // Clan Party Daily Wage
+        // Clan Party 每日工资
         // =====================================================================
 
-        /// <summary>
-        /// 获取 Clan 所有 War Party 当前每日工资总额。
-        ///
-        /// 只统计 Clan.WarPartyComponents：
-        ///
-        /// 包含野战 Party；
-        /// 不包含驻军；
-        /// 不包含商队。
-        ///
-        /// MobileParty.TotalWage 会通过当前 Campaign 的
-        /// PartyWageModel 进行计算，因此会自动使用当前实际生效的工资模型。
-        /// </summary>
         private static int GetClanPartyDailyWage(Clan clan)
         {
             if (clan == null)
@@ -344,10 +409,10 @@ namespace ModifiedArmy.UI.KingdomClan
 
             int total = 0;
 
-            foreach (var warPartyComponent in clan.WarPartyComponents)
+            foreach (var warParty in clan.WarPartyComponents)
             {
                 var mobileParty =
-                    warPartyComponent?.MobileParty;
+                    warParty?.MobileParty;
 
                 if (mobileParty == null)
                     continue;
