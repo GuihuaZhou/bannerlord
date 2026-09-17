@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.Globalization;
+using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -125,13 +126,13 @@ namespace ModifiedPolitics.UI.KingdomClan
 
         private static string FormatWarDisposition(float value)
         {
-            string level = value > 0f
-                ? "倾向战争"
-                : value < 0f
-                    ? "倾向停战"
-                    : "中立";
+            WarDispositionLevel level =
+                WarDispositionCalculator.GetLevel(value);
 
-            return level + "(" + FormatSignedValue(value) + ")";
+            string levelText =
+                WarDispositionCalculator.GetLevelText(level);
+
+            return levelText + "(" + FormatSignedValue(value) + ")";
         }
 
         private static string FormatSignedValue(float value)
