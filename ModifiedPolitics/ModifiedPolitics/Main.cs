@@ -1,4 +1,5 @@
 using Bannerlord.UIExtenderEx;
+using HarmonyLib;
 using ModifiedPolitics.Models;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -17,6 +18,8 @@ namespace ModifiedPolitics
 
             Assembly assembly = Assembly.GetExecutingAssembly();
 
+            new Harmony("com.mod.ModifiedPolitics").PatchAll(assembly);
+
             _uiExtender = new UIExtender("ModifiedPolitics");
             _uiExtender.Register(assembly);
             _uiExtender.Enable();
@@ -30,6 +33,10 @@ namespace ModifiedPolitics
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
                 campaignStarter.AddModel(new WarPotentialModel());
+                campaignStarter.AddModel(new NewBuildingConstructionModel());
+                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
+
+                campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
             }
         }
     }
