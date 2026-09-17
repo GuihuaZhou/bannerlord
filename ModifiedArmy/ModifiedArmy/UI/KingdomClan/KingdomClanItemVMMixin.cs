@@ -13,7 +13,7 @@ namespace ModifiedArmy.UI.KingdomClan
     /// Clan 详情扩展。
     ///
     /// 所有战争潜力相关数据统一由 WarPotentialModel 提供。
-    /// UI 层只负责读取和显示，不再重复计算。
+    /// UI 层只负责读取和显示，不重复进行战争潜力计算。
     /// </summary>
     [ViewModelMixin("Refresh")]
     public class KingdomClanItemVMMixin
@@ -27,6 +27,8 @@ namespace ModifiedArmy.UI.KingdomClan
         // =============================================================
 
         private int _warPotential;
+
+        private string _warPotentialText;
 
         private int _fiefTroops;
 
@@ -60,7 +62,9 @@ namespace ModifiedArmy.UI.KingdomClan
         // =============================================================
 
         /// <summary>
-        /// 最终战争潜力。
+        /// 原始战争潜力。
+        ///
+        /// 主要供内部逻辑使用。
         /// </summary>
         [DataSourceProperty]
         public int WarPotential
@@ -78,6 +82,38 @@ namespace ModifiedArmy.UI.KingdomClan
                     _vm.OnPropertyChangedWithValue(
                         value,
                         "WarPotential");
+                }
+            }
+        }
+
+
+        /// <summary>
+        /// UI 显示用战争潜力。
+        ///
+        /// 示例：
+        ///
+        /// 极其弱小(250)
+        /// 弱小(450)
+        /// 一般(800)
+        /// 强大(1200)
+        /// 极其强大(1700)
+        /// </summary>
+        [DataSourceProperty]
+        public string WarPotentialText
+        {
+            get
+            {
+                return _warPotentialText;
+            }
+            set
+            {
+                if (value != _warPotentialText)
+                {
+                    _warPotentialText = value;
+
+                    _vm.OnPropertyChangedWithValue(
+                        value,
+                        "WarPotentialText");
                 }
             }
         }
@@ -181,6 +217,8 @@ namespace ModifiedArmy.UI.KingdomClan
 
         /// <summary>
         /// Clan 每日收入。
+        ///
+        /// 可以正常显示负数。
         /// </summary>
         [DataSourceProperty]
         public int DailyIncome
@@ -206,9 +244,8 @@ namespace ModifiedArmy.UI.KingdomClan
         /// <summary>
         /// Clan 当前所有 WarParty 的每日工资。
         ///
-        /// 注意：
-        /// 这里显示的是当前基础工资，
-        /// 不是 WarPotentialModel 内部的战时 ×2 工资。
+        /// 面板显示当前基础工资，
+        /// 不是 WarPotentialModel 内部用于计算的战时 ×2 工资。
         /// </summary>
         [DataSourceProperty]
         public int PartyDailyWage
@@ -237,10 +274,10 @@ namespace ModifiedArmy.UI.KingdomClan
 
         /// <summary>
         /// KingdomClanItemVM.Refresh() 执行后，
-        /// UIExtenderEx 会调用此方法。
+        /// UIExtenderEx 调用这里。
         ///
-        /// 每次 Clan 页面刷新时，
-        /// 重新从 WarPotentialModel 获取动态数据。
+        /// 每次刷新 Clan 数据时，
+        /// 同步重新计算战争潜力。
         /// </summary>
         public override void OnRefresh()
         {
@@ -253,7 +290,7 @@ namespace ModifiedArmy.UI.KingdomClan
         // =============================================================
 
         /// <summary>
-        /// 从 WarPotentialModel 统一获取所有战争潜力相关数据。
+        /// 从 WarPotentialModel 统一取得面板所需数据。
         /// </summary>
         private void RefreshWarPotentialData()
         {
@@ -280,7 +317,8 @@ namespace ModifiedArmy.UI.KingdomClan
 
 
             WarPotentialResult result =
-                model.CalculateWarPotential(clan);
+                model.CalculateWarPotential(
+                    clan);
 
 
             if (result == null)
@@ -291,11 +329,17 @@ namespace ModifiedArmy.UI.KingdomClan
 
 
             // =========================================================
-            // 最终战争潜力
+            // 战争潜力
             // =========================================================
 
             WarPotential =
                 result.WarPotential;
+
+
+            WarPotentialText =
+                WarPotentialModel
+                    .GetWarPotentialDisplayText(
+                        result.WarPotential);
 
 
             // =========================================================
@@ -334,14 +378,13 @@ namespace ModifiedArmy.UI.KingdomClan
 
 
         // =============================================================
-        // Clan 获取
+        // Clan
         // =============================================================
 
         /// <summary>
-        /// 获取 KingdomClanItemVM 当前对应的 Clan。
+        /// 获取当前 KingdomClanItemVM 对应的 Clan。
         ///
-        /// KingdomClanItemVM 本体持有 Clan 数据，
-        /// 当前 UI 列表项本身就是针对单个 Clan 创建的。
+        /// 这里沿用当前仓库已经能够正常使用的 _vm.Clan。
         /// </summary>
         private Clan GetClan()
         {
@@ -360,22 +403,32 @@ namespace ModifiedArmy.UI.KingdomClan
         // =============================================================
 
         /// <summary>
-        /// Model 尚未初始化或 Clan 无效时，
-        /// 清空 UI 数据，避免保留上一个 Clan 的旧值。
+        /// Clan 或 Model 尚未可用时清空 UI。
         /// </summary>
         private void ResetValues()
         {
             WarPotential = 0;
 
+
+            WarPotentialText =
+                WarPotentialModel
+                    .GetWarPotentialDisplayText(0);
+
+
             FiefTroops = 0;
+
 
             GarrisonTroops = 0;
 
+
             FieldTroops = 0;
+
 
             ClanWealth = 0;
 
+
             DailyIncome = 0;
+
 
             PartyDailyWage = 0;
         }

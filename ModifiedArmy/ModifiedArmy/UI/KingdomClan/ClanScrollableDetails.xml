@@ -344,7 +344,7 @@
                                     HorizontalAlignment="Right"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Right"
-                                    IntText="@WarPotential"
+                                    Text="@WarPotentialText"
                                     Brush="Kingdom.TitleMedium.Text"
                                     Brush.FontSize="23"
                                     ClipContents="false" />

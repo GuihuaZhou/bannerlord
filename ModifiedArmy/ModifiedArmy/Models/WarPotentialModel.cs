@@ -11,10 +11,31 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Models
 {
     /// <summary>
+    /// 战争潜力等级。
+    ///
+    /// 所有王国、所有 Clan 共用同一套绝对标准：
+    ///
+    /// 0 ~ 299       极其弱小
+    /// 300 ~ 599     弱小
+    /// 600 ~ 999     一般
+    /// 1000 ~ 1499   强大
+    /// 1500+         极其强大
+    /// </summary>
+    public enum WarPotentialLevel
+    {
+        VeryWeak,
+        Weak,
+        Average,
+        Strong,
+        VeryStrong
+    }
+
+
+    /// <summary>
     /// Clan 战争潜力完整计算结果。
     ///
-    /// 这个对象不仅给 UI 使用，
-    /// 后续政治集团、战争倾向、AI 战争判断也可以直接使用。
+    /// UI、政治集团、战争倾向、AI 等模块
+    /// 可以统一读取此结果。
     /// </summary>
     public sealed class WarPotentialResult
     {
@@ -23,7 +44,7 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 最终战争潜力。
+        /// 原始战争潜力。
         ///
         /// WarPotential
         /// =
@@ -32,6 +53,12 @@ namespace ModifiedArmy.Models
         /// EffectiveReserve × FinancialFactor
         /// </summary>
         public int WarPotential { get; set; }
+
+
+        /// <summary>
+        /// 战争潜力等级。
+        /// </summary>
+        public WarPotentialLevel WarPotentialLevel { get; set; }
 
 
         // =============================================================
@@ -43,22 +70,27 @@ namespace ModifiedArmy.Models
         /// </summary>
         public int FieldTroops { get; set; }
 
+
         /// <summary>
         /// Clan 所有城镇/城堡驻军实际人数。
         /// </summary>
         public int GarrisonTroops { get; set; }
+
 
         /// <summary>
         /// Clan 封地中的军役兵数量。
         /// </summary>
         public int FiefTroops { get; set; }
 
+
         /// <summary>
         /// 后备兵员池。
         ///
         /// TroopPool
         /// =
-        /// GarrisonTroops + FiefTroops
+        /// GarrisonTroops
+        /// +
+        /// FiefTroops
         /// </summary>
         public int TroopPool { get; set; }
 
@@ -68,21 +100,22 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 当前真正具备带队条件的 Hero 总数。
+        /// 当前实际具备带队资格的 Hero 总数。
         ///
-        /// 注意：
-        /// 这里包含实际可用 Companion，
-        /// 不限制 Occupation == Lord。
+        /// 包括符合条件的 Companion，
+        /// 不要求 Occupation == Lord。
         /// </summary>
         public int AvailableCommanderCount { get; set; }
+
 
         /// <summary>
         /// Clan 当前还能创建多少支 WarParty。
         /// </summary>
         public int FreePartySlots { get; set; }
 
+
         /// <summary>
-        /// 实际参与后备动员计算的 Hero 数量。
+        /// 最终实际选中的统兵 Hero 数量。
         ///
         /// SelectedCommanderCount
         /// =
@@ -93,9 +126,10 @@ namespace ModifiedArmy.Models
         /// </summary>
         public int SelectedCommanderCount { get; set; }
 
+
         /// <summary>
-        /// 所有选中 Hero 如果创建新 Party，
-        /// 能够提供的总 Party 容量。
+        /// 被选中的 Hero 如果各自创建新 Party，
+        /// 可以提供的总 Party 容量。
         ///
         /// NewPartyCapacity
         /// =
@@ -103,8 +137,9 @@ namespace ModifiedArmy.Models
         /// </summary>
         public int NewPartyCapacity { get; set; }
 
+
         /// <summary>
-        /// 真正可以转化成未来野战军的后备兵力。
+        /// 真正能够转化成未来野战军的后备兵力。
         ///
         /// EffectiveReserve
         /// =
@@ -128,33 +163,36 @@ namespace ModifiedArmy.Models
         /// </summary>
         public int ClanWealth { get; set; }
 
+
         /// <summary>
-        /// Clan 每日总收入。
+        /// Clan 每日收入。
         ///
-        /// 注意：
-        /// 这里只计算收入，不包含支出。
+        /// 这里只计算收入，
+        /// 不包含 Party 工资等支出。
         /// </summary>
         public float DailyIncome { get; set; }
 
+
         /// <summary>
-        /// 当前所有 Clan WarParty 的每日工资。
+        /// 当前 Clan 所有 WarParty 的每日工资。
         ///
-        /// 这是和平/当前状态下的基础 Party 工资，
         /// 不包含战争 ×2。
         /// </summary>
         public int PartyDailyWage { get; set; }
 
+
         /// <summary>
-        /// 战时 Party 工资。
+        /// 战时 WarParty 每日工资。
         ///
         /// WarDailyWage
         /// =
-        /// PartyDailyWage × WarWageMultiplier
+        /// PartyDailyWage × 2
         /// </summary>
         public float WarDailyWage { get; set; }
 
+
         /// <summary>
-        /// 战时每日净消耗。
+        /// 战时每日净财政消耗。
         ///
         /// WarDailyBurn
         /// =
@@ -165,21 +203,23 @@ namespace ModifiedArmy.Models
         /// </summary>
         public float WarDailyBurn { get; set; }
 
+
         /// <summary>
-        /// 按当前财富可以支撑的战争天数。
-        ///
-        /// 如果 WarDailyBurn == 0，
-        /// 则为 PositiveInfinity。
+        /// 当前财富可以按照当前净消耗维持多少天。
         /// </summary>
         public float FinancialEndurance { get; set; }
 
+
         /// <summary>
-        /// 财政系数，范围 0~1。
+        /// 财政系数。
+        ///
+        /// 0 ~ 1
         /// </summary>
         public float FinancialFactor { get; set; }
 
+
         /// <summary>
-        /// 财政修正后的有效持续战力。
+        /// 财政修正后的持续战力。
         ///
         /// SustainedMilitaryPower
         /// =
@@ -192,9 +232,9 @@ namespace ModifiedArmy.Models
     /// <summary>
     /// Clan 战争潜力模型。
     ///
-    /// ---------------------------------------------------------------
-    /// 最终公式
-    /// ---------------------------------------------------------------
+    /// ===============================================================
+    /// 军事部分
+    /// ===============================================================
     ///
     /// FieldTroops
     /// =
@@ -210,16 +250,24 @@ namespace ModifiedArmy.Models
     ///
     /// FreePartySlots
     /// =
-    /// CommanderLimit
+    /// ClanTierModel.GetPartyLimitForTier(clan, clan.Tier)
     /// -
-    /// 当前 WarParty 数
+    /// 当前 WarParty 数量
     ///
     ///
-    /// SelectedCommanders
-    /// =
-    /// 可用统兵 Hero
-    /// 按统兵能力评分降序
-    /// 取前 FreePartySlots 个
+    /// 可用统兵 Hero：
+    ///
+    /// IsAlive
+    /// IsActive
+    /// !IsDisabled
+    /// !IsChild
+    /// 非俘虏
+    /// CanLeadParty()
+    /// 当前不是其他 Party Leader
+    ///
+    ///
+    /// 如果可用 Hero 多于 Party 空位，
+    /// 按 HeroSpawnCampaignBehavior 的统兵评分排序。
     ///
     ///
     /// NewPartyCapacity
@@ -235,6 +283,10 @@ namespace ModifiedArmy.Models
     /// )
     ///
     ///
+    /// ===============================================================
+    /// 财政部分
+    /// ===============================================================
+    ///
     /// WarDailyWage
     /// =
     /// PartyDailyWage × 2
@@ -248,6 +300,11 @@ namespace ModifiedArmy.Models
     /// )
     ///
     ///
+    /// FinancialEndurance
+    /// =
+    /// ClanWealth / WarDailyBurn
+    ///
+    ///
     /// FinancialFactor
     /// =
     /// min(
@@ -256,43 +313,82 @@ namespace ModifiedArmy.Models
     /// )
     ///
     ///
-    /// SustainedMilitaryPower
-    /// =
-    /// EffectiveReserve
-    /// ×
-    /// FinancialFactor
-    ///
+    /// ===============================================================
+    /// 最终战争潜力
+    /// ===============================================================
     ///
     /// WarPotential
     /// =
     /// FieldTroops
     /// +
-    /// SustainedMilitaryPower
+    /// EffectiveReserve × FinancialFactor
     ///
-    /// ---------------------------------------------------------------
+    /// ===============================================================
     /// </summary>
     public sealed class WarPotentialModel : GameModel
     {
+        // =============================================================
+        // 等级阈值
+        // =============================================================
+
         /// <summary>
-        /// 战争状态下 Clan WarParty 工资倍率。
+        /// 小于 300：
+        /// 极其弱小
+        /// </summary>
+        public const int WeakThreshold = 300;
+
+
+        /// <summary>
+        /// 300 ~ 599：
+        /// 弱小
+        /// </summary>
+        public const int AverageThreshold = 600;
+
+
+        /// <summary>
+        /// 600 ~ 999：
+        /// 一般
+        /// </summary>
+        public const int StrongThreshold = 1000;
+
+
+        /// <summary>
+        /// 1000 ~ 1499：
+        /// 强大
         ///
-        /// 驻军工资不翻倍。
+        /// 1500+：
+        /// 极其强大
+        /// </summary>
+        public const int VeryStrongThreshold = 1500;
+
+
+        // =============================================================
+        // 战争潜力计算常量
+        // =============================================================
+
+        /// <summary>
+        /// 战时 Clan WarParty 工资倍率。
+        ///
+        /// 驻军不参与翻倍。
         /// </summary>
         public const float WarWageMultiplier = 2f;
 
+
         /// <summary>
-        /// 财政持续时间达到多少天后，
-        /// 财政不再限制战争潜力。
+        /// 财政持续能力参考值。
+        ///
+        /// 能够维持 60 天战争时，
+        /// FinancialFactor 达到 1。
         /// </summary>
         public const float ReferenceWarDays = 60f;
 
 
+        // =============================================================
+        // Instance
+        // =============================================================
+
         /// <summary>
-        /// 当前 Campaign 中注册的 WarPotentialModel。
-        ///
-        /// 因为这是 Mod 自己增加的 GameModel，
-        /// Campaign.Current.Models 没有对应的强类型属性，
-        /// 所以提供统一 Instance 给 UI / 政治系统调用。
+        /// 当前 Campaign 中注册的战争潜力模型。
         /// </summary>
         public static WarPotentialModel Instance { get; private set; }
 
@@ -308,32 +404,33 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 计算一个 Clan 当前的完整战争潜力。
+        /// 计算 Clan 完整战争潜力。
         /// </summary>
-        public WarPotentialResult CalculateWarPotential(Clan clan)
+        public WarPotentialResult CalculateWarPotential(
+            Clan clan)
         {
             WarPotentialResult result =
                 new WarPotentialResult();
 
 
-            if (clan == null)
+            if (clan == null
+                ||
+                Campaign.Current == null)
             {
-                return result;
-            }
+                result.WarPotentialLevel =
+                    WarPotentialLevel.VeryWeak;
 
-
-            if (Campaign.Current == null)
-            {
                 return result;
             }
 
 
             // =========================================================
-            // 1. 当前野战力量
+            // 1. 当前机动兵力
             // =========================================================
 
             result.FieldTroops =
-                CalculateFieldTroops(clan);
+                CalculateFieldTroops(
+                    clan);
 
 
             // =========================================================
@@ -341,10 +438,14 @@ namespace ModifiedArmy.Models
             // =========================================================
 
             result.GarrisonTroops =
-                CalculateGarrisonTroops(clan);
+                CalculateGarrisonTroops(
+                    clan);
+
 
             result.FiefTroops =
-                CalculateFiefTroops(clan);
+                CalculateFiefTroops(
+                    clan);
+
 
             result.TroopPool =
                 result.GarrisonTroops
@@ -353,7 +454,7 @@ namespace ModifiedArmy.Models
 
 
             // =========================================================
-            // 3. Hero 动员能力
+            // 3. 可用统兵 Hero
             // =========================================================
 
             List<Hero> availableCommanders =
@@ -367,13 +468,23 @@ namespace ModifiedArmy.Models
                 availableCommanders.Count;
 
 
-            result.FreePartySlots =
-                CalculateFreePartySlots(clan);
+            // =========================================================
+            // 4. Clan 剩余 Party 槽位
+            // =========================================================
 
+            result.FreePartySlots =
+                CalculateFreePartySlots(
+                    clan);
+
+
+            // =========================================================
+            // 5. 选出真正能够建立新 Party 的 Hero
+            // =========================================================
 
             List<Hero> selectedCommanders =
                 availableCommanders
-                    .Take(result.FreePartySlots)
+                    .Take(
+                        result.FreePartySlots)
                     .ToList();
 
 
@@ -381,11 +492,19 @@ namespace ModifiedArmy.Models
                 selectedCommanders.Count;
 
 
+            // =========================================================
+            // 6. 新 Party 总容量
+            // =========================================================
+
             result.NewPartyCapacity =
                 CalculateNewPartyCapacity(
                     clan,
                     selectedCommanders);
 
+
+            // =========================================================
+            // 7. 实际有效后备兵力
+            // =========================================================
 
             result.EffectiveReserve =
                 Math.Min(
@@ -394,26 +513,45 @@ namespace ModifiedArmy.Models
 
 
             // =========================================================
-            // 4. Clan 财政
+            // 8. Clan 财富
             // =========================================================
 
             result.ClanWealth =
-                CalculateClanWealth(clan);
+                CalculateClanWealth(
+                    clan);
 
+
+            // =========================================================
+            // 9. 每日收入
+            // =========================================================
 
             result.DailyIncome =
-                CalculateDailyIncome(clan);
+                CalculateDailyIncome(
+                    clan);
 
+
+            // =========================================================
+            // 10. 当前 WarParty 工资
+            // =========================================================
 
             result.PartyDailyWage =
-                CalculatePartyDailyWage(clan);
+                CalculatePartyDailyWage(
+                    clan);
 
+
+            // =========================================================
+            // 11. 战时工资
+            // =========================================================
 
             result.WarDailyWage =
                 result.PartyDailyWage
                 *
                 WarWageMultiplier;
 
+
+            // =========================================================
+            // 12. 每日战争财政消耗
+            // =========================================================
 
             result.WarDailyBurn =
                 Math.Max(
@@ -424,14 +562,15 @@ namespace ModifiedArmy.Models
 
 
             // =========================================================
-            // 5. 财政持续能力
+            // 13. 财政持续能力
             // =========================================================
 
             if (result.WarDailyBurn <= 0f)
             {
-                // 收入已经能够完全覆盖战时 Party 工资。
+                // 当前收入足够覆盖战时 Party 工资。
                 result.FinancialEndurance =
                     float.PositiveInfinity;
+
 
                 result.FinancialFactor =
                     1f;
@@ -458,15 +597,15 @@ namespace ModifiedArmy.Models
                         1f);
 
 
-                if (result.FinancialFactor < 0f)
-                {
-                    result.FinancialFactor = 0f;
-                }
+                result.FinancialFactor =
+                    Math.Max(
+                        0f,
+                        result.FinancialFactor);
             }
 
 
             // =========================================================
-            // 6. 持续战力
+            // 14. 持续战力
             // =========================================================
 
             result.SustainedMilitaryPower =
@@ -476,7 +615,7 @@ namespace ModifiedArmy.Models
 
 
             // =========================================================
-            // 7. 最终战争潜力
+            // 15. 最终战争潜力
             // =========================================================
 
             float finalWarPotential =
@@ -491,12 +630,119 @@ namespace ModifiedArmy.Models
                     MidpointRounding.AwayFromZero);
 
 
+            // =========================================================
+            // 16. 战争潜力等级
+            // =========================================================
+
+            result.WarPotentialLevel =
+                GetWarPotentialLevel(
+                    result.WarPotential);
+
+
             return result;
         }
 
 
         // =============================================================
-        // 当前野战兵力
+        // 战争潜力等级
+        // =============================================================
+
+        /// <summary>
+        /// 所有王国、所有 Clan 使用同一套绝对标准。
+        ///
+        /// 0 ~ 299       极其弱小
+        /// 300 ~ 599     弱小
+        /// 600 ~ 999     一般
+        /// 1000 ~ 1499   强大
+        /// 1500+         极其强大
+        /// </summary>
+        public static WarPotentialLevel GetWarPotentialLevel(
+            int warPotential)
+        {
+            if (warPotential < WeakThreshold)
+            {
+                return WarPotentialLevel.VeryWeak;
+            }
+
+
+            if (warPotential < AverageThreshold)
+            {
+                return WarPotentialLevel.Weak;
+            }
+
+
+            if (warPotential < StrongThreshold)
+            {
+                return WarPotentialLevel.Average;
+            }
+
+
+            if (warPotential < VeryStrongThreshold)
+            {
+                return WarPotentialLevel.Strong;
+            }
+
+
+            return WarPotentialLevel.VeryStrong;
+        }
+
+
+        /// <summary>
+        /// 将战争潜力等级转换为 UI 中文文本。
+        /// </summary>
+        public static string GetWarPotentialLevelText(
+            WarPotentialLevel level)
+        {
+            switch (level)
+            {
+                case WarPotentialLevel.VeryWeak:
+                    return "极其弱小";
+
+                case WarPotentialLevel.Weak:
+                    return "弱小";
+
+                case WarPotentialLevel.Average:
+                    return "一般";
+
+                case WarPotentialLevel.Strong:
+                    return "强大";
+
+                case WarPotentialLevel.VeryStrong:
+                    return "极其强大";
+
+                default:
+                    return "未知";
+            }
+        }
+
+
+        /// <summary>
+        /// 获取面板最终显示文本。
+        ///
+        /// 示例：
+        ///
+        /// 强大(1200)
+        /// </summary>
+        public static string GetWarPotentialDisplayText(
+            int warPotential)
+        {
+            WarPotentialLevel level =
+                GetWarPotentialLevel(
+                    warPotential);
+
+
+            string levelText =
+                GetWarPotentialLevelText(
+                    level);
+
+
+            return
+                $"{levelText}({warPotential})";
+        }
+
+
+        // =============================================================
+        // 当前机动兵力
         // =============================================================
 
         private static int CalculateFieldTroops(
@@ -632,7 +878,8 @@ namespace ModifiedArmy.Models
 
                 var troopCounts =
                     fiefPartyManager
-                        .GetFiefTroopCounts(settlement);
+                        .GetFiefTroopCounts(
+                            settlement);
 
 
                 if (troopCounts == null)
@@ -656,17 +903,6 @@ namespace ModifiedArmy.Models
         // 可用统兵 Hero
         // =============================================================
 
-        /// <summary>
-        /// 获取 Clan 当前实际能够拿来创建 Party 的 Hero。
-        ///
-        /// 这里不限制 Occupation == Lord。
-        ///
-        /// 因此：
-        /// - Clan Lord 可以参与
-        /// - Companion 也可以参与
-        ///
-        /// 只要游戏认为这个 Hero 实际能够领导 Party。
-        /// </summary>
         private static IEnumerable<Hero> GetAvailableCommanders(
             Clan clan)
         {
@@ -674,44 +910,40 @@ namespace ModifiedArmy.Models
                 new HashSet<Hero>();
 
 
-            // Clan Heroes
             foreach (Hero hero in clan.Heroes)
             {
                 if (hero != null)
                 {
-                    heroes.Add(hero);
+                    heroes.Add(
+                        hero);
                 }
             }
 
 
-            // Companions
             foreach (Hero companion in clan.Companions)
             {
                 if (companion != null)
                 {
-                    heroes.Add(companion);
+                    heroes.Add(
+                        companion);
                 }
             }
 
 
             foreach (Hero hero in heroes)
             {
-                if (!IsAvailableCommander(hero))
+                if (IsAvailableCommander(hero))
                 {
-                    continue;
+                    yield return hero;
                 }
-
-
-                yield return hero;
             }
         }
 
 
         /// <summary>
-        /// 判断 Hero 是否能够实际用于创建新的 Clan Party。
+        /// 判断一个 Hero 当前是否可以用于建立新的 Clan Party。
         ///
-        /// 这个条件更接近 Clan Management UI，
-        /// 而不是 AI 专用的 Occupation.Lord 限制。
+        /// 不限定 Occupation == Lord。
         /// </summary>
         private static bool IsAvailableCommander(
             Hero hero)
@@ -758,8 +990,8 @@ namespace ModifiedArmy.Models
             }
 
 
-            // 如果 Hero 已经是某支 Party 的 Leader，
-            // 那么他已经被占用，不能再建立新的 Party。
+            // Hero 如果已经是某支 Party 的 Leader，
+            // 就不能再次建立新 Party。
             if (hero.PartyBelongedTo != null
                 &&
                 hero.PartyBelongedTo.LeaderHero == hero)
@@ -776,24 +1008,39 @@ namespace ModifiedArmy.Models
         // 空余 Party 槽位
         // =============================================================
 
-        private static int CalculateFreePartySlots(Clan clan)
+        private static int CalculateFreePartySlots(
+            Clan clan)
         {
-            if (clan == null || Campaign.Current == null)
+            if (clan == null
+                ||
+                Campaign.Current == null)
             {
                 return 0;
             }
 
-            int partyLimit = Campaign.Current.Models.ClanTierModel.GetPartyLimitForTier(
+
+            int partyLimit =
+                Campaign.Current
+                    .Models
+                    .ClanTierModel
+                    .GetPartyLimitForTier(
                         clan,
                         clan.Tier);
+
 
             int currentPartyCount =
                 clan.WarPartyComponents.Count;
 
-            int freeSlots =
-                partyLimit - currentPartyCount;
 
-            return Math.Max(0, freeSlots);
+            int freeSlots =
+                partyLimit
+                -
+                currentPartyCount;
+
+
+            return Math.Max(
+                0,
+                freeSlots);
         }
 
 
@@ -802,14 +1049,16 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 参考 HeroSpawnCampaignBehavior.GetHeroPartyCommandScore。
+        /// 参考本体：
         ///
-        /// 这个评分只用于：
+        /// HeroSpawnCampaignBehavior.GetHeroPartyCommandScore()
         ///
-        /// 当可用 Hero 数量 > 空余 Party 槽位时，
-        /// 决定优先选择哪些 Hero。
+        /// 此分数只用于：
         ///
-        /// 它本身不会直接乘进 WarPotential。
+        /// 当可用 Hero 数量大于 Party 空位时，
+        /// 决定优先使用哪个 Hero。
+        ///
+        /// 此评分本身不会直接进入 WarPotential。
         /// </summary>
         private static float GetHeroPartyCommandScore(
             Hero hero)
@@ -876,7 +1125,7 @@ namespace ModifiedArmy.Models
             }
 
 
-            // 非 Governor Hero 更适合出去带队。
+            // 非 Governor 更适合成为机动 Party Leader。
             if (hero.GovernorOf == null)
             {
                 score += 500f;
@@ -899,14 +1148,13 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 使用游戏本体专门提供的：
+        /// 不真正创建 MobileParty。
         ///
-        /// GetAssumedPartySizeForLordParty
+        /// 直接调用本体 PartySizeLimitModel：
         ///
-        /// 直接计算一个尚未真正建立 Party 的 Hero，
-        /// 如果创建 Lord Party 后能够带多少兵。
+        /// GetAssumedPartySizeForLordParty(...)
         ///
-        /// 不需要创建临时 MobileParty。
+        /// 来估算每个 Hero 如果创建 Party 后能够带多少兵。
         /// </summary>
         private static int CalculateNewPartyCapacity(
             Clan clan,
@@ -945,7 +1193,8 @@ namespace ModifiedArmy.Models
                 }
 
 
-                totalCapacity += capacity;
+                totalCapacity +=
+                    capacity;
             }
 
 
@@ -958,11 +1207,15 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// Clan 财富定义：
+        /// Clan 财富：
         ///
-        /// Clan Heroes + Companions 的 Hero.Gold 总和。
+        /// Clan.Heroes
+        /// +
+        /// Clan.Companions
         ///
-        /// 使用 HashSet 防止 Companion 同时已经包含于 Heroes 时重复计算。
+        /// 的 Hero.Gold 总和。
+        ///
+        /// HashSet 防止重复计算。
         /// </summary>
         private static int CalculateClanWealth(
             Clan clan)
@@ -975,7 +1228,8 @@ namespace ModifiedArmy.Models
             {
                 if (hero != null)
                 {
-                    heroes.Add(hero);
+                    heroes.Add(
+                        hero);
                 }
             }
 
@@ -984,7 +1238,8 @@ namespace ModifiedArmy.Models
             {
                 if (companion != null)
                 {
-                    heroes.Add(companion);
+                    heroes.Add(
+                        companion);
                 }
             }
 
@@ -994,21 +1249,20 @@ namespace ModifiedArmy.Models
 
             foreach (Hero hero in heroes)
             {
-                total += hero.Gold;
+                total +=
+                    hero.Gold;
             }
 
 
-            // 财富为负数对 WarPotential 没有意义。
-            if (total <= 0L)
-            {
-                return 0;
-            }
-
-
-            // 防止非常极端的长期存档溢出 int。
             if (total >= int.MaxValue)
             {
                 return int.MaxValue;
+            }
+
+
+            if (total <= int.MinValue)
+            {
+                return int.MinValue;
             }
 
 
@@ -1021,11 +1275,10 @@ namespace ModifiedArmy.Models
         // =============================================================
 
         /// <summary>
-        /// 只计算 Clan Income。
+        /// 只计算 Clan 收入。
         ///
-        /// 不调用 CalculateClanGoldChange，
-        /// 因为那里面还会包含支出，
-        /// 会导致 Party 工资被重复扣除。
+        /// 不使用 CalculateClanGoldChange，
+        /// 避免 Party 工资在战争潜力公式中被重复扣除。
         /// </summary>
         private static float CalculateDailyIncome(
             Clan clan)
@@ -1043,17 +1296,17 @@ namespace ModifiedArmy.Models
 
 
         // =============================================================
-        // 当前 Party 工资
+        // 当前 WarParty 工资
         // =============================================================
 
         /// <summary>
         /// 这里只统计 Clan WarParty。
         ///
         /// 不包含：
-        /// - Garrison
+        /// - 驻军
         /// - Caravan
         ///
-        /// 战争 ×2 在 WarPotentialModel 自己内部应用。
+        /// 战时 ×2 在 WarPotentialModel 内部单独应用。
         /// </summary>
         private static int CalculatePartyDailyWage(
             Clan clan)
@@ -1084,15 +1337,15 @@ namespace ModifiedArmy.Models
             }
 
 
-            if (total <= 0L)
-            {
-                return 0;
-            }
-
-
             if (total >= int.MaxValue)
             {
                 return int.MaxValue;
+            }
+
+
+            if (total <= 0L)
+            {
+                return 0;
             }
 
 
