@@ -134,11 +134,9 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
-                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
                 campaignStarter.AddModel(new NewClanTierModel());
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
                 // //campaignStarter.AddModel(new NewDiplomacyModel());
-                campaignStarter.AddModel(new NewBuildingConstructionModel());
                 campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
                 //campaignStarter.AddModel(new NewMinorFactionsModel());
                 //campaignStarter.AddModel(new FiefSettlementTaxModel());、
@@ -154,7 +152,6 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
 
 
-                campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 //campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
