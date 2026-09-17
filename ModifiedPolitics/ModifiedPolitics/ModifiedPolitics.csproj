@@ -20,7 +20,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\ModifiedArmy\ModifiedArmy\ModifiedArmy.csproj" />
+    <Reference Include="ModifiedArmy">
+      <HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ModifiedArmy\bin\Win64_Shipping_Client\ModifiedArmy.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
 
     <Reference Include="TaleWorlds.ObjectSystem">
       <HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>
