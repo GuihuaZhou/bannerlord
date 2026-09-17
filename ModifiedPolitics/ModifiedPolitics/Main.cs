@@ -2,6 +2,7 @@ using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
+using ModifiedPolitics.Models.WarDisposition.Listeners.Battle;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -39,6 +40,7 @@ namespace ModifiedPolitics
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
+                campaignStarter.AddBehavior(new PartyBattleEventBehavior());
             }
         }
     }
