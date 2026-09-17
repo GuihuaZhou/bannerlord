@@ -1,4 +1,6 @@
 using System.Collections.Generic;
+using System.Globalization;
+using ModifiedPolitics.Models.WarDisposition;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
@@ -91,14 +93,66 @@ namespace ModifiedPolitics.UI.KingdomClan
         {
             Clan clan = GetClan();
 
-            WarDispositionText = "中立(0)";
+            WarDispositionManager manager = Campaign.Current?
+                .GetCampaignBehavior<WarDispositionManager>();
+
+            WarDispositionData data = manager?.GetOrCreateData(clan);
+
             WarDispositionTraitsText = BuildWarDispositionTraitsText(clan?.Leader);
             WarDurationText = "0天";
             DailyReturnRateText = "1%";
-            TodayBattleInfluenceText = "0";
-            TodayTerritoryInfluenceText = "0";
-            TodayWarGainInfluenceText = "0";
-            WeeklyWealthChangeText = "0%(0)";
+
+            if (data == null)
+            {
+                WarDispositionText = "中立(0)";
+                TodayBattleInfluenceText = "0";
+                TodayTerritoryInfluenceText = "0";
+                TodayWarGainInfluenceText = "0";
+                WeeklyWealthChangeText = "0%(0)";
+                return;
+            }
+
+            WarDispositionText = FormatWarDisposition(data.Value);
+            TodayBattleInfluenceText = FormatSignedValue(data.TodayBattleInfluence);
+            TodayTerritoryInfluenceText = FormatSignedValue(data.TodayTerritoryInfluence);
+            TodayWarGainInfluenceText = FormatSignedValue(data.TodayWarGainInfluence);
+            WeeklyWealthChangeText =
+                FormatSignedValue(data.WeeklyWealthChangePercent)
+                + "%（"
+                + FormatSignedValue(data.WeeklyWealthInfluence)
+                + "）";
+        }
+
+        private static string FormatWarDisposition(float value)
+        {
+            string level = value > 0f
+                ? "倾向战争"
+                : value < 0f
+                    ? "倾向停战"
+                    : "中立";
+
+            return level + "(" + FormatSignedValue(value) + ")";
+        }
+
+        private static string FormatSignedValue(float value)
+        {
+            float rounded = (float)System.Math.Round(
+                value,
+                1,
+                System.MidpointRounding.AwayFromZero);
+
+            if (System.Math.Abs(rounded) < 0.05f)
+            {
+                return "0";
+            }
+
+            string format = System.Math.Abs(rounded % 1f) < 0.05f
+                ? "0"
+                : "0.0";
+
+            return rounded.ToString(
+                (rounded > 0f ? "+" : string.Empty) + format,
+                CultureInfo.InvariantCulture);
         }
 
         private static string BuildWarDispositionTraitsText(Hero leader)

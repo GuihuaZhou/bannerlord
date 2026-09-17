@@ -1,6 +1,7 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedPolitics.Models;
+using ModifiedPolitics.Models.WarDisposition;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -37,6 +38,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddModel(new NewSettlementLoyaltyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
+                campaignStarter.AddBehavior(new WarDispositionManager());
             }
         }
     }
