@@ -21,6 +21,75 @@ namespace ModifiedArmy.Models
 {
     public class NewPartyWageModel : DefaultPartyWageModel
     {
+        public const float WarWageMultiplier = 1.5f;
+
+        private static readonly TextObject WarWageText =
+            new TextObject("{=ModifiedArmyWarPartyWage}战时工资");
+
+        /// <summary>
+        /// 在本体完成所有工资修正后, 应用正式战争期间的 WarParty 工资倍率.
+        /// 驻军, 商队和其他非 WarParty 不受影响.
+        /// </summary>
+        public override ExplainedNumber GetTotalWage(
+            MobileParty mobileParty,
+            TroopRoster troopRoster,
+            bool includeDescriptions = false)
+        {
+            ExplainedNumber result = base.GetTotalWage(
+                mobileParty,
+                troopRoster,
+                includeDescriptions);
+
+            if (!ShouldApplyWarWage(mobileParty))
+            {
+                return result;
+            }
+
+            // Apply the configured multiplier after all perks, policies and
+            // other modifiers have been calculated.
+            float normalWage = result.ResultNumber;
+
+            if (normalWage > 0f)
+            {
+                result.Add(
+                    normalWage * (WarWageMultiplier - 1f),
+                    WarWageText);
+            }
+
+            return result;
+        }
+
+        private static bool ShouldApplyWarWage(MobileParty mobileParty)
+        {
+            if (mobileParty == null
+                || !mobileParty.IsActive
+                || mobileParty.WarPartyComponent == null)
+            {
+                return false;
+            }
+
+            IFaction faction = mobileParty.MapFaction;
+
+            if (faction == null || faction.IsEliminated)
+            {
+                return false;
+            }
+
+            foreach (IFaction enemy in faction.FactionsAtWarWith)
+            {
+                // Only formal wars against a living kingdom activate war wages.
+                if (enemy != null
+                    && enemy.IsKingdomFaction
+                    && !enemy.IsEliminated
+                    && FactionManager.IsAtWarAgainstFaction(faction, enemy))
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         // 增加tier4-6 troop的招募费用
         public override ExplainedNumber GetTroopRecruitmentCost(CharacterObject troop, Hero buyerHero, bool withoutItemCost = false)
         {
@@ -184,7 +253,7 @@ namespace ModifiedArmy.Models
         //        garrisonWageReductionMultiplier.AddFactor(isSecondaryEffect ? (perk.SecondaryBonus * troopRatio) : (perk.PrimaryBonus * troopRatio), perk.Name);
         //    }
         //}
-        //public override ExplainedNumber GetTotalWage(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
+        //public ExplainedNumber GetTotalWageWithFiefExemption(MobileParty mobileParty, TroopRoster troopRoster, bool includeDescriptions = false)
         //{
         //    // === 1. 快速退出 ===
         //    if (mobileParty == null || troopRoster == null || !mobileParty.IsActive)

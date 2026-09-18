@@ -39,7 +39,6 @@ namespace ModifiedPolitics
             {
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
-                campaignStarter.AddModel(new NewSettlementLoyaltyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());

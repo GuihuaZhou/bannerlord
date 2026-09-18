@@ -49,13 +49,21 @@ Clan，其持续战力明显高于只能创建 1 支 Party 的 Clan。
 
 ## 3. 财政持续能力
 
-战争期间只将 **Clan Party 士兵工资 ×2**，驻军工资不变：
+战争期间只将 **Clan WarParty 的实际每日工资 ×1.5**，驻军工资不变。
+
+倍率由 `ModifiedArmy.Models.NewPartyWageModel.GetTotalWage` 直接应用在本体最终工资结果上，而不是只在战争潜力公式中模拟。因此实际扣款、欠薪、工资上限判断和相关 UI 都使用战时双倍工资。
 
 ``` text
-WarWageMultiplier = 2
-
 WarDailyWage =
-    PartyDailyWage × WarWageMultiplier
+    PartyDailyWage
+
+WarWageMultiplier = 1.5
+
+战争期间：
+    PartyDailyWage = 本体最终工资 × WarWageMultiplier
+
+和平期间：
+    PartyDailyWage = 本体最终工资
 
 WarDailyBurn =
     max(0, WarDailyWage - DailyIncome)

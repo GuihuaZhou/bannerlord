@@ -24,8 +24,8 @@ namespace ModifiedPolitics.UI.KingdomClan
             string xmlPath =
                 Path.Combine(
                     assemblyDirectory,
-                    "UI",
                     "KingdomClan",
+                    "UI",
                     "ClanScrollableDetails.xml");
 
             XmlDocument document = new XmlDocument();

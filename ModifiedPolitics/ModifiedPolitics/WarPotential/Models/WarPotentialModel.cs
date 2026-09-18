@@ -175,8 +175,7 @@ namespace ModifiedPolitics.Models
 
         /// <summary>
         /// 当前 Clan 所有 WarParty 的每日工资。
-        ///
-        /// 不包含战争 ×2。
+        /// 战争期间读取到的 TotalWage 已由工资补丁实际翻倍。
         /// </summary>
         public int PartyDailyWage { get; set; }
 
@@ -186,7 +185,7 @@ namespace ModifiedPolitics.Models
         ///
         /// WarDailyWage
         /// =
-        /// PartyDailyWage × 2
+        /// PartyDailyWage
         /// </summary>
         public float WarDailyWage { get; set; }
 
@@ -289,7 +288,7 @@ namespace ModifiedPolitics.Models
     ///
     /// WarDailyWage
     /// =
-    /// PartyDailyWage × 2
+    /// PartyDailyWage
     ///
     ///
     /// WarDailyBurn
@@ -360,18 +359,6 @@ namespace ModifiedPolitics.Models
         /// 极其强大
         /// </summary>
         public const int VeryStrongThreshold = 1500;
-
-
-        // =============================================================
-        // 战争潜力计算常量
-        // =============================================================
-
-        /// <summary>
-        /// 战时 Clan WarParty 工资倍率。
-        ///
-        /// 驻军不参与翻倍。
-        /// </summary>
-        public const float WarWageMultiplier = 2f;
 
 
         /// <summary>
@@ -550,9 +537,7 @@ namespace ModifiedPolitics.Models
             // =========================================================
 
             result.WarDailyWage =
-                result.PartyDailyWage
-                *
-                WarWageMultiplier;
+                result.PartyDailyWage;
 
 
             // =========================================================
@@ -1312,7 +1297,7 @@ namespace ModifiedPolitics.Models
         /// - 驻军
         /// - Caravan
         ///
-        /// 战时 ×2 在 WarPotentialModel 内部单独应用。
+        /// 战时工资倍率由 ModifiedArmy.Models.NewPartyWageModel 应用到实际 TotalWage。
         /// </summary>
         private static int CalculatePartyDailyWage(
             Clan clan)
