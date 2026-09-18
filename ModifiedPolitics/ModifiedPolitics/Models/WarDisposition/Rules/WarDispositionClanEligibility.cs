@@ -12,7 +12,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Rules
         {
             return clan != null
                 && !clan.IsBanditFaction
-                && !clan.IsMinorFaction
+                // 玩家 Clan 即使处于雇佣兵状态也必须参与系统.
+                && (clan == Clan.PlayerClan || !clan.IsMinorFaction)
                 && !clan.IsEliminated;
         }
     }

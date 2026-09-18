@@ -419,7 +419,7 @@ namespace ModifiedPolitics.Models
                 ||
                 clan.IsBanditFaction
                 ||
-                clan.IsMinorFaction
+                (clan.IsMinorFaction && clan != Clan.PlayerClan)
                 ||
                 clan.IsEliminated)
             {

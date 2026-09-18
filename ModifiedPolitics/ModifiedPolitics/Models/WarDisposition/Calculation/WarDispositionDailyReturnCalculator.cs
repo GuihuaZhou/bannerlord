@@ -27,6 +27,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
                 if (enemy == null
                     || enemy.IsBanditFaction
                     || enemy.IsMinorFaction
+                    // 只统计针对王国的正式战争. 叛军和独立 Clan 敌对关系不计时.
+                    || !enemy.IsKingdomFaction
                     || enemy.IsEliminated)
                 {
                     continue;

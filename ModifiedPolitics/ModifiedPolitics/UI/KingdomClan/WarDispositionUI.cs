@@ -95,7 +95,7 @@ namespace ModifiedPolitics.UI.KingdomClan
             Clan clan = GetClan();
 
             // 小家族不参与王国政治态度计算, 也不为其创建持久化数据.
-            if (clan?.IsMinorFaction == true)
+            if (clan?.IsMinorFaction == true && clan != Clan.PlayerClan)
             {
                 WarDispositionText = "不适用";
                 WarDispositionTraitsText = "无";

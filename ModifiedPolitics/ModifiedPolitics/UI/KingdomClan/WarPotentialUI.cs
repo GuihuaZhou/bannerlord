@@ -112,7 +112,7 @@ namespace ModifiedPolitics.UI.KingdomClan
             }
 
             // 小家族作为雇佣兵派系活动, 不参与王国战争潜力评价.
-            if (clan.IsMinorFaction)
+            if (clan.IsMinorFaction && clan != Clan.PlayerClan)
             {
                 ResetWarPotentialValues();
                 WarPotentialText = "不适用";
