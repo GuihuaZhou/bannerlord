@@ -1,6 +1,7 @@
 using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition.Distribution;
 using ModifiedPolitics.Models.WarDisposition.Events;
+using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -122,9 +123,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Hero
             // 只统计有 Clan 身份的领主；名人、士兵和强盗英雄不参与。
             return hero != null
                 && hero.IsLord
-                && clan != null
-                && !clan.IsBanditFaction
-                && !clan.IsEliminated;
+                && WarDispositionClanEligibility.IsEligible(clan);
         }
 
         private static bool TryGetCapturerClan(
@@ -136,9 +135,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Hero
             clan = capturer?.MobileParty?.ActualClan
                 ?? capturer?.Owner?.Clan;
 
-            return clan != null
-                && !clan.IsBanditFaction
-                && !clan.IsEliminated;
+            return WarDispositionClanEligibility.IsEligible(clan);
         }
     }
 }

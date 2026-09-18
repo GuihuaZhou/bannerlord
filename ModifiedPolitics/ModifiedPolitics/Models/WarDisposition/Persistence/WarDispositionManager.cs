@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Events;
+using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 
@@ -16,10 +17,14 @@ namespace ModifiedPolitics.Models.WarDisposition
     {
         private const string SaveKey =
             "_modifiedPoliticsWarDispositionData";
+        private const string WarTrackingStartTimeSaveKey =
+            "_modifiedPoliticsWarDispositionTrackingStartTime";
 
         [SaveableField(1)]
         private Dictionary<Clan, WarDispositionData> _clanData =
             new Dictionary<Clan, WarDispositionData>();
+
+        private CampaignTime _warTrackingStartTime = CampaignTime.Zero;
 
         public override void RegisterEvents()
         {
@@ -34,16 +39,21 @@ namespace ModifiedPolitics.Models.WarDisposition
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData(SaveKey, ref _clanData);
+            dataStore.SyncData(
+                WarTrackingStartTimeSaveKey,
+                ref _warTrackingStartTime);
 
             if (_clanData == null)
             {
                 _clanData = new Dictionary<Clan, WarDispositionData>();
             }
+
+            EnsureWarTrackingStartTime();
         }
 
         public WarDispositionData GetOrCreateData(Clan clan)
         {
-            if (clan == null)
+            if (!WarDispositionClanEligibility.IsEligible(clan))
             {
                 return null;
             }
@@ -69,10 +79,26 @@ namespace ModifiedPolitics.Models.WarDisposition
         {
             data = null;
 
-            return clan != null
+            return WarDispositionClanEligibility.IsEligible(clan)
                 && _clanData != null
                 && _clanData.TryGetValue(clan, out data)
                 && data != null;
+        }
+
+        /// <summary>
+        /// 获取当前政治势力持续最久的战争天数.
+        /// 旧存档缺少本体开战日期时, 从本 Mod 首次跟踪时间开始估算.
+        /// </summary>
+        public float GetLongestActiveWarDurationDays(Clan clan)
+        {
+            EnsureWarTrackingStartTime();
+
+            float fallbackDays = _warTrackingStartTime == CampaignTime.Zero
+                ? 0f
+                : Math.Max(0f, _warTrackingStartTime.ElapsedDaysUntilNow);
+
+            return WarDispositionDailyReturnCalculator
+                .GetLongestActiveWarDurationDays(clan, fallbackDays);
         }
 
         /// <summary>
@@ -145,6 +171,8 @@ namespace ModifiedPolitics.Models.WarDisposition
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
+            EnsureWarTrackingStartTime();
+
             foreach (Clan clan in Clan.All)
             {
                 GetOrCreateData(clan);
@@ -158,7 +186,7 @@ namespace ModifiedPolitics.Models.WarDisposition
 
             foreach (Clan clan in Clan.All)
             {
-                if (clan == null || clan.IsBanditFaction || clan.IsEliminated)
+                if (!WarDispositionClanEligibility.IsEligible(clan))
                 {
                     continue;
                 }
@@ -170,7 +198,7 @@ namespace ModifiedPolitics.Models.WarDisposition
                     continue;
                 }
 
-                // DailyTick 表示新一天开始；先清空上一日的 UI 分类汇总。
+                // DailyTick 表示新一天开始; 先清空上一日的 UI 分类汇总.
                 ResetDailyInfluences(data);
 
                 float previousValue = data.Value;
@@ -181,13 +209,14 @@ namespace ModifiedPolitics.Models.WarDisposition
                     continue;
                 }
 
-                float warDuration = WarDispositionDailyReturnCalculator
-                    .GetLongestActiveWarDurationDays(clan);
-                float returnRate = WarDispositionDailyReturnCalculator
-                    .GetReturnRate(warDuration);
+                float warDuration = GetLongestActiveWarDurationDays(clan);
+                float returnAmount = WarDispositionDailyReturnCalculator
+                    .GetReturnAmount(warDuration);
 
+                // 使用固定数值向零移动; Math.Max 防止小数值跨过零点反向增长.
                 data.Value = WarDispositionCalculator.ClampDisposition(
-                    previousValue * (1f - returnRate));
+                    Math.Sign(previousValue)
+                    * Math.Max(0f, Math.Abs(previousValue) - returnAmount));
 
                 if (Math.Abs(data.Value) < 0.005f)
                 {
@@ -198,12 +227,12 @@ namespace ModifiedPolitics.Models.WarDisposition
                 returnedClanCount++;
                 totalAbsoluteReturn += Math.Abs(actualReturn);
 
-                // 每日只输出玩家家族明细，避免大量 AI Clan 的 Notice 淹没屏幕。
+                // 每日只输出玩家家族明细, 避免大量 AI Clan 的 Notice 淹没屏幕.
                 if (clan == Clan.PlayerClan)
                 {
                     ModLogger.Notice(
                         $"[战争倾向] 每日回归 | 家族={clan.Name} | " +
-                        $"战争持续={warDuration:0.0}天 | 回归率={returnRate:P0} | " +
+                        $"战争持续={warDuration:0.0}天 | 回归量={returnAmount:0.##} | " +
                         $"回归前={previousValue:0.00} | " +
                         $"实际变化={actualReturn:+0.00;-0.00;0.00} | " +
                         $"回归后={data.Value:0.00}");
@@ -220,6 +249,15 @@ namespace ModifiedPolitics.Models.WarDisposition
             data.TodayBattleInfluence = 0f;
             data.TodayTerritoryInfluence = 0f;
             data.TodayWarGainInfluence = 0f;
+        }
+
+        private void EnsureWarTrackingStartTime()
+        {
+            if (_warTrackingStartTime == CampaignTime.Zero
+                && Campaign.Current != null)
+            {
+                _warTrackingStartTime = CampaignTime.Now;
+            }
         }
 
         private static int GetInitialWealth(Clan clan)

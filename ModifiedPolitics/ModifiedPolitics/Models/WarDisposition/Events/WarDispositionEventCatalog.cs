@@ -28,7 +28,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
                 throw new ArgumentOutOfRangeException(
                     nameof(eventType),
                     eventType,
-                    "未注册的战争倾向事件类型。");
+                    "未注册的战争倾向事件类型.");
             }
 
             return definition;

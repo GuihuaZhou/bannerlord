@@ -54,7 +54,7 @@ namespace ModifiedPolitics.Models
                 // 投入10000金币进行加速
                 GiveGoldAction.ApplyBetweenCharacters(ownerClan.Leader, null, BOOST_AMOUNT, false);
 
-                string logMessage = $"[AI Auto Boost] {settlement.Name} ({ownerClan.Name}) 投入 {BOOST_AMOUNT} 金币加速建设。投资前金库: {old_gold}, 当前金库: {ownerClan.Gold}";
+                string logMessage = $"[AI Auto Boost] {settlement.Name} ({ownerClan.Name}) 投入 {BOOST_AMOUNT} 金币加速建设. 投资前金库: {old_gold}, 当前金库: {ownerClan.Gold}";
                 ModLogger.Info(logMessage);
             }
         }

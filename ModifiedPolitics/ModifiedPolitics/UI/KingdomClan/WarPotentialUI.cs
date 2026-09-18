@@ -111,6 +111,14 @@ namespace ModifiedPolitics.UI.KingdomClan
                 return;
             }
 
+            // 小家族作为雇佣兵派系活动, 不参与王国战争潜力评价.
+            if (clan.IsMinorFaction)
+            {
+                ResetWarPotentialValues();
+                WarPotentialText = "不适用";
+                return;
+            }
+
             WarPotentialResult result = model.CalculateWarPotential(clan);
 
             if (result == null)

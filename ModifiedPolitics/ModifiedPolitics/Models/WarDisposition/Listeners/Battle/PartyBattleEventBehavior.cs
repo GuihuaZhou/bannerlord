@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition.Distribution;
 using ModifiedPolitics.Models.WarDisposition.Events;
+using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.MapEvents;
 using TaleWorlds.CampaignSystem.Party;
@@ -55,7 +56,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
             {
                 if (TryGetWarClan(destroyedParty, out Clan ignoredClan))
                 {
-                    ModLogger.Notice(
+                    ModLogger.Info(
                         $"[战争倾向] 忽略部队覆灭 | 被摧毁={destroyedParty.Name} " +
                         $"({ignoredClan.Name}) | 摧毁者={GetPartyName(destroyerParty)} | " +
                         "原因=摧毁者不是政治势力");
@@ -96,7 +97,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
 
             if (!attackerIsPolitical || !defenderIsPolitical)
             {
-                ModLogger.Notice(
+                ModLogger.Info(
                     $"[战争倾向] 忽略战斗胜负 | " +
                     $"进攻方={GetSideName(mapEvent.AttackerSide)} | " +
                     $"防守方={GetSideName(mapEvent.DefenderSide)} | " +
@@ -167,9 +168,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
             // IsLordParty 能排除商队、民兵、驻军和强盗等非 Clan 作战部队。
             return mobileParty != null
                 && mobileParty.IsLordParty
-                && clan != null
-                && !clan.IsBanditFaction
-                && !clan.IsEliminated;
+                && WarDispositionClanEligibility.IsEligible(clan);
         }
 
         private static bool IsPoliticalParty(PartyBase party)

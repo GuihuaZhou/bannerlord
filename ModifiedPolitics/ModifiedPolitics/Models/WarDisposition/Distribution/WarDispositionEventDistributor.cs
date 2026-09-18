@@ -1,6 +1,7 @@
 using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Events;
+using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
 
 namespace ModifiedPolitics.Models.WarDisposition.Distribution
@@ -18,7 +19,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
             Clan eventClan,
             WarDispositionEventType eventType)
         {
-            if (!IsEligibleClan(eventClan) || Campaign.Current == null)
+            if (!WarDispositionClanEligibility.IsEligible(eventClan)
+                || Campaign.Current == null)
             {
                 return;
             }
@@ -53,7 +55,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
 
             foreach (Clan clan in kingdom.Clans)
             {
-                if (clan != eventClan && IsEligibleClan(clan))
+                if (clan != eventClan
+                    && WarDispositionClanEligibility.IsEligible(clan))
                 {
                     manager.ApplyEvent(clan, eventType, false);
                     sharedClanCount++;
@@ -65,12 +68,5 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                 $"事件={eventType} | 其他家族={sharedClanCount} | 倍率=20%");
         }
 
-        private static bool IsEligibleClan(Clan clan)
-        {
-            // 强盗和已经覆灭的 Clan 不参与王国内部的战争倾向传播。
-            return clan != null
-                && !clan.IsBanditFaction
-                && !clan.IsEliminated;
-        }
     }
 }

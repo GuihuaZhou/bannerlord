@@ -415,7 +415,13 @@ namespace ModifiedPolitics.Models
 
             if (clan == null
                 ||
-                Campaign.Current == null)
+                Campaign.Current == null
+                ||
+                clan.IsBanditFaction
+                ||
+                clan.IsMinorFaction
+                ||
+                clan.IsEliminated)
             {
                 result.WarPotentialLevel =
                     WarPotentialLevel.VeryWeak;

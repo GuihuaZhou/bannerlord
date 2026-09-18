@@ -14,7 +14,7 @@ namespace ModifiedPolitics.UI.KingdomClan
         private string _warDispositionText;
         private string _warDispositionTraitsText;
         private string _warDurationText;
-        private string _dailyReturnRateText;
+        private string _dailyReturnAmountText;
         private string _todayBattleInfluenceText;
         private string _todayTerritoryInfluenceText;
         private string _todayWarGainInfluenceText;
@@ -42,10 +42,10 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
-        public string DailyReturnRateText
+        public string DailyReturnAmountText
         {
-            get => _dailyReturnRateText;
-            set => SetWarDispositionProperty(ref _dailyReturnRateText, value, nameof(DailyReturnRateText));
+            get => _dailyReturnAmountText;
+            set => SetWarDispositionProperty(ref _dailyReturnAmountText, value, nameof(DailyReturnAmountText));
         }
 
         [DataSourceProperty]
@@ -94,22 +94,38 @@ namespace ModifiedPolitics.UI.KingdomClan
         {
             Clan clan = GetClan();
 
+            // 小家族不参与王国政治态度计算, 也不为其创建持久化数据.
+            if (clan?.IsMinorFaction == true)
+            {
+                WarDispositionText = "不适用";
+                WarDispositionTraitsText = "无";
+                WarDurationText = "0天";
+                DailyReturnAmountText = "0";
+                TodayBattleInfluenceText = "0";
+                TodayTerritoryInfluenceText = "0";
+                TodayWarGainInfluenceText = "0";
+                WeeklyWealthChangeText = "0%(0)";
+                return;
+            }
+
             WarDispositionManager manager = Campaign.Current?
                 .GetCampaignBehavior<WarDispositionManager>();
 
             WarDispositionData data = manager?.GetOrCreateData(clan);
 
             WarDispositionTraitsText = BuildWarDispositionTraitsText(clan?.Leader);
-            float warDuration = WarDispositionDailyReturnCalculator
-                .GetLongestActiveWarDurationDays(clan);
-            float dailyReturnRate = WarDispositionDailyReturnCalculator
-                .GetReturnRate(warDuration);
+            float warDuration = manager != null
+                ? manager.GetLongestActiveWarDurationDays(clan)
+                : WarDispositionDailyReturnCalculator
+                    .GetLongestActiveWarDurationDays(clan);
+            float dailyReturnAmount = WarDispositionDailyReturnCalculator
+                .GetReturnAmount(warDuration);
 
             WarDurationText = ((int)warDuration).ToString(
                 CultureInfo.InvariantCulture) + "天";
-            DailyReturnRateText = (dailyReturnRate * 100f).ToString(
-                "0",
-                CultureInfo.InvariantCulture) + "%";
+            DailyReturnAmountText = dailyReturnAmount.ToString(
+                "0.##",
+                CultureInfo.InvariantCulture);
 
             if (data == null)
             {
@@ -127,9 +143,9 @@ namespace ModifiedPolitics.UI.KingdomClan
             TodayWarGainInfluenceText = FormatSignedValue(data.TodayWarGainInfluence);
             WeeklyWealthChangeText =
                 FormatSignedValue(data.WeeklyWealthChangePercent)
-                + "%（"
+                + "%("
                 + FormatSignedValue(data.WeeklyWealthInfluence)
-                + "）";
+                + ")";
         }
 
         private static string FormatWarDisposition(float value)

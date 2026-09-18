@@ -803,7 +803,7 @@
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="每日回归" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@DailyReturnRateText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@DailyReturnAmountText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
@@ -914,5 +914,4 @@
   </Children>
 
 </Widget>
-
 
