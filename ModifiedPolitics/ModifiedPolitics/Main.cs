@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Battle;
+using ModifiedPolitics.Models.WarDisposition.Listeners.Economy;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Hero;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Territory;
 using System.Reflection;
@@ -45,6 +46,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
                 campaignStarter.AddBehavior(new SettlementWarEventBehavior());
+                campaignStarter.AddBehavior(new WeeklyWealthEventBehavior());
             }
         }
     }

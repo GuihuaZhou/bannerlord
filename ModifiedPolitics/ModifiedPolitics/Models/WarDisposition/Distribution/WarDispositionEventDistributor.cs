@@ -17,7 +17,9 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
         /// </summary>
         public static void DistributeClanEvent(
             Clan eventClan,
-            WarDispositionEventType eventType)
+            WarDispositionEventType eventType,
+            float? baseValueOverride = null,
+            bool writeNoticeLog = true)
         {
             if (!WarDispositionClanEligibility.IsEligible(eventClan)
                 || Campaign.Current == null)
@@ -36,13 +38,17 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
             WarDispositionCalculationResult ownResult = manager.ApplyEvent(
                 eventClan,
                 eventType,
-                true);
+                true,
+                baseValueOverride);
 
             WarDispositionData ownData = manager.GetOrCreateData(eventClan);
-            ModLogger.Notice(
-                $"[战争倾向] {eventType} | 家族={eventClan.Name} | " +
-                $"变化={(ownResult?.AppliedDelta ?? 0f):+0.00;-0.00;0.00} | " +
-                $"当前={(ownData?.Value ?? 0f):0.00}");
+            if (writeNoticeLog)
+            {
+                ModLogger.Notice(
+                    $"[战争倾向] {eventType} | 家族={eventClan.Name} | " +
+                    $"变化={(ownResult?.AppliedDelta ?? 0f):+0.00;-0.00;0.00} | " +
+                    $"当前={(ownData?.Value ?? 0f):0.00}");
+            }
 
             Kingdom kingdom = eventClan.Kingdom;
 
@@ -58,14 +64,21 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                 if (clan != eventClan
                     && WarDispositionClanEligibility.IsEligible(clan))
                 {
-                    manager.ApplyEvent(clan, eventType, false);
+                    manager.ApplyEvent(
+                        clan,
+                        eventType,
+                        false,
+                        baseValueOverride);
                     sharedClanCount++;
                 }
             }
 
-            ModLogger.Notice(
-                $"[战争倾向] 王国传播 | 来源家族={eventClan.Name} | " +
-                $"事件={eventType} | 其他家族={sharedClanCount} | 倍率=20%");
+            if (writeNoticeLog)
+            {
+                ModLogger.Notice(
+                    $"[战争倾向] 王国传播 | 来源家族={eventClan.Name} | " +
+                    $"事件={eventType} | 其他家族={sharedClanCount} | 倍率=20%");
+            }
         }
 
     }
