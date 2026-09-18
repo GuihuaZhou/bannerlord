@@ -100,8 +100,16 @@ namespace ModifiedPolitics.UI.KingdomClan
             WarDispositionData data = manager?.GetOrCreateData(clan);
 
             WarDispositionTraitsText = BuildWarDispositionTraitsText(clan?.Leader);
-            WarDurationText = "0天";
-            DailyReturnRateText = "1%";
+            float warDuration = WarDispositionDailyReturnCalculator
+                .GetLongestActiveWarDurationDays(clan);
+            float dailyReturnRate = WarDispositionDailyReturnCalculator
+                .GetReturnRate(warDuration);
+
+            WarDurationText = ((int)warDuration).ToString(
+                CultureInfo.InvariantCulture) + "天";
+            DailyReturnRateText = (dailyReturnRate * 100f).ToString(
+                "0",
+                CultureInfo.InvariantCulture) + "%";
 
             if (data == null)
             {

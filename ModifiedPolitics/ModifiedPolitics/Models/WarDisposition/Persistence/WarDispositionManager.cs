@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Events;
 using TaleWorlds.CampaignSystem;
@@ -24,6 +26,9 @@ namespace ModifiedPolitics.Models.WarDisposition
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
                 this,
                 OnSessionLaunched);
+            CampaignEvents.DailyTickEvent.AddNonSerializedListener(
+                this,
+                OnDailyTick);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -144,6 +149,77 @@ namespace ModifiedPolitics.Models.WarDisposition
             {
                 GetOrCreateData(clan);
             }
+        }
+
+        private void OnDailyTick()
+        {
+            int returnedClanCount = 0;
+            float totalAbsoluteReturn = 0f;
+
+            foreach (Clan clan in Clan.All)
+            {
+                if (clan == null || clan.IsBanditFaction || clan.IsEliminated)
+                {
+                    continue;
+                }
+
+                WarDispositionData data = GetOrCreateData(clan);
+
+                if (data == null)
+                {
+                    continue;
+                }
+
+                // DailyTick 表示新一天开始；先清空上一日的 UI 分类汇总。
+                ResetDailyInfluences(data);
+
+                float previousValue = data.Value;
+
+                if (Math.Abs(previousValue) < 0.005f)
+                {
+                    data.Value = 0f;
+                    continue;
+                }
+
+                float warDuration = WarDispositionDailyReturnCalculator
+                    .GetLongestActiveWarDurationDays(clan);
+                float returnRate = WarDispositionDailyReturnCalculator
+                    .GetReturnRate(warDuration);
+
+                data.Value = WarDispositionCalculator.ClampDisposition(
+                    previousValue * (1f - returnRate));
+
+                if (Math.Abs(data.Value) < 0.005f)
+                {
+                    data.Value = 0f;
+                }
+
+                float actualReturn = data.Value - previousValue;
+                returnedClanCount++;
+                totalAbsoluteReturn += Math.Abs(actualReturn);
+
+                // 每日只输出玩家家族明细，避免大量 AI Clan 的 Notice 淹没屏幕。
+                if (clan == Clan.PlayerClan)
+                {
+                    ModLogger.Notice(
+                        $"[战争倾向] 每日回归 | 家族={clan.Name} | " +
+                        $"战争持续={warDuration:0.0}天 | 回归率={returnRate:P0} | " +
+                        $"回归前={previousValue:0.00} | " +
+                        $"实际变化={actualReturn:+0.00;-0.00;0.00} | " +
+                        $"回归后={data.Value:0.00}");
+                }
+            }
+
+            ModLogger.Notice(
+                $"[战争倾向] 每日回归完成 | 有效家族={returnedClanCount} | " +
+                $"绝对回归总量={totalAbsoluteReturn:0.00}");
+        }
+
+        private static void ResetDailyInfluences(WarDispositionData data)
+        {
+            data.TodayBattleInfluence = 0f;
+            data.TodayTerritoryInfluence = 0f;
+            data.TodayWarGainInfluence = 0f;
         }
 
         private static int GetInitialWealth(Clan clan)
