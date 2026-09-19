@@ -1,6 +1,5 @@
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Tool;
-using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -8,11 +7,11 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Garrison.Behaviors
 {
     /// <summary>
-    /// Requisitions civilian FoodStocks into the real garrison granary when
-    /// military supplies fall below thirty days. Requisition has no civilian
-    /// reserve floor and may reduce FoodStocks to zero.
+    /// Routes surrounding-lands and castle Farmlands production into the real
+    /// military granary before Bannerlord applies the daily food change.
     /// </summary>
-    public class GarrisonLocalRequisitionBehavior : CampaignBehaviorBase
+    public class GarrisonLocalProductionSupplyBehavior
+        : CampaignBehaviorBase
     {
         public override void RegisterEvents()
         {
@@ -34,39 +33,33 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return;
             }
 
-            GarrisonLogisticsStatus status =
-                GarrisonLogisticsModel.Calculate(town);
+            NewSettlementFoodModel.SetLocalProductionAllocation(town, 0);
 
-            if (!GarrisonLogisticsModel.NeedsReplenishment(status)
-                || status.FoodDeficit <= 0)
+            int allocation = GarrisonLocalProductionSupplyModel
+                .CalculateDailyAllocation(town);
+
+            if (allocation <= 0)
             {
                 return;
             }
 
-            int availableCivilianFood =
-                Math.Max(0, (int)Math.Floor(town.FoodStocks));
-
-            int requisitionAmount = Math.Min(
-                availableCivilianFood,
-                status.FoodDeficit);
-
-            if (requisitionAmount <= 0)
-            {
-                return;
-            }
-
-            town.FoodStocks -= requisitionAmount;
             town.GarrisonParty.ItemRoster.AddToCounts(
                 DefaultItems.Grain,
-                requisitionAmount);
+                allocation);
+
+            // Campaign registers its own settlement daily-tick listener after
+            // campaign behaviors. NewSettlementFoodModel therefore observes
+            // this allocation when applying the civilian food change.
+            NewSettlementFoodModel.SetLocalProductionAllocation(
+                town,
+                allocation);
 
             if (settlement.OwnerClan == Clan.PlayerClan)
             {
                 ModLogger.Notice(
-                    $"[GarrisonLogistics] Local requisition | " +
+                    $"[GarrisonLogistics] Local production allocation | " +
                     $"Settlement='{settlement.Name}' | " +
-                    $"Transferred={requisitionAmount} | " +
-                    $"FoodStocks={town.FoodStocks:0.##} | " +
+                    $"Transferred={allocation} | " +
                     $"MilitaryFood=" +
                     $"{town.GarrisonParty.ItemRoster.TotalFood}");
             }

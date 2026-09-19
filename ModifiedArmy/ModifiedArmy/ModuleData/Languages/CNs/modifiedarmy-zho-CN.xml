@@ -49,6 +49,7 @@
     <string id="ModifiedArmy_GarrisonFoodSupplyDays" text="可维持天数" />
     <string id="ModifiedArmy_GarrisonTargetFood" text="目标粮食" />
     <string id="ModifiedArmy_GarrisonFoodDeficit" text="粮食缺口" />
+    <string id="ModifiedArmy_GarrisonLocalProductionAllocation" text="驻军粮仓分配" />
     <string id="ModifiedArmy_GarrisonSettlementTypeValue" text="{LOCATION}{TYPE}" />
     <string id="ModifiedArmy_GarrisonBorder" text="边境" />
     <string id="ModifiedArmy_GarrisonInterior" text="腹地" />
