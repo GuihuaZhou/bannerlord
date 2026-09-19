@@ -65,11 +65,6 @@
     <string id="ModifiedArmy_GarrisonInterior" text="腹地" />
     <string id="ModifiedArmy_GarrisonCastle" text="城堡" />
     <string id="ModifiedArmy_GarrisonTown" text="城镇" />
-    <string id="ModifiedArmy_PartyWageLimitEvaluated" text="[军队财政] 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
-    <string id="ModifiedArmy_PartyWageLimitExceeded" text="[军队财政] 工资超过上限 | 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
-    <string id="ModifiedArmy_PartyWageStateWar" text="战争" />
-    <string id="ModifiedArmy_PartyWageStatePeace" text="和平" />
-
     <!-- MCM UI. -->
     <string id="MA_Fief_Group_Advanced" text="高级设置" />
     <string id="MA_Fief_MinLogLevel" text="日志等级" />

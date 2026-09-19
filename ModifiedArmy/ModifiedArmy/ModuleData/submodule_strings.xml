@@ -57,14 +57,14 @@
 
     <!-- Army finance: mobile-party wage limit diagnostics. -->
     <string id="str_modifiedarmy_party_wage_limit_evaluated"
-        text="{=ModifiedArmy_PartyWageLimitEvaluated}[ArmyFinance] Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | WageLimit={WAGE_LIMIT} | LeaderGold={LEADER_GOLD} | State={WAR_STATE}" />
+        text="{=ModifiedArmy_PartyWageLimitEvaluated}[军队财政] 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
 
     <string id="str_modifiedarmy_party_wage_limit_exceeded"
-        text="{=ModifiedArmy_PartyWageLimitExceeded}[ArmyFinance] Wage limit exceeded | Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | WageLimit={WAGE_LIMIT} | LeaderGold={LEADER_GOLD} | State={WAR_STATE}" />
+        text="{=ModifiedArmy_PartyWageLimitExceeded}[军队财政] 工资超过上限 | 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
 
     <string id="str_modifiedarmy_party_wage_state_war"
-        text="{=ModifiedArmy_PartyWageStateWar}War" />
+        text="{=ModifiedArmy_PartyWageStateWar}战争" />
 
     <string id="str_modifiedarmy_party_wage_state_peace"
-        text="{=ModifiedArmy_PartyWageStatePeace}Peace" />
+        text="{=ModifiedArmy_PartyWageStatePeace}和平" />
 </strings>
