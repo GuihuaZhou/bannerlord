@@ -69,8 +69,8 @@ namespace ModifiedArmy.Garrison.Models
                 null);
 
             // Civilian prosperity remains a FoodStocks expense. Garrison
-            // consumption is deliberately omitted and will be paid from the
-            // garrison party's real food inventory in a later batch.
+            // consumption is deliberately omitted because it is paid from the
+            // garrison party's real food inventory.
             ExplainedNumber prosperityConsumption = new ExplainedNumber(
                 town.Prosperity / NumberOfProsperityToEatOneFood,
                 false,
