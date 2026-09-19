@@ -24,6 +24,12 @@ namespace ModifiedArmy.Garrison.Behaviors
         /// </summary>
         public static bool IsReadOnlyGranaryOpen { get; private set; }
 
+        /// <summary>
+        /// Indicates that the player may move items from their inventory into
+        /// the open granary. Same-kingdom granaries permit deposits only.
+        /// </summary>
+        public static bool CanDepositIntoOpenGranary { get; private set; }
+
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
@@ -85,10 +91,15 @@ namespace ModifiedArmy.Garrison.Behaviors
         {
             Settlement settlement = Settlement.CurrentSettlement;
 
-            // Foreign granaries remain visible for development inspection, but
-            // their contents must not be transferred to or from the player.
+            // Foreign granaries remain visible for development inspection.
+            // A granary in the player's kingdom accepts deposits, while other
+            // foreign granaries remain completely read-only.
             IsReadOnlyGranaryOpen =
                 settlement?.OwnerClan != Clan.PlayerClan;
+
+            CanDepositIntoOpenGranary =
+                settlement?.OwnerClan == Clan.PlayerClan
+                || settlement?.MapFaction == Hero.MainHero.MapFaction;
 
             // Bannerlord guarantees a garrison party for active fortifications.
             // Its ItemRoster is saved as part of the party and serves as the
@@ -107,6 +118,7 @@ namespace ModifiedArmy.Garrison.Behaviors
         public static void CloseGranaryView()
         {
             IsReadOnlyGranaryOpen = false;
+            CanDepositIntoOpenGranary = false;
         }
     }
 }

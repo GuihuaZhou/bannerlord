@@ -17,9 +17,16 @@ namespace ModifiedArmy.Garrison.Patches
             "TransferIsMovementValid")]
         private static class TransferValidationPatch
         {
-            private static bool Prefix(ref bool __result)
+            private static bool Prefix(
+                ref TransferCommand __0,
+                ref bool __result)
             {
                 if (!GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen)
+                {
+                    return true;
+                }
+
+                if (CanExecuteTransfer(__0))
                 {
                     return true;
                 }
@@ -35,9 +42,9 @@ namespace ModifiedArmy.Garrison.Patches
             typeof(TransferCommand))]
         private static class AddTransferCommandPatch
         {
-            private static bool Prefix()
+            private static bool Prefix(TransferCommand __0)
             {
-                return !GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen;
+                return CanExecuteTransfer(__0);
             }
         }
 
@@ -47,20 +54,22 @@ namespace ModifiedArmy.Garrison.Patches
             typeof(IEnumerable<TransferCommand>))]
         private static class AddTransferCommandsPatch
         {
-            private static bool Prefix()
+            private static bool Prefix(IEnumerable<TransferCommand> __0)
             {
-                return !GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen;
-            }
-        }
+                if (!GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen)
+                {
+                    return true;
+                }
 
-        [HarmonyPatch(
-            typeof(InventoryLogic),
-            nameof(InventoryLogic.TransferOne))]
-        private static class TransferOnePatch
-        {
-            private static bool Prefix()
-            {
-                return !GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen;
+                foreach (TransferCommand command in __0)
+                {
+                    if (!CanExecuteTransfer(command))
+                    {
+                        return false;
+                    }
+                }
+
+                return true;
             }
         }
 
@@ -95,6 +104,20 @@ namespace ModifiedArmy.Garrison.Patches
             {
                 GarrisonGranaryMenuBehavior.CloseGranaryView();
             }
+        }
+
+        private static bool CanExecuteTransfer(TransferCommand command)
+        {
+            if (!GarrisonGranaryMenuBehavior.IsReadOnlyGranaryOpen)
+            {
+                return true;
+            }
+
+            return GarrisonGranaryMenuBehavior.CanDepositIntoOpenGranary
+                && command.FromSide ==
+                    InventoryLogic.InventorySide.PlayerInventory
+                && command.ToSide ==
+                    InventoryLogic.InventorySide.OtherInventory;
         }
 
     }
