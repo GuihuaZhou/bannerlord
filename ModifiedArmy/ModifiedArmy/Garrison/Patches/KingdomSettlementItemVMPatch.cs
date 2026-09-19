@@ -41,6 +41,10 @@ namespace ModifiedArmy.Garrison.Patches
             int currentGarrisonWage =
                 __instance.Settlement.Town.GarrisonParty?.TotalWage ?? 0;
 
+            GarrisonLogisticsStatus logistics =
+                GarrisonLogisticsModel.Calculate(
+                    __instance.Settlement.Town);
+
             TextObject settlementTypeText =
                 new TextObject(
                     "{=ModifiedArmy_GarrisonSettlementTypeValue}" +
@@ -132,6 +136,57 @@ namespace ModifiedArmy.Garrison.Patches
                     0,
                     SelectableItemPropertyVM.PropertyType.Garrison,
                     hint,
+                    false));
+
+            BasicTooltipViewModel logisticsHint =
+                new BasicTooltipViewModel(
+                    () => new List<TooltipProperty>
+                    {
+                        new TooltipProperty(
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonMilitaryFood}Military Granary"),
+                            logistics.CurrentFood.ToString(),
+                            0,
+                            false,
+                            TooltipProperty.TooltipPropertyFlags.Title),
+                        new TooltipProperty(
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonDailyFoodConsumption}Daily Consumption"),
+                            logistics.DailyConsumption.ToString("0.##"),
+                            0,
+                            false,
+                            TooltipProperty.TooltipPropertyFlags.None),
+                        new TooltipProperty(
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonFoodSupplyDays}Supply Days"),
+                            logistics.FoodSupplyDays.ToString("0.##"),
+                            0,
+                            false,
+                            TooltipProperty.TooltipPropertyFlags.None),
+                        new TooltipProperty(
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonTargetFood}Target Food"),
+                            logistics.TargetFood.ToString(),
+                            0,
+                            false,
+                            TooltipProperty.TooltipPropertyFlags.None),
+                        new TooltipProperty(
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonFoodDeficit}Food Deficit"),
+                            logistics.FoodDeficit.ToString(),
+                            0,
+                            false,
+                            TooltipProperty.TooltipPropertyFlags.None)
+                    });
+
+            __instance.ItemProperties.Add(
+                new SelectableFiefItemPropertyVM(
+                    GetLocalizedText(
+                        "{=ModifiedArmy_GarrisonMilitaryFood}Military Granary"),
+                    logistics.CurrentFood.ToString(),
+                    0,
+                    SelectableItemPropertyVM.PropertyType.Garrison,
+                    logisticsHint,
                     false));
         }
 

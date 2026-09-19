@@ -44,6 +44,11 @@
     <string id="ModifiedArmy_GarrisonLeaderWealth" text="领袖财富" />
     <string id="ModifiedArmy_GarrisonWealthLevel" text="财富等级" />
     <string id="ModifiedArmy_GarrisonCurrentWage" text="当前工资" />
+    <string id="ModifiedArmy_GarrisonMilitaryFood" text="驻军粮仓" />
+    <string id="ModifiedArmy_GarrisonDailyFoodConsumption" text="每日消耗" />
+    <string id="ModifiedArmy_GarrisonFoodSupplyDays" text="可维持天数" />
+    <string id="ModifiedArmy_GarrisonTargetFood" text="目标粮食" />
+    <string id="ModifiedArmy_GarrisonFoodDeficit" text="粮食缺口" />
     <string id="ModifiedArmy_GarrisonSettlementTypeValue" text="{LOCATION}{TYPE}" />
     <string id="ModifiedArmy_GarrisonBorder" text="边境" />
     <string id="ModifiedArmy_GarrisonInterior" text="腹地" />

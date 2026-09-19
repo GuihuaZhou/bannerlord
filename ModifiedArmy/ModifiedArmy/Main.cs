@@ -3,6 +3,7 @@ using HarmonyLib;
 using MCM.Abstractions.Base.Global;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
+using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.SettlementInspection.Behaviors;
@@ -134,9 +135,13 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
                 campaignStarter.AddBehavior(new GarrisonGranaryMenuBehavior());
                 campaignStarter.AddBehavior(
+                    new GarrisonLocalRequisitionBehavior());
+                campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());
+                campaignStarter.AddModel(
+                    new NewMobilePartyFoodConsumptionModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
