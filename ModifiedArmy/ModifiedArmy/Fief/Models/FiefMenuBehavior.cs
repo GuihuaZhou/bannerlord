@@ -18,8 +18,8 @@ using TaleWorlds.ScreenSystem;
 namespace ModifiedArmy.Models.Fief
 {
     /// <summary>
-    /// Campaign behavior responsible for dynamically injecting a "Fief" submenu into the settlement menus
-    /// of towns and castles when the player's clan owns the settlement.
+    /// Campaign behavior responsible for dynamically injecting a "Fief"
+    /// submenu into town and castle settlement menus.
     /// 
     /// Note: This behavior intentionally EXCLUDES villages — the "Fief" button will NOT appear in village menus.
     /// 
@@ -29,7 +29,8 @@ namespace ModifiedArmy.Models.Fief
     /// - Manage (view) current fief troop composition
     /// - Return to the parent settlement menu
     /// 
-    /// Activation condition: <see cref="Hero.MainHero"/>'s <see cref="Clan"/> must equal the settlement's <see cref="Settlement.OwnerClan"/>.
+    /// Foreign fiefs may be inspected, but modification commands are enabled
+    /// only when the player's clan owns the current settlement.
     /// </summary>
     public class FiefMenuBehavior : CampaignBehaviorBase
     {
@@ -193,7 +194,9 @@ namespace ModifiedArmy.Models.Fief
         // 回调：处理玩家选择结果
         void OnRecruitDone(TroopRoster selectedRoster)
         {
-            if (selectedRoster == null || selectedRoster.TotalManCount <= 0)
+            if (!CanModifyCurrentFief()
+                || selectedRoster == null
+                || selectedRoster.TotalManCount <= 0)
                 return;
 
             var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
@@ -211,25 +214,16 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private void AddGameMenus(CampaignGameStarter starter)
         {
-            // Condition: Show "Fief" option only if main hero's clan owns the current settlement
+            // All fortifications can be inspected. Mutation options inside
+            // the submenu remain restricted to the owning player clan.
             GameMenuOption.OnConditionDelegate fiefCondition = (args) =>
             {
                 Settlement currentSettlement = Settlement.CurrentSettlement;
-                Hero visitingHero = Hero.MainHero;
+                bool canView = currentSettlement?.IsFortification == true;
 
-                if (currentSettlement != null && visitingHero != null)
-                {
-                    bool isEnabled = visitingHero.Clan == currentSettlement.OwnerClan;
-                    args.IsEnabled = isEnabled;
-                    if (isEnabled)
-                    {
-                        args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
-                        return true;
-                    }
-                }
-
-                args.IsEnabled = false;
-                return false;
+                args.IsEnabled = canView;
+                args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
+                return canView;
             };
 
             GameMenuOption.OnConsequenceDelegate fiefConsequence = (args) =>
@@ -241,7 +235,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 TOWN_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Enter Fief",
+                "{=ModifiedArmy_FiefMenu_Entry}View Fief",
                 fiefCondition,
                 fiefConsequence,
                 isLeave: false,
@@ -253,7 +247,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 CASTLE_MENU_ID,
                 FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Entry}Enter Fief",
+                "{=ModifiedArmy_FiefMenu_Entry}View Fief",
                 fiefCondition,
                 fiefConsequence,
                 isLeave: false,
@@ -281,9 +275,14 @@ namespace ModifiedArmy.Models.Fief
                 FIEF_MENU_ID,
                 RECRUIT_FIEF_OPTION_ID,
                 "{=ModifiedArmy_FiefMenu_Recruit}Recruit Fief Troops",
-                (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
+                ConfigureFiefModificationOption,
                 (args) =>
                 {
+                    if (!CanModifyCurrentFief())
+                    {
+                        return;
+                    }
+
                     var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
                     var playerParty = MobileParty.MainParty;
                     Settlement currentSettlement = Settlement.CurrentSettlement;
@@ -304,9 +303,14 @@ namespace ModifiedArmy.Models.Fief
                 FIEF_MENU_ID,
                 DISBAND_FIEF_OPTION_ID,
                 "{=ModifiedArmy_FiefMenu_Disband}Disband Fief Troops",
-                (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
+                ConfigureFiefModificationOption,
                 (args) =>
                 {
+                    if (!CanModifyCurrentFief())
+                    {
+                        return;
+                    }
+
                     var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
                     var playerParty = MobileParty.MainParty;
                     Settlement currentSettlement = Settlement.CurrentSettlement;
@@ -327,9 +331,14 @@ namespace ModifiedArmy.Models.Fief
                 FIEF_MENU_ID,
                 MANAGE_FIEF_OPTION_ID,
                 "{=ModifiedArmy_FiefMenu_RecruitPartial}Recruit Partial Fief Troops",
-                (args) => { args.optionLeaveType = GameMenuOption.LeaveType.Submenu; return true; },
+                ConfigureFiefModificationOption,
                 (args) =>
                 {
+                    if (!CanModifyCurrentFief())
+                    {
+                        return;
+                    }
+
                     Settlement currentSettlement = Settlement.CurrentSettlement;
                     if (currentSettlement == null)
                     {
@@ -377,6 +386,26 @@ namespace ModifiedArmy.Models.Fief
                 },
                 isLeave: true, index: -1, isRepeatable: false
             );
+        }
+
+        /// <summary>
+        /// Keeps modification commands visible for inspection while disabling
+        /// them in settlements owned by another clan.
+        /// </summary>
+        private static bool ConfigureFiefModificationOption(
+            MenuCallbackArgs args)
+        {
+            args.IsEnabled = CanModifyCurrentFief();
+            args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
+            return true;
+        }
+
+        private static bool CanModifyCurrentFief()
+        {
+            Settlement settlement = Settlement.CurrentSettlement;
+
+            return settlement?.IsFortification == true
+                && settlement.OwnerClan == Clan.PlayerClan;
         }
     }
 }

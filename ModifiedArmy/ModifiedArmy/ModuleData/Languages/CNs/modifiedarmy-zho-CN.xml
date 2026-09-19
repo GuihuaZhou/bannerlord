@@ -24,7 +24,7 @@
     <string id="Fief_Desc_Northern" text="峡湾与长船是诺德人的生命线, 他们的战士以战斧与盾墙横扫海岸, 无惧风浪与死亡." />
     <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
     <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵, 已有 {RECRUITED} 名士兵随你出征, 另有 {WAITCYCLE} 名士兵正在返回自己的土地, 每周最多可补充 {WEEKLY_REINFORCEMENT} 名士兵.{NEWLINE}{NEWLINE}当前部队构成:{NEWLINE}- 扈从: {RETINUE_COUNT}/{RETINUE_MAX}{NEWLINE}- 军士: {SERGEANT_COUNT}/{SERGEANT_MAX}{NEWLINE}- 水兵: {MARINE_COUNT}/{MARINE_MAX}{NEWLINE}- 军事奴隶: {SLAVE_COUNT}/{SLAVE_MAX}{NEWLINE}- 民兵: {MILITIA_COUNT}/{MILITIA_MAX}" />
-    <string id="ModifiedArmy_FiefMenu_Entry" text="进入封邑" />
+    <string id="ModifiedArmy_FiefMenu_Entry" text="查看封邑" />
     <string id="ModifiedArmy_FiefMenu_Recruit" text="征召封邑军队" />
     <string id="ModifiedArmy_FiefMenu_Disband" text="解散封邑军队" />
     <string id="ModifiedArmy_FiefMenu_RecruitPartial" text="征召部分军队" />
