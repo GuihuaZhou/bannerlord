@@ -298,3 +298,43 @@ NewPartyWageModel.Tier4AndTier5AverageWage
 = (16 + 30) / 2
 = 23
 ```
+
+---
+
+## 10. 本体仓库入口与库存界面
+
+反编译源码：
+
+```text
+code/PlayerTownVisitCampaignBehavior.cs
+```
+
+本体英文按钮：
+
+```text
+Open stash
+```
+
+菜单 ID：
+
+```text
+open_stash
+```
+
+关键调用：
+
+```csharp
+InventoryScreenHelper.OpenScreenAsStash(
+    Settlement.CurrentSettlement.Stash);
+```
+
+`InventoryScreenHelper.OpenScreenAsStash` 接受 `ItemRoster`，因此军事粮仓可以直接传入：
+
+```csharp
+Settlement.CurrentSettlement
+    .Town
+    .GarrisonParty
+    .ItemRoster
+```
+
+这会直接读写驻军 Party 的真实物品栏，不需要新增粮仓存档对象。
