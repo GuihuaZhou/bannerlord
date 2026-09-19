@@ -9,7 +9,7 @@
 
     <!-- ========== 日志等级 ========== -->
     <Logging>
-      <MinLogLevel value="3"/>
+      <MinLogLevel value="2"/>
     </Logging>
 
     <!-- ========== 繁荣度阈值 ========== -->
