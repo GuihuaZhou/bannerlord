@@ -97,7 +97,10 @@ namespace ModifiedArmy.Models.Fief
         /// - 若用于遣返分遣队，传入正整数（如 2 表示 2 周后回归）
         /// - 若用于征召分遣队，应传入 -1
         /// </param>
-        public FiefTroopDetachment() { }
+        public FiefTroopDetachment()
+        {
+            Troops = new Dictionary<CharacterObject, int>();
+        }
         public FiefTroopDetachment(int initialWaitCycle)
         {
             WaitCycle = initialWaitCycle;
@@ -214,7 +217,7 @@ namespace ModifiedArmy.Models.Fief
         }
     }
 
-    [SaveableRootClass(3)]
+    [SaveableRootClass(2)]
     public class FiefPartyData
     {
         [SaveableField(1)] 
@@ -319,7 +322,8 @@ namespace ModifiedArmy.Models.Fief
             foreach (var element in roster.GetTroopRoster())
             {
                 var troop = element.Character;
-                var count = element.Number + element.WoundedNumber; // 健康 + 伤员
+                // Number already includes wounded troops in Bannerlord rosters.
+                var count = element.Number;
                 if (troop == null || count <= 0)
                     continue;
 
@@ -856,19 +860,26 @@ namespace ModifiedArmy.Models.Fief
             if (candidates == null || candidates.Count == 0)
                 return null;
 
-            int tmpTotalWeight = candidates.Sum(c => c.Weight);
+            int currentBarracksLevel = GetCurrentBarracksLevel();
+            List<BasicTroopEntry> availableCandidates = candidates
+                .Where(candidate =>
+                    candidate != null
+                    && candidate.Troop != null
+                    && candidate.RequiredBarracksLevel <= currentBarracksLevel)
+                .ToList();
+
+            if (availableCandidates.Count == 0)
+                return null;
+
+            int tmpTotalWeight = availableCandidates.Sum(c => c.Weight);
             if (tmpTotalWeight <= 0)
-                return candidates[0].Troop;
+                return availableCandidates[0].Troop;
 
             int rand = MBRandom.RandomInt(tmpTotalWeight); // 使用整数随机更高效且避免浮点误差
             int sum = 0;
 
-            int currentBarracksLevel = GetCurrentBarracksLevel();
-            foreach (var candidate in candidates)
+            foreach (var candidate in availableCandidates)
             {
-                if (candidate.RequiredBarracksLevel > currentBarracksLevel)
-                    continue;
-
                 sum += candidate.Weight;
                 if (rand < sum)
                     return candidate.Troop;
@@ -925,14 +936,16 @@ namespace ModifiedArmy.Models.Fief
                     continue;
                 }
 
-                var count = element.Number + element.WoundedNumber;
+                // Number already includes wounded troops in Bannerlord rosters.
+                var count = element.Number;
                 if (troop == null || count <= 0)
                     continue;
 
-                if (element.Number >= 0)
-                    fiefRoster.AddToCounts(troop, element.Number);
-                if (element.WoundedNumber >= 0)
-                    fiefRoster.AddToCounts(troop, 0, false, element.WoundedNumber);
+                fiefRoster.AddToCounts(
+                    troop,
+                    element.Number,
+                    false,
+                    element.WoundedNumber);
             }
 
             return fiefRoster;
@@ -1194,7 +1207,7 @@ namespace ModifiedArmy.Models.Fief
             foreach (var element in rosterSnapshot)
             {
                 var troop = element.Character;
-                int count = element.Number; 
+                int count = element.Number - element.WoundedNumber;
 
                 if (troop == null || count <= 0)
                     continue;
@@ -1211,13 +1224,19 @@ namespace ModifiedArmy.Models.Fief
                     .Where(t => t != null && _fiefPartyTemplate.IsEnableTroop(t))
                     .ToArray();
 
+                if (validTargets.Length == 0)
+                    continue;
+
                 for (int i = 0; i < count; i++)
                 {
                     if (MBRandom.RandomFloat < upgradeChance)
                     {
-                        _fiefParty.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
-
                         CharacterObject newTroop = WeightedRandomChoice(validTargets);
+
+                        if (newTroop == null)
+                            continue;
+
+                        _fiefParty.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
                         _fiefParty.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
 
                         upgradedCount++;
@@ -1237,6 +1256,9 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public void WeeklyUpdate()
         {
+            if (!InitialFeifPartyData())
+                return;
+
             // 升级封邑士兵
             PerformAutoUpgrade();
 
@@ -1469,9 +1491,8 @@ namespace ModifiedArmy.Models.Fief
                 if (!_fiefPartyTemplate.IsEnableTroop(troop))
                     continue;
 
-                int count =
-                    element.Number +
-                    element.WoundedNumber;
+                // Number already includes wounded troops in Bannerlord rosters.
+                int count = element.Number;
 
                 if (count <= 0)
                     continue;
@@ -1644,7 +1665,7 @@ namespace ModifiedArmy.Models.Fief
                 Campaign.Current
                     .GetCampaignBehavior<FiefWageExemptionManager>();
 
-            _fiefWageExemptionManager.ConsumeExemption(
+            _fiefWageExemptionManager?.ConsumeExemption(
                 sourceParty,
                 tmpReturnTroopCount);
 
@@ -2094,7 +2115,7 @@ namespace ModifiedArmy.Models.Fief
             var _fiefWageExemptionManager =
                 Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
 
-            _fiefWageExemptionManager.AddExemption(
+            _fiefWageExemptionManager?.AddExemption(
                 targetParty,
                 totalRecruited,
                 CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
@@ -2215,7 +2236,10 @@ namespace ModifiedArmy.Models.Fief
 
             // 给予工资减免
             var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-            _fiefWageExemptionManager.AddExemption(targetParty, totalRecruited, CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
+            _fiefWageExemptionManager?.AddExemption(
+                targetParty,
+                totalRecruited,
+                CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
 
             // 将士兵添加到目标party
             targetParty.MemberRoster.Add(selectedRoster);

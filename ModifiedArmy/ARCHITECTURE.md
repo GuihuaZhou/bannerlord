@@ -89,7 +89,7 @@ ModifiedArmy/
 | `FiefPartyManager` | 封邑系统核心管理器 |
 | `FiefMenuBehavior` | Town/Castle 菜单注入"封邑"入口 |
 | `FiefWageExemptionManager` | 封邑兵工资豁免管理 |
-| `AiRecruitFiefTroopsBehavior` | AI 征召封邑兵 |
+| `AiRecruitmentBehavior` | AI 征召封邑兵及其他兵源 |
 | `AIBuildingAutoBoostBehavior` | AI 每周自动投入金币加速建筑 |
 
 **已注释的 Behavior**：
@@ -153,11 +153,11 @@ BasicTroopGroup (per culture)
 
 ## 4. 封邑部队系统 (Fief Party)
 
-**目录**：`Models/Fief/`，共 8 个文件
+**目录**：`Fief/Models/`，当前共 7 个文件
 
 ### 4.1 FiefPartyData（核心数据模型）
 
-**文件**：`Models/Fief/FiefPartyData.cs`（2252行，最大的文件）
+**文件**：`Fief/Models/FiefPartyData.cs`（2252行，最大的文件）
 
 #### 核心字段
 
@@ -245,7 +245,7 @@ BasicTroopGroup (per culture)
 
 ### 4.2 FiefTroopDetachment（分遣队）
 
-**文件**：`Models/Fief/FiefPartyData.cs`（内嵌类）
+**文件**：`Fief/Models/FiefPartyData.cs`（内嵌类）
 
 | 字段 | 说明 |
 |------|------|
@@ -256,7 +256,7 @@ BasicTroopGroup (per culture)
 
 ### 4.3 FiefPartyTemplate（封邑模板）
 
-**文件**：`Models/Fief/FiefPartyTemplate.cs`
+**文件**：`Fief/Models/FiefPartyTemplate.cs`
 
 从 XML 加载，按 `{culture}_{town|castle}{_port?}` 命名匹配：
 
@@ -287,7 +287,7 @@ XML 结构示例：
 
 ### 4.4 FiefPartyManager（封邑管理器）
 
-**文件**：`Models/Fief/FiefPartyManager.cs`
+**文件**：`Fief/Models/FiefPartyManager.cs`
 
 CampaignBehaviorBase，管理所有定居点的封邑数据。
 
@@ -306,7 +306,7 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 ### 4.5 FiefMenuBehavior（封邑菜单）
 
-**文件**：`Models/Fief/FiefMenuBehavior.cs`
+**文件**：`Fief/Models/FiefMenuBehavior.cs`
 
 在 Town/Castle 菜单中注入"Enter Fief"选项（仅定居点所有者的 Clan 可用）。
 
@@ -322,7 +322,7 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 ### 4.6 FiefWageExemptionManager（工资豁免）
 
-**文件**：`Models/Fief/FiefWageExemptionManager.cs`
+**文件**：`Fief/Models/FiefWageExemptionManager.cs`
 
 征召封邑兵时给予 28 天工资豁免，按 FIFO 消耗。
 
@@ -334,9 +334,9 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 > 注意：`GetTotalWage` 中的豁免逻辑当前已注释掉，豁免目前仅记录但未在工资计算中生效。
 
-### 4.7 AiRecruitFiefTroopsBehavior（AI 征召）
+### 4.7 AiRecruitmentBehavior（AI 征召）
 
-**文件**：`Models/Fief/AiRecruitFiefTroopsBehavior.cs`
+**文件**：`Models/AiRecruitmentBehavior.cs`
 
 | 事件 | 行为 |
 |------|------|
@@ -347,19 +347,19 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 ### 4.8 FiefSaveDefiner（存档序列化）
 
-**文件**：`Models/Fief/FiefPartyManager.cs`
+**文件**：`Fief/Models/FiefPartyManager.cs`
 
 基 ID：20251116，定义了 `FiefTroopDetachment`, `FiefPartyData`, `FiefWageExemption`, `FiefWageExemptionManager` 的类和容器序列化。
 
 ### 4.9 FiefSettlementTaxModel（封邑税收）
 
-**文件**：`Models/Fief/FiefSettlementTaxModel.cs`（已注释未启用）
+**文件**：`Fief/Models/FiefSettlementTaxModel.cs`（已注释未启用）
 
 城镇税收 = 原版 × 10%
 
 ### 4.10 FiefPartyFoodConsumptionModel（封邑食物消耗）
 
-**文件**：`Models/Fief/FiefPartyFoodConsumptionModel.cs`（已注释未启用）
+该旧模型已删除, 当前未启用封邑部队食物消耗覆盖。
 
 封邑部队不消耗食物
 
@@ -472,7 +472,7 @@ Harmony Prefix 替换 `RecruitmentCampaignBehavior.UpdateCurrentMercenaryTroopAn
 
 ### 7.2 民兵计算
 
-**文件**：`Models/NewSettlementMilitiaModel.cs`
+**文件**：`Fief/Models/NewSettlementMilitiaModel.cs`
 
 关键改动：`CalculateMilitiaChange` 中**减去封邑部队人数**：
 ```csharp
@@ -499,7 +499,7 @@ Harmony Prefix 替换 `GarrisonTroopsCampaignBehavior.OnSettlementEntered`：
 
 ### 7.5 封邑兵与民兵隔离
 
-**文件**：`Patch/SettlementPatch.cs`
+**文件**：`Fief/Patches/SettlementPatch.cs`
 
 Harmony Prefix 替换 `Settlement.RemoveMilitiasFromParty`：
 - 移除民兵时跳过封邑类型士兵（IsFiefTroop）
@@ -570,7 +570,7 @@ Mercenary 职业：×1.25
 
 ### 8.5 封邑税收（已注释）
 
-**文件**：`Models/Fief/FiefSettlementTaxModel.cs`
+**文件**：`Fief/Models/FiefSettlementTaxModel.cs`
 
 城镇税收 = 原版 × 10%
 
@@ -679,7 +679,7 @@ Harmony Prefix 替换 `FiefBarterBehavior.CheckForBarters`：
 
 ### 12.1 民兵移除保护
 
-**文件**：`Patch/SettlementPatch.cs`
+**文件**：`Fief/Patches/SettlementPatch.cs`
 
 （见 7.5 节）
 
@@ -930,12 +930,12 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 1. **文化差异化机制** — 当前各文化只有兵种池不同，机制层面完全一样
    - 建议在 `FiefPartyTemplate` 中增加文化特质字段（服役周期倍率、冷却周期倍率、补员加成等）
-   - 文件位置：`Models/Fief/FiefPartyTemplate.cs`
+   - 文件位置：`Fief/Models/FiefPartyTemplate.cs`
 
 2. **封邑兵忠诚度系统** — 封邑兵缺少行为约束
    - 建议在 `FiefPartyData` 中增加 `Loyalty` 字段
    - 低忠诚度 → 拒绝服役/逃兵/叛变
-   - 文件位置：`Models/Fief/FiefPartyData.cs`
+   - 文件位置：`Fief/Models/FiefPartyData.cs`
 
 3. **Hero 差异化志愿兵** — 所有 Hero 的志愿兵来源相同
    - 建议根据 Hero 的技能/性格调整志愿兵质量和类型
@@ -953,10 +953,10 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 6. **AI 征召逻辑优化** — 当前只看 PartySizeRatio 和金钱
    - 建议增加战争状态、敌军距离、围城状态判断
-   - 文件位置：`Models/Fief/AiRecruitFiefTroopsBehavior.cs`
+   - 文件位置：`Models/AiRecruitmentBehavior.cs`
 
 7. **封邑驻军防守** — 封邑兵可以部分留守定居点防守
-   - 文件位置：`Models/Fief/FiefPartyData.cs`
+   - 文件位置：`Fief/Models/FiefPartyData.cs`
 
 ### 低优先级
 
@@ -974,13 +974,13 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 | 文件 | 行数 | 说明 |
 |------|------|------|
-| `Models/Fief/FiefPartyData.cs` | ~2252 | 最大的文件，封邑核心逻辑 |
+| `Fief/Models/FiefPartyData.cs` | ~2252 | 最大的文件，封邑核心逻辑 |
 | `Models/NewVolunteerModel.cs` | ~941 | 志愿兵系统 |
 | `Patch/DiplomaticBartersBehavior.cs` | ~180 | AI 外交补丁 |
 | `Models/NewPartyWageModel.cs` | ~280 | 工资系统（含注释的 GetTotalWage） |
 | `Models/NewBasicTroopManager.cs` | ~280 | 兵种管理 + SoldierTypeClassifier |
-| `Models/Fief/FiefPartyManager.cs` | ~230 | 封邑管理器 |
-| `Models/Fief/FiefPartyTemplate.cs` | ~180 | 封邑模板 |
-| `Models/Fief/FiefMenuBehavior.cs` | ~250 | 封邑菜单 |
-| `Models/Fief/FiefWageExemptionManager.cs` | ~190 | 工资豁免 |
+| `Fief/Models/FiefPartyManager.cs` | ~230 | 封邑管理器 |
+| `Fief/Models/FiefPartyTemplate.cs` | ~180 | 封邑模板 |
+| `Fief/Models/FiefMenuBehavior.cs` | ~250 | 封邑菜单 |
+| `Fief/Models/FiefWageExemptionManager.cs` | ~190 | 工资豁免 |
 | `Patch/HeroSpawnCampaignBehaviorPatch.cs` | ~160 | 领主生成 |

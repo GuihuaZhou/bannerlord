@@ -72,6 +72,11 @@ namespace ModifiedArmy.Models.Fief
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData<Dictionary<Settlement, FiefPartyData>>("_fiefDataMap", ref this._fiefDataMap);
+
+            if (_fiefDataMap == null)
+            {
+                _fiefDataMap = new Dictionary<Settlement, FiefPartyData>();
+            }
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
@@ -112,6 +117,11 @@ namespace ModifiedArmy.Models.Fief
             int updatedCount = 0;
             foreach (var data in _fiefDataMap.Values)
             {
+                if (data == null)
+                {
+                    continue;
+                }
+
                 data.WeeklyUpdate();
                 updatedCount++;
             }
@@ -122,7 +132,7 @@ namespace ModifiedArmy.Models.Fief
         {
             foreach (var data in _fiefDataMap.Values)
             {
-                data.DailyUpdate();
+                data?.DailyUpdate();
             }
         }
 

@@ -85,6 +85,11 @@ namespace ModifiedArmy.Models.Fief
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData("_exemptionMap", ref _exemptionMap);
+
+            if (_exemptionMap == null)
+            {
+                _exemptionMap = new Dictionary<string, List<FiefWageExemption>>();
+            }
         }
 
         private string GetPartyKey(MobileParty party)

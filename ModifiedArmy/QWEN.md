@@ -23,23 +23,24 @@ ModifiedArmy/
 ├── Common/
 │   ├── common.cs              — SoldierType 枚举 + CommonConstants 常量
 │   └── ModConfig.cs           — XML 配置模型（MinLogLevel 等）
-├── Models/
-│   ├── Fief/                  — 封邑子系统（核心，8 个文件）
+├── Fief/                      — 封邑子系统
+│   ├── Models/
 │   │   ├── FiefPartyData.cs   — 核心数据模型（最大文件 ~2250 行）
 │   │   ├── FiefPartyTemplate.cs — XML 模板定义 + 管理器
 │   │   ├── FiefPartyManager.cs  — CampaignBehavior 管理器 + 存档定义
 │   │   ├── FiefMenuBehavior.cs  — 城镇/城堡菜单注入
 │   │   ├── FiefWageExemptionManager.cs — 工资豁免
-│   │   ├── AiRecruitFiefTroopsBehavior.cs — AI 征召
 │   │   ├── FiefSettlementTaxModel.cs   — (已注释) 封邑税收
-│   │   └── FiefPartyFoodConsumptionModel.cs — (已注释) 食物消耗
+│   │   └── NewSettlementMilitiaModel.cs — 民兵计算（扣除封邑人数）
+│   └── Patches/
+│       └── SettlementPatch.cs — 民兵移除保护（跳过封邑兵）
+├── Models/
 │   ├── NewVolunteerModel.cs   — 志愿兵生成/招募/文化倍率
 │   ├── NewPartyWageModel.cs   — 招募费 + 工资（Tier 4+ 大幅提高）
 │   ├── NewPartyTroopUpgradeModel.cs — 升级经验（Tier 4+ 翻倍）
 │   ├── NewPartySizeLimitModel.cs    — 驻军人数限制
 │   ├── NewSettlementLoyaltyModel.cs — 文化忠诚度惩罚
 │   ├── NewClanTierModel.cs   — Clan 分队数（基于定居点数）
-│   ├── NewSettlementMilitiaModel.cs — 民兵计算（扣除封邑人数）
 │   ├── NewBuildingConstructionModel.cs — AI 建筑优先级
 │   ├── NewPrisonerRecruitmentCalculationModel.cs — 俘虏招募（按 SoldierType 差异化）
 │   ├── NewBasicTroopManager.cs — SoldierType 分类器 + BasicTroopGroup 管理
@@ -49,7 +50,6 @@ ModifiedArmy/
 │   ├── RecruitmentCampaignBehavior.cs — 雇佣兵生成（仅基础兵/固定人数）
 │   ├── RecruitPrisonersCampaignBehavior.cs — 玩家/AI 俘虏招募
 │   ├── GarrisonTroopsCampaignBehavior.cs — 驻军操作限制
-│   ├── SettlementPatch.cs    — 民兵移除保护（跳过封邑兵）
 │   ├── BuildingsCampaignBehavior.cs — AI 建筑每日 Tick
 │   ├── DiplomaticBartersBehavior.cs — AI 外交决策
 │   ├── FiefBarterBehavior.cs — 封地交易

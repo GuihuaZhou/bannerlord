@@ -21,7 +21,7 @@ namespace ModifiedArmy.Models.Fief
     /// Campaign behavior responsible for dynamically injecting a "Fief" submenu into the settlement menus
     /// of towns and castles when the player's clan owns the settlement.
     /// 
-    /// ⚠️ Note: This behavior intentionally EXCLUDES villages — the "Fief" button will NOT appear in village menus.
+    /// Note: This behavior intentionally EXCLUDES villages — the "Fief" button will NOT appear in village menus.
     /// 
     /// The submenu provides options to:
     /// - Recruit fief squads into the player's party
