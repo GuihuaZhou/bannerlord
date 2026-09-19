@@ -4,6 +4,7 @@ using MCM.Abstractions.Base.Global;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
@@ -141,6 +142,8 @@ namespace ModifiedArmy
                     new GarrisonLocalMarketPurchaseBehavior());
                 campaignStarter.AddBehavior(
                     new GarrisonStarvationLogBehavior());
+                campaignStarter.AddBehavior(
+                    new SupplyPartyBehavior());
                 campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
 
