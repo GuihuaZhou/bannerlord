@@ -140,6 +140,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new GarrisonLocalMarketPurchaseBehavior());
                 campaignStarter.AddBehavior(
+                    new GarrisonStarvationLogBehavior());
+                campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());

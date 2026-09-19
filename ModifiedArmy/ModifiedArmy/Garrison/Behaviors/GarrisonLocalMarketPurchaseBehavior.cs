@@ -15,6 +15,8 @@ namespace ModifiedArmy.Garrison.Behaviors
     /// </summary>
     public class GarrisonLocalMarketPurchaseBehavior : CampaignBehaviorBase
     {
+        private const int MaximumPurchaseSupplyDaysPerDay = 5;
+
         public override void RegisterEvents()
         {
             CampaignEvents.DailyTickSettlementEvent
@@ -44,9 +46,19 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return;
             }
 
-            PurchaseFoodFromLocalMarket(
-                settlement,
-                status.FoodDeficit);
+            int dailyPurchaseLimit = (int)Math.Ceiling(
+                status.DailyConsumption
+                * MaximumPurchaseSupplyDaysPerDay);
+            int purchaseDemand = Math.Min(
+                status.FoodDeficit,
+                dailyPurchaseLimit);
+
+            if (purchaseDemand > 0)
+            {
+                PurchaseFoodFromLocalMarket(
+                    settlement,
+                    purchaseDemand);
+            }
         }
 
         /// <summary>
