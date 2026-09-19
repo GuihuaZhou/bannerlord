@@ -20,10 +20,14 @@
     <xsl:template match="NPCCharacter[@id='aserai_mameluke_axeman']"/>
     <xsl:template match="NPCCharacter[@id='aserai_mameluke_guard']"/>
     <xsl:template match="NPCCharacter[@id='mamluke_palace_guard']"/>
-
-    <!-- 废弃troop -->
     <xsl:template match="NPCCharacter[@id='aserai_mameluke_soldier']"/>
     <xsl:template match="NPCCharacter[@id='aserai_youth']"/>
     <xsl:template match="NPCCharacter[@id='aserai_tribal_horseman']"/>
+    <xsl:template match="NPCCharacter[@id='aserai_faris']"/>
+    <xsl:template match="NPCCharacter[@id='aserai_veteran_faris']"/>
+    <xsl:template match="NPCCharacter[@id='aserai_vanguard_faris']"/>
+
+    <xsl:template match="NPCCharacter[@id='aserai_marine_t4']"/>
+    <xsl:template match="NPCCharacter[@id='aserai_marine_t5']"/>
 
 </xsl:stylesheet>

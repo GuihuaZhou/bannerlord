@@ -27,4 +27,8 @@
     <xsl:template match="NPCCharacter[@id='vlandian_banner_knight']"/>
     <xsl:template match="NPCCharacter[@id='vlandian_squire']"/>
 
+
+    <xsl:template match="NPCCharacter[@id='vlandian_marine_t4']"/>
+    <xsl:template match="NPCCharacter[@id='vlandian_marine_t5']"/>
+
 </xsl:stylesheet>

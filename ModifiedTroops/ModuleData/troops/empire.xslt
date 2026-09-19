@@ -23,10 +23,15 @@
     <xsl:template match="NPCCharacter[@id='imperial_sergeant_crossbowman']"/>
     <xsl:template match="NPCCharacter[@id='imperial_palatine_guard']"/>
 
-    <!-- 废弃troop -->
     <xsl:template match="NPCCharacter[@id='imperial_vigla_recruit']"/>
     <xsl:template match="NPCCharacter[@id='imperial_equite']"/>
     <xsl:template match="NPCCharacter[@id='imperial_crossbowman']"/>
     <xsl:template match="NPCCharacter[@id='bucellarii']"/>
+
+
+
+    <xsl:template match="NPCCharacter[@id='empire_marine_t3']"/>
+    <xsl:template match="NPCCharacter[@id='empire_marine_t4']"/>
+    <xsl:template match="NPCCharacter[@id='empire_marine_t5']"/>
 
 </xsl:stylesheet>

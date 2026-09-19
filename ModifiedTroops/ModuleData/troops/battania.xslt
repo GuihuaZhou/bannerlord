@@ -27,4 +27,12 @@
     <xsl:template match="NPCCharacter[@id='battanian_raider']"/>
     <xsl:template match="NPCCharacter[@id='battanian_highborn_youth']"/>
 
+    <xsl:template match="NPCCharacter[@id='forest_people_tier_1']"/>
+    <xsl:template match="NPCCharacter[@id='forest_people_tier_2']"/>
+    <xsl:template match="NPCCharacter[@id='forest_people_tier_3']"/>
+
+
+    <xsl:template match="NPCCharacter[@id='battanian_marine_t4']"/>
+    <xsl:template match="NPCCharacter[@id='battanian_marine_t5']"/>
+
 </xsl:stylesheet>

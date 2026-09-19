@@ -6,16 +6,8 @@
 		is_main_culture="true"
 		color="0xff793191"
 		color2="0xffFCDE90"
-
-		elite_basic_troop="NPCCharacter.imperial_heavy_horseman"
-		elite_basic_troop_weight="1"
-
+		elite_basic_troop="NPCCharacter.imperial_vigla_recruit"
 		basic_troop="NPCCharacter.imperial_recruit"
-		basic_troop_weight="6"
-
-		basic_infantry_troop="NPCCharacter.imperial_legion_recruit"
-		basic_infantry_troop_weight="3"
-
 		melee_militia_troop="NPCCharacter.imperial_militia_spearman"
 		ranged_militia_troop="NPCCharacter.imperial_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.imperial_militia_veteran_spearman"
@@ -851,19 +843,25 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.hire_steppe_guard" />
+				name="NPCCharacter.hire_knight" />
 			<template
-				name="NPCCharacter.hire_squire" />
+				name="NPCCharacter.hire_steppe_guard" />
 			<template
 				name="NPCCharacter.hire_northern_light_infantry" />
 			<template
-				name="NPCCharacter.highland_light_archer" />
+				name="NPCCharacter.highland_archer" />
 			<template
 				name="NPCCharacter.highland_falxman" />
 			<template
 				name="NPCCharacter.hired_ghulam" />
 			<template
 				name="NPCCharacter.hire_southern_light_infantry" />
+			<template
+				name="NPCCharacter.desert_light_ranger" />
+			<template
+				name="NPCCharacter.hire_nord_ulfhednar" />
+			<template
+				name="NPCCharacter.hire_nord_berserkr" />
 		</basic_mercenary_troops>
 	</Culture>
 	<Culture
@@ -872,16 +870,8 @@
 		is_main_culture="true"
 		color="0xffB57A1E"
 		color2="0xff4E1A13"
-
-		elite_basic_troop="NPCCharacter.aserai_faris"
-		elite_basic_troop_weight="1"
-
+		elite_basic_troop="NPCCharacter.aserai_youth"
 		basic_troop="NPCCharacter.aserai_recruit"
-		basic_troop_weight="6"
-
-		basic_infantry_troop="NPCCharacter.aserai_young_infantry"
-		basic_infantry_troop_weight="3"
-
 		melee_militia_troop="NPCCharacter.aserai_militia_spearman"
 		ranged_militia_troop="NPCCharacter.aserai_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.aserai_militia_veteran_spearman"
@@ -1416,19 +1406,17 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
+				name="NPCCharacter.hire_knight" />
+			<template
 				name="NPCCharacter.hire_steppe_guard" />
 			<template
-				name="NPCCharacter.hire_squire" />
-			<template
-				name="NPCCharacter.hire_northern_light_infantry" />
-			<template
-				name="NPCCharacter.highland_light_archer" />
+				name="NPCCharacter.highland_archer" />
 			<template
 				name="NPCCharacter.highland_falxman" />
 			<template
 				name="NPCCharacter.hired_ghulam" />
 			<template
-				name="NPCCharacter.hire_southern_light_infantry" />
+				name="NPCCharacter.desert_light_ranger" />
 		</basic_mercenary_troops>
 	</Culture>
 	<Culture
@@ -1437,16 +1425,8 @@
 		is_main_culture="true"
 		color="0xff224277"
 		color2="0xffCEDAE7"
-
-		elite_basic_troop="NPCCharacter.varyag_veteran"
-		elite_basic_troop_weight="1"
-
+		elite_basic_troop="NPCCharacter.sturgian_warrior_son"
 		basic_troop="NPCCharacter.sturgian_recruit"
-		basic_troop_weight="6"
-
-		basic_infantry_troop="NPCCharacter.sturgian_young_infantry"
-		basic_infantry_troop_weight="3"
-
 		melee_militia_troop="NPCCharacter.sturgian_militia_spearman"
 		ranged_militia_troop="NPCCharacter.sturgian_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.sturgian_militia_veteran_spearman"
@@ -2047,19 +2027,19 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
+				name="NPCCharacter.hire_knight" />
+			<template
 				name="NPCCharacter.hire_steppe_guard" />
 			<template
-				name="NPCCharacter.hire_squire" />
-			<template
-				name="NPCCharacter.hire_northern_light_infantry" />
-			<template
-				name="NPCCharacter.highland_light_archer" />
+				name="NPCCharacter.highland_archer" />
 			<template
 				name="NPCCharacter.highland_falxman" />
 			<template
 				name="NPCCharacter.hired_ghulam" />
 			<template
-				name="NPCCharacter.hire_southern_light_infantry" />
+				name="NPCCharacter.hire_nord_ulfhednar" />
+			<template
+				name="NPCCharacter.hire_nord_berserkr" />
 		</basic_mercenary_troops>
 	</Culture>
 	<Culture
@@ -2068,19 +2048,8 @@
 		is_main_culture="true"
 		color="0xff8D291A"
 		color2="0xffF7BF46"
-
-		elite_basic_troop="NPCCharacter.vlandian_gallant"
-		elite_basic_troop_weight="3"
-
+		elite_basic_troop="NPCCharacter.vlandian_squire"
 		basic_troop="NPCCharacter.vlandian_recruit"
-		basic_troop_weight="14"
-
-		basic_infantry_troop="NPCCharacter.vlandian_young_infantry"
-		basic_infantry_troop_weight="3"
-
-		basic_cavalry_troop="NPCCharacter.vlandian_light_cavalry"
-		basic_cavalry_troop_weight="3"
-		
 		melee_militia_troop="NPCCharacter.vlandian_militia_spearman"
 		ranged_militia_troop="NPCCharacter.vlandian_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.vlandian_militia_veteran_spearman"
@@ -2659,21 +2628,23 @@
 			<template
 				name="NPCCharacter.eastern_mercenary" />
 			<template
-				name="NPCCharacter.western_mercenary" />
-			<template
 				name="NPCCharacter.hire_steppe_guard" />
-			<template
-				name="NPCCharacter.hire_squire" />
 			<template
 				name="NPCCharacter.hire_northern_light_infantry" />
 			<template
-				name="NPCCharacter.highland_light_archer" />
+				name="NPCCharacter.highland_archer" />
 			<template
 				name="NPCCharacter.highland_falxman" />
 			<template
 				name="NPCCharacter.hired_ghulam" />
 			<template
 				name="NPCCharacter.hire_southern_light_infantry" />
+			<template
+				name="NPCCharacter.desert_light_ranger" />
+			<template
+				name="NPCCharacter.hire_nord_ulfhednar" />
+			<template
+				name="NPCCharacter.hire_nord_berserkr" />
 		</basic_mercenary_troops>
 	</Culture>
 	<Culture
@@ -2682,16 +2653,8 @@
 		is_main_culture="true"
 		color="0xff284E19"
 		color2="0xffB4F0F1"
-		
-		elite_basic_troop="NPCCharacter.battanian_highborn_warrior"
-		elite_basic_troop_weight="1"
-
+		elite_basic_troop="NPCCharacter.battanian_highborn_youth"
 		basic_troop="NPCCharacter.battanian_volunteer"
-		basic_troop_weight="6"
-
-		basic_infantry_troop="NPCCharacter.battanian_young_infantry"
-		basic_infantry_troop_weight="3"
-
 		melee_militia_troop="NPCCharacter.battanian_militia_spearman"
 		ranged_militia_troop="NPCCharacter.battanian_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.battanian_militia_veteran_spearman"
@@ -3143,19 +3106,9 @@
 			<template
 				name="NPCCharacter.eastern_mercenary" />
 			<template
-				name="NPCCharacter.western_mercenary" />
-			<template
-				name="NPCCharacter.hire_steppe_guard" />
-			<template
-				name="NPCCharacter.hire_squire" />
+				name="NPCCharacter.hire_knight" />
 			<template
 				name="NPCCharacter.hire_northern_light_infantry" />
-			<template
-				name="NPCCharacter.highland_light_archer" />
-			<template
-				name="NPCCharacter.hired_ghulam" />
-			<template
-				name="NPCCharacter.highland_falxman" />
 			<template
 				name="NPCCharacter.hire_southern_light_infantry" />
 		</basic_mercenary_troops>
@@ -3166,19 +3119,8 @@
 		is_main_culture="true"
 		color="0xff429081"
 		color2="0xffEFC990"
-
-		elite_basic_troop="NPCCharacter.khuzait_torguud"
-		elite_basic_troop_weight="3"
-
+		elite_basic_troop="NPCCharacter.khuzait_noble_son"
 		basic_troop="NPCCharacter.khuzait_nomad"
-		basic_troop_weight="14"
-
-		basic_infantry_troop="NPCCharacter.khuzait_young_infantry"
-		basic_infantry_troop_weight="3"
-
-		basic_cavalry_troop="NPCCharacter.khuzait_horseman"
-		basic_cavalry_troop_weight="3"
-		
 		melee_militia_troop="NPCCharacter.khuzait_militia_spearman"
 		ranged_militia_troop="NPCCharacter.khuzait_militia_archer"
 		melee_elite_militia_troop="NPCCharacter.khuzait_militia_veteran_spearman"
@@ -3671,19 +3613,25 @@
 			<template
 				name="NPCCharacter.western_mercenary" />
 			<template
-				name="NPCCharacter.hire_steppe_guard" />
+				name="NPCCharacter.hire_knight" />
 			<template
-				name="NPCCharacter.hire_squire" />
+				name="NPCCharacter.hire_steppe_guard" />
 			<template
 				name="NPCCharacter.hire_northern_light_infantry" />
 			<template
-				name="NPCCharacter.highland_light_archer" />
-			<template
-				name="NPCCharacter.hired_ghulam" />
+				name="NPCCharacter.highland_archer" />
 			<template
 				name="NPCCharacter.highland_falxman" />
 			<template
+				name="NPCCharacter.hired_ghulam" />
+			<template
 				name="NPCCharacter.hire_southern_light_infantry" />
+			<template
+				name="NPCCharacter.desert_light_ranger" />
+			<template
+				name="NPCCharacter.hire_nord_ulfhednar" />
+			<template
+				name="NPCCharacter.hire_nord_berserkr" />
 		</basic_mercenary_troops>
 	</Culture>
 </SPCultures>

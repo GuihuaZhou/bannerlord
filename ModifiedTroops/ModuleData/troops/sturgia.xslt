@@ -29,4 +29,9 @@
     <xsl:template match="NPCCharacter[@id='sturgian_warrior_son']"/>
     <xsl:template match="NPCCharacter[@id='varyag']"/>
 
+
+    <xsl:template match="NPCCharacter[@id='sturgia_marine_t3']"/>
+    <xsl:template match="NPCCharacter[@id='sturgia_marine_t4']"/>
+    <xsl:template match="NPCCharacter[@id='sturgia_marine_t5']"/>
+
 </xsl:stylesheet>

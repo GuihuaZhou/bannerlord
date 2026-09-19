@@ -6,11 +6,11 @@
     </xsl:copy>
 </xsl:template>
  
-    <xsl:template match="Culture[@id='empire']"/>
+    <!-- <xsl:template match="Culture[@id='empire']"/>
     <xsl:template match="Culture[@id='aserai']"/>
     <xsl:template match="Culture[@id='sturgia']"/>
     <xsl:template match="Culture[@id='vlandia']"/>
     <xsl:template match="Culture[@id='battania']"/>
-    <xsl:template match="Culture[@id='khuzait']"/>
+    <xsl:template match="Culture[@id='khuzait']"/> -->
 
 </xsl:stylesheet>

@@ -1,20 +1,23 @@
 <?xml version='1.0' encoding='utf-8'?>
 <Module>
-	<Name value = "ModifiedTroops"/>
-	<Id value = "ModifiedTroops"/>
+	<Name value = "ModifiedTroop"/>
+	<Id value = "ModifiedTroop"/>
 	<Version value = "v1.0.0"/>
 	<DefaultModule value="false"/>
 	<ModuleCategory value="Singleplayer"/>
-  <ModuleType value ="Community" />
-  <DependedModules>
-  		<DependedModule Id="Native" DependentVersion="v1.3.2" Optional="false"/>
-		<DependedModule Id="SandBoxCore" DependentVersion="v1.3.2" Optional="false"/>
-		<DependedModule Id="Sandbox" DependentVersion="v1.3.2" Optional="false"/>
-		<DependedModule Id="CustomBattle" DependentVersion="v1.3.2" Optional="false"/>
-		<DependedModule Id="StoryMode" DependentVersion="v1.3.2" Optional="false"/>
+	<ModuleType value ="Community" />
+	<DependedModules>
+		<DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.4.2" />
+        <DependedModule Id="Bannerlord.ButterLib" DependentVersion="v2.12.0" />
+        <DependedModule Id="Bannerlord.MBOptionScreen" DependentVersion="v5.12.3" />
+        <DependedModule Id="Bannerlord.UIExtenderEx" DependentVersion="v2.13.3" />
+  		<DependedModule Id="Native" DependentVersion="v1.4.8" Optional="false"/>
+		<DependedModule Id="SandBoxCore" DependentVersion="v1.4.8" Optional="false"/>
+		<DependedModule Id="Sandbox" DependentVersion="v1.4.8" Optional="false"/>
+		<DependedModule Id="CustomBattle" DependentVersion="v1.4.8" Optional="false"/>
+		<DependedModule Id="StoryMode" DependentVersion="v1.4.8" Optional="false"/>
+		<DependedModule Id="NavalDLC" DependentVersion="v1.2.8" Optional="false"/>
 	</DependedModules>
-	<SubModules>
-	</SubModules>
 	<Xmls> 
 		<XmlNode>                
 			<XmlName id="SPCultures" path="spcultures" />
@@ -30,8 +33,10 @@
 			<IncludedGameTypes>
 				<GameType value="Campaign" />
 				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
 			</IncludedGameTypes>
-		</XmlNode>    
+		</XmlNode> 
 		<XmlNode>   
 			<XmlName id="NPCCharacters" path="Troops" />
 			<IncludedGameTypes>
@@ -40,6 +45,8 @@
 				<GameType value="CustomGame" />
 				<GameType value="EditorGame" />
 			</IncludedGameTypes>
-		</XmlNode>      
+		</XmlNode>
+	</Xmls>
+	<Xmls>     
 	</Xmls>
 </Module>
