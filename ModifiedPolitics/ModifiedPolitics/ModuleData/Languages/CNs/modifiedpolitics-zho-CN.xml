@@ -10,7 +10,7 @@
     <string id="ModifiedPolitics_GarrisonTroops" text="驻军兵力" />
     <string id="ModifiedPolitics_FieldTroops" text="机动兵力" />
     <string id="ModifiedPolitics_ClanWealth" text="家族财富" />
-    <string id="ModifiedPolitics_DailyIncome" text="每日收入" />
+    <string id="ModifiedPolitics_DailyIncome" text="每日净收入" />
     <string id="ModifiedPolitics_PartyWage" text="部队工资" />
     <string id="ModifiedPolitics_WarDisposition" text="战争倾向" />
     <string id="ModifiedPolitics_LeaderTraits" text="人物特性" />

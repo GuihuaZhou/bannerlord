@@ -175,6 +175,16 @@ namespace ModifiedPolitics.Models
 
 
         /// <summary>
+        /// Clan 每日净收入。
+        ///
+        /// 包含收入与全部日常开支，供 UI 展示。
+        /// 战争潜力公式继续使用 DailyIncome 毛收入，避免再次扣除
+        /// WarParty 工资。
+        /// </summary>
+        public float DailyNetIncome { get; set; }
+
+
+        /// <summary>
         /// 当前 Clan 所有 WarParty 的每日工资。
         /// 战争期间读取到的 TotalWage 已由工资补丁实际翻倍。
         /// </summary>
@@ -521,6 +531,10 @@ namespace ModifiedPolitics.Models
 
             result.DailyIncome =
                 CalculateDailyIncome(
+                    clan);
+
+            result.DailyNetIncome =
+                CalculateDailyNetIncome(
                     clan);
 
 
@@ -1284,6 +1298,24 @@ namespace ModifiedPolitics.Models
                 .Models
                 .ClanFinanceModel
                 .CalculateClanIncome(
+                    clan,
+                    includeDescriptions: false,
+                    applyWithdrawals: false,
+                    includeDetails: false)
+                .ResultNumber;
+        }
+
+
+        /// <summary>
+        /// Calculates the same net daily gold change applied by the native
+        /// clan finance behavior, including party wages and other expenses.
+        /// </summary>
+        private static float CalculateDailyNetIncome(Clan clan)
+        {
+            return Campaign.Current
+                .Models
+                .ClanFinanceModel
+                .CalculateClanGoldChange(
                     clan,
                     includeDescriptions: false,
                     applyWithdrawals: false,

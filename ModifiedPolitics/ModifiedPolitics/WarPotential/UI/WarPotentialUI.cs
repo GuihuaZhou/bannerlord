@@ -169,7 +169,9 @@ namespace ModifiedPolitics.UI.KingdomClan
                 new TextObject("{=ModifiedPolitics_ClanWealth}Clan Wealth").ToString();
 
             DailyIncomeLabelText =
-                new TextObject("{=ModifiedPolitics_DailyIncome}Daily Income").ToString();
+                new TextObject(
+                    "{=ModifiedPolitics_DailyIncome}Daily Net Income")
+                .ToString();
 
             PartyWageLabelText =
                 new TextObject("{=ModifiedPolitics_PartyWage}Party Wage").ToString();
@@ -237,7 +239,9 @@ namespace ModifiedPolitics.UI.KingdomClan
             GarrisonTroops = result.GarrisonTroops;
             FieldTroops = result.FieldTroops;
             ClanWealth = result.ClanWealth;
-            DailyIncome = (int)Math.Round(result.DailyIncome, MidpointRounding.AwayFromZero);
+            DailyIncome = (int)Math.Round(
+                result.DailyNetIncome,
+                MidpointRounding.AwayFromZero);
             PartyDailyWage = result.PartyDailyWage;
         }
 
