@@ -157,7 +157,7 @@ BasicTroopGroup (per culture)
 
 ### 4.1 FiefPartyData（核心数据模型）
 
-**文件**：`Fief/Models/PartyData/FiefPartyData.cs`、`FiefPartyReinforcement.cs`、`FiefPartyRecruitment.cs`
+**文件**：`Fief/Models/PartyData/FiefPartyData.cs`、`FiefPartyReinforcement.cs`、`FiefPartyRecruitment.cs`、`FiefPartyReturn.cs`、`FiefPartyEconomy.cs`
 
 #### 核心字段
 
@@ -974,7 +974,7 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 | 文件 | 行数 | 说明 |
 |------|------|------|
-| `Fief/Models/PartyData/FiefPartyRecruitment.cs` | ~1000 | 封邑部队征召与归还逻辑 |
+| `Fief/Models/PartyData/FiefPartyData.cs` | ~425 | 封邑核心数据与初始化逻辑 |
 | `Models/NewVolunteerModel.cs` | ~941 | 志愿兵系统 |
 | `Patch/DiplomaticBartersBehavior.cs` | ~180 | AI 外交补丁 |
 | `Models/NewPartyWageModel.cs` | ~280 | 工资系统（含注释的 GetTotalWage） |
