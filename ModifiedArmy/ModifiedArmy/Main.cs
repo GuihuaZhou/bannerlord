@@ -131,6 +131,7 @@ namespace ModifiedArmy
 
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
                 campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
+                campaignStarter.AddBehavior(new GarrisonGranaryMenuBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
