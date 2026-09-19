@@ -142,6 +142,43 @@ namespace ModifiedArmy.Garrison.Supply
             return SupplyHomeSettlement?.Banner;
         }
 
+        /// <summary>
+        /// Uses the native caravan pack-animal icon without identifying this
+        /// party as a caravan to campaign trade and finance behaviors.
+        /// </summary>
+        public override void GetMountAndHarnessVisualIdsForPartyIcon(
+            PartyBase party,
+            out string mountStringId,
+            out string harnessStringId)
+        {
+            string cultureId =
+                party.MapFaction?.Culture?.StringId ?? string.Empty;
+
+            if (cultureId == "aserai" || cultureId == "khuzait")
+            {
+                mountStringId = "camel";
+                harnessStringId = party.Index % 2 == 0
+                    ? "camel_saddle_a"
+                    : "camel_saddle_b";
+                return;
+            }
+
+            mountStringId = "mule";
+
+            switch (party.Index % 3)
+            {
+                case 0:
+                    harnessStringId = "mule_load_a";
+                    break;
+                case 1:
+                    harnessStringId = "mule_load_b";
+                    break;
+                default:
+                    harnessStringId = "mule_load_c";
+                    break;
+            }
+        }
+
         public override void ClearCachedName()
         {
             _cachedName = null;

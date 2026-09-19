@@ -51,6 +51,14 @@
     <string id="ModifiedArmy_GarrisonFoodDeficit" text="粮食缺口" />
     <string id="ModifiedArmy_GarrisonLocalProductionAllocation" text="驻军粮仓分配" />
     <string id="ModifiedArmy_SupplyPartyName" text="{SETTLEMENT}的运粮队" />
+    <string id="ModifiedArmy_SupplyPartyGreeting" text="我们正在为{HOME_SETTLEMENT}运送补给." />
+    <string id="ModifiedArmy_SupplyPartyCarryOn" text="继续执行任务. 再会." />
+    <string id="ModifiedArmy_SupplyPartyDemandSupplies" text="交出你们的补给, 否则就去死!" />
+    <string id="ModifiedArmy_SupplyPartyRefuses" text="这些补给不属于你. 想拿走就先击败我们!" />
+    <string id="ModifiedArmy_SupplyPartyAttack" text="进攻!" />
+    <string id="ModifiedArmy_SupplyPartyCancelAttack" text="算了. 你们走吧." />
+    <string id="ModifiedArmy_SupplyPartyWarWarning" text="此行为可能引发战争." />
+    <string id="ModifiedArmy_SupplyPartyEscortLimit" text="征粮护卫队" />
     <string id="ModifiedArmy_GarrisonSettlementTypeValue" text="{LOCATION}{TYPE}" />
     <string id="ModifiedArmy_GarrisonBorder" text="边境" />
     <string id="ModifiedArmy_GarrisonInterior" text="腹地" />

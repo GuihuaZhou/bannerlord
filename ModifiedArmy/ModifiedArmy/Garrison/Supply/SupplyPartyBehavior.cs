@@ -17,7 +17,7 @@ namespace ModifiedArmy.Garrison.Supply
     /// Creates and controls temporary supply parties for fortifications whose
     /// military granaries cannot be restored by local sources alone.
     /// </summary>
-    public class SupplyPartyBehavior : CampaignBehaviorBase
+    public partial class SupplyPartyBehavior : CampaignBehaviorBase
     {
         public const int EscortSize = 50;
 
@@ -28,6 +28,8 @@ namespace ModifiedArmy.Garrison.Supply
         private const int EmergencySupplyDays = 15;
 
         private const int OutboundProvisionDays = 5;
+
+        private const int DestroyedPartyCooldownDays = 10;
 
         private Dictionary<Settlement, CampaignTime>
             _nextDispatchTimes =
@@ -47,6 +49,8 @@ namespace ModifiedArmy.Garrison.Supply
                 .AddNonSerializedListener(this, OnSettlementOwnerChanged);
             CampaignEvents.OnGameLoadFinishedEvent
                 .AddNonSerializedListener(this, OnGameLoadFinished);
+            CampaignEvents.OnSessionLaunchedEvent
+                .AddNonSerializedListener(this, OnSessionLaunched);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -159,18 +163,22 @@ namespace ModifiedArmy.Garrison.Supply
                     == SupplyPartyMissionState.TravelingToSource
                 && settlement == component.SourceSettlement)
             {
-                // Real purchasing and castle-granary transfer are added in the
-                // next batch. This first batch validates the complete route and
-                // save-safe party lifecycle.
+                SupplyAcquisitionResult acquisition =
+                    AcquireFoodAtSource(party, component, settlement);
                 component.BeginReturnJourney();
                 MoveToSettlement(party, component.HomeSettlement);
 
                 if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
                 {
                     ModLogger.Notice(
-                        $"[GarrisonLogistics] Supply party reached source | " +
+                        $"[GarrisonLogistics] Supply party loaded | " +
                         $"Home='{component.HomeSettlement.Name}' | " +
-                        $"Source='{settlement.Name}'");
+                        $"Source='{settlement.Name}' | " +
+                        $"Food={acquisition.FoodAcquired} | " +
+                        $"Cost={acquisition.GoldCost} | " +
+                        $"Mounts={acquisition.MountsPurchased} | " +
+                        $"MountCost={acquisition.MountGoldCost} | " +
+                        $"CargoFood={party.ItemRoster.TotalFood}");
                 }
 
                 return;
@@ -197,13 +205,18 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
-            SetDispatchCooldown(component.HomeSettlement, 3f);
+            // Losing the escort, animals, and cargo temporarily interrupts the
+            // home settlement's ability to organize another supply mission.
+            SetDispatchCooldown(
+                component.HomeSettlement,
+                DestroyedPartyCooldownDays);
 
             if (component.HomeSettlement?.OwnerClan == Clan.PlayerClan)
             {
                 ModLogger.Notice(
                     $"[GarrisonLogistics] Supply party destroyed | " +
-                    $"Home='{component.HomeSettlement.Name}'");
+                    $"Home='{component.HomeSettlement.Name}' | " +
+                    $"CooldownDays={DestroyedPartyCooldownDays}");
             }
         }
 
@@ -304,6 +317,9 @@ namespace ModifiedArmy.Garrison.Supply
             }
 
             MobileParty supplyParty = null;
+            PackAnimalPreparationResult packAnimals =
+                new PackAnimalPreparationResult();
+            int ridingMountsFromGranary = 0;
 
             try
             {
@@ -314,6 +330,14 @@ namespace ModifiedArmy.Garrison.Supply
                     escortRoster);
 
                 EnterSettlementAction.ApplyForParty(supplyParty, home);
+                packAnimals = PreparePackAnimals(
+                    garrison,
+                    supplyParty,
+                    home.OwnerClan?.Leader);
+                ridingMountsFromGranary =
+                    TransferRidingMountsFromGranary(
+                        garrison,
+                        supplyParty);
                 TransferOutboundProvisions(garrison, supplyParty);
                 MoveToSettlement(supplyParty, source.Settlement);
             }
@@ -351,6 +375,11 @@ namespace ModifiedArmy.Garrison.Supply
                     $"Home='{home.Name}' | " +
                     $"Source='{source.Settlement.Name}' | " +
                     $"Escort={EscortSize} | " +
+                    $"PackAnimals={supplyParty.ItemRoster.NumberOfPackAnimals} | " +
+                    $"FromGranary={packAnimals.FromGranary} | " +
+                    $"Purchased={packAnimals.Purchased} | " +
+                    $"AnimalCost={packAnimals.GoldCost} | " +
+                    $"MountsFromGranary={ridingMountsFromGranary} | " +
                     $"Requested={source.RequestedFood}");
             }
 
@@ -422,6 +451,9 @@ namespace ModifiedArmy.Garrison.Supply
 
             int returnedTroops = party.MemberRoster.TotalManCount;
             int returnedFood = party.ItemRoster.TotalFood;
+            int returnedPackAnimals =
+                party.ItemRoster.NumberOfPackAnimals;
+            int returnedMounts = party.ItemRoster.NumberOfMounts;
 
             RestoreTroops(party.MemberRoster, garrison.MemberRoster);
             TransferAllItems(party.ItemRoster, garrison.ItemRoster);
@@ -432,7 +464,10 @@ namespace ModifiedArmy.Garrison.Supply
                 ModLogger.Notice(
                     $"[GarrisonLogistics] Supply party returned | " +
                     $"Home='{component.HomeSettlement.Name}' | " +
-                    $"Escort={returnedTroops} | Food={returnedFood}");
+                    $"Escort={returnedTroops} | " +
+                    $"Food={returnedFood} | " +
+                    $"PackAnimals={returnedPackAnimals} | " +
+                    $"Mounts={returnedMounts}");
             }
 
             DestroyPartyAction.Apply(null, party);

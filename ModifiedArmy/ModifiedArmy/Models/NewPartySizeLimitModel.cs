@@ -1,5 +1,6 @@
 ﻿using Helpers;
 using ModifiedArmy.common;
+using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
@@ -18,6 +19,32 @@ namespace ModifiedArmy.Models
 {
     public class NewPartySizeLimitModel : DefaultPartySizeLimitModel
     {
+        /// <summary>
+        /// Supply escorts are intentionally created with fifty soldiers. Give
+        /// the custom party a matching legal size limit so the native speed
+        /// model does not treat sixty percent of the escort as over capacity.
+        /// All other party types continue to use the native calculation.
+        /// </summary>
+        public override ExplainedNumber GetPartyMemberSizeLimit(
+            PartyBase party,
+            bool includeDescriptions = false)
+        {
+            if (party?.MobileParty?.PartyComponent
+                is SupplyPartyComponent)
+            {
+                return new ExplainedNumber(
+                    SupplyPartyBehavior.EscortSize,
+                    includeDescriptions,
+                    new TextObject(
+                        "{=ModifiedArmy_SupplyPartyEscortLimit}" +
+                        "Supply escort"));
+            }
+
+            return base.GetPartyMemberSizeLimit(
+                party,
+                includeDescriptions);
+        }
+
         private void AddGarrisonOwnerPerkEffects(Settlement currentSettlement, ref ExplainedNumber result)
         {
             if (currentSettlement != null && currentSettlement.IsFortification)
