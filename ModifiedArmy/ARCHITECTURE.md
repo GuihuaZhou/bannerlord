@@ -157,7 +157,7 @@ BasicTroopGroup (per culture)
 
 ### 4.1 FiefPartyData（核心数据模型）
 
-**文件**：`Fief/Models/FiefPartyData.cs`（2252行，最大的文件）
+**文件**：`Fief/Models/PartyData/FiefPartyData.cs`、`FiefPartyReinforcement.cs`、`FiefPartyRecruitment.cs`
 
 #### 核心字段
 
@@ -245,7 +245,7 @@ BasicTroopGroup (per culture)
 
 ### 4.2 FiefTroopDetachment（分遣队）
 
-**文件**：`Fief/Models/FiefPartyData.cs`（内嵌类）
+**文件**：`Fief/Models/Data/FiefTroopDetachment.cs`
 
 | 字段 | 说明 |
 |------|------|
@@ -935,7 +935,7 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 2. **封邑兵忠诚度系统** — 封邑兵缺少行为约束
    - 建议在 `FiefPartyData` 中增加 `Loyalty` 字段
    - 低忠诚度 → 拒绝服役/逃兵/叛变
-   - 文件位置：`Fief/Models/FiefPartyData.cs`
+   - 文件位置：`Fief/Models/PartyData/FiefPartyData.cs`
 
 3. **Hero 差异化志愿兵** — 所有 Hero 的志愿兵来源相同
    - 建议根据 Hero 的技能/性格调整志愿兵质量和类型
@@ -956,7 +956,7 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
    - 文件位置：`Models/AiRecruitmentBehavior.cs`
 
 7. **封邑驻军防守** — 封邑兵可以部分留守定居点防守
-   - 文件位置：`Fief/Models/FiefPartyData.cs`
+   - 文件位置：`Fief/Models/PartyData/FiefPartyData.cs`
 
 ### 低优先级
 
@@ -974,7 +974,7 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 | 文件 | 行数 | 说明 |
 |------|------|------|
-| `Fief/Models/FiefPartyData.cs` | ~2252 | 最大的文件，封邑核心逻辑 |
+| `Fief/Models/PartyData/FiefPartyRecruitment.cs` | ~1000 | 封邑部队征召与归还逻辑 |
 | `Models/NewVolunteerModel.cs` | ~941 | 志愿兵系统 |
 | `Patch/DiplomaticBartersBehavior.cs` | ~180 | AI 外交补丁 |
 | `Models/NewPartyWageModel.cs` | ~280 | 工资系统（含注释的 GetTotalWage） |

@@ -25,7 +25,8 @@ ModifiedArmy/
 │   └── ModConfig.cs           — XML 配置模型（MinLogLevel 等）
 ├── Fief/                      — 封邑子系统
 │   ├── Models/
-│   │   ├── FiefPartyData.cs   — 核心数据模型（最大文件 ~2250 行）
+│   │   ├── Data/               — 存档数据类型（兵力统计、分遣队）
+│   │   ├── PartyData/          — FiefPartyData 核心、强化与征召分部类
 │   │   ├── FiefPartyTemplate.cs — XML 模板定义 + 管理器
 │   │   ├── FiefPartyManager.cs  — CampaignBehavior 管理器 + 存档定义
 │   │   ├── FiefMenuBehavior.cs  — 城镇/城堡菜单注入
@@ -110,7 +111,7 @@ ModifiedArmy/
 - **不要删除注释掉的代码**——它们是计划功能或历史参考，与项目 Roadmap 关联
 - **ARCHITECTURE.md 是权威参考**——包含完整的字段名、方法签名、常量值、XML 结构。做任何实现前先读它
 - **存档序列化**：`FiefPartyManager.cs` 中定义了存档序列化（基 ID 20251116），修改 FiefPartyData/FiefTroopDetachment 字段时需同步更新序列化定义
-- **FiefPartyData.cs 是最大文件**（~2250 行），包含核心数据模型 + 分遣队内嵌类，修改需谨慎
+- **FiefPartyData 使用 partial 分拆**：`PartyData/` 下分为核心、强化和征召逻辑，存档数据类位于 `Data/`
 - **游戏 DLL 路径**：引用 `D:\Steam\steamapps\common\Mount & Blade II Bannerlord\bin\Win64_Shipping_Client\` 下的 DLL
 - **XML 数据部署路径**：`D:\Steam\steamapps\common\Mount & Blade II Bannerlord\Modules\ModifiedArmy\ModuleData\`
 - **当前无自动化测试**——验证需在游戏内运行，修改后建议检查存档兼容性
