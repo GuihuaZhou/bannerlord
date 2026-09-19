@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.Models
 {
@@ -687,23 +688,28 @@ namespace ModifiedPolitics.Models
             switch (level)
             {
                 case WarPotentialLevel.VeryWeak:
-                    return "极其弱小";
+                    return Localize("{=ModifiedPolitics_WarPotentialVeryWeak}Very Weak");
 
                 case WarPotentialLevel.Weak:
-                    return "弱小";
+                    return Localize("{=ModifiedPolitics_WarPotentialWeak}Weak");
 
                 case WarPotentialLevel.Average:
-                    return "一般";
+                    return Localize("{=ModifiedPolitics_WarPotentialAverage}Average");
 
                 case WarPotentialLevel.Strong:
-                    return "强大";
+                    return Localize("{=ModifiedPolitics_WarPotentialStrong}Strong");
 
                 case WarPotentialLevel.VeryStrong:
-                    return "极其强大";
+                    return Localize("{=ModifiedPolitics_WarPotentialVeryStrong}Very Strong");
 
                 default:
-                    return "未知";
+                    return Localize("{=ModifiedPolitics_Unknown}Unknown");
             }
+        }
+
+        private static string Localize(string taggedText)
+        {
+            return new TextObject(taggedText).ToString();
         }
 
 

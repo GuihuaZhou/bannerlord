@@ -444,7 +444,7 @@
                                     HeightSizePolicy="CoverChildren"
                                     HorizontalAlignment="Left"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="战争潜力"
+                                    Text="@WarPotentialLabelText"
                                     Brush="Kingdom.TitleMedium.Text"
                                     Brush.FontSize="32"
                                     VerticalAlignment="Center"
@@ -482,7 +482,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="战争潜力"
+                                    Text="@WarPotentialLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="20"
                                     ClipContents="false" />
@@ -520,7 +520,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="军役兵力"
+                                    Text="@FiefTroopsLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -558,7 +558,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="驻军兵力"
+                                    Text="@GarrisonTroopsLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -596,7 +596,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="机动兵力"
+                                    Text="@FieldTroopsLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -635,7 +635,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="家族财富"
+                                    Text="@ClanWealthLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -673,7 +673,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="每日收入"
+                                    Text="@DailyIncomeLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -711,7 +711,7 @@
                                     HorizontalAlignment="Left"
                                     VerticalAlignment="Center"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="部队工资"
+                                    Text="@PartyWageLabelText"
                                     Brush="Kingdom.ParagraphSmall.Text"
                                     Brush.FontSize="18"
                                     ClipContents="false" />
@@ -759,7 +759,7 @@
                                     HeightSizePolicy="CoverChildren"
                                     HorizontalAlignment="Left"
                                     Brush.TextHorizontalAlignment="Left"
-                                    Text="战争倾向"
+                                    Text="@WarDispositionLabelText"
                                     Brush="Kingdom.TitleMedium.Text"
                                     Brush.FontSize="32"
                                     VerticalAlignment="Center"
@@ -781,56 +781,56 @@
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="战争倾向" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="20" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@WarDispositionLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="20" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@WarDispositionText" Brush="Kingdom.TitleMedium.Text" Brush.FontSize="23" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="32">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="人物特性" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@LeaderTraitsLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="100" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@WarDispositionTraitsText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="战争持续" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@WarDurationLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@WarDurationText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="每日回归" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@DailyReturnLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@DailyReturnAmountText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="31" MarginTop="4">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="今日战斗影响" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@TodayBattleInfluenceLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@TodayBattleInfluenceText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="今日领地影响" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@TodayTerritoryInfluenceLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@TodayTerritoryInfluenceText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="今日战争收益" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@TodayWarGainLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@TodayWarGainInfluenceText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="27">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="本周财富变化" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Left" Text="@WeeklyWealthChangeLabelText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                                 <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" Brush.TextHorizontalAlignment="Right" Text="@WeeklyWealthChangeText" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="18" ClipContents="false" />
                               </Children>
                             </Widget>
@@ -914,4 +914,3 @@
   </Children>
 
 </Widget>
-

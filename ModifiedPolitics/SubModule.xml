@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Module>
-  <Name value="内政优化" />
+  <Name value="ModifiedPolitics" />
   <Id value="ModifiedPolitics" />
   <Version value="v1.0.0" />
   <DefaultModule value="false" />
@@ -8,18 +8,12 @@
   <ModuleType value="Community" />
 
   <DependedModules>
-    <DependedModule Id="Native" DependentVersion="v1.3.2" Optional="false" />
-    <DependedModule Id="SandBoxCore" DependentVersion="v1.3.2" Optional="false" />
-    <DependedModule Id="Sandbox" DependentVersion="v1.3.2" Optional="false" />
-    <DependedModule Id="StoryMode" DependentVersion="v1.3.2" Optional="true" />
-    <DependedModule Id="Bannerlord.Harmony" Optional="false" />
-    <DependedModule Id="Bannerlord.UIExtenderEx" Optional="false" />
-    <DependedModule Id="ModifiedArmy" Optional="false" />
+    <DependedModule Id="ModifiedArmy" DependentVersion="v1.0.0" Optional="false" />
   </DependedModules>
 
   <SubModules>
     <SubModule>
-      <Name value="内政优化" />
+      <Name value="ModifiedPolitics" />
       <DLLName value="ModifiedPolitics.dll" />
       <SubModuleClassType value="ModifiedPolitics.Main" />
       <Tags>

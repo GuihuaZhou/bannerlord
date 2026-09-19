@@ -20,6 +20,9 @@ namespace ModifiedPolitics.UI.KingdomClan
         {
             _vm = vm;
 
+            RefreshWarPotentialLocalization();
+            RefreshWarDispositionLocalization();
+
             RefreshWarPotentialData();
             RefreshWarDispositionUiData();
         }

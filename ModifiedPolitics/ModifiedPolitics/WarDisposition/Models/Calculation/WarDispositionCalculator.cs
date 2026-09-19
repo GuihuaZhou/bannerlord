@@ -2,6 +2,7 @@ using System;
 using ModifiedPolitics.Models.WarDisposition.Events;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.Models.WarDisposition.Calculation
 {
@@ -108,18 +109,23 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
             switch (level)
             {
                 case WarDispositionLevel.StronglyFavorPeace:
-                    return "强烈停战";
+                    return Localize("{=ModifiedPolitics_StronglyFavorPeace}Strongly Favor Peace");
                 case WarDispositionLevel.FavorPeace:
-                    return "倾向停战";
+                    return Localize("{=ModifiedPolitics_FavorPeace}Favor Peace");
                 case WarDispositionLevel.Neutral:
-                    return "中立";
+                    return Localize("{=ModifiedPolitics_Neutral}Neutral");
                 case WarDispositionLevel.FavorWar:
-                    return "倾向战争";
+                    return Localize("{=ModifiedPolitics_FavorWar}Favor War");
                 case WarDispositionLevel.StronglyFavorWar:
-                    return "强烈主战";
+                    return Localize("{=ModifiedPolitics_StronglyFavorWar}Strongly Favor War");
                 default:
-                    return "中立";
+                    return Localize("{=ModifiedPolitics_Neutral}Neutral");
             }
+        }
+
+        private static string Localize(string taggedText)
+        {
+            return new TextObject(taggedText).ToString();
         }
 
         private static float CalculateTraitReaction(

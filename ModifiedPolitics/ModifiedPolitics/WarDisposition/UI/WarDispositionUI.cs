@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.UI.KingdomClan
 {
@@ -19,6 +20,15 @@ namespace ModifiedPolitics.UI.KingdomClan
         private string _todayTerritoryInfluenceText;
         private string _todayWarGainInfluenceText;
         private string _weeklyWealthChangeText;
+
+        private string _warDispositionLabelText;
+        private string _leaderTraitsLabelText;
+        private string _warDurationLabelText;
+        private string _dailyReturnLabelText;
+        private string _todayBattleInfluenceLabelText;
+        private string _todayTerritoryInfluenceLabelText;
+        private string _todayWarGainLabelText;
+        private string _weeklyWealthChangeLabelText;
 
         [DataSourceProperty]
         public string WarDispositionText
@@ -76,6 +86,113 @@ namespace ModifiedPolitics.UI.KingdomClan
             set => SetWarDispositionProperty(ref _weeklyWealthChangeText, value, nameof(WeeklyWealthChangeText));
         }
 
+        [DataSourceProperty]
+        public string WarDispositionLabelText
+        {
+            get => _warDispositionLabelText;
+            set => SetWarDispositionProperty(
+                ref _warDispositionLabelText,
+                value,
+                nameof(WarDispositionLabelText));
+        }
+
+        [DataSourceProperty]
+        public string LeaderTraitsLabelText
+        {
+            get => _leaderTraitsLabelText;
+            set => SetWarDispositionProperty(
+                ref _leaderTraitsLabelText,
+                value,
+                nameof(LeaderTraitsLabelText));
+        }
+
+        [DataSourceProperty]
+        public string WarDurationLabelText
+        {
+            get => _warDurationLabelText;
+            set => SetWarDispositionProperty(
+                ref _warDurationLabelText,
+                value,
+                nameof(WarDurationLabelText));
+        }
+
+        [DataSourceProperty]
+        public string DailyReturnLabelText
+        {
+            get => _dailyReturnLabelText;
+            set => SetWarDispositionProperty(
+                ref _dailyReturnLabelText,
+                value,
+                nameof(DailyReturnLabelText));
+        }
+
+        [DataSourceProperty]
+        public string TodayBattleInfluenceLabelText
+        {
+            get => _todayBattleInfluenceLabelText;
+            set => SetWarDispositionProperty(
+                ref _todayBattleInfluenceLabelText,
+                value,
+                nameof(TodayBattleInfluenceLabelText));
+        }
+
+        [DataSourceProperty]
+        public string TodayTerritoryInfluenceLabelText
+        {
+            get => _todayTerritoryInfluenceLabelText;
+            set => SetWarDispositionProperty(
+                ref _todayTerritoryInfluenceLabelText,
+                value,
+                nameof(TodayTerritoryInfluenceLabelText));
+        }
+
+        [DataSourceProperty]
+        public string TodayWarGainLabelText
+        {
+            get => _todayWarGainLabelText;
+            set => SetWarDispositionProperty(
+                ref _todayWarGainLabelText,
+                value,
+                nameof(TodayWarGainLabelText));
+        }
+
+        [DataSourceProperty]
+        public string WeeklyWealthChangeLabelText
+        {
+            get => _weeklyWealthChangeLabelText;
+            set => SetWarDispositionProperty(
+                ref _weeklyWealthChangeLabelText,
+                value,
+                nameof(WeeklyWealthChangeLabelText));
+        }
+
+        private void RefreshWarDispositionLocalization()
+        {
+            WarDispositionLabelText =
+                new TextObject("{=ModifiedPolitics_WarDisposition}War Disposition").ToString();
+
+            LeaderTraitsLabelText =
+                new TextObject("{=ModifiedPolitics_LeaderTraits}Leader Traits").ToString();
+
+            WarDurationLabelText =
+                new TextObject("{=ModifiedPolitics_WarDuration}War Duration").ToString();
+
+            DailyReturnLabelText =
+                new TextObject("{=ModifiedPolitics_DailyReturn}Daily Return").ToString();
+
+            TodayBattleInfluenceLabelText =
+                new TextObject("{=ModifiedPolitics_TodayBattleInfluence}Today's Battle Influence").ToString();
+
+            TodayTerritoryInfluenceLabelText =
+                new TextObject("{=ModifiedPolitics_TodayTerritoryInfluence}Today's Territory Influence").ToString();
+
+            TodayWarGainLabelText =
+                new TextObject("{=ModifiedPolitics_TodayWarGain}Today's War Gain").ToString();
+
+            WeeklyWealthChangeLabelText =
+                new TextObject("{=ModifiedPolitics_WeeklyWealthChange}Weekly Wealth Change").ToString();
+        }
+
         private void SetWarDispositionProperty(
             ref string field,
             string value,
@@ -97,9 +214,9 @@ namespace ModifiedPolitics.UI.KingdomClan
             // 小家族不参与王国政治态度计算, 也不为其创建持久化数据.
             if (clan?.IsMinorFaction == true && clan != Clan.PlayerClan)
             {
-                WarDispositionText = "不适用";
-                WarDispositionTraitsText = "无";
-                WarDurationText = "0天";
+                WarDispositionText = Localize("{=ModifiedPolitics_NotApplicable}Not Applicable");
+                WarDispositionTraitsText = Localize("{=ModifiedPolitics_None}None");
+                WarDurationText = FormatDays(0);
                 DailyReturnAmountText = "0";
                 TodayBattleInfluenceText = "0";
                 TodayTerritoryInfluenceText = "0";
@@ -121,15 +238,15 @@ namespace ModifiedPolitics.UI.KingdomClan
             float dailyReturnAmount = WarDispositionDailyReturnCalculator
                 .GetReturnAmount(warDuration);
 
-            WarDurationText = ((int)warDuration).ToString(
-                CultureInfo.InvariantCulture) + "天";
+            WarDurationText = FormatDays((int)warDuration);
             DailyReturnAmountText = dailyReturnAmount.ToString(
                 "0.##",
                 CultureInfo.InvariantCulture);
 
             if (data == null)
             {
-                WarDispositionText = "中立(0)";
+                WarDispositionText =
+                    Localize("{=ModifiedPolitics_Neutral}Neutral") + "(0)";
                 TodayBattleInfluenceText = "0";
                 TodayTerritoryInfluenceText = "0";
                 TodayWarGainInfluenceText = "0";
@@ -184,20 +301,33 @@ namespace ModifiedPolitics.UI.KingdomClan
         {
             if (leader == null)
             {
-                return "无";
+                return Localize("{=ModifiedPolitics_None}None");
             }
 
             List<string> traits = new List<string>();
 
-            AddTraitText(traits, "勇武", leader.GetTraitLevel(DefaultTraits.Valor));
-            AddTraitText(traits, "仁慈", leader.GetTraitLevel(DefaultTraits.Mercy));
-            AddTraitText(traits, "荣誉", leader.GetTraitLevel(DefaultTraits.Honor));
-            AddTraitText(traits, "慷慨", leader.GetTraitLevel(DefaultTraits.Generosity));
-            AddTraitText(traits, "谋算", leader.GetTraitLevel(DefaultTraits.Calculating));
+            AddTraitText(traits, Localize("{=ModifiedPolitics_TraitValor}Valor"), leader.GetTraitLevel(DefaultTraits.Valor));
+            AddTraitText(traits, Localize("{=ModifiedPolitics_TraitMercy}Mercy"), leader.GetTraitLevel(DefaultTraits.Mercy));
+            AddTraitText(traits, Localize("{=ModifiedPolitics_TraitHonor}Honor"), leader.GetTraitLevel(DefaultTraits.Honor));
+            AddTraitText(traits, Localize("{=ModifiedPolitics_TraitGenerosity}Generosity"), leader.GetTraitLevel(DefaultTraits.Generosity));
+            AddTraitText(traits, Localize("{=ModifiedPolitics_TraitCalculating}Calculating"), leader.GetTraitLevel(DefaultTraits.Calculating));
 
             return traits.Count == 0
-                ? "无"
+                ? Localize("{=ModifiedPolitics_None}None")
                 : string.Join(" / ", traits);
+        }
+
+        private static string FormatDays(int days)
+        {
+            TextObject text = new TextObject(
+                "{=ModifiedPolitics_Days}{DAYS} days");
+            text.SetTextVariable("DAYS", days);
+            return text.ToString();
+        }
+
+        private static string Localize(string taggedText)
+        {
+            return new TextObject(taggedText).ToString();
         }
 
         private static void AddTraitText(

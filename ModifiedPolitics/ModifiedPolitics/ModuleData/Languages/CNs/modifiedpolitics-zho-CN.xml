@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="简体中文" />
+  </tags>
+  <strings>
+    <!-- Clan panel labels. -->
+    <string id="ModifiedPolitics_WarPotential" text="战争潜力" />
+    <string id="ModifiedPolitics_FiefTroops" text="军役兵力" />
+    <string id="ModifiedPolitics_GarrisonTroops" text="驻军兵力" />
+    <string id="ModifiedPolitics_FieldTroops" text="机动兵力" />
+    <string id="ModifiedPolitics_ClanWealth" text="家族财富" />
+    <string id="ModifiedPolitics_DailyIncome" text="每日收入" />
+    <string id="ModifiedPolitics_PartyWage" text="部队工资" />
+    <string id="ModifiedPolitics_WarDisposition" text="战争倾向" />
+    <string id="ModifiedPolitics_LeaderTraits" text="人物特性" />
+    <string id="ModifiedPolitics_WarDuration" text="战争持续" />
+    <string id="ModifiedPolitics_DailyReturn" text="每日回归" />
+    <string id="ModifiedPolitics_TodayBattleInfluence" text="今日战斗影响" />
+    <string id="ModifiedPolitics_TodayTerritoryInfluence" text="今日领地影响" />
+    <string id="ModifiedPolitics_TodayWarGain" text="今日战争收益" />
+    <string id="ModifiedPolitics_WeeklyWealthChange" text="本周财富变化" />
+
+    <!-- Dynamic values displayed by the clan panel. -->
+    <string id="ModifiedPolitics_NotApplicable" text="不适用" />
+    <string id="ModifiedPolitics_None" text="无" />
+    <string id="ModifiedPolitics_Unknown" text="未知" />
+    <string id="ModifiedPolitics_Days" text="{DAYS}天" />
+    <string id="ModifiedPolitics_WarPotentialVeryWeak" text="极其弱小" />
+    <string id="ModifiedPolitics_WarPotentialWeak" text="弱小" />
+    <string id="ModifiedPolitics_WarPotentialAverage" text="一般" />
+    <string id="ModifiedPolitics_WarPotentialStrong" text="强大" />
+    <string id="ModifiedPolitics_WarPotentialVeryStrong" text="极其强大" />
+    <string id="ModifiedPolitics_StronglyFavorPeace" text="强烈停战" />
+    <string id="ModifiedPolitics_FavorPeace" text="倾向停战" />
+    <string id="ModifiedPolitics_Neutral" text="中立" />
+    <string id="ModifiedPolitics_FavorWar" text="倾向战争" />
+    <string id="ModifiedPolitics_StronglyFavorWar" text="强烈主战" />
+    <string id="ModifiedPolitics_TraitValor" text="勇武" />
+    <string id="ModifiedPolitics_TraitMercy" text="仁慈" />
+    <string id="ModifiedPolitics_TraitHonor" text="荣誉" />
+    <string id="ModifiedPolitics_TraitGenerosity" text="慷慨" />
+    <string id="ModifiedPolitics_TraitCalculating" text="谋算" />
+  </strings>
+</base>

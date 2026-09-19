@@ -2,6 +2,7 @@ using ModifiedPolitics.Models;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.UI.KingdomClan
 {
@@ -15,6 +16,14 @@ namespace ModifiedPolitics.UI.KingdomClan
         private int _clanWealth;
         private int _dailyIncome;
         private int _partyDailyWage;
+
+        private string _warPotentialLabelText;
+        private string _fiefTroopsLabelText;
+        private string _garrisonTroopsLabelText;
+        private string _fieldTroopsLabelText;
+        private string _clanWealthLabelText;
+        private string _dailyIncomeLabelText;
+        private string _partyWageLabelText;
 
         [DataSourceProperty]
         public int WarPotential
@@ -72,6 +81,100 @@ namespace ModifiedPolitics.UI.KingdomClan
             set => SetWarPotentialProperty(ref _partyDailyWage, value, nameof(PartyDailyWage));
         }
 
+        [DataSourceProperty]
+        public string WarPotentialLabelText
+        {
+            get => _warPotentialLabelText;
+            set => SetWarPotentialProperty(
+                ref _warPotentialLabelText,
+                value,
+                nameof(WarPotentialLabelText));
+        }
+
+        [DataSourceProperty]
+        public string FiefTroopsLabelText
+        {
+            get => _fiefTroopsLabelText;
+            set => SetWarPotentialProperty(
+                ref _fiefTroopsLabelText,
+                value,
+                nameof(FiefTroopsLabelText));
+        }
+
+        [DataSourceProperty]
+        public string GarrisonTroopsLabelText
+        {
+            get => _garrisonTroopsLabelText;
+            set => SetWarPotentialProperty(
+                ref _garrisonTroopsLabelText,
+                value,
+                nameof(GarrisonTroopsLabelText));
+        }
+
+        [DataSourceProperty]
+        public string FieldTroopsLabelText
+        {
+            get => _fieldTroopsLabelText;
+            set => SetWarPotentialProperty(
+                ref _fieldTroopsLabelText,
+                value,
+                nameof(FieldTroopsLabelText));
+        }
+
+        [DataSourceProperty]
+        public string ClanWealthLabelText
+        {
+            get => _clanWealthLabelText;
+            set => SetWarPotentialProperty(
+                ref _clanWealthLabelText,
+                value,
+                nameof(ClanWealthLabelText));
+        }
+
+        [DataSourceProperty]
+        public string DailyIncomeLabelText
+        {
+            get => _dailyIncomeLabelText;
+            set => SetWarPotentialProperty(
+                ref _dailyIncomeLabelText,
+                value,
+                nameof(DailyIncomeLabelText));
+        }
+
+        [DataSourceProperty]
+        public string PartyWageLabelText
+        {
+            get => _partyWageLabelText;
+            set => SetWarPotentialProperty(
+                ref _partyWageLabelText,
+                value,
+                nameof(PartyWageLabelText));
+        }
+
+        private void RefreshWarPotentialLocalization()
+        {
+            WarPotentialLabelText =
+                new TextObject("{=ModifiedPolitics_WarPotential}War Potential").ToString();
+
+            FiefTroopsLabelText =
+                new TextObject("{=ModifiedPolitics_FiefTroops}Fief Troops").ToString();
+
+            GarrisonTroopsLabelText =
+                new TextObject("{=ModifiedPolitics_GarrisonTroops}Garrison Troops").ToString();
+
+            FieldTroopsLabelText =
+                new TextObject("{=ModifiedPolitics_FieldTroops}Field Troops").ToString();
+
+            ClanWealthLabelText =
+                new TextObject("{=ModifiedPolitics_ClanWealth}Clan Wealth").ToString();
+
+            DailyIncomeLabelText =
+                new TextObject("{=ModifiedPolitics_DailyIncome}Daily Income").ToString();
+
+            PartyWageLabelText =
+                new TextObject("{=ModifiedPolitics_PartyWage}Party Wage").ToString();
+        }
+
         private void SetWarPotentialProperty(
             ref int field,
             int value,
@@ -115,7 +218,8 @@ namespace ModifiedPolitics.UI.KingdomClan
             if (clan.IsMinorFaction && clan != Clan.PlayerClan)
             {
                 ResetWarPotentialValues();
-                WarPotentialText = "不适用";
+                WarPotentialText = new TextObject(
+                    "{=ModifiedPolitics_NotApplicable}Not Applicable").ToString();
                 return;
             }
 
