@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="简体中文" />
+  </tags>
+  <strings>
+    <!-- Fief notifications and descriptions. -->
+    <string id="FiefTroopsReady" text="{SETTLEMENT_NAME}的封建部队已经就绪!" />
+    <string id="FiefTroopsServiceEnding" text="来自{SETTLEMENT_NAME}的封建部队的服役时间即将到期!" />
+    <string id="Fief_Intro_Line_Empire" text="这里是帝国的军区." />
+    <string id="Fief_Intro_Line_Vlandia" text="这里是瓦兰迪亚的采邑." />
+    <string id="Fief_Intro_Line_Aserai" text="这里是阿塞莱的伊克塔." />
+    <string id="Fief_Intro_Line_Khuzait" text="这里是库塞特的兀鲁思." />
+    <string id="Fief_Intro_Line_Sturgia" text="这里是斯特吉亚的王公领地." />
+    <string id="Fief_Intro_Line_Battania" text="这里是巴丹尼亚的部族领地." />
+    <string id="Fief_Intro_Line_Northern" text="这里是诺德的首领领地." />
+    <string id="Fief_Intro_Line_Default" text="这里是封邑." />
+    <string id="Fief_Desc_Empire" text="帝国土地肥沃, 物产富饶, 但帝国人武备松弛, 依赖雇佣军来维持防务." />
+    <string id="Fief_Desc_Vlandia" text="瓦兰迪亚人不仅拥有大陆最精锐的重装骑士, 还训练出最致命的弩兵部队." />
+    <string id="Fief_Desc_Aserai" text="绿洲滋养着这片沙漠之地, 阿塞莱人注重商业与律法, 其精锐的马穆鲁克士兵以纪律与勇猛闻名于世." />
+    <string id="Fief_Desc_Khuzait" text="虽然部分库塞特人已开始定居并组建步兵, 但他们仍是大陆上最令人畏惧的骑射手民族." />
+    <string id="Fief_Desc_Sturgia" text="斯特吉亚的王公们依靠亲卫队与征召民兵, 守卫广袤的森林, 河流与边境要塞." />
+    <string id="Fief_Desc_Battania" text="山高林密的巴丹尼亚孕育了大陆最强的贵族弓箭手, 他们隐匿于雾霭之中, 箭无虚发." />
+    <string id="Fief_Desc_Northern" text="峡湾与长船是诺德人的生命线, 他们的战士以战斧与盾墙横扫海岸, 无惧风浪与死亡." />
+    <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
+    <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵, 已有 {RECRUITED} 名士兵随你出征, 另有 {WAITCYCLE} 名士兵正在返回自己的土地, 每周最多可补充 {WEEKLY_REINFORCEMENT} 名士兵.{NEWLINE}{NEWLINE}当前部队构成:{NEWLINE}- 扈从: {RETINUE_COUNT}/{RETINUE_MAX}{NEWLINE}- 军士: {SERGEANT_COUNT}/{SERGEANT_MAX}{NEWLINE}- 水兵: {MARINE_COUNT}/{MARINE_MAX}{NEWLINE}- 军事奴隶: {SLAVE_COUNT}/{SLAVE_MAX}{NEWLINE}- 民兵: {MILITIA_COUNT}/{MILITIA_MAX}" />
+    <string id="ModifiedArmy_FiefMenu_Entry" text="进入封邑" />
+    <string id="ModifiedArmy_FiefMenu_Recruit" text="征召封邑军队" />
+    <string id="ModifiedArmy_FiefMenu_Disband" text="解散封邑军队" />
+    <string id="ModifiedArmy_FiefMenu_RecruitPartial" text="征召部分军队" />
+    <string id="ModifiedArmy_FiefMenu_DisbandPartial" text="解散部分军队" />
+    <string id="ModifiedArmy_FiefMenu_Return" text="返回" />
+    <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
+
+    <!-- Garrison and wage UI. -->
+    <string id="ModifiedArmyWarPartyWage" text="战时工资" />
+    <string id="ModifiedArmy_ViewMilitaryGranary" text="查看粮仓" />
+    <string id="ModifiedArmy_GarrisonWageLimit" text="工资上限" />
+    <string id="ModifiedArmy_GarrisonSettlementType" text="据点类型" />
+    <string id="ModifiedArmy_GarrisonMaximumTroops" text="最大人数" />
+    <string id="ModifiedArmy_GarrisonAverageWage" text="平均工资" />
+    <string id="ModifiedArmy_GarrisonLeaderWealth" text="领袖财富" />
+    <string id="ModifiedArmy_GarrisonWealthLevel" text="财富等级" />
+    <string id="ModifiedArmy_GarrisonCurrentWage" text="当前工资" />
+    <string id="ModifiedArmy_GarrisonSettlementTypeValue" text="{LOCATION}{TYPE}" />
+    <string id="ModifiedArmy_GarrisonBorder" text="边境" />
+    <string id="ModifiedArmy_GarrisonInterior" text="腹地" />
+    <string id="ModifiedArmy_GarrisonCastle" text="城堡" />
+    <string id="ModifiedArmy_GarrisonTown" text="城镇" />
+
+    <!-- MCM UI. -->
+    <string id="MA_Fief_Group_Advanced" text="高级设置" />
+    <string id="MA_Fief_MinLogLevel" text="日志等级" />
+    <string id="MA_Prisoner_Group" text="囚犯逃逸" />
+    <string id="MA_Prisoner_EscapeChance_PlayerSettlement" text="玩家领地内囚犯逃逸概率" />
+    <string id="MA_Prisoner_EscapeChance_PlayerSettlement_Desc" text="被关押在玩家拥有的城镇或城堡中的囚犯, 每日尝试逃逸的基础概率. 设为 0 可完全禁止逃逸." />
+    <string id="MA_RecruitmentCost_Group" text="招募成本" />
+    <string id="MA_CastleProsperityCostPerTier" text="城堡: 每级兵种消耗的繁荣度" />
+    <string id="MA_CastleProsperityCostPerTier_Desc" text="从城堡招募士兵时, 每提升一级兵种等级所消耗的繁荣度." />
+    <string id="MA_TownProsperityCostPerTier" text="城镇: 每级兵种消耗的繁荣度" />
+    <string id="MA_TownProsperityCostPerTier_Desc" text="从城镇招募士兵时, 每提升一级兵种等级所消耗的繁荣度." />
+    <string id="MA_VillageHearthCostPer" text="每名士兵消耗户数" />
+    <string id="MA_VillageHearthCostPer_Desc" text="从村庄征召民兵时, 每招募一名士兵所消耗的村庄户数." />
+    <string id="MA_ReinforcementThreshold_Group" text="补员效率要求" />
+    <string id="MA_CastleMaxReinforcementProsperityThreshold" text="城堡: 最大补员效率所需繁荣度" />
+    <string id="MA_CastleMaxReinforcementProsperityThreshold_Desc" text="城堡达到每周最大补员效率所需的繁荣度." />
+    <string id="MA_TownMaxReinforcementProsperityThreshold" text="城镇: 最大补员效率所需繁荣度" />
+    <string id="MA_TownMaxReinforcementProsperityThreshold_Desc" text="城镇达到每周最大补员效率所需的繁荣度." />
+    <string id="MA_VillageMaxReinforcementHearthThreshold" text="村庄: 最大补员效率所需户数" />
+    <string id="MA_VillageMaxReinforcementHearthThreshold_Desc" text="每个附属村庄达到最大补员贡献所需的户数." />
+    <string id="MA_CastleMinProsperityThreshold" text="城堡: 补员所需最低繁荣度" />
+    <string id="MA_CastleMinProsperityThreshold_Desc" text="城堡必须达到的最低繁荣度才能开始补员." />
+    <string id="MA_TownMinProsperityThreshold" text="城镇: 补员所需最低繁荣度" />
+    <string id="MA_TownMinProsperityThreshold_Desc" text="城镇必须达到的最低繁荣度才能开始补员." />
+    <string id="MA_VillageMinHearthThreshold" text="村庄: 补员所需最低户数" />
+    <string id="MA_VillageMinHearthThreshold_Desc" text="附属村庄必须达到的最低户数才能计入补员效率计算." />
+    <string id="MA_ProsperityWeight" text="繁荣度权重" />
+    <string id="MA_ProsperityWeight_Desc" text="繁荣度在总补员倍率中的占比." />
+    <string id="MA_HearthsWeight" text="村庄户数权重" />
+    <string id="MA_HearthsWeight_Desc" text="村庄户数在总补员倍率中的占比." />
+  </strings>
+</base>

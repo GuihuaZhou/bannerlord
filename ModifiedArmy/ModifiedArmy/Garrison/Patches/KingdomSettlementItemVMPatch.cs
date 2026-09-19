@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Settlements;
 using TaleWorlds.Core.ViewModelCollection.Information;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -40,9 +41,26 @@ namespace ModifiedArmy.Garrison.Patches
             int currentGarrisonWage =
                 __instance.Settlement.Town.GarrisonParty?.TotalWage ?? 0;
 
-            string settlementType =
-                $"{(isBorder ? "边境" : "腹地")}" +
-                $"{(__instance.Settlement.IsCastle ? "城堡" : "城镇")}";
+            TextObject settlementTypeText =
+                new TextObject(
+                    "{=ModifiedArmy_GarrisonSettlementTypeValue}" +
+                    "{LOCATION} {TYPE}");
+
+            settlementTypeText.SetTextVariable(
+                "LOCATION",
+                new TextObject(
+                    isBorder
+                        ? "{=ModifiedArmy_GarrisonBorder}Border"
+                        : "{=ModifiedArmy_GarrisonInterior}Interior"));
+
+            settlementTypeText.SetTextVariable(
+                "TYPE",
+                new TextObject(
+                    __instance.Settlement.IsCastle
+                        ? "{=ModifiedArmy_GarrisonCastle}Castle"
+                        : "{=ModifiedArmy_GarrisonTown}Town"));
+
+            string settlementType = settlementTypeText.ToString();
 
             string wealthLevel =
                 CampaignUIHelper.GetClanWealthStatusText(
@@ -56,43 +74,50 @@ namespace ModifiedArmy.Garrison.Patches
                     () => new List<TooltipProperty>
                     {
                         new TooltipProperty(
-                            "工资上限",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonWageLimit}Wage Limit"),
                             wageLimit.ToString(),
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.Title),
                         new TooltipProperty(
-                            "据点类型",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonSettlementType}Settlement Type"),
                             settlementType,
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.None),
                         new TooltipProperty(
-                            "预期人数",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonMaximumTroops}Maximum Troops"),
                             desiredSize.ToString(),
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.None),
                         new TooltipProperty(
-                            "平均工资",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonAverageWage}Average Wage"),
                             expectedAverageWage.ToString("F2"),
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.None),
                         new TooltipProperty(
-                            "领袖财富",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonLeaderWealth}Leader Wealth"),
                             leaderWealth.ToString(),
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.None),
                         new TooltipProperty(
-                            "财富等级",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonWealthLevel}Wealth Level"),
                             wealthLevel,
                             0,
                             false,
                             TooltipProperty.TooltipPropertyFlags.None),
                         new TooltipProperty(
-                            "当前工资",
+                            GetLocalizedText(
+                                "{=ModifiedArmy_GarrisonCurrentWage}Current Wage"),
                             currentGarrisonWage.ToString(),
                             0,
                             false,
@@ -101,12 +126,18 @@ namespace ModifiedArmy.Garrison.Patches
 
             __instance.ItemProperties.Add(
                 new SelectableFiefItemPropertyVM(
-                    "工资上限",
+                    GetLocalizedText(
+                        "{=ModifiedArmy_GarrisonWageLimit}Wage Limit"),
                     wageLimit.ToString(),
                     0,
                     SelectableItemPropertyVM.PropertyType.Garrison,
                     hint,
                     false));
+        }
+
+        private static string GetLocalizedText(string taggedText)
+        {
+            return new TextObject(taggedText).ToString();
         }
     }
 }
