@@ -1,5 +1,6 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using ModifiedArmy.ArmyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
@@ -64,9 +65,13 @@ namespace ModifiedArmy.Models.Fief
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
             int remainSize = partySizeLimit - currentMembers;
+            float remainingDailyWageBudget =
+                AiRecruitmentFinancialModel
+                    .GetAvailableAdditionalDailyWage(targetParty);
 
             // 目标 party 没有空间，则停止招募
-            if (remainSize <= 0)
+            if (remainSize <= 0
+                || remainingDailyWageBudget <= 0f)
                 return 0;
 
             if (_soldierTypeWeights == null || _totalWeight <= 0)
@@ -129,6 +134,21 @@ namespace ModifiedArmy.Models.Fief
                         count,
                         tmpSoldierTypeSize[type]);
 
+                float unitDailyWage =
+                    AiRecruitmentFinancialModel
+                        .EstimateUnitDailyWage(
+                            targetParty,
+                            troop);
+
+                if (unitDailyWage > 0f)
+                {
+                    taken = Math.Min(
+                        taken,
+                        (int)Math.Floor(
+                            remainingDailyWageBudget
+                            / unitDailyWage));
+                }
+
                 if (taken > 0)
                 {
                     // 从封邑 party 移除士兵
@@ -160,6 +180,11 @@ namespace ModifiedArmy.Models.Fief
                             tmpSoldierTypeSize[type] - taken);
 
                     tmpRecruitSoldierTypeSize[type] += taken;
+
+                    remainingDailyWageBudget = Math.Max(
+                        0f,
+                        remainingDailyWageBudget
+                        - taken * unitDailyWage);
 
                     hearthCost +=
                         taken * tmpHearthCostPerTroop;

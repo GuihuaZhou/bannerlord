@@ -54,4 +54,17 @@
     <!-- FiefPartyData.cs: 招募封邑部队 -->
     <string id="str_modifiedarmy_fief_recruit_to_party"
         text="{=FiefPartyData_RecruitTroopsToParty_0}[ModifiedArmy] {PARTY_NAME}从{SETTLEMENT_NAME}招募了{RETINUE}名扈从, {SERGEANT}名军士, {MARINE}名水兵, {SLAVE}名军事奴隶, {MILITIA}名民兵, 消耗{PROSPERITY_COST}点繁荣度, 消耗附属村庄{HEARTH_COST}点户数" />
+
+    <!-- Army finance: mobile-party wage limit diagnostics. -->
+    <string id="str_modifiedarmy_party_wage_limit_evaluated"
+        text="{=ModifiedArmy_PartyWageLimitEvaluated}[ArmyFinance] Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | WageLimit={WAGE_LIMIT} | LeaderGold={LEADER_GOLD} | State={WAR_STATE}" />
+
+    <string id="str_modifiedarmy_party_wage_limit_exceeded"
+        text="{=ModifiedArmy_PartyWageLimitExceeded}[ArmyFinance] Wage limit exceeded | Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | WageLimit={WAGE_LIMIT} | LeaderGold={LEADER_GOLD} | State={WAR_STATE}" />
+
+    <string id="str_modifiedarmy_party_wage_state_war"
+        text="{=ModifiedArmy_PartyWageStateWar}War" />
+
+    <string id="str_modifiedarmy_party_wage_state_peace"
+        text="{=ModifiedArmy_PartyWageStatePeace}Peace" />
 </strings>

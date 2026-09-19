@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using Helpers;
+using ModifiedArmy.ArmyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
@@ -313,8 +314,9 @@ namespace ModifiedArmy.Patch
             int available = fiefManager.GetAvailableTroopCount(settlement);
             if (available <= 0) return false;
 
-            fiefManager.RecruitFiefTroopsFromSettlement(settlement, party);
-            return true;
+            return fiefManager.RecruitFiefTroopsFromSettlement(
+                settlement,
+                party) > 0;
         }
 
         // ==========================================
@@ -366,7 +368,12 @@ namespace ModifiedArmy.Patch
 									if (num6 > num7 - 0.1f)
 									{
 										CharacterObject characterObject = hero.VolunteerTypes[num4];
-										if (characterObject != null && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber && mobileParty.GetAvailableWageBudget() >= Campaign.Current.Models.PartyWageModel.GetCharacterWage(characterObject))
+                                    if (characterObject != null
+                                        && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber
+                                        && AiRecruitmentFinancialModel.GetAffordableTroopCount(
+                                            mobileParty,
+                                            characterObject,
+                                            1) >= 1)
 										{
 											GetRecruitVolunteerFromIndividual(instance, mobileParty, characterObject, hero, num4);
                                             recruitedCount++;
@@ -425,7 +432,6 @@ namespace ModifiedArmy.Patch
 
             int recruited = 0;
             int maxAvailable = mercenaryData.Number;
-            int wagePerTroop = Campaign.Current.Models.PartyWageModel.GetCharacterWage(troopType);
 
             // 对每个可用雇佣兵掷骰子
             for (int j = 0; j < maxAvailable; j++)
@@ -441,7 +447,11 @@ namespace ModifiedArmy.Patch
             ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前空间约束后人数: {recruited}");
             recruited = cost <= 0 ? recruited : MathF.Min(party.PartyTradeGold / cost, recruited);
             ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前金钱约束后人数: {recruited}");
-            recruited = MathF.Min(recruited, party.GetAvailableWageBudget() / wagePerTroop);
+            recruited = AiRecruitmentFinancialModel
+                .GetAffordableTroopCount(
+                    party,
+                    troopType,
+                    recruited);
             ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前工资预算约束后人数: {recruited}");
 
             if (recruited <= 0) return false;

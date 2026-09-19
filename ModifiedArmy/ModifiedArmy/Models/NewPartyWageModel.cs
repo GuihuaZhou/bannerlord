@@ -34,7 +34,12 @@ namespace ModifiedArmy.Models
             (Tier4TroopWage + Tier5TroopWage) / 2f;
 
         private static readonly TextObject WarWageText =
-            new TextObject("{=ModifiedArmyWarPartyWage}战时工资");
+            new TextObject("{=ModifiedArmyWarPartyWage}War Wage");
+
+        private static readonly TextObject FiefWageExemptionText =
+            new TextObject(
+                "{=ModifiedArmyFiefWageExemption}" +
+                "Fief troop wage exemption");
 
         /// <summary>
         /// 在本体完成所有工资修正后, 应用正式战争期间的 WarParty 工资倍率.
@@ -45,14 +50,147 @@ namespace ModifiedArmy.Models
             TroopRoster troopRoster,
             bool includeDescriptions = false)
         {
+            ExplainedNumber result = CalculateBaseWageWithFiefExemption(
+                mobileParty,
+                troopRoster,
+                includeDescriptions);
+
+            ApplyWarWageMultiplier(mobileParty, ref result);
+            return result;
+        }
+
+        /// <summary>
+        /// Calculates the sustainable long-term wage after temporary fief
+        /// exemptions expire. Recruitment uses this value to avoid creating a
+        /// party that will collapse as soon as its grace period ends.
+        /// </summary>
+        public ExplainedNumber GetTotalWageWithoutFiefExemption(
+            MobileParty mobileParty,
+            TroopRoster troopRoster,
+            bool includeDescriptions = false)
+        {
             ExplainedNumber result = base.GetTotalWage(
                 mobileParty,
                 troopRoster,
                 includeDescriptions);
 
+            ApplyWarWageMultiplier(mobileParty, ref result);
+            return result;
+        }
+
+        public static float GetWarWageMultiplier(
+            MobileParty mobileParty)
+        {
+            return ShouldApplyWarWage(mobileParty)
+                ? WarWageMultiplier
+                : 1f;
+        }
+
+        private ExplainedNumber CalculateBaseWageWithFiefExemption(
+            MobileParty mobileParty,
+            TroopRoster troopRoster,
+            bool includeDescriptions)
+        {
+            ExplainedNumber fullWage = base.GetTotalWage(
+                mobileParty,
+                troopRoster,
+                includeDescriptions);
+            FiefWageExemptionManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefWageExemptionManager>();
+            int exemptionCount =
+                manager?.GetExemptableTroopCount(mobileParty) ?? 0;
+
+            if (exemptionCount <= 0)
+            {
+                return fullWage;
+            }
+
+            TroopRoster chargeableRoster =
+                BuildChargeableRoster(
+                    troopRoster,
+                    exemptionCount,
+                    out int exemptedTroops);
+
+            if (exemptedTroops <= 0)
+            {
+                return fullWage;
+            }
+
+            ExplainedNumber reducedWage = base.GetTotalWage(
+                mobileParty,
+                chargeableRoster,
+                false);
+            float reduction = Math.Max(
+                0f,
+                fullWage.ResultNumber - reducedWage.ResultNumber);
+
+            if (reduction > 0f)
+            {
+                fullWage.Add(
+                    -reduction,
+                    FiefWageExemptionText);
+                fullWage.LimitMin(0f);
+            }
+
+            return fullWage;
+        }
+
+        private static TroopRoster BuildChargeableRoster(
+            TroopRoster source,
+            int exemptionCount,
+            out int exemptedTroops)
+        {
+            TroopRoster result =
+                TroopRoster.CreateDummyTroopRoster();
+            int remainingExemption = exemptionCount;
+            exemptedTroops = 0;
+
+            foreach (TroopRosterElement element in
+                source.GetTroopRoster())
+            {
+                int chargeableCount = element.Number;
+
+                if (!element.Character.IsHero
+                    && remainingExemption > 0
+                    && SoldierTypeClassifier.IsFiefTroop(
+                        element.Character))
+                {
+                    int exempted = Math.Min(
+                        chargeableCount,
+                        remainingExemption);
+                    chargeableCount -= exempted;
+                    remainingExemption -= exempted;
+                    exemptedTroops += exempted;
+                }
+
+                if (chargeableCount <= 0)
+                {
+                    continue;
+                }
+
+                result.AddToCounts(
+                    element.Character,
+                    chargeableCount,
+                    false,
+                    Math.Min(
+                        element.WoundedNumber,
+                        chargeableCount),
+                    0,
+                    true,
+                    -1);
+            }
+
+            return result;
+        }
+
+        private static void ApplyWarWageMultiplier(
+            MobileParty mobileParty,
+            ref ExplainedNumber result)
+        {
+
             if (!ShouldApplyWarWage(mobileParty))
             {
-                return result;
+                return;
             }
 
             // Apply the configured multiplier after all perks, policies and
@@ -65,8 +203,6 @@ namespace ModifiedArmy.Models
                     normalWage * (WarWageMultiplier - 1f),
                     WarWageText);
             }
-
-            return result;
         }
 
         private static bool ShouldApplyWarWage(MobileParty mobileParty)
