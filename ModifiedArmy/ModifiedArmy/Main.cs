@@ -5,6 +5,7 @@ using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.Utils;
 using System.Collections.Generic;
 using System.Reflection;
@@ -132,6 +133,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
                 campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
                 campaignStarter.AddBehavior(new GarrisonGranaryMenuBehavior());
+                campaignStarter.AddBehavior(
+                    new SettlementManagementInspectionBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(new NewPartyWageModel());

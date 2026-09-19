@@ -35,6 +35,8 @@
     <!-- Garrison and wage UI. -->
     <string id="ModifiedArmyWarPartyWage" text="战时工资" />
     <string id="ModifiedArmy_ViewMilitaryGranary" text="查看粮仓" />
+    <string id="ModifiedArmy_ViewTownManagement" text="查看城镇" />
+    <string id="ModifiedArmy_ViewCastleManagement" text="查看城堡" />
     <string id="ModifiedArmy_GarrisonWageLimit" text="工资上限" />
     <string id="ModifiedArmy_GarrisonSettlementType" text="据点类型" />
     <string id="ModifiedArmy_GarrisonMaximumTroops" text="最大人数" />
