@@ -127,12 +127,16 @@ namespace ModifiedArmy.Garrison.Supply
         /// </summary>
         public void SynchronizeOwnership()
         {
-            if (MobileParty == null || SupplyHomeSettlement?.OwnerClan == null)
+            Clan ownerClan = SupplyHomeSettlement?.OwnerClan;
+
+            if (MobileParty == null
+                || ownerClan == null
+                || MobileParty.ActualClan == ownerClan)
             {
                 return;
             }
 
-            MobileParty.ActualClan = SupplyHomeSettlement.OwnerClan;
+            MobileParty.ActualClan = ownerClan;
             ClearCachedName();
             MobileParty.Party.SetVisualAsDirty();
         }
@@ -188,6 +192,9 @@ namespace ModifiedArmy.Garrison.Supply
         {
             MobileParty.Aggressiveness = 0f;
             MobileParty.ActualClan = SupplyHomeSettlement.OwnerClan;
+            // Supply parties follow a fixed logistics mission. Native party
+            // AI must not replace their destination between hourly checks.
+            MobileParty.Ai.SetDoNotMakeNewDecisions(true);
 
             if (_initializationArgs != null)
             {

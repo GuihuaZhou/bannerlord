@@ -106,8 +106,6 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
-            component.SynchronizeOwnership();
-
             if (component.MissionState
                 == SupplyPartyMissionState.TravelingToSource)
             {
@@ -289,6 +287,10 @@ namespace ModifiedArmy.Garrison.Supply
                 }
 
                 component.SynchronizeOwnership();
+                // This flag is not saveable in every game version. Restore
+                // it after loading so native AI cannot compete with the
+                // supply mission route controller.
+                party.Ai.SetDoNotMakeNewDecisions(true);
 
                 Settlement destination = component.MissionState
                     == SupplyPartyMissionState.TravelingToSource
