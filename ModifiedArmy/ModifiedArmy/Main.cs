@@ -2,6 +2,7 @@
 using HarmonyLib;
 using MCM.Abstractions.Base.Global;
 using ModifiedArmy.common;
+using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Utils;
@@ -129,6 +130,7 @@ namespace ModifiedArmy
                 MBObjectManager.Instance.LoadXML("MercenaryTemplates", true);
 
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
+                campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(new NewPartyWageModel());

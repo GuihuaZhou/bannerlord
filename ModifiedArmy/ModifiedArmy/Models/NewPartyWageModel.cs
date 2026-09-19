@@ -22,6 +22,16 @@ namespace ModifiedArmy.Models
     public class NewPartyWageModel : DefaultPartyWageModel
     {
         public const float WarWageMultiplier = 1.5f;
+        public const int Tier4TroopWage = 16;
+        public const int Tier5TroopWage = 30;
+
+        /// <summary>
+        /// Shared expected wage for a professional garrison troop. The value
+        /// is calculated once when this wage-model type is initialized and can
+        /// be reused by other systems without duplicating wage constants.
+        /// </summary>
+        public static readonly float Tier4AndTier5AverageWage =
+            (Tier4TroopWage + Tier5TroopWage) / 2f;
 
         private static readonly TextObject WarWageText =
             new TextObject("{=ModifiedArmyWarPartyWage}战时工资");
@@ -226,10 +236,10 @@ namespace ModifiedArmy.Models
                     num = 5;
                     break;
                 case 4:
-                    num = 16; // 原来8
+                    num = Tier4TroopWage; // 原来8
                     break;
                 case 5:
-                    num = 30; // 原来12
+                    num = Tier5TroopWage; // 原来12
                     break;
                 case 6:
                     num = 51; // 原来17
