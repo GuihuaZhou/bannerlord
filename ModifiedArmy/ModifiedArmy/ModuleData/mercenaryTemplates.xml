@@ -12,10 +12,10 @@
   -->
 
   <!-- 帝国：东罗马，最依赖雇佣兵 -->
-  <MercenaryTemplate id="empire_mercenary" culture="Culture.empire" minCount="15" maxCount="30" spawnChance="0.8"/>
+  <MercenaryTemplate id="empire_mercenary" culture="Culture.empire" minCount="5" maxCount="15" spawnChance="0.8"/>
 
   <!-- 阿塞莱：阿拉伯佣兵，雇佣兵重要 -->
-  <MercenaryTemplate id="aserai_mercenary" culture="Culture.aserai" minCount="10" maxCount="20" spawnChance="0.6"/>
+  <MercenaryTemplate id="aserai_mercenary" culture="Culture.aserai" minCount="5" maxCount="15" spawnChance="0.6"/>
 
   <!-- 以下文化雇佣兵较少 -->
   <MercenaryTemplate id="vlandia_mercenary" culture="Culture.vlandia" minCount="5" maxCount="10" spawnChance="0.3"/>
