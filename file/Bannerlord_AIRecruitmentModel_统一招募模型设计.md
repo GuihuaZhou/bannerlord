@@ -1,817 +1,533 @@
 # AIRecruitmentModel 统一招募模型设计
 
-## 1. 模型定位
+## 1. 目标
 
-新增：
+新增统一的 `AIRecruitmentModel`，负责决定 AI Party 面对候选士兵时：
 
-```text
-AIRecruitmentModel
-```
+- 是否应该招募；
+- 最多可以招募多少；
+- 多个候选兵种中应该优先招募哪一种；
+- 招募后是否仍能承担招募费用和一段时间的工资；
+- 招募后部队的兵种比例和质量比例是否合理。
 
-负责统一处理 AI 的招募数量判断。
+所有兵源在真正加入 Party 前都调用同一个模型，包括志愿兵、酒馆雇佣兵、采邑兵以及以后新增的特殊兵源。模型只管理 AI 招募，不限制玩家招募。
 
-所有兵源：
+## 2. 第一阶段范围
 
-```text
-志愿兵
-采邑兵
-雇佣兵
-其他以后新增的兵源
-```
+第一阶段只处理 Party 剩余空位、兵种比例、士兵质量比例、工资上限、招募费用以及现有资金可以维持工资的天数。
 
-在真正加入 Party 前，都调用同一个 Model。
+第一阶段明确不处理：
 
-调用方不再自己判断：
+- 通过 `MilitaryPowerModel` 计算士兵战斗力；
+- 战时和和平时期使用不同模板；
+- 为某个兵种配置绝对人数上限；
+- 替代已经存在的采邑部队生成模板。
 
-```text
-空间
-军队组成
-工资
-招募费用
-```
+士兵质量只通过 Tier 判断。
 
-而只负责：
+## 3. 代码结构
 
 ```text
-发现候选兵
-→ 调用 AIRecruitmentModel
-→ 根据返回数量执行招募
+ModifiedArmy/
+└─ Recruitment/
+   ├─ Models/
+   │  ├─ AIRecruitmentModel.cs
+   │  ├─ DefaultAIRecruitmentModel.cs
+   │  ├─ ArmyCompositionTemplate.cs
+   │  ├─ CultureCompositionTemplateSet.cs
+   │  ├─ RecruitmentTemplateRepository.cs
+   │  ├─ RecruitmentBudget.cs
+   │  ├─ RecruitmentCandidate.cs
+   │  ├─ RecruitmentEvaluationResult.cs
+   │  └─ RecruitmentPlan.cs
+   ├─ Classification/
+   │  ├─ CombatRole.cs
+   │  ├─ TroopQuality.cs
+   │  └─ RecruitmentTroopClassifier.cs
+   ├─ Integration/
+   │  ├─ VolunteerRecruitmentIntegration.cs
+   │  ├─ MercenaryRecruitmentIntegration.cs
+   │  └─ FiefRecruitmentIntegration.cs
+   └─ RecruitmentModelManager.cs
 ```
 
----
+如果 Bannerlord 的 `CampaignModels` 无法增加自定义模型属性，则由 `RecruitmentModelManager.Model` 提供唯一的模型入口。
 
-## 2. 核心接口
-
-建议：
-
-```csharp
-public abstract class AIRecruitmentModel : GameModel
-{
-    public abstract RecruitmentEvaluationResult EvaluateRecruitment(
-        MobileParty party,
-        CharacterObject troop,
-        int availableCount,
-        RecruitmentSource source);
-}
-```
-
-其中：
-
-```text
-party = 要招兵的AI Party
-troop = 候选兵种
-availableCount = 当前兵源最多可以提供多少人
-source = 兵源类型
-```
-
----
-
-## 3. RecruitmentSource
+## 4. 招募来源
 
 ```csharp
 public enum RecruitmentSource
 {
     Volunteer,
     Fief,
-    Mercenary
+    Mercenary,
+    Special
 }
 ```
 
-以后可以扩展：
+`RecruitmentSource` 只描述兵源，不负责判断士兵兵种或质量。
 
-```text
-Prisoner
-Special
-Event
-```
+## 5. Party 模板
 
-`RecruitmentSource` 不决定兵员身份，真正的兵员身份仍由 `troop` 判断。
-
----
-
-## 4. 返回结果
-
-建议不要只返回 `int`，而是：
+第一阶段只提供两种目标部队模板：
 
 ```csharp
-public class RecruitmentEvaluationResult
+public enum RecruitmentPartyType
 {
-    public int RequestedCount;
-    public int RecruitableCount;
-
-    public int PartySizeLimit;
-    public int SoldierClassLimit;
-    public int CombatRoleLimit;
-    public int WageLimit;
-    public int GoldLimit;
+    MobileParty,
+    Garrison
 }
 ```
 
-例如：
+- `MobileParty`：领主机动部队；
+- `Garrison`：城镇和城堡驻军。
+
+每种文化分别拥有一套 `MobileParty` 模板和一套 `Garrison` 模板。因此实际模板键为：
 
 ```text
-RequestedCount = 12
-PartySizeLimit = 20
-SoldierClassLimit = 5
-CombatRoleLimit = 8
-WageLimit = 6
-GoldLimit = 10
-RecruitableCount = 5
-```
-
-这样日志可以明确显示最终限制来自哪里。
-
----
-
-## 5. Model 内部判断顺序
-
-```text
-候选兵 + 数量
-↓
-Party人数限制
-↓
-兵员身份限制
-↓
-战斗功能限制
-↓
-工资限制
-↓
-招募费用限制
-↓
-返回最终数量
-```
-
-最终：
-
-```text
-RecruitableCount
-=
-min(
-    availableCount,
-    AllowedByPartySize,
-    AllowedBySoldierClass,
-    AllowedByCombatRole,
-    AllowedByWage,
-    AllowedByGold
-)
-```
-
----
-
-## 6. Party 人数限制
-
-```text
-AllowedByPartySize
-=
-PartySizeLimit
--
-NumberOfAllMembers
-```
-
-如果：
-
-```text
-AllowedByPartySize <= 0
-```
-
-直接：
-
-```text
-RecruitableCount = 0
-```
-
----
-
-## 7. 兵员身份判断
-
-候选兵划分为四类，互斥：
-
-```text
-Militia
-Sergeant
-Retainer
-Mercenary
+Culture.StringId + RecruitmentPartyType
 ```
 
 例如：
+
+```text
+khuzait + MobileParty
+khuzait + Garrison
+nord + MobileParty
+nord + Garrison
+```
+
+库塞特模板可以提高骑兵和骑射手比例，诺德模板可以提高步兵比例。文化差异仍然只通过兵种比例和质量比例表达，不增加第三个模板维度。
+
+商队、村民、土匪和其他特殊 Party 暂不接入该模型。
+
+采邑部队自身已经拥有生成模板，不在这里重新定义。采邑兵被征召进入领主部队或驻军时，按照目标 Party 的 `MobileParty` 或 `Garrison` 模板评估。
+
+### 5.1 目标文化选择
+
+`MobileParty` 按以下顺序确定模板文化：
+
+```text
+party.ActualClan.Culture
+-> party.LeaderHero.Culture
+-> Default
+```
+
+`Garrison` 按以下顺序确定模板文化：
+
+```text
+settlement.OwnerClan.Culture
+-> settlement.Culture
+-> Default
+```
+
+这样定居点易主后，驻军会立即采用新领主文化的编制倾向；如果没有有效领主文化，再采用当地文化。
+
+### 5.2 默认模板与自定义文化
+
+必须为 `MobileParty` 和 `Garrison` 各提供一套 `Default` 模板。遇到原版小文化、其他 Mod 新增文化或无法识别的 `Culture.StringId` 时，自动回退到对应 Party 类型的默认模板，不阻止招募。
+
+模板仓库按字符串 ID 注册文化，不把所有文化写死在选择逻辑中：
 
 ```csharp
-SoldierClass soldierClass =
-    SoldierTypeClassifier.GetSoldierClass(troop);
+public sealed class RecruitmentTemplateRepository
+{
+    public ArmyCompositionTemplate GetTemplate(
+        string cultureId,
+        RecruitmentPartyType partyType);
+}
 ```
 
----
+以后兼容新文化时，只需注册模板，不需要修改招募模型。
 
-## 8. 兵员身份规则
+### 5.3 MobileParty 兵种模板
 
-每类拥有：
+以下数值均为 `MinimumRatio-MaximumRatio`。最低比例用于招募优先级，最高比例是硬限制。
 
-```text
-TargetRatio
-MaxRatio
-MaxCount
-```
+| 文化 | 步兵 | 射手 | 骑兵 | 骑射手 |
+|---|---:|---:|---:|---:|
+| Default | 25%-55% | 15%-40% | 10%-35% | 0%-20% |
+| Empire | 25%-50% | 15%-35% | 20%-40% | 0%-10% |
+| Vlandia | 25%-50% | 15%-35% | 20%-45% | 0%-5% |
+| Sturgia/Nord | 45%-70% | 15%-35% | 5%-20% | 0%-5% |
+| Battania | 30%-55% | 25%-50% | 5%-20% | 0%-10% |
+| Aserai | 25%-50% | 15%-35% | 15%-35% | 5%-25% |
+| Khuzait | 15%-40% | 5%-25% | 20%-45% | 20%-50% |
 
-示例：
+设计目的：
 
-```text
-Militia
-TargetRatio = 0.55
-MaxRatio = 0.70
-MaxCount = -1
+- 帝国保持均衡，并拥有较多重骑兵；
+- 瓦兰迪亚强调骑兵，同时保留弩手；
+- 斯特吉亚或诺德以步兵为核心；
+- 巴旦尼亚提高射手比例；
+- 阿塞莱保持步兵、骑兵和骑射手混合；
+- 库塞特以骑兵和骑射手为核心。
 
-Sergeant
-TargetRatio = 0.25
-MaxRatio = 0.35
-MaxCount = -1
+### 5.4 Garrison 兵种模板
 
-Retainer
-TargetRatio = 0.10
-MaxRatio = 0.20
-MaxCount = 30
+驻军以守城需要的步兵和射手为主。骑兵仍可存在，但优先级和最高比例明显低于机动部队。
 
-Mercenary
-TargetRatio = 0.10
-MaxRatio = 0.20
-MaxCount = 30
-```
+| 文化 | 步兵 | 射手 | 骑兵 | 骑射手 |
+|---|---:|---:|---:|---:|
+| Default | 45%-75% | 25%-55% | 0%-15% | 0%-10% |
+| Empire | 45%-70% | 25%-50% | 5%-15% | 0%-5% |
+| Vlandia | 40%-70% | 30%-55% | 0%-15% | 0%-5% |
+| Sturgia/Nord | 55%-80% | 20%-45% | 0%-10% | 0%-5% |
+| Battania | 40%-65% | 35%-60% | 0%-10% | 0%-5% |
+| Aserai | 45%-70% | 25%-50% | 0%-15% | 5%-15% |
+| Khuzait | 35%-60% | 15%-40% | 10%-25% | 15%-35% |
 
-其中：
+库塞特驻军仍保留文化特色，但不会像机动部队一样让骑兵和骑射手占据大多数名额。
 
-```text
-TargetRatio = 理想结构
-MaxRatio = 比例硬上限
-MaxCount = 绝对人数硬上限
-```
+### 5.5 MobileParty 质量模板
 
----
+所有文化第一版共用以下质量范围：
 
-## 9. 比例允许数量
+| 质量 | Tier | 最低比例 | 最高比例 |
+|---|---:|---:|---:|
+| LowTier | T1-T3 | 15% | 50% |
+| MiddleTier | T4-T5 | 30% | 70% |
+| TopTier | T6+ | 5% | 30% |
 
-设：
+机动部队至少会优先追求 35% 的 T4 以上士兵。低阶兵达到 50% 后，即使 Party 仍有空位，也会等待中高阶兵源或现有士兵升级。
 
-```text
-C = 当前Party总人数
-X = 当前该类别人数
-R = MaxRatio
-N = 新招人数
-```
+### 5.6 Garrison 质量模板
 
-要求：
+所有文化第一版共用以下质量范围：
 
-```text
-(X + N) / (C + N) <= R
-```
+| 质量 | Tier | 最低比例 | 最高比例 |
+|---|---:|---:|---:|
+| LowTier | T1-T3 | 40% | 50% |
+| MiddleTier | T4-T5 | 35% | 55% |
+| TopTier | T6+ | 10% | 25% |
 
-因此：
+驻军仍以低阶士兵作为最大的单一基础群体，但 T4 以上士兵的最低目标合计为 45%。低阶兵达到 50% 后会停止继续招募，因此缺少中高阶兵源时，驻军可能暂时无法填满。T6 保持明显低于 T4-T5，避免最高工资精锐占据过多驻军名额。
 
-```text
-AllowedByRatio
-=
-floor(
-    (R × C - X)
-    /
-    (1 - R)
-)
-```
+## 6. 模板维度
 
-绝对人数：
+每个文化的每套 Party 模板仍然只包含两个维度。
 
-```text
-AllowedByCount
-=
-MaxCount - X
-```
-
-最终：
-
-```text
-AllowedBySoldierClass
-=
-min(
-    AllowedByRatio,
-    AllowedByCount
-)
-```
-
-如果：
-
-```text
-MaxCount = -1
-```
-
-则忽略绝对人数限制。
-
----
-
-## 10. 战斗功能判断
-
-候选兵同时划分为：
+兵种比例：
 
 ```text
 Infantry
 Ranged
-HorseArcher
 Cavalry
+HorseArcher
 ```
 
-例如：
+质量比例：
+
+```text
+LowTier     = T1-T3
+MiddleTier  = T4-T5
+TopTier     = T6
+```
+
+为了避免特殊单位绕过限制，T0 归入 `LowTier`，T6 以上归入 `TopTier`，Hero 不参与士兵比例统计。
+
+每个分类只定义最低比例和最高比例，不定义绝对人数：
 
 ```csharp
-CombatRole role =
-    SoldierTypeClassifier.GetCombatRole(troop);
+public sealed class RatioRange
+{
+    public float MinimumRatio { get; set; }
+    public float MaximumRatio { get; set; }
+}
 ```
 
-每种功能同样拥有：
+## 7. 兵种分类
+
+兵种分类必须互斥，判断顺序如下：
 
 ```text
-TargetRatio
-MaxRatio
-MaxCount
+骑射手 -> HorseArcher
+其他骑乘单位 -> Cavalry
+其他远程单位 -> Ranged
+其余士兵 -> Infantry
 ```
 
-示例：
+同一名士兵只能计入一种兵种，避免骑射手同时占用射手和骑兵比例。
+
+## 8. 比例转换为人数
+
+所有比例都基于目标 Party 的人数上限，而不是当前人数：
 
 ```text
-Infantry
-TargetRatio = 0.45
-MaxRatio = 0.60
-
-Ranged
-TargetRatio = 0.25
-MaxRatio = 0.40
-
-HorseArcher
-TargetRatio = 0.10
-MaxRatio = 0.20
-
-Cavalry
-TargetRatio = 0.20
-MaxRatio = 0.35
+MinimumCount = floor(PartySizeLimit × MinimumRatio)
+MaximumCount = floor(PartySizeLimit × MaximumRatio)
 ```
 
-计算方式和兵员身份完全一致。
+例如 Party 人数上限为 200，射手比例为 20%-40%，则射手最低人数为 40，最高人数为 80。Party 扩编或缩编时，模板人数会自然变化，不需要保存固定数量。
 
----
+## 9. 最低比例与最高比例
 
-## 11. 工资限制
-
-工资判断统一放到 Model 中。
+`MinimumRatio` 是软目标，只影响招募优先级：
 
 ```text
-CurrentTotalWage
-=
-party.TotalWage
+Shortage = max(0, MinimumCount - CurrentCount)
 ```
+
+缺口越大，该类候选兵优先级越高。没有对应兵源时允许暂时低于最低比例，模型不会凭空生成士兵。
+
+`MaximumRatio` 是硬限制：
 
 ```text
-PaymentLimit
-=
-party.PaymentLimit
+AllowedByCategory = MaximumCount - CurrentCount
 ```
 
-建议给 AI 留一定余量：
+达到最高比例后，禁止继续招募该类士兵。同一个候选士兵必须同时满足对应兵种和对应质量的最高比例。
+
+## 10. 模板有效性
+
+每套模板必须满足：
 
 ```text
-WageUsageRatio = 0.90
+每个 MinimumRatio >= 0
+每个 MaximumRatio <= 1
+每个 MinimumRatio <= MaximumRatio
+同维度所有 MinimumRatio 之和 <= 1
+同维度所有 MaximumRatio 之和 >= 1
 ```
 
-因此：
+最高比例之和可以大于 100%，因为它们是各分类的独立硬上限，不代表最终目标构成。第一版比例作为代码常量集中放在 `ArmyCompositionTemplate` 中，实测稳定后再考虑开放配置。
+
+## 11. Party 空位
 
 ```text
-RecruitmentWageBudget
-=
-PaymentLimit × WageUsageRatio
--
-CurrentTotalWage
+AllowedByPartySize = PartySizeLimit - NumberOfAllMembers
 ```
 
----
+伤兵计入 Party 人数，俘虏不计入成员结构。Hero 占用 Party 空位，但不计入兵种和质量比例。如果没有剩余空位，直接返回不可招募。
 
-## 12. 候选兵实际工资
+## 12. 工资上限
 
-基础工资：
+当前长期工资必须使用不包含临时封邑兵工资减免的数值，避免减免到期后 Party 立刻超支：
 
 ```text
-BaseWage
-=
-PartyWageModel.GetCharacterWage(troop)
+CurrentLongTermWage
+= NewPartyWageModel.GetTotalWageWithoutFiefExemption(...)
 ```
 
-如果当前 Party 是战争中的 `WarParty`：
+候选士兵实际日薪：
 
 ```text
-EffectiveWage
-=
-BaseWage × WarWageMultiplier
+UnitDailyWage
+= PartyWageModel.GetCharacterWage(troop)
+× NewPartyWageModel.GetWarWageMultiplier(party)
 ```
 
-当前：
+第一阶段仍保留已有战争工资倍率，但不根据战争状态切换招募模板。
+
+工资预算保留 10% 空间：
 
 ```text
-WarWageMultiplier = 1.5
+UsableWageLimit = PaymentLimit × 0.90
+AvailableDailyWage = UsableWageLimit - CurrentLongTermWage
+AllowedByWageLimit = floor(AvailableDailyWage / UnitDailyWage)
 ```
 
-否则：
+## 13. 招募费用与维持天数
+
+招募费用和未来工资必须合并判断，不能各自独立通过后再同时消耗资金。
 
 ```text
-EffectiveWage = BaseWage
+UnitRecruitmentCost
+= PartyWageModel.GetTroopRecruitmentCost(...)
 ```
 
-雇佣兵额外工资已经包含在 `GetCharacterWage(troop)` 中，不再重复计算。
-
-最终：
+可分配资金：
 
 ```text
-AllowedByWage
-=
-floor(
-    RecruitmentWageBudget
-    /
-    EffectiveWage
-)
+PartyFunds = PartyTradeGold
+ClanFundsPerParty = ClanGold / ClanMobilePartyCount
+LiquidFunds = PartyFunds + ClanFundsPerParty
+EmergencyReserve = LiquidFunds × 0.20
+SpendableFunds = LiquidFunds - EmergencyReserve
 ```
 
----
-
-## 13. 招募费用限制
-
-单人招募费用：
+默认安全期为 30 天。批准 `N` 名候选兵后必须满足：
 
 ```text
-RecruitmentCost
-=
-PartyWageModel.GetTroopRecruitmentCost(
-    troop,
-    party.LeaderHero,
-    false
-)
+N × UnitRecruitmentCost
++ (CurrentLongTermWage + N × UnitDailyWage) × MaintenanceDays
+<= SpendableFunds
 ```
 
-可用资金：
+采邑兵没有招募费用时，`UnitRecruitmentCost` 为 0，但仍然检查长期工资。
 
-```text
-AvailableGold
-=
-party.PartyTradeGold
-```
+## 14. 候选兵优先级
 
-建议保留一定现金：
-
-```text
-GoldUsageRatio = 0.75
-```
-
-因此：
-
-```text
-RecruitmentGoldBudget
-=
-AvailableGold × GoldUsageRatio
-```
-
-然后：
-
-```text
-AllowedByGold
-=
-floor(
-    RecruitmentGoldBudget
-    /
-    RecruitmentCost
-)
-```
-
-采邑兵如果没有金币招募成本，则：
-
-```text
-AllowedByGold = availableCount
-```
-
----
-
-## 14. TargetRatio 负责优先级
-
-`TargetRatio` 不作为硬限制，而是决定当前是否需要该兵种。
-
-```text
-ClassNeed
-=
-TargetClassRatio
--
-CurrentClassRatio
-```
+第一阶段不计算本体战斗力，只根据等级和比例缺口排序。
 
 ```text
 RoleNeed
-=
-TargetRoleRatio
--
-CurrentRoleRatio
+= RoleShortage / max(1, RoleMinimumCount)
+
+QualityNeed
+= QualityShortage / max(1, QualityMinimumCount)
 ```
 
-然后：
+建议基础优先级：
 
 ```text
-RecruitmentPriority
-=
-ClassNeed
-+
-RoleNeed
+Priority
+= RoleNeed × RoleWeight
++ QualityNeed × QualityWeight
++ TierPreference
+- WagePressure
+- RecruitmentCostPressure
 ```
 
-例如：
+`TierPreference` 只基于 Tier，用于避免所有候选兵都是低阶兵时仍无条件填满 Party。
+
+当 Party 严重缺员时可以招募低阶兵。当 Party 已达到一定规模且低阶兵达到最高比例时，应保留空位等待更高阶兵源。
+
+## 15. 批次模拟
+
+一次招募过程中必须先收集全部候选兵，再建立模拟状态：
 
 ```text
-民兵缺口 = +0.15
-射手缺口 = +0.10
+模拟Party人数
+模拟兵种人数
+模拟质量人数
+模拟长期工资
+模拟招募支出
+模拟可用资金
 ```
 
-则一个：
+处理流程：
 
 ```text
-Militia + Ranged
+收集全部候选兵
+-> 计算优先级
+-> 按优先级从高到低排序
+-> 评估可招数量
+-> 更新模拟状态
+-> 继续评估下一候选兵
+-> 生成RecruitmentPlan
+-> 最后统一执行
 ```
 
-的候选兵：
+如果不维护模拟状态，同一次循环中的每个候选兵都会重复使用招募前预算，从而造成超额招募。
 
-```text
-Priority = 0.25
-```
-
----
-
-## 15. Model 提供两个接口
-
-### 数量评估
+## 16. 核心接口
 
 ```csharp
-EvaluateRecruitment(
-    party,
-    troop,
-    availableCount,
-    source
-)
+public abstract class AIRecruitmentModel
+{
+    public abstract RecruitmentPlan BuildPlan(
+        MobileParty party,
+        IReadOnlyList<RecruitmentCandidate> candidates);
+
+    public abstract RecruitmentEvaluationResult EvaluateRecruitment(
+        MobileParty party,
+        CharacterObject troop,
+        int availableCount,
+        RecruitmentSource source,
+        RecruitmentSimulationState state);
+}
 ```
 
-回答：
+调用方负责发现兵源和执行结果，模型负责全部数量、比例、质量和经济判断。
 
-```text
-最多招几个？
-```
-
-### 招募优先级
+## 17. 返回结果
 
 ```csharp
-GetRecruitmentPriority(
-    party,
-    troop,
-    source
-)
+public sealed class RecruitmentEvaluationResult
+{
+    public int RequestedCount { get; set; }
+    public int RecruitableCount { get; set; }
+
+    public int AllowedByPartySize { get; set; }
+    public int AllowedByCombatRole { get; set; }
+    public int AllowedByQuality { get; set; }
+    public int AllowedByWageLimit { get; set; }
+    public int AllowedByMaintenance { get; set; }
+
+    public int RecruitmentCost { get; set; }
+    public float UnitDailyWage { get; set; }
+    public int SustainableDays { get; set; }
+    public float Priority { get; set; }
+
+    public RecruitmentLimitReason PrimaryLimit { get; set; }
+}
 ```
 
-回答：
+返回完整限制数据，便于通过 Notice 日志验证模型。
+
+## 18. 接入顺序
+
+### 第一批：模型基础
+
+- 分类器；
+- 各文化的 MobileParty/Garrison 模板及默认兜底模板；
+- 预算快照；
+- 模拟状态；
+- 评估结果；
+- Notice 诊断日志；
+- 暂不改变实际招募。
+
+### 第二批：雇佣兵
+
+先接管 AI 领主的酒馆雇佣兵招募，验证昂贵士兵不会造成招募后资金崩溃。
+
+### 第三批：志愿兵
+
+一次收集全部可用志愿兵，按照兵种缺口和质量缺口排序后制定招募计划。
+
+### 第四批：采邑兵
+
+采邑部队继续使用已有生成模板。征召进入 MobileParty 或 Garrison 前，统一经过新模型的目标 Party 模板和经济判断。
+
+### 第五批：驻军
+
+把驻军获得新士兵的相关入口接入 `Garrison` 模板，并验证不会因工资上限立即解散。
+
+## 19. 日志
+
+开发阶段对实际批准或拒绝的招募打印 Notice 日志：
 
 ```text
-当前有多需要这个兵？
+[AIRecruitment]
+Party=...
+PartyType=MobileParty
+Troop=...
+Tier=5
+Role=Ranged
+Quality=MiddleTier
+Source=Mercenary
+Available=8
+Approved=3
+PrimaryLimit=Maintenance
+RoleCount=20/30-70
+QualityCount=25/40-110
+RecruitmentCost=750
+UnitDailyWage=30
+SustainableDays=31
+Priority=1.42
 ```
 
-调用流程：
+稳定后可将详细日志降为 Debug，只保留异常经济拒绝和配置错误。
 
-```text
-多个候选兵
-↓
-先计算Priority
-↓
-从高到低排序
-↓
-再调用EvaluateRecruitment
-↓
-得到RecruitableCount
-↓
-执行招募
-```
-
----
-
-## 16. RecruitmentCampaignBehavior 职责
-
-以后 `RecruitmentCampaignBehavior` 不再负责复杂判断。
-
-例如现在的：
-
-```text
-TryRecruitLordMercenary()
-```
-
-简化为：
-
-```text
-获取酒馆雇佣兵
-↓
-得到 troopType
-↓
-得到 availableCount
-↓
-调用 AIRecruitmentModel
-↓
-得到 RecruitableCount
-↓
-执行 ApplyRecruitMercenary()
-```
-
-原来的：
-
-```text
-Party空间判断
-金币判断
-工资判断
-```
-
-统一移入：
-
-```text
-AIRecruitmentModel
-```
-
----
-
-## 17. 志愿兵
-
-现在 `RecruitVolunteersFromNotable()` 中的：
-
-```text
-PartyTradeGold判断
-GetAvailableWageBudget判断
-```
-
-逐渐移到 Model。
-
-以后：
-
-```text
-发现 Volunteer
-↓
-AIRecruitmentModel.EvaluateRecruitment(
-    party,
-    volunteer,
-    1,
-    Volunteer
-)
-↓
-返回0 → 跳过
-返回1 → 招募
-```
-
----
-
-## 18. 采邑兵
-
-先通过：
-
-```text
-GetAvailableTroopCount(settlement)
-```
-
-取得：
-
-```text
-availableCount
-```
-
-然后：
-
-```text
-AIRecruitmentModel.EvaluateRecruitment(
-    party,
-    troop,
-    availableCount,
-    Fief
-)
-```
-
-Model 负责判断：
-
-```text
-军队结构
-Party空间
-工资
-```
-
-采邑兵如果免招募费，则跳过金币限制。
-
----
-
-## 19. 推荐代码结构
-
-```text
-ModifiedArmy/
-└─ Models/
-   └─ Recruitment/
-      ├─ AIRecruitmentModel.cs
-      ├─ DefaultAIRecruitmentModel.cs
-      ├─ ArmyCompositionTemplate.cs
-      ├─ RecruitmentEvaluationResult.cs
-      └─ RecruitmentSource.cs
-```
-
-职责：
-
-```text
-AIRecruitmentModel
-= 抽象接口
-
-DefaultAIRecruitmentModel
-= 实际计算
-
-ArmyCompositionTemplate
-= 身份/功能比例规则
-
-RecruitmentEvaluationResult
-= 计算结果
-
-RecruitmentSource
-= 招募来源
-```
-
----
-
-## 20. Campaign 注册
-
-由：
-
-```text
-DefaultAIRecruitmentModel
-```
-
-作为正式实现加入：
-
-```text
-CampaignGameStarter.AddModel(...)
-```
-
-如果 Bannerlord 的 `CampaignModels` 不方便直接增加自定义属性，则也可以由 Mod 自己维护统一入口，例如：
-
-```text
-RecruitmentModelManager.Model
-```
-
-但设计上保持：
-
-```text
-AIRecruitmentModel
-→ 唯一招募规则来源
-```
-
----
-
-## 21. 最终职责关系
-
-```text
-AiRecruitmentBehavior
-=
-决定现在有没有招兵需求
-以及哪种兵源值得尝试
-```
+## 20. 最终职责
 
 ```text
 RecruitmentCampaignBehavior
-=
-发现具体候选兵
-执行实际招募
+= 发现志愿兵和雇佣兵，并执行RecruitmentPlan
+```
+
+```text
+Fief recruitment integration
+= 提供可征召的采邑兵，并执行RecruitmentPlan
 ```
 
 ```text
 AIRecruitmentModel
-=
-决定这个具体兵种最多可以招多少
-以及招募优先级
+= 决定优先招谁、最多招多少，以及招募后是否可持续
 ```
 
 ```text
 ArmyCompositionTemplate
-=
-定义什么叫一支合理的军队
-```
-
-最终流程：
-
-```text
-AI决定需要招兵
-↓
-到达Settlement
-↓
-发现候选兵
-↓
-AIRecruitmentModel评估
-↓
-身份结构
-+ 功能结构
-+ Party容量
-+ 工资
-+ 金币
-↓
-返回RecruitableCount
-↓
-RecruitmentCampaignBehavior执行招募
+= 定义各文化MobileParty和Garrison合理的兵种与质量比例范围
 ```

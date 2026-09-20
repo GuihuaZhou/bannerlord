@@ -1,5 +1,5 @@
 using HarmonyLib;
-using ModifiedArmy.ArmyFinance.Models;
+using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
@@ -8,7 +8,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.ArmyFinance.Patches
+namespace ModifiedArmy.PartyFinance.Patches
 {
     /// <summary>
     /// Replaces native AI war-party wage-limit evaluation with limits scaled
@@ -19,6 +19,10 @@ namespace ModifiedArmy.ArmyFinance.Patches
         "MakeClanFinancialEvaluation")]
     public static class ClanFinancialEvaluationPatch
     {
+        /// <summary>
+        /// Replaces only the native wage-limit assignment pass. Actual wages
+        /// remain owned by the registered PartyWageModel implementation.
+        /// </summary>
         private static bool Prefix(Clan clan)
         {
             if (clan == null)
@@ -35,7 +39,7 @@ namespace ModifiedArmy.ArmyFinance.Patches
                 }
 
                 MobileParty party = warParty.MobileParty;
-                int wageLimit = MobilePartyWageLimitModel.Calculate(
+                int wageLimit = MobilePartyWageLimitCalculator.Calculate(
                     clan,
                     party);
                 party.SetWagePaymentLimit(wageLimit);
@@ -60,14 +64,14 @@ namespace ModifiedArmy.ArmyFinance.Patches
             TextObject message = isExceeded
                 ? new TextObject(
                     "{=ModifiedArmy_PartyWageLimitExceeded}" +
-                    "[ArmyFinance] Wage limit exceeded | " +
+                    "[PartyFinance] Wage limit exceeded | " +
                     "Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | " +
                     "CurrentWage={CURRENT_WAGE} | " +
                     "WageLimit={WAGE_LIMIT} | " +
                     "LeaderGold={LEADER_GOLD} | State={WAR_STATE}")
                 : new TextObject(
                     "{=ModifiedArmy_PartyWageLimitEvaluated}" +
-                    "[ArmyFinance] Party='{PARTY_NAME}' | " +
+                    "[PartyFinance] Party='{PARTY_NAME}' | " +
                     "Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | " +
                     "WageLimit={WAGE_LIMIT} | " +
                     "LeaderGold={LEADER_GOLD} | State={WAR_STATE}");

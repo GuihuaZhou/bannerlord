@@ -1,6 +1,6 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using ModifiedArmy.ArmyFinance.Models;
+using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;

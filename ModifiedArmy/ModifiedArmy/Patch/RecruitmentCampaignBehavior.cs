@@ -1,6 +1,6 @@
 ﻿using HarmonyLib;
 using Helpers;
-using ModifiedArmy.ArmyFinance.Models;
+using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;

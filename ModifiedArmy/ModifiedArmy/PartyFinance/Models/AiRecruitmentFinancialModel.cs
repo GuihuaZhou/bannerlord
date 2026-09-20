@@ -5,7 +5,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
-namespace ModifiedArmy.ArmyFinance.Models
+namespace ModifiedArmy.PartyFinance.Models
 {
     /// <summary>
     /// Prevents AI recruitment from creating a party whose full post-exemption
@@ -13,6 +13,10 @@ namespace ModifiedArmy.ArmyFinance.Models
     /// </summary>
     public static class AiRecruitmentFinancialModel
     {
+        /// <summary>
+        /// Returns the additional daily wage that can be safely committed
+        /// after considering the party limit and its allocated clan funds.
+        /// </summary>
         public static float GetAvailableAdditionalDailyWage(
             MobileParty party)
         {
@@ -43,6 +47,10 @@ namespace ModifiedArmy.ArmyFinance.Models
                 sustainableWage - currentLongTermWage);
         }
 
+        /// <summary>
+        /// Converts the available daily wage into a maximum quantity of the
+        /// requested troop type.
+        /// </summary>
         public static int GetAffordableTroopCount(
             MobileParty party,
             CharacterObject troop,
@@ -67,6 +75,10 @@ namespace ModifiedArmy.ArmyFinance.Models
                     / unitWage));
         }
 
+        /// <summary>
+        /// Estimates one troop's effective daily wage, including the formal
+        /// war multiplier applied to active war parties.
+        /// </summary>
         public static float EstimateUnitDailyWage(
             MobileParty party,
             CharacterObject troop)
@@ -76,7 +88,11 @@ namespace ModifiedArmy.ArmyFinance.Models
                 * NewPartyWageModel.GetWarWageMultiplier(party);
         }
 
-        private static float GetLongTermDailyWage(MobileParty party)
+        /// <summary>
+        /// Returns the wage a party must sustain after temporary fief troop
+        /// exemptions expire. Recruitment planning uses the same value.
+        /// </summary>
+        public static float GetLongTermDailyWage(MobileParty party)
         {
             if (Campaign.Current.Models.PartyWageModel
                 is NewPartyWageModel wageModel)
