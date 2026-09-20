@@ -68,6 +68,7 @@ namespace ModifiedArmy.Recruitment.Models
                         candidate.AvailableCount,
                         candidate.Source,
                         state);
+                evaluation.Candidate = candidate;
 
                 results.Add(evaluation);
 

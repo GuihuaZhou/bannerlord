@@ -72,6 +72,9 @@
     <string id="str_modifiedarmy_ai_recruitment_mercenary_evaluation"
         text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 士兵='{TROOP_NAME}' | 等级={TIER} | 兵种={ROLE} | 质量={QUALITY} | 请求={REQUESTED} | 批准={APPROVED} | 限制={LIMIT} | 单人费用={UNIT_COST} | 单人工资={UNIT_WAGE} | 可维持天数={DAYS}" />
 
+    <string id="str_modifiedarmy_ai_recruitment_volunteer_plan"
+        text="{=ModifiedArmy_AIRecruitmentVolunteerPlan}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 志愿兵候选={OFFERED} | 批准={APPROVED} | 首个限制={LIMIT}" />
+
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />
     <string id="str_modifiedarmy_recruit_role_cavalry" text="{=ModifiedArmy_RecruitRoleCavalry}骑兵" />

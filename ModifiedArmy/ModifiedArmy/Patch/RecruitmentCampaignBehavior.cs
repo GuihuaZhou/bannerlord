@@ -1,6 +1,5 @@
 ﻿using HarmonyLib;
 using Helpers;
-using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
@@ -10,7 +9,6 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -18,7 +16,6 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
-using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Patch
@@ -324,89 +321,165 @@ namespace ModifiedArmy.Patch
         }
 
         // ==========================================
-        // 志愿兵招募（复用原版方法）
+        // AI lord volunteer recruitment
         // ==========================================
-
-        private static void RecruitVolunteersFromNotable(
-            RecruitmentCampaignBehavior instance, 
-            MobileParty mobileParty, 
-            Settlement settlement)
-		{
-			if (((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f)
-			{
-                int recruitedCount = 0;
-				foreach (Hero hero in settlement.Notables)
-				{
-					if (hero.IsAlive)
-					{
-						int num = hero.VolunteerTypes.FindIndexQ((CharacterObject x) => x != null);
-						if (num >= 0)
-						{
-							int num2 = MBRandom.RandomInt(6);
-							int num3 = Campaign.Current.Models.VolunteerModel.MaximumIndexHeroCanRecruitFromHero(mobileParty.IsGarrison ? mobileParty.Party.Owner : mobileParty.LeaderHero, hero, -101);
-							if (num <= num3)
-							{
-								for (int i = num2; i < num2 + 6; i++)
-								{
-									int num4 = i % 6;
-									if (num4 >= num3)
-									{
-										break;
-									}
-									int num5 = (mobileParty.LeaderHero != null) ? ((int)MathF.Sqrt((float)mobileParty.PartyTradeGold / 10000f)) : 0;
-									float num6 = MBRandom.RandomFloat;
-									for (int j = 0; j < num5; j++)
-									{
-										float randomFloat = MBRandom.RandomFloat;
-										if (randomFloat > num6)
-										{
-											num6 = randomFloat;
-										}
-									}
-									if (mobileParty.Army != null)
-									{
-										float y = (mobileParty.Army.LeaderParty == mobileParty) ? 0.5f : 0.67f;
-										num6 = MathF.Pow(num6, y);
-									}
-									float num7 = (float)mobileParty.Party.NumberOfAllMembers / (float)mobileParty.Party.PartySizeLimit;
-									if (num6 > num7 - 0.1f)
-									{
-										CharacterObject characterObject = hero.VolunteerTypes[num4];
-                                    if (characterObject != null
-                                        && mobileParty.PartyTradeGold > Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(characterObject, mobileParty.LeaderHero, false).RoundedResultNumber
-                                        && AiRecruitmentFinancialModel.GetAffordableTroopCount(
-                                            mobileParty,
-                                            characterObject,
-                                            1) >= 1)
-										{
-											GetRecruitVolunteerFromIndividual(instance, mobileParty, characterObject, hero, num4);
-                                            recruitedCount++;
-											break;
-										}
-									}
-								}
-							}
-						}
-					}
-				}
-
-                if (recruitedCount > 0)
-                {
-                    ModLogger.Info($"[志愿兵招募] {mobileParty.MapFaction?.Name} | {mobileParty.ActualClan?.Name} | {mobileParty.Name} 在 {settlement.Name} 招募 {recruitedCount} 名志愿兵");
-                }
-			}
-		}
-
         private static bool TryRecruitVolunteers(
             RecruitmentCampaignBehavior instance, MobileParty party, Settlement settlement)
         {
-            if (party.Party.NumberOfAllMembers >= party.Party.PartySizeLimit) return false;
-            if (party.IsWageLimitExceeded()) return false;
+            if (party.Party.NumberOfAllMembers >= party.Party.PartySizeLimit)
+            {
+                return false;
+            }
 
-            // 直接调用原版 RecruitmentCampaignBehavior 的方法
-            // 该方法内部已包含 Notable 好感度、志愿兵池等完整检查
-            RecruitVolunteersFromNotable(instance, party, settlement);
-            return true;
+            List<RecruitmentCandidate> candidates =
+                CollectVolunteerCandidates(party, settlement);
+
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                party,
+                candidates);
+            int approvedCount = 0;
+
+            foreach (RecruitmentEvaluationResult evaluation in
+                plan.Evaluations)
+            {
+                if (evaluation.RecruitableCount <= 0
+                    || !(evaluation.Candidate?.SourceContext
+                        is VolunteerOffer offer))
+                {
+                    continue;
+                }
+
+                // Every candidate represents one concrete notable slot, so an
+                // approved evaluation can execute the native transaction once.
+                GetRecruitVolunteerFromIndividual(
+                    instance,
+                    party,
+                    evaluation.Troop,
+                    offer.Notable,
+                    offer.SlotIndex);
+                approvedCount++;
+            }
+
+            LogVolunteerPlan(
+                party,
+                settlement,
+                plan,
+                candidates.Count,
+                approvedCount);
+            return approvedCount > 0;
+        }
+
+        /// <summary>
+        /// Collects every non-empty volunteer slot currently unlocked by the
+        /// party leader's relation. No troop or gold is changed during this
+        /// discovery pass.
+        /// </summary>
+        private static List<RecruitmentCandidate> CollectVolunteerCandidates(
+            MobileParty party,
+            Settlement settlement)
+        {
+            List<RecruitmentCandidate> result =
+                new List<RecruitmentCandidate>();
+
+            foreach (Hero notable in settlement.Notables)
+            {
+                if (notable == null || !notable.IsAlive)
+                {
+                    continue;
+                }
+
+                int accessibleSlotCount = Campaign.Current.Models
+                    .VolunteerModel
+                    .MaximumIndexHeroCanRecruitFromHero(
+                        party.LeaderHero,
+                        notable,
+                        -101);
+                int slotCount = Math.Min(
+                    notable.VolunteerTypes.Length,
+                    Math.Max(0, accessibleSlotCount));
+
+                for (int slotIndex = 0;
+                    slotIndex < slotCount;
+                    slotIndex++)
+                {
+                    CharacterObject troop =
+                        notable.VolunteerTypes[slotIndex];
+
+                    if (troop == null)
+                    {
+                        continue;
+                    }
+
+                    result.Add(
+                        new RecruitmentCandidate(
+                            troop,
+                            1,
+                            RecruitmentSource.Volunteer,
+                            new VolunteerOffer(notable, slotIndex)));
+                }
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Logs one summary per settlement visit instead of one message per
+        /// volunteer slot, keeping Notice output readable during AI activity.
+        /// </summary>
+        private static void LogVolunteerPlan(
+            MobileParty party,
+            Settlement settlement,
+            RecruitmentPlan plan,
+            int offeredCount,
+            int approvedCount)
+        {
+            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
+
+            foreach (RecruitmentEvaluationResult evaluation in
+                plan.Evaluations)
+            {
+                if (evaluation.RecruitableCount <= 0)
+                {
+                    mainLimit = evaluation.PrimaryLimit;
+                    break;
+                }
+            }
+
+            TextObject message = new TextObject(
+                "{=ModifiedArmy_AIRecruitmentVolunteerPlan}" +
+                "[AIRecruitment] Party='{PARTY_NAME}' | " +
+                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
+                "VolunteerOffers={OFFERED} | Approved={APPROVED} | " +
+                "FirstLimit={LIMIT}");
+            message.SetTextVariable("PARTY_NAME", party.Name);
+            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+            message.SetTextVariable("CULTURE_ID", plan.CultureId);
+            message.SetTextVariable("OFFERED", offeredCount);
+            message.SetTextVariable("APPROVED", approvedCount);
+            message.SetTextVariable("LIMIT", GetLimitReasonText(mainLimit));
+            ModLogger.Notice(message.ToString());
+        }
+
+        /// <summary>
+        /// Execution metadata linking a model candidate back to the native
+        /// notable volunteer slot that must be cleared after recruitment.
+        /// </summary>
+        private sealed class VolunteerOffer
+        {
+            public VolunteerOffer(Hero notable, int slotIndex)
+            {
+                Notable = notable;
+                SlotIndex = slotIndex;
+            }
+
+            public Hero Notable { get; }
+
+            public int SlotIndex { get; }
         }
 
         // ==========================================

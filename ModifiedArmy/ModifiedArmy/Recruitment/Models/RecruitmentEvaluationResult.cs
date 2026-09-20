@@ -10,6 +10,8 @@ namespace ModifiedArmy.Recruitment.Models
     /// </summary>
     public sealed class RecruitmentEvaluationResult
     {
+        public RecruitmentCandidate Candidate { get; set; }
+
         public CharacterObject Troop { get; set; }
 
         public RecruitmentSource Source { get; set; }
