@@ -336,6 +336,8 @@ UnitRecruitmentCost
 = PartyWageModel.GetTroopRecruitmentCost(...)
 ```
 
+模型首先检查实际付款人的当前金币是否足以立即支付招募费用。领主 Party 的雇佣兵和志愿兵由 `LeaderHero.Gold` 支付；采邑兵招募费用为 0。即时付款限制通过后，再检查下面的长期维持资金。
+
 可分配资金：
 
 ```text
@@ -443,6 +445,7 @@ public sealed class RecruitmentEvaluationResult
     public int AllowedByCombatRole { get; set; }
     public int AllowedByQuality { get; set; }
     public int AllowedByWageLimit { get; set; }
+    public int AllowedByRecruitmentCost { get; set; }
     public int AllowedByMaintenance { get; set; }
 
     public int RecruitmentCost { get; set; }

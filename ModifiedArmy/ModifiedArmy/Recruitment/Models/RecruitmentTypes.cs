@@ -23,6 +23,7 @@ namespace ModifiedArmy.Recruitment.Models
         CombatRole,
         Quality,
         WageLimit,
+        RecruitmentCost,
         MaintenanceFunds
     }
 

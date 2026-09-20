@@ -30,6 +30,8 @@ namespace ModifiedArmy.Recruitment.Models
 
         public int AllowedByWageLimit { get; set; }
 
+        public int AllowedByRecruitmentCost { get; set; }
+
         public int AllowedByMaintenance { get; set; }
 
         public int UnitRecruitmentCost { get; set; }

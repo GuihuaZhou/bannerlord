@@ -4,6 +4,9 @@ using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment;
+using ModifiedArmy.Recruitment.Classification;
+using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -16,6 +19,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Patch
 {
@@ -423,12 +427,7 @@ namespace ModifiedArmy.Patch
             CharacterObject troopType = mercenaryData.TroopType;
             if (troopType == null) return false;
 
-            int cost = Campaign.Current.Models.PartyWageModel
-                .GetTroopRecruitmentCost(troopType, party.LeaderHero, false).RoundedResultNumber;
-            if (cost >= 5000) return false;
-
             float recruitProbability = MathF.Clamp(mercenaryWeight, 0f, 1f);
-            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募概率: {recruitProbability:P2}");
 
             int recruited = 0;
             int maxAvailable = mercenaryData.Number;
@@ -440,32 +439,142 @@ namespace ModifiedArmy.Patch
                     recruited++;
             }
 
-            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 掷骰子招募了 {recruited} 名 {troopType.Name}");
+            if (recruited <= 0)
+            {
+                return false;
+            }
 
-            // 约束：空间、金钱、工资预算
-            recruited = MathF.Min(recruited, party.Party.PartySizeLimit - party.Party.NumberOfAllMembers);
-            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前空间约束后人数: {recruited}");
-            recruited = cost <= 0 ? recruited : MathF.Min(party.PartyTradeGold / cost, recruited);
-            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前金钱约束后人数: {recruited}");
-            recruited = AiRecruitmentFinancialModel
-                .GetAffordableTroopCount(
-                    party,
-                    troopType,
-                    recruited);
-            ModLogger.Info($"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} 在 {settlement.Name} 招募前工资预算约束后人数: {recruited}");
+            // The probability roll decides demand. The unified model then
+            // applies composition, capacity, wage and thirty-day affordability
+            // constraints to the requested quantity.
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                party,
+                new List<RecruitmentCandidate>
+                {
+                    new RecruitmentCandidate(
+                        troopType,
+                        recruited,
+                        RecruitmentSource.Mercenary)
+                });
+            RecruitmentEvaluationResult evaluation =
+                plan.Evaluations.Count > 0
+                    ? plan.Evaluations[0]
+                    : null;
 
-            if (recruited <= 0) return false;
+            if (evaluation == null)
+            {
+                return false;
+            }
 
-            ApplyRecruitMercenary(instance, party, settlement, troopType, recruited);
+            LogMercenaryEvaluation(
+                party,
+                settlement,
+                plan,
+                evaluation);
 
-            int unitCost = Campaign.Current.Models.PartyWageModel
-                .GetTroopRecruitmentCost(troopType, party.LeaderHero, false).RoundedResultNumber;
+            if (evaluation.RecruitableCount <= 0)
+            {
+                return false;
+            }
 
-            ModLogger.Info(
-                $"[雇佣兵招募] {party.MapFaction?.Name} | {party.ActualClan?.Name} | {party.Name} " +
-                $"在 {settlement.Name} 招募了 {recruited} 名 {troopType.Name}, 花费 {recruited * unitCost}");
+            ApplyRecruitMercenary(
+                instance,
+                party,
+                settlement,
+                troopType,
+                evaluation.RecruitableCount);
 
             return true;
+        }
+
+        /// <summary>
+        /// Emits one localized diagnostic record for each mercenary request
+        /// evaluated by the unified recruitment model.
+        /// </summary>
+        private static void LogMercenaryEvaluation(
+            MobileParty party,
+            Settlement settlement,
+            RecruitmentPlan plan,
+            RecruitmentEvaluationResult evaluation)
+        {
+            TextObject message = new TextObject(
+                "{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}" +
+                "[AIRecruitment] Party='{PARTY_NAME}' | " +
+                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
+                "Troop='{TROOP_NAME}' | Tier={TIER} | " +
+                "Role={ROLE} | Quality={QUALITY} | " +
+                "Requested={REQUESTED} | Approved={APPROVED} | " +
+                "Limit={LIMIT} | UnitCost={UNIT_COST} | " +
+                "UnitWage={UNIT_WAGE} | SustainableDays={DAYS}");
+
+            message.SetTextVariable("PARTY_NAME", party.Name);
+            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+            message.SetTextVariable("CULTURE_ID", plan.CultureId);
+            message.SetTextVariable("TROOP_NAME", evaluation.Troop.Name);
+            message.SetTextVariable("TIER", evaluation.Troop.Tier);
+            message.SetTextVariable(
+                "ROLE",
+                GetCombatRoleText(evaluation.CombatRole));
+            message.SetTextVariable(
+                "QUALITY",
+                GetQualityText(evaluation.Quality));
+            message.SetTextVariable("REQUESTED", evaluation.RequestedCount);
+            message.SetTextVariable("APPROVED", evaluation.RecruitableCount);
+            message.SetTextVariable(
+                "LIMIT",
+                GetLimitReasonText(evaluation.PrimaryLimit));
+            message.SetTextVariable(
+                "UNIT_COST",
+                evaluation.UnitRecruitmentCost);
+            message.SetTextVariable("UNIT_WAGE", evaluation.UnitDailyWage);
+            message.SetTextVariable("DAYS", evaluation.SustainableDays);
+            ModLogger.Notice(message.ToString());
+        }
+
+        /// <summary>
+        /// Converts internal diagnostic enums to localized player-facing text.
+        /// </summary>
+        private static TextObject GetCombatRoleText(
+            CombatRole role)
+        {
+            switch (role)
+            {
+                case CombatRole.Ranged:
+                    return new TextObject("{=ModifiedArmy_RecruitRoleRanged}Ranged");
+                case CombatRole.Cavalry:
+                    return new TextObject("{=ModifiedArmy_RecruitRoleCavalry}Cavalry");
+                case CombatRole.HorseArcher:
+                    return new TextObject("{=ModifiedArmy_RecruitRoleHorseArcher}Horse Archer");
+                default:
+                    return new TextObject("{=ModifiedArmy_RecruitRoleInfantry}Infantry");
+            }
+        }
+
+        /// <summary>
+        /// Converts a Tier-based quality group to localized diagnostic text.
+        /// </summary>
+        private static TextObject GetQualityText(
+            TroopQuality quality)
+        {
+            switch (quality)
+            {
+                case TroopQuality.MiddleTier:
+                    return new TextObject("{=ModifiedArmy_RecruitQualityMiddle}Middle Tier");
+                case TroopQuality.TopTier:
+                    return new TextObject("{=ModifiedArmy_RecruitQualityTop}Top Tier");
+                default:
+                    return new TextObject("{=ModifiedArmy_RecruitQualityLow}Low Tier");
+            }
+        }
+
+        /// <summary>
+        /// Uses a stable localization key for every recruitment limit reason.
+        /// </summary>
+        private static TextObject GetLimitReasonText(
+            RecruitmentLimitReason reason)
+        {
+            return new TextObject(
+                "{=ModifiedArmy_RecruitLimit_" + reason + "}" + reason);
         }
     }
 }

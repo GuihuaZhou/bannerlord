@@ -159,6 +159,9 @@ namespace ModifiedArmy.Recruitment.Models
             result.AllowedByWageLimit = GetAllowedByWageLimit(
                 state,
                 unitWage);
+            result.AllowedByRecruitmentCost = GetAllowedByRecruitmentCost(
+                state,
+                result.UnitRecruitmentCost);
             result.AllowedByMaintenance = GetAllowedByMaintenance(
                 state,
                 unitWage,
@@ -170,6 +173,7 @@ namespace ModifiedArmy.Recruitment.Models
                 result.AllowedByCombatRole,
                 result.AllowedByQuality,
                 result.AllowedByWageLimit,
+                result.AllowedByRecruitmentCost,
                 result.AllowedByMaintenance);
             result.PrimaryLimit = FindPrimaryLimit(result);
             result.SustainableDays = GetSustainableDays(
@@ -287,6 +291,24 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
+        /// Ensures the character who performs the transaction can pay the
+        /// immediate purchase price before long-term affordability is tested.
+        /// </summary>
+        private static int GetAllowedByRecruitmentCost(
+            RecruitmentSimulationState state,
+            int unitCost)
+        {
+            if (unitCost <= 0)
+            {
+                return int.MaxValue;
+            }
+
+            float remaining = state.Budget.AvailablePurchaseFunds
+                - state.CommittedRecruitmentCost;
+            return Math.Max(0, (int)Math.Floor(remaining / unitCost));
+        }
+
+        /// <summary>
         /// Combines immediate recruitment cost with the complete projected
         /// party wage for the configured maintenance period.
         /// </summary>
@@ -368,6 +390,11 @@ namespace ModifiedArmy.Recruitment.Models
             if (result.RecruitableCount == result.AllowedByWageLimit)
             {
                 return RecruitmentLimitReason.WageLimit;
+            }
+
+            if (result.RecruitableCount == result.AllowedByRecruitmentCost)
+            {
+                return RecruitmentLimitReason.RecruitmentCost;
             }
 
             return RecruitmentLimitReason.MaintenanceFunds;

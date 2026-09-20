@@ -67,4 +67,25 @@
 
     <string id="str_modifiedarmy_party_wage_state_peace"
         text="{=ModifiedArmy_PartyWageStatePeace}和平" />
+
+    <!-- Unified AI recruitment: mercenary evaluation diagnostics. -->
+    <string id="str_modifiedarmy_ai_recruitment_mercenary_evaluation"
+        text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 士兵='{TROOP_NAME}' | 等级={TIER} | 兵种={ROLE} | 质量={QUALITY} | 请求={REQUESTED} | 批准={APPROVED} | 限制={LIMIT} | 单人费用={UNIT_COST} | 单人工资={UNIT_WAGE} | 可维持天数={DAYS}" />
+
+    <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
+    <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />
+    <string id="str_modifiedarmy_recruit_role_cavalry" text="{=ModifiedArmy_RecruitRoleCavalry}骑兵" />
+    <string id="str_modifiedarmy_recruit_role_horse_archer" text="{=ModifiedArmy_RecruitRoleHorseArcher}骑射手" />
+    <string id="str_modifiedarmy_recruit_quality_low" text="{=ModifiedArmy_RecruitQualityLow}低阶" />
+    <string id="str_modifiedarmy_recruit_quality_middle" text="{=ModifiedArmy_RecruitQualityMiddle}中阶" />
+    <string id="str_modifiedarmy_recruit_quality_top" text="{=ModifiedArmy_RecruitQualityTop}高阶" />
+    <string id="str_modifiedarmy_recruit_limit_none" text="{=ModifiedArmy_RecruitLimit_None}无" />
+    <string id="str_modifiedarmy_recruit_limit_invalid_party" text="{=ModifiedArmy_RecruitLimit_InvalidParty}无效部队" />
+    <string id="str_modifiedarmy_recruit_limit_invalid_troop" text="{=ModifiedArmy_RecruitLimit_InvalidTroop}无效士兵" />
+    <string id="str_modifiedarmy_recruit_limit_party_size" text="{=ModifiedArmy_RecruitLimit_PartySize}部队人数" />
+    <string id="str_modifiedarmy_recruit_limit_combat_role" text="{=ModifiedArmy_RecruitLimit_CombatRole}兵种比例" />
+    <string id="str_modifiedarmy_recruit_limit_quality" text="{=ModifiedArmy_RecruitLimit_Quality}质量比例" />
+    <string id="str_modifiedarmy_recruit_limit_wage" text="{=ModifiedArmy_RecruitLimit_WageLimit}工资上限" />
+    <string id="str_modifiedarmy_recruit_limit_cost" text="{=ModifiedArmy_RecruitLimit_RecruitmentCost}招募费用" />
+    <string id="str_modifiedarmy_recruit_limit_maintenance" text="{=ModifiedArmy_RecruitLimit_MaintenanceFunds}维持资金" />
 </strings>

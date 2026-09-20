@@ -24,6 +24,8 @@ namespace ModifiedArmy.Recruitment.Models
 
         public float SpendableFunds { get; private set; }
 
+        public float AvailablePurchaseFunds { get; private set; }
+
         public int MaintenanceDays { get; private set; }
 
         /// <summary>
@@ -59,6 +61,12 @@ namespace ModifiedArmy.Recruitment.Models
 
             result.SpendableFunds =
                 liquidFunds * (1f - EmergencyReserveRatio);
+            // Lord recruitment transactions withdraw from the leader, not
+            // directly from PartyTradeGold. Keep this immediate-payment limit
+            // separate from the broader long-term maintenance pool.
+            result.AvailablePurchaseFunds = Math.Max(
+                0f,
+                party.LeaderHero?.Gold ?? party.PartyTradeGold);
             return result;
         }
     }
