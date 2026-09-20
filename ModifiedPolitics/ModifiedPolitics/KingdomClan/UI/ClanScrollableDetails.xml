@@ -83,19 +83,138 @@
                 <!-- Banner                                            -->
                 <!-- ================================================= -->
 
-                <MaskedTextureWidget
-                    DataSource="{CurrentSelectedClan\Banner_9}"
-                    WidthSizePolicy="Fixed"
+                <Widget
+                    DataSource="{CurrentSelectedClan}"
+                    WidthSizePolicy="StretchToParent"
                     HeightSizePolicy="Fixed"
-                    SuggestedWidth="107"
-                    SuggestedHeight="128"
-                    MarginTop="5"
-                    HorizontalAlignment="Center"
-                    VerticalAlignment="Top"
-                    Brush="Kingdom.TornBanner.Big"
-                    AdditionalArgs="@AdditionalArgs"
-                    ImageId="@Id"
-                    TextureProviderName="@TextureProviderName" />
+                    SuggestedHeight="280"
+                    MarginTop="5">
+
+                  <Children>
+
+                    <MaskedTextureWidget
+                        DataSource="{Banner_9}"
+                        WidthSizePolicy="Fixed"
+                        HeightSizePolicy="Fixed"
+                        SuggestedWidth="107"
+                        SuggestedHeight="128"
+                        HorizontalAlignment="Center"
+                        VerticalAlignment="Top"
+                        Brush="Kingdom.TornBanner.Big"
+                        AdditionalArgs="@AdditionalArgs"
+                        ImageId="@Id"
+                        TextureProviderName="@TextureProviderName" />
+
+                    <!-- Native Clan screen-style finance summary. -->
+                    <Widget
+                        Id="ModifiedPoliticsClanFinancePanel"
+                        WidthSizePolicy="Fixed"
+                        HeightSizePolicy="Fixed"
+                        SuggestedWidth="265"
+                        SuggestedHeight="280"
+                        HorizontalAlignment="Right"
+                        VerticalAlignment="Top"
+                        MarginRight="70"
+                        Sprite="StdAssets\Popup\canvas">
+
+                      <Children>
+
+                        <HintWidget
+                            DataSource="{FinanceHint}"
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="StretchToParent"
+                            Command.HoverBegin="ExecuteBeginHint"
+                            Command.HoverEnd="ExecuteEndHint" />
+
+                        <Widget
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="StretchToParent"
+                            Sprite="StdAssets\Popup\canvas_gradient"
+                            IsEnabled="false" />
+
+                        <ListPanel
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="CoverChildren"
+                            MarginLeft="12"
+                            MarginRight="20"
+                            IsEnabled="false"
+                            StackLayout.LayoutMethod="VerticalTopToBottom">
+
+                          <Children>
+
+                            <TextWidget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="CoverChildren"
+                                MarginTop="10"
+                                Brush="Popup.Title.Text"
+                                MinHeight="50"
+                                Text="@FinanceText" />
+
+                            <Widget
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="270"
+                                SuggestedHeight="23"
+                                PositionXOffset="-15"
+                                Sprite="StdAssets\Popup\divider" />
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.TotalIncome.Text" Text="@TotalIncomeText" />
+                                <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.TotalIncome.Text" Amount="@TotalIncomeValue" NegativeBrushName="Clan.Stat.NegativeChange.Text" PositiveBrushName="Clan.Stat.PositiveChange.Text" UseParentheses="false" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.TotalExpenses.Text" Text="@TotalExpensesText" />
+                                <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.TotalExpenses.Text" Amount="@TotalExpensesValue" NegativeBrushName="Clan.Stat.NegativeChange.Text" PositiveBrushName="Clan.Stat.PositiveChange.Text" UseParentheses="false" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="10">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.DailyChange.Text" Text="@DailyChangeText" />
+                                <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.DailyChange.Text" Amount="@DailyChangeValue" NegativeBrushName="Clan.Stat.NegativeChange.Text" PositiveBrushName="Clan.Stat.PositiveChange.Text" UseParentheses="false" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="10">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Text="@CurrentGoldText" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.CurrentGold.Text" IntText="@CurrentGold" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Text="@ExpectedGoldText" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.CurrentGold.Text" IntText="@ExpectedGold" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                          </Children>
+
+                        </ListPanel>
+
+                        <BrushWidget
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="StretchToParent"
+                            Brush="Popup.Frame"
+                            IsEnabled="false" />
+
+                      </Children>
+
+                    </Widget>
+
+                  </Children>
+
+                </Widget>
 
 
                 <!-- ================================================= -->

@@ -1,0 +1,351 @@
+<ListPanel
+    Id="StatsList"
+    WidthSizePolicy="CoverChildren"
+    HeightSizePolicy="Fixed"
+    SuggestedHeight="400"
+    VerticalAlignment="Top"
+    MarginLeft="10"
+    StackLayout.LayoutMethod="HorizontalLeftToRight">
+
+  <Children>
+
+    <Widget
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="StretchToParent"
+        SuggestedWidth="285"
+        VerticalAlignment="Top">
+
+      <Children>
+
+        <ScrollablePanel
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="StretchToParent"
+            AutoHideScrollBars="true"
+            ClipRect="StatsClipRect"
+            InnerPanel="StatsClipRect\ModifiedPoliticsSettlementStatsList"
+            VerticalScrollbar="..\StatsScrollbar">
+
+          <Children>
+
+            <Widget
+                Id="StatsClipRect"
+                WidthSizePolicy="StretchToParent"
+                HeightSizePolicy="StretchToParent"
+                MarginRight="10"
+                ClipContents="true">
+
+              <Children>
+
+                <NavigatableListPanel
+                    Id="ModifiedPoliticsSettlementStatsList"
+                    DataSource="{ItemProperties}"
+                    WidthSizePolicy="StretchToParent"
+                    HeightSizePolicy="CoverChildren"
+                    VerticalAlignment="Top"
+                    StackLayout.LayoutMethod="VerticalTopToBottom">
+
+                  <ItemTemplate>
+                    <StatItem />
+                  </ItemTemplate>
+
+                </NavigatableListPanel>
+
+              </Children>
+
+            </Widget>
+
+          </Children>
+
+        </ScrollablePanel>
+
+        <ScrollbarWidget
+            Id="StatsScrollbar"
+            WidthSizePolicy="Fixed"
+            HeightSizePolicy="StretchToParent"
+            SuggestedWidth="8"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            AlignmentAxis="Vertical"
+            Handle="StatsScrollbarHandle"
+            MaxValue="100"
+            MinValue="0">
+
+          <Children>
+
+            <Widget
+                WidthSizePolicy="Fixed"
+                HeightSizePolicy="StretchToParent"
+                SuggestedWidth="4"
+                HorizontalAlignment="Center"
+                Sprite="BlankWhiteSquare_9"
+                Color="#5A4033FF"
+                AlphaFactor="0.2" />
+
+            <ImageWidget
+                Id="StatsScrollbarHandle"
+                WidthSizePolicy="Fixed"
+                HeightSizePolicy="Fixed"
+                SuggestedHeight="10"
+                SuggestedWidth="8"
+                HorizontalAlignment="Center"
+                Brush="FaceGen.Scrollbar.Handle" />
+
+          </Children>
+
+        </ScrollbarWidget>
+
+      </Children>
+
+    </Widget>
+
+    <ImageWidget
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="StretchToParent"
+        SuggestedWidth="7"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        Sprite="Clan\divider_vertical" />
+
+    <Widget
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="StretchToParent"
+        SuggestedWidth="300"
+        VerticalAlignment="Top">
+
+      <Children>
+
+        <ListPanel
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="CoverChildren"
+            StackLayout.LayoutMethod="VerticalTopToBottom">
+
+          <Children>
+
+            <ScrollablePanel
+                WidthSizePolicy="StretchToParent"
+                HeightSizePolicy="CoverChildren"
+                AutoHideScrollBars="true"
+                ClipRect="FinanceClipRect"
+                InnerPanel="FinanceClipRect\FinanceItems"
+                VerticalScrollbar="..\..\FinanceScrollbar">
+
+              <Children>
+
+                <Widget
+                    Id="FinanceClipRect"
+                    WidthSizePolicy="StretchToParent"
+                    HeightSizePolicy="Fixed"
+                    SuggestedHeight="320"
+                    ClipContents="true">
+
+                  <Children>
+
+                    <ListPanel
+                        Id="FinanceItems"
+                        DataSource="{SettlementFinanceItems}"
+                        WidthSizePolicy="StretchToParent"
+                        HeightSizePolicy="CoverChildren"
+                        MarginLeft="20"
+                        StackLayout.LayoutMethod="VerticalTopToBottom">
+
+                      <ItemTemplate>
+                        <ListPanel
+                            WidthSizePolicy="StretchToParent"
+                            HeightSizePolicy="Fixed"
+                            SuggestedHeight="40"
+                            StackLayout.LayoutMethod="HorizontalLeftToRight">
+
+                          <Children>
+
+                            <FiefProfitTypeVisualBrushWidget
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="40"
+                                SuggestedHeight="40"
+                                VerticalAlignment="Center"
+                                Brush="Clan.Fief.Profit.Type.Image"
+                                Type="@Type">
+
+                              <Children>
+
+                                <Widget
+                                    IsEnabled="@ShowGovernorPortrait"
+                                    WidthSizePolicy="StretchToParent"
+                                    HeightSizePolicy="StretchToParent">
+
+                                  <Children>
+
+                                    <ImageIdentifierWidget
+                                        DataSource="{GovernorVisual}"
+                                        WidthSizePolicy="Fixed"
+                                        HeightSizePolicy="Fixed"
+                                        SuggestedWidth="36"
+                                        SuggestedHeight="27"
+                                        VerticalAlignment="Center"
+                                        MarginBottom="4"
+                                        AdditionalArgs="@AdditionalArgs"
+                                        ImageId="@Id"
+                                        TextureProviderName="@TextureProviderName"
+                                        DoNotAcceptEvents="true"
+                                        HideWhenNull="true" />
+
+                                  </Children>
+
+                                </Widget>
+
+                              </Children>
+
+                            </FiefProfitTypeVisualBrushWidget>
+
+                            <TextWidget
+                                WidthSizePolicy="StretchToParent"
+                                HeightSizePolicy="StretchToParent"
+                                VerticalAlignment="Center"
+                                Brush="Clan.Stat.Name.Text"
+                                Text="@Name" />
+
+                            <ChangeAmountTextWidget
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="75"
+                                SuggestedHeight="40"
+                                HorizontalAlignment="Right"
+                                VerticalAlignment="Center"
+                                Brush="Settlement.Property.PositiveChange.Text"
+                                Amount="@Value"
+                                NegativeBrushName="Clan.Stat.NegativeChange.Text"
+                                PositiveBrushName="Clan.Stat.PositiveChange.Text"
+                                UseParentheses="false" />
+
+                            <ImageWidget
+                                WidthSizePolicy="Fixed"
+                                HeightSizePolicy="Fixed"
+                                SuggestedWidth="20"
+                                SuggestedHeight="20"
+                                VerticalAlignment="Center"
+                                Sprite="General\Icons\Coin@2x" />
+
+                          </Children>
+
+                        </ListPanel>
+                      </ItemTemplate>
+
+                    </ListPanel>
+
+                  </Children>
+
+                </Widget>
+
+              </Children>
+
+            </ScrollablePanel>
+
+            <ImageWidget
+                DoNotAcceptEvents="true"
+                WidthSizePolicy="StretchToParent"
+                HeightSizePolicy="Fixed"
+                SuggestedHeight="4"
+                HorizontalAlignment="Center"
+                Sprite="Clan\divider_mid"
+                MarginLeft="20"
+                MarginRight="20" />
+
+            <ListPanel
+                DataSource="{SettlementTotalProfit}"
+                WidthSizePolicy="StretchToParent"
+                HeightSizePolicy="Fixed"
+                SuggestedHeight="40"
+                MarginLeft="20"
+                StackLayout.LayoutMethod="HorizontalLeftToRight">
+
+              <Children>
+
+                <FiefProfitTypeVisualBrushWidget
+                    WidthSizePolicy="Fixed"
+                    HeightSizePolicy="Fixed"
+                    SuggestedWidth="40"
+                    SuggestedHeight="40"
+                    VerticalAlignment="Center"
+                    Brush="Clan.Fief.Profit.Type.Image"
+                    Type="@Type" />
+
+                <TextWidget
+                    WidthSizePolicy="StretchToParent"
+                    HeightSizePolicy="StretchToParent"
+                    VerticalAlignment="Center"
+                    Brush="Clan.Stat.Name.Text"
+                    Text="@Name" />
+
+                <ChangeAmountTextWidget
+                    WidthSizePolicy="Fixed"
+                    HeightSizePolicy="Fixed"
+                    SuggestedWidth="75"
+                    SuggestedHeight="40"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Center"
+                    Brush="Settlement.Property.PositiveChange.Text"
+                    Amount="@Value"
+                    NegativeBrushName="Clan.Stat.NegativeChange.Text"
+                    PositiveBrushName="Clan.Stat.PositiveChange.Text"
+                    UseParentheses="false" />
+
+                <ImageWidget
+                    WidthSizePolicy="Fixed"
+                    HeightSizePolicy="Fixed"
+                    SuggestedWidth="20"
+                    SuggestedHeight="20"
+                    VerticalAlignment="Center"
+                    Sprite="General\Icons\Coin@2x" />
+
+              </Children>
+
+            </ListPanel>
+
+          </Children>
+
+        </ListPanel>
+
+        <ScrollbarWidget
+            Id="FinanceScrollbar"
+            WidthSizePolicy="Fixed"
+            HeightSizePolicy="Fixed"
+            SuggestedHeight="270"
+            SuggestedWidth="8"
+            HorizontalAlignment="Right"
+            VerticalAlignment="Top"
+            AlignmentAxis="Vertical"
+            Handle="FinanceScrollbarHandle"
+            MaxValue="100"
+            MinValue="0">
+
+          <Children>
+
+            <Widget
+                WidthSizePolicy="Fixed"
+                HeightSizePolicy="StretchToParent"
+                SuggestedWidth="4"
+                HorizontalAlignment="Center"
+                Sprite="BlankWhiteSquare_9"
+                Color="#5A4033FF"
+                AlphaFactor="0.2" />
+
+            <ImageWidget
+                Id="FinanceScrollbarHandle"
+                WidthSizePolicy="Fixed"
+                HeightSizePolicy="Fixed"
+                SuggestedHeight="10"
+                SuggestedWidth="8"
+                HorizontalAlignment="Center"
+                Brush="FaceGen.Scrollbar.Handle" />
+
+          </Children>
+
+        </ScrollbarWidget>
+
+      </Children>
+
+    </Widget>
+
+  </Children>
+
+</ListPanel>

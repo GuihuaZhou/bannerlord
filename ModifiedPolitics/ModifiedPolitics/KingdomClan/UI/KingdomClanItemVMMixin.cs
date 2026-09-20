@@ -22,15 +22,18 @@ namespace ModifiedPolitics.UI.KingdomClan
 
             RefreshWarPotentialLocalization();
             RefreshWarDispositionLocalization();
+            RefreshClanFinanceLocalization();
 
             RefreshWarPotentialData();
             RefreshWarDispositionUiData();
+            RefreshClanFinanceData();
         }
 
         public override void OnRefresh()
         {
             RefreshWarPotentialData();
             RefreshWarDispositionUiData();
+            RefreshClanFinanceData();
         }
 
         private Clan GetClan()
