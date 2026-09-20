@@ -1,6 +1,8 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.Recruitment;
+using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
@@ -65,13 +67,9 @@ namespace ModifiedArmy.Models.Fief
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
             int remainSize = partySizeLimit - currentMembers;
-            float remainingDailyWageBudget =
-                AiRecruitmentFinancialModel
-                    .GetAvailableAdditionalDailyWage(targetParty);
 
-            // 目标 party 没有空间，则停止招募
-            if (remainSize <= 0
-                || remainingDailyWageBudget <= 0f)
+            // A full party cannot receive another fief detachment.
+            if (remainSize <= 0)
                 return 0;
 
             if (_soldierTypeWeights == null || _totalWeight <= 0)
@@ -82,8 +80,10 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
             }
 
-            // 士兵类型及可招募的数量
-            Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
+            // The fief template remains the upstream supply policy. The
+            // unified AI model may further reduce these offers, but it never
+            // changes which fief troop identities the settlement produces.
+            Dictionary<SoldierType, int> offeredSoldierTypeSize = new();
 
             // 记录招募的士兵类型及数量
             Dictionary<SoldierType, int> tmpRecruitSoldierTypeSize = new();
@@ -91,7 +91,7 @@ namespace ModifiedArmy.Models.Fief
             // 按权重分配剩余空间
             foreach (var kvp in _soldierTypeWeights)
             {
-                tmpSoldierTypeSize[kvp.Key] =
+                offeredSoldierTypeSize[kvp.Key] =
                     (remainSize * _soldierTypeWeights[kvp.Key]) / _totalWeight;
 
                 tmpRecruitSoldierTypeSize[kvp.Key] = 0;
@@ -114,6 +114,8 @@ namespace ModifiedArmy.Models.Fief
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
+            List<RecruitmentCandidate> candidates = new();
+
             foreach (var element in _fiefParty.GetTroopRoster())
             {
                 var troop = element.Character;
@@ -128,74 +130,84 @@ namespace ModifiedArmy.Models.Fief
                 var type =
                     SoldierTypeClassifier.GetSoldierType(troop);
 
-                // 检查剩余容量是否足够
-                int taken =
-                    Math.Min(
-                        count,
-                        tmpSoldierTypeSize[type]);
+                int offered = Math.Min(
+                    count,
+                    offeredSoldierTypeSize[type]);
 
-                float unitDailyWage =
-                    AiRecruitmentFinancialModel
-                        .EstimateUnitDailyWage(
-                            targetParty,
-                            troop);
-
-                if (unitDailyWage > 0f)
+                if (offered <= 0)
                 {
-                    taken = Math.Min(
-                        taken,
-                        (int)Math.Floor(
-                            remainingDailyWageBudget
-                            / unitDailyWage));
+                    continue;
                 }
 
-                if (taken > 0)
+                candidates.Add(
+                    new RecruitmentCandidate(
+                        troop,
+                        offered,
+                        RecruitmentSource.Fief));
+
+                offeredSoldierTypeSize[type] -= offered;
+            }
+
+            RecruitmentPlan aiPlan = null;
+            Dictionary<CharacterObject, int> approvedTroops =
+                targetParty.LeaderHero.Clan == Clan.PlayerClan
+                    ? BuildPlayerFiefRecruitment(
+                        targetParty,
+                        candidates)
+                    : BuildAiFiefRecruitment(
+                        targetParty,
+                        candidates,
+                        out aiPlan);
+
+            // Apply the completed decision only after all candidates have
+            // been evaluated. This prevents earlier roster mutations from
+            // changing the model inputs for later candidates.
+            foreach (var approval in approvedTroops)
+            {
+                CharacterObject troop = approval.Key;
+                int taken = approval.Value;
+
+                if (troop == null || taken <= 0)
                 {
-                    // 从封邑 party 移除士兵
-                    RemoveTroopsFromParty(
-                        _fiefParty,
-                        troop,
-                        taken);
-
-                    // 向目标 party 添加士兵
-                    targetParty.MemberRoster.AddToCounts(
-                        troop,
-                        taken,
-                        false,
-                        0,
-                        0,
-                        true,
-                        -1);
-
-                    // 记录招募的士兵
-                    if (tmpRecruitTroops.ContainsKey(troop))
-                        tmpRecruitTroops[troop] += taken;
-                    else
-                        tmpRecruitTroops[troop] = taken;
-
-                    // 更新计数器
-                    tmpSoldierTypeSize[type] =
-                        Math.Max(
-                            0,
-                            tmpSoldierTypeSize[type] - taken);
-
-                    tmpRecruitSoldierTypeSize[type] += taken;
-
-                    remainingDailyWageBudget = Math.Max(
-                        0f,
-                        remainingDailyWageBudget
-                        - taken * unitDailyWage);
-
-                    hearthCost +=
-                        taken * tmpHearthCostPerTroop;
+                    continue;
                 }
+
+                SoldierType type =
+                    SoldierTypeClassifier.GetSoldierType(troop);
+
+                RemoveTroopsFromParty(_fiefParty, troop, taken);
+                targetParty.MemberRoster.AddToCounts(
+                    troop,
+                    taken,
+                    false,
+                    0,
+                    0,
+                    true,
+                    -1);
+
+                tmpRecruitTroops[troop] = taken;
+                tmpRecruitSoldierTypeSize[type] += taken;
+                hearthCost += taken * tmpHearthCostPerTroop;
             }
 
             int totalRecruited =
                 tmpRecruitTroops.Values.Sum();
 
             if (totalRecruited <= 0)
+            {
+                LogAiFiefRecruitment(
+                    targetParty,
+                    aiPlan,
+                    candidates.Sum(candidate => candidate.AvailableCount),
+                    0);
                 return 0;
+            }
+
+            LogAiFiefRecruitment(
+                targetParty,
+                aiPlan,
+                candidates.Sum(candidate => candidate.AvailableCount),
+                totalRecruited);
 
             prosperityCost =
                 CalculateRecruitmentProsperityCost(totalRecruited);
@@ -299,6 +311,136 @@ namespace ModifiedArmy.Models.Fief
                 CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
 
             return totalRecruited;
+        }
+
+        /// <summary>
+        /// Keeps the legacy automatic player recruitment behavior separate
+        /// from the AI composition model. The player remains constrained by
+        /// party space and the existing additional-wage allowance only.
+        /// </summary>
+        private static Dictionary<CharacterObject, int>
+            BuildPlayerFiefRecruitment(
+                MobileParty targetParty,
+                IReadOnlyList<RecruitmentCandidate> candidates)
+        {
+            Dictionary<CharacterObject, int> result = new();
+            float remainingDailyWageBudget =
+                AiRecruitmentFinancialModel
+                    .GetAvailableAdditionalDailyWage(targetParty);
+
+            foreach (RecruitmentCandidate candidate in candidates)
+            {
+                float unitDailyWage =
+                    AiRecruitmentFinancialModel.EstimateUnitDailyWage(
+                        targetParty,
+                        candidate.Troop);
+                int approved = candidate.AvailableCount;
+
+                if (unitDailyWage > 0f)
+                {
+                    approved = Math.Min(
+                        approved,
+                        (int)Math.Floor(
+                            remainingDailyWageBudget / unitDailyWage));
+                }
+
+                if (approved <= 0)
+                {
+                    continue;
+                }
+
+                result[candidate.Troop] = approved;
+                remainingDailyWageBudget = Math.Max(
+                    0f,
+                    remainingDailyWageBudget - approved * unitDailyWage);
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Evaluates all fief offers together so role, quality, wage and
+        /// thirty-day affordability limits see one consistent party state.
+        /// </summary>
+        private static Dictionary<CharacterObject, int>
+            BuildAiFiefRecruitment(
+                MobileParty targetParty,
+                IReadOnlyList<RecruitmentCandidate> candidates,
+                out RecruitmentPlan plan)
+        {
+            Dictionary<CharacterObject, int> result = new();
+            plan = RecruitmentModelManager.Model.BuildPlan(
+                targetParty,
+                candidates);
+
+            foreach (RecruitmentEvaluationResult evaluation in
+                plan.Evaluations)
+            {
+                if (evaluation.Troop == null ||
+                    evaluation.RecruitableCount <= 0)
+                {
+                    continue;
+                }
+
+                result[evaluation.Troop] = evaluation.RecruitableCount;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Emits one compact record for an AI fief recruitment attempt.
+        /// Player recruitment already has its existing result notification.
+        /// </summary>
+        private void LogAiFiefRecruitment(
+            MobileParty targetParty,
+            RecruitmentPlan plan,
+            int offeredCount,
+            int approvedCount)
+        {
+            if (plan == null)
+            {
+                return;
+            }
+
+            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
+
+            foreach (RecruitmentEvaluationResult evaluation in
+                plan.Evaluations)
+            {
+                if (evaluation.RecruitableCount < evaluation.RequestedCount)
+                {
+                    mainLimit = evaluation.PrimaryLimit;
+                    break;
+                }
+            }
+
+            TextObject message = new TextObject(
+                "{=ModifiedArmy_AIRecruitmentFiefPlan}" +
+                "[AIRecruitment] Party='{PARTY_NAME}' | " +
+                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
+                "FiefOffers={OFFERED} | Approved={APPROVED} | " +
+                "FirstLimit={LIMIT}");
+            message.SetTextVariable("PARTY_NAME", targetParty.Name);
+            message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+            message.SetTextVariable("CULTURE_ID", plan.CultureId);
+            message.SetTextVariable("OFFERED", offeredCount);
+            message.SetTextVariable("APPROVED", approvedCount);
+            message.SetTextVariable(
+                "LIMIT",
+                GetRecruitmentLimitText(mainLimit));
+            ModLogger.Notice(message.ToString());
+        }
+
+        /// <summary>
+        /// Resolves the same stable localization keys used by the other
+        /// unified recruitment integrations.
+        /// </summary>
+        private static TextObject GetRecruitmentLimitText(
+            RecruitmentLimitReason reason)
+        {
+            return new TextObject(
+                "{=ModifiedArmy_RecruitLimit_" + reason + "}" + reason);
         }
 
 
