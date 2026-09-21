@@ -133,7 +133,7 @@ namespace ModifiedArmy.Recruitment.Models
                 : Campaign.Current.Models.PartyWageModel
                     .GetTroopRecruitmentCost(
                         troop,
-                        party.LeaderHero,
+                        GetRecruitingHero(party),
                         false)
                     .RoundedResultNumber;
 
@@ -421,6 +421,16 @@ namespace ModifiedArmy.Recruitment.Models
             return party?.IsGarrison == true
                 ? RecruitmentPartyType.Garrison
                 : RecruitmentPartyType.MobileParty;
+        }
+
+        /// <summary>
+        /// Garrisons normally have no party leader. Their owning clan leader
+        /// is the native payer for automatic recruitment expenses.
+        /// </summary>
+        private static Hero GetRecruitingHero(MobileParty party)
+        {
+            return party?.LeaderHero
+                ?? party?.CurrentSettlement?.OwnerClan?.Leader;
         }
 
         /// <summary>

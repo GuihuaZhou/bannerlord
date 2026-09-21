@@ -64,9 +64,11 @@ namespace ModifiedArmy.Recruitment.Models
             // Lord recruitment transactions withdraw from the leader, not
             // directly from PartyTradeGold. Keep this immediate-payment limit
             // separate from the broader long-term maintenance pool.
+            Hero payingHero = party.LeaderHero
+                ?? party.CurrentSettlement?.OwnerClan?.Leader;
             result.AvailablePurchaseFunds = Math.Max(
                 0f,
-                party.LeaderHero?.Gold ?? party.PartyTradeGold);
+                payingHero?.Gold ?? party.PartyTradeGold);
             return result;
         }
     }
