@@ -46,14 +46,14 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Hero
                     capturerClan.MapFaction,
                     prisonerClan.MapFaction))
             {
-                ModLogger.Notice(
+                ModLogger.Info(
                     $"[战争倾向] 忽略英雄被俘 | 英雄={prisoner.Name} | " +
                     $"被俘家族={prisonerClan.Name} | 俘虏家族={capturerClan.Name} | " +
                     "原因=双方并非敌对政治势力");
                 return;
             }
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 识别英雄被俘 | 英雄={prisoner.Name} | " +
                 $"被俘家族={prisonerClan.Name} | 俘虏家族={capturerClan.Name}");
 
@@ -84,7 +84,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Hero
                 return;
             }
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 识别英雄死亡 | 英雄={victim.Name} | " +
                 $"家族={victimClan.Name} | 原因={detail} | " +
                 $"执行者={(killer?.Name?.ToString() ?? "无/未知")} | " +

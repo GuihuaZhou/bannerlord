@@ -230,7 +230,7 @@ namespace ModifiedPolitics.Models.WarDisposition
                 // 每日只输出玩家家族明细, 避免大量 AI Clan 的 Notice 淹没屏幕.
                 if (clan == Clan.PlayerClan)
                 {
-                    ModLogger.Notice(
+                    ModLogger.Info(
                         $"[战争倾向] 每日回归 | 家族={clan.Name} | " +
                         $"战争持续={warDuration:0.0}天 | 回归量={returnAmount:0.##} | " +
                         $"回归前={previousValue:0.00} | " +
@@ -239,7 +239,7 @@ namespace ModifiedPolitics.Models.WarDisposition
                 }
             }
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 每日回归完成 | 有效家族={returnedClanCount} | " +
                 $"绝对回归总量={totalAbsoluteReturn:0.00}");
         }

@@ -58,7 +58,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Territory
                 return;
             }
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 识别村庄被劫掠 | 村庄={villageSettlement.Name} | " +
                 $"受损家族={victimClan.Name} | 劫掠家族={raiderClan.Name}");
 
@@ -109,7 +109,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Territory
 
             if (WarDispositionClanEligibility.IsEligible(formerOwnerClan))
             {
-                ModLogger.Notice(
+                ModLogger.Info(
                     $"[战争倾向] 识别定居点失守 | 定居点={settlement.Name} | " +
                     $"原家族={formerOwnerClan.Name} | 事件={lossEvent}");
                 WarDispositionEventDistributor.DistributeClanEvent(
@@ -119,7 +119,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Territory
 
             if (WarDispositionClanEligibility.IsEligible(capturerClan))
             {
-                ModLogger.Notice(
+                ModLogger.Info(
                     $"[战争倾向] 识别定居点攻占 | 定居点={settlement.Name} | " +
                     $"攻占家族={capturerClan.Name} | 事件={captureEvent}");
                 WarDispositionEventDistributor.DistributeClanEvent(
@@ -141,7 +141,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Territory
                 ? WarDispositionEventType.TownGranted
                 : WarDispositionEventType.CastleGranted;
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 识别定居点获封 | 定居点={settlement.Name} | " +
                 $"获封家族={grantedClan.Name} | 事件={grantedEvent}");
             WarDispositionEventDistributor.DistributeClanEvent(

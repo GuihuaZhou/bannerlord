@@ -1,4 +1,5 @@
 using HarmonyLib;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
@@ -219,6 +220,11 @@ namespace ModifiedArmy.Recruitment.Patches
             int approvedCount,
             int dailyLimit)
         {
+            if (!RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
+            {
+                return;
+            }
+
             RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
 
             foreach (RecruitmentEvaluationResult evaluation in
@@ -231,24 +237,51 @@ namespace ModifiedArmy.Recruitment.Patches
                 }
             }
 
-            TextObject message = new TextObject(
-                "{=ModifiedArmy_AIRecruitmentGarrisonPlan}" +
-                "[AIRecruitment] Garrison='{PARTY_NAME}' | " +
-                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
-                "VolunteerOffers={OFFERED} | Approved={APPROVED} | " +
-                "DailyLimit={DAILY_LIMIT} | FirstLimit={LIMIT}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_ai_recruitment_garrison_plan");
             message.SetTextVariable("PARTY_NAME", town.GarrisonParty.Name);
             message.SetTextVariable("SETTLEMENT_NAME", town.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("OFFERED", offeredCount);
             message.SetTextVariable("APPROVED", approvedCount);
             message.SetTextVariable("DAILY_LIMIT", dailyLimit);
-            message.SetTextVariable(
-                "LIMIT",
-                new TextObject(
-                    "{=ModifiedArmy_RecruitLimit_" + mainLimit + "}" +
-                    mainLimit));
-            ModLogger.Notice(message.ToString());
+            message.SetTextVariable("LIMIT", GetLimitText(mainLimit));
+            if (approvedCount > 0)
+            {
+                // Garrison recruitment runs once per eligible settlement per
+                // day, so even successful records remain below Notice level.
+                ModLogger.Info(message.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(message.ToString());
+            }
+        }
+
+        private static TextObject GetLimitText(
+            RecruitmentLimitReason reason)
+        {
+            switch (reason)
+            {
+                case RecruitmentLimitReason.InvalidParty:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_invalid_party");
+                case RecruitmentLimitReason.InvalidTroop:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_invalid_troop");
+                case RecruitmentLimitReason.PartySize:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_party_size");
+                case RecruitmentLimitReason.CombatRole:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_combat_role");
+                case RecruitmentLimitReason.Quality:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_quality");
+                case RecruitmentLimitReason.WageLimit:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_wage");
+                case RecruitmentLimitReason.RecruitmentCost:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_cost");
+                case RecruitmentLimitReason.MaintenanceFunds:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_maintenance");
+                default:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_none");
+            }
         }
 
         private sealed class GarrisonVolunteerOffer

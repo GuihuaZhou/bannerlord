@@ -4,6 +4,8 @@ using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -52,30 +54,34 @@ namespace ModifiedArmy.Garrison.Patches
                 int currentGarrisonWage =
                     town.GarrisonParty?.TotalWage ?? 0;
 
-                if (currentGarrisonWage > previousLimit
+                bool shouldLog = clan == Clan.PlayerClan ||
+                    (Clan.PlayerClan?.Kingdom != null &&
+                        clan.Kingdom == Clan.PlayerClan.Kingdom);
+
+                if (shouldLog &&
+                    currentGarrisonWage > previousLimit
                     && currentGarrisonWage <= newLimit)
                 {
-                    ModLogger.Notice(
-                        $"[GarrisonWageLimit] Prevented wage-limit dismissal | " +
-                        $"Settlement='{town.Name}' | Wage={currentGarrisonWage} | " +
-                        $"PreviousLimit={previousLimit} | NewLimit={newLimit}");
+                    TextObject message = GameTexts.FindText(
+                        "str_modifiedarmy_garrison_wage_dismissal_prevented");
+                    message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+                    message.SetTextVariable("CURRENT_WAGE", currentGarrisonWage);
+                    message.SetTextVariable("PREVIOUS_LIMIT", previousLimit);
+                    message.SetTextVariable("NEW_LIMIT", newLimit);
+                    ModLogger.Notice(message.ToString());
                 }
-                else if (currentGarrisonWage > newLimit)
+                else if (shouldLog && currentGarrisonWage > newLimit)
                 {
-                    ModLogger.Notice(
-                        $"[GarrisonWageLimit] Wage limit is still exceeded | " +
-                        $"Settlement='{town.Name}' | Wage={currentGarrisonWage} | " +
-                        $"NewLimit={newLimit} | Excess={currentGarrisonWage - newLimit}");
+                    TextObject message = GameTexts.FindText(
+                        "str_modifiedarmy_garrison_wage_still_exceeded");
+                    message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+                    message.SetTextVariable("CURRENT_WAGE", currentGarrisonWage);
+                    message.SetTextVariable("NEW_LIMIT", newLimit);
+                    message.SetTextVariable(
+                        "EXCESS",
+                        currentGarrisonWage - newLimit);
+                    ModLogger.Notice(message.ToString());
                 }
-
-                ModLogger.Debug(
-                    $"[GarrisonWageLimit] Settlement='{town.Name}' | " +
-                    $"Type={(town.Settlement.IsCastle ? "Castle" : "Town")} | " +
-                    $"Border={isBorder} | DesiredSize={desiredSize} | " +
-                    $"ExpectedAverageWage={expectedAverageWage:F2} | " +
-                    $"GoldFactor={goldFactor:F2} | " +
-                    $"RawLimit={rawWageLimit:F2} | " +
-                    $"PreviousLimit={previousLimit} | NewLimit={newLimit}");
             }
 
             // The replacement has fully handled every fief of this clan.

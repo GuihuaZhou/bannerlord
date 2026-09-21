@@ -3,6 +3,7 @@ using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Events;
 using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.Models.WarDisposition.Distribution
 {
@@ -42,12 +43,26 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                 baseValueOverride);
 
             WarDispositionData ownData = manager.GetOrCreateData(eventClan);
-            if (writeNoticeLog)
+            bool shouldLog = writeNoticeLog &&
+                eventClan.Kingdom != null &&
+                eventClan.Kingdom == Clan.PlayerClan?.Kingdom;
+
+            if (shouldLog)
             {
-                ModLogger.Notice(
-                    $"[战争倾向] {eventType} | 家族={eventClan.Name} | " +
-                    $"变化={(ownResult?.AppliedDelta ?? 0f):+0.00;-0.00;0.00} | " +
-                    $"当前={(ownData?.Value ?? 0f):0.00}");
+                TextObject message = new TextObject(
+                    "{=ModifiedPolitics_WarDispositionClanChanged}" +
+                    "[War Disposition] {CLAN_NAME} experienced {EVENT_TYPE}. " +
+                    "Its disposition changed by {DELTA} and is now {CURRENT}.");
+                message.SetTextVariable("CLAN_NAME", eventClan.Name);
+                message.SetTextVariable("EVENT_TYPE", eventType.ToString());
+                message.SetTextVariable(
+                    "DELTA",
+                    (ownResult?.AppliedDelta ?? 0f)
+                        .ToString("+0.00;-0.00;0.00"));
+                message.SetTextVariable(
+                    "CURRENT",
+                    (ownData?.Value ?? 0f).ToString("0.00"));
+                ModLogger.Notice(message.ToString());
             }
 
             Kingdom kingdom = eventClan.Kingdom;
@@ -73,11 +88,15 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                 }
             }
 
-            if (writeNoticeLog)
+            if (shouldLog)
             {
-                ModLogger.Notice(
-                    $"[战争倾向] 王国传播 | 来源家族={eventClan.Name} | " +
-                    $"事件={eventType} | 其他家族={sharedClanCount} | 倍率=20%");
+                TextObject message = new TextObject(
+                    "{=ModifiedPolitics_WarDispositionKingdomSpread}" +
+                    "[War Disposition] The event affecting {CLAN_NAME} also influenced " +
+                    "{CLAN_COUNT} other clans in the kingdom at twenty percent strength.");
+                message.SetTextVariable("CLAN_NAME", eventClan.Name);
+                message.SetTextVariable("CLAN_COUNT", sharedClanCount);
+                ModLogger.Notice(message.ToString());
             }
         }
 

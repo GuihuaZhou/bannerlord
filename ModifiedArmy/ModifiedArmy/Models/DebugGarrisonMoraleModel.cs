@@ -166,20 +166,11 @@ namespace ModifiedArmy.Models
 
         public override ExplainedNumber GetEffectivePartyMorale(MobileParty mobileParty, bool includeDescription = false)
         {
-            var enableLog = false;
-            if (mobileParty.IsGarrison)
-            {
-                enableLog = true;
-            }
-
             ExplainedNumber result = new ExplainedNumber(50f, includeDescription, null);
-            if (enableLog) ModLogger.Notice($"{mobileParty.Name}的士气计算开始: 基础=50.0");
 
             result.Add(mobileParty.RecentEventsMorale, this._recentEventsText, null);
-            if (enableLog) ModLogger.Notice($"近期事件({mobileParty.RecentEventsMorale:F1}) → 当前士气={result.ResultNumber:F1}");
 
             this.GetMoraleEffectsFromSkill(mobileParty, ref result);
-            if (enableLog) ModLogger.Notice($"技能加成 → 当前士气={result.ResultNumber:F1}");
 
             if (mobileParty.IsMilitia || mobileParty.IsGarrison)
             {
@@ -189,14 +180,12 @@ namespace ModifiedArmy.Models
                     {
                         float penalty = (float)this.GetStarvationMoralePenalty(mobileParty);
                         result.Add(penalty, this._starvationMoraleText, null);
-                        if (enableLog) ModLogger.Notice($"民兵饥饿惩罚({penalty:F1}) → 当前士气={result.ResultNumber:F1}");
                     }
                 }
                 else if (SettlementHelper.IsGarrisonStarving(mobileParty.CurrentSettlement))
                 {
                     float penalty = (float)this.GetStarvationMoralePenalty(mobileParty);
                     result.Add(penalty, GameTexts.FindText("str_starvation", null), null);
-                    if (enableLog) ModLogger.Notice($"+驻军饥饿惩罚({penalty:F1}) → 当前士气={result.ResultNumber:F1}");
                 }
             }
             else if (mobileParty.Party.IsStarving)
@@ -204,24 +193,16 @@ namespace ModifiedArmy.Models
                 //result.Add((float)this.GetStarvationMoralePenalty(mobileParty), this._starvationMoraleText, null);
                 float penalty = (float)this.GetStarvationMoralePenalty(mobileParty);
                 result.Add(penalty, GameTexts.FindText("str_starvation", null), null);
-                if (enableLog) ModLogger.Notice($"部队饥饿惩罚({penalty:F1}) → 当前士气={result.ResultNumber:F1}");
             }
             if (mobileParty.HasUnpaidWages > 0f)
             {
                 //result.Add(mobileParty.HasUnpaidWages * (float)this.GetNoWageMoralePenalty(mobileParty), this._noWageMoraleText, null);
                 float penalty = mobileParty.HasUnpaidWages * (float)this.GetNoWageMoralePenalty(mobileParty);
                 result.Add(penalty, GameTexts.FindText("str_no_wage", null), null);
-                if (enableLog) ModLogger.Notice($"欠薪惩罚({penalty:F1}) → 当前士气={result.ResultNumber:F1}");
             }
             this.GetMoraleEffectsFromPerks(mobileParty, ref result);
-            if (enableLog) ModLogger.Notice($"Perk效果 → 当前士气={result.ResultNumber:F1}");
             this.CalculateFoodVarietyMoraleBonus(mobileParty, ref result);
-            if (enableLog) ModLogger.Notice($"食物多样性 → 当前士气={result.ResultNumber:F1}");
             this.GetPartySizeMoraleEffect(mobileParty, ref result);
-            if (enableLog) ModLogger.Notice($"部队规模影响 → 当前士气={result.ResultNumber:F1}");
-
-
-            if (enableLog) ModLogger.Notice($"{mobileParty.Name}的士气计算结束: 最终={result.ResultNumber:F1}");
             return result;
         }
 

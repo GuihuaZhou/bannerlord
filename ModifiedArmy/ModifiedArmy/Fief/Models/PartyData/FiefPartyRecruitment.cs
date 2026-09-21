@@ -2,6 +2,7 @@ using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.Recruitment;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
@@ -75,7 +76,7 @@ namespace ModifiedArmy.Models.Fief
             if (_soldierTypeWeights == null || _totalWeight <= 0)
             {
                 ModLogger.Error(
-                    $"[Recruit] CRITICAL: _soldierTypeWeights is null/empty or _totalWeight={_totalWeight}");
+                    $"[Recruit] The soldier type weights are unavailable. The total weight is {_totalWeight}.");
 
                 return 0;
             }
@@ -294,7 +295,7 @@ namespace ModifiedArmy.Models.Fief
             {
                 ModLogger.Notice(msg.ToString());
             }
-            else
+            else if (RecruitmentLogFilter.ShouldLog(targetParty))
             {
                 ModLogger.Info(msg.ToString());
             }
@@ -403,6 +404,11 @@ namespace ModifiedArmy.Models.Fief
                 return;
             }
 
+            if (!RecruitmentLogFilter.ShouldLog(targetParty))
+            {
+                return;
+            }
+
             RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
 
             foreach (RecruitmentEvaluationResult evaluation in
@@ -415,12 +421,8 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
 
-            TextObject message = new TextObject(
-                "{=ModifiedArmy_AIRecruitmentFiefPlan}" +
-                "[AIRecruitment] Party='{PARTY_NAME}' | " +
-                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
-                "FiefOffers={OFFERED} | Approved={APPROVED} | " +
-                "FirstLimit={LIMIT}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_ai_recruitment_fief_plan");
             message.SetTextVariable("PARTY_NAME", targetParty.Name);
             message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
@@ -429,7 +431,14 @@ namespace ModifiedArmy.Models.Fief
             message.SetTextVariable(
                 "LIMIT",
                 GetRecruitmentLimitText(mainLimit));
-            ModLogger.Notice(message.ToString());
+            if (approvedCount > 0)
+            {
+                ModLogger.Notice(message.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(message.ToString());
+            }
         }
 
         /// <summary>
@@ -439,8 +448,27 @@ namespace ModifiedArmy.Models.Fief
         private static TextObject GetRecruitmentLimitText(
             RecruitmentLimitReason reason)
         {
-            return new TextObject(
-                "{=ModifiedArmy_RecruitLimit_" + reason + "}" + reason);
+            switch (reason)
+            {
+                case RecruitmentLimitReason.InvalidParty:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_invalid_party");
+                case RecruitmentLimitReason.InvalidTroop:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_invalid_troop");
+                case RecruitmentLimitReason.PartySize:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_party_size");
+                case RecruitmentLimitReason.CombatRole:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_combat_role");
+                case RecruitmentLimitReason.Quality:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_quality");
+                case RecruitmentLimitReason.WageLimit:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_wage");
+                case RecruitmentLimitReason.RecruitmentCost:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_cost");
+                case RecruitmentLimitReason.MaintenanceFunds:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_maintenance");
+                default:
+                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_none");
+            }
         }
 
 
@@ -624,7 +652,12 @@ namespace ModifiedArmy.Models.Fief
             _soldierTypeCounts[type] += count;
             _totalTroopCount = _soldierTypeCounts.Values.Sum();
 
-            ModLogger.Notice($"{_settlement.Name}的封邑部队从俘虏中招募了{count}名{troop.Name}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_fief_prisoner_recruited");
+            message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+            message.SetTextVariable("COUNT", count);
+            message.SetTextVariable("TROOP_NAME", troop.Name);
+            ModLogger.Notice(message.ToString());
 
             return true;
         }

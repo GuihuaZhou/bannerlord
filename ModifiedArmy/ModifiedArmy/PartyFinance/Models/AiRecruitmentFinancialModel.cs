@@ -1,5 +1,6 @@
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
+using ModifiedArmy.Recruitment.Models;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -31,13 +32,9 @@ namespace ModifiedArmy.PartyFinance.Models
                 ModConfigManager.Instance
                     .GetActiveConfig()
                     .AiNeedEconomicWeeks);
-            Clan clan = party.LeaderHero.Clan;
-            int partyCount = Math.Max(1, clan.WarPartyComponents.Count);
-            float allocatedClanGold = clan.Gold / (float)partyCount;
-            float liquidFunds = Math.Max(
-                0f,
-                party.PartyTradeGold + allocatedClanGold);
-            float cashSupportedWage = liquidFunds / reserveDays;
+            float operatingFunds =
+                RecruitmentBudget.GetOperatingFunds(party);
+            float cashSupportedWage = operatingFunds / reserveDays;
             float sustainableWage = Math.Min(
                 party.PaymentLimit,
                 cashSupportedWage);

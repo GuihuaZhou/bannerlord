@@ -109,7 +109,7 @@ namespace ModifiedArmy.Models.Fief
             }
             TextObject msgComplete = GameTexts.FindText("str_modifiedarmy_fief_init_complete");
             msgComplete.SetTextVariable("COUNT", _fiefDataMap.Count);
-            ModLogger.Notice(msgComplete.ToString());
+            ModLogger.Info(msgComplete.ToString());
         }
 
         private void OnWeeklyTick()

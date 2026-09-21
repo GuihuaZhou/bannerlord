@@ -149,7 +149,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
 
                 if (TryGetWarClan(party.MobileParty, out Clan clan))
                 {
-                    ModLogger.Notice(
+                    ModLogger.Info(
                         $"[战争倾向] 识别战斗事件 | 部队={party.Name} | " +
                         $"家族={clan.Name} | 事件={eventType}");
                     WarDispositionEventDistributor.DistributeClanEvent(

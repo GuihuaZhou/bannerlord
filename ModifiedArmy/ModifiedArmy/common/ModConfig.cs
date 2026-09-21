@@ -381,8 +381,21 @@ namespace ModifiedArmy.common
             msg.SetTextVariable("CONFIG_ID", ConfigId);
             ModLogger.Info(msg.ToString());
 
-            // ===== 配置加载验证（一次性）=====
-            ModLogger.Notice($"[ModConfig] AI招募配置已加载: 文化偏好={AiCulturalPrefs.Count}条, 情境修正={AiSituationalMods.Count}条, NeedThreshold={AiNeedThreshold}, RandomChance={AiRecruitRandomChance}");
+            TextObject recruitmentMessage = GameTexts.FindText(
+                "str_modifiedarmy_recruitment_config_loaded");
+            recruitmentMessage.SetTextVariable(
+                "CULTURE_COUNT",
+                AiCulturalPrefs.Count);
+            recruitmentMessage.SetTextVariable(
+                "SITUATION_COUNT",
+                AiSituationalMods.Count);
+            recruitmentMessage.SetTextVariable(
+                "NEED_THRESHOLD",
+                AiNeedThreshold);
+            recruitmentMessage.SetTextVariable(
+                "RANDOM_CHANCE",
+                AiRecruitRandomChance);
+            ModLogger.Info(recruitmentMessage.ToString());
         }
 
         /// <summary>
@@ -393,7 +406,10 @@ namespace ModifiedArmy.common
             XmlNode aiNode = modConfigNode.SelectSingleNode("AiRecruitment");
             if (aiNode == null)
             {
-                ModLogger.Notice("[ModConfig] 警告：未找到AiRecruitment节点，使用默认值");
+                ModLogger.Warn(
+                    GameTexts.FindText(
+                        "str_modifiedarmy_recruitment_config_missing")
+                    .ToString());
                 return;
             }
 
@@ -430,7 +446,10 @@ namespace ModifiedArmy.common
                     else
                     {
                         string idAttr = cultureNode.Attributes?["id"]?.Value ?? "unknown";
-                        ModLogger.Notice($"[ModConfig] 警告：文化id='{idAttr}'无法解析，跳过");
+                        TextObject warning = GameTexts.FindText(
+                            "str_modifiedarmy_recruitment_culture_invalid");
+                        warning.SetTextVariable("CULTURE_ID", idAttr);
+                        ModLogger.Warn(warning.ToString());
                     }
                 }
             }

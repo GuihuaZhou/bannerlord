@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Supply
 {
@@ -168,15 +169,24 @@ namespace ModifiedArmy.Garrison.Supply
 
                 if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
                 {
-                    ModLogger.Notice(
-                        $"[GarrisonLogistics] Supply party loaded | " +
-                        $"Home='{component.HomeSettlement.Name}' | " +
-                        $"Source='{settlement.Name}' | " +
-                        $"Food={acquisition.FoodAcquired} | " +
-                        $"Cost={acquisition.GoldCost} | " +
-                        $"Mounts={acquisition.MountsPurchased} | " +
-                        $"MountCost={acquisition.MountGoldCost} | " +
-                        $"CargoFood={party.ItemRoster.TotalFood}");
+                    TextObject message = GameTexts.FindText(
+                        "str_modifiedarmy_supply_party_loaded");
+                    message.SetTextVariable(
+                        "HOME_NAME",
+                        component.HomeSettlement.Name);
+                    message.SetTextVariable("SOURCE_NAME", settlement.Name);
+                    message.SetTextVariable("FOOD", acquisition.FoodAcquired);
+                    message.SetTextVariable("COST", acquisition.GoldCost);
+                    message.SetTextVariable(
+                        "MOUNTS",
+                        acquisition.MountsPurchased);
+                    message.SetTextVariable(
+                        "MOUNT_COST",
+                        acquisition.MountGoldCost);
+                    message.SetTextVariable(
+                        "CARGO_FOOD",
+                        party.ItemRoster.TotalFood);
+                    ModLogger.Info(message.ToString());
                 }
 
                 return;
@@ -211,10 +221,15 @@ namespace ModifiedArmy.Garrison.Supply
 
             if (component.HomeSettlement?.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[GarrisonLogistics] Supply party destroyed | " +
-                    $"Home='{component.HomeSettlement.Name}' | " +
-                    $"CooldownDays={DestroyedPartyCooldownDays}");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_supply_party_destroyed");
+                message.SetTextVariable(
+                    "HOME_NAME",
+                    component.HomeSettlement.Name);
+                message.SetTextVariable(
+                    "COOLDOWN_DAYS",
+                    DestroyedPartyCooldownDays);
+                ModLogger.Notice(message.ToString());
             }
         }
 
@@ -364,25 +379,36 @@ namespace ModifiedArmy.Garrison.Supply
                 }
 
                 SetDispatchCooldown(home, 1f);
-                ModLogger.Error(
-                    $"[GarrisonLogistics] Supply party creation failed | " +
-                    $"Home='{home.Name}' | Error='{exception.Message}'");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_supply_party_creation_failed");
+                message.SetTextVariable("HOME_NAME", home.Name);
+                message.SetTextVariable("ERROR", exception.Message);
+                ModLogger.Error(message.ToString());
                 return false;
             }
 
             if (home.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[GarrisonLogistics] Supply party dispatched | " +
-                    $"Home='{home.Name}' | " +
-                    $"Source='{source.Settlement.Name}' | " +
-                    $"Escort={EscortSize} | " +
-                    $"PackAnimals={supplyParty.ItemRoster.NumberOfPackAnimals} | " +
-                    $"FromGranary={packAnimals.FromGranary} | " +
-                    $"Purchased={packAnimals.Purchased} | " +
-                    $"AnimalCost={packAnimals.GoldCost} | " +
-                    $"MountsFromGranary={ridingMountsFromGranary} | " +
-                    $"Requested={source.RequestedFood}");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_supply_party_dispatched");
+                message.SetTextVariable("HOME_NAME", home.Name);
+                message.SetTextVariable(
+                    "SOURCE_NAME",
+                    source.Settlement.Name);
+                message.SetTextVariable("ESCORT", EscortSize);
+                message.SetTextVariable(
+                    "PACK_ANIMALS",
+                    supplyParty.ItemRoster.NumberOfPackAnimals);
+                message.SetTextVariable(
+                    "FROM_GRANARY",
+                    packAnimals.FromGranary);
+                message.SetTextVariable("PURCHASED", packAnimals.Purchased);
+                message.SetTextVariable("ANIMAL_COST", packAnimals.GoldCost);
+                message.SetTextVariable(
+                    "MOUNTS_FROM_GRANARY",
+                    ridingMountsFromGranary);
+                message.SetTextVariable("REQUESTED", source.RequestedFood);
+                ModLogger.Notice(message.ToString());
             }
 
             return true;
@@ -463,13 +489,18 @@ namespace ModifiedArmy.Garrison.Supply
 
             if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[GarrisonLogistics] Supply party returned | " +
-                    $"Home='{component.HomeSettlement.Name}' | " +
-                    $"Escort={returnedTroops} | " +
-                    $"Food={returnedFood} | " +
-                    $"PackAnimals={returnedPackAnimals} | " +
-                    $"Mounts={returnedMounts}");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_supply_party_returned");
+                message.SetTextVariable(
+                    "HOME_NAME",
+                    component.HomeSettlement.Name);
+                message.SetTextVariable("ESCORT", returnedTroops);
+                message.SetTextVariable("FOOD", returnedFood);
+                message.SetTextVariable(
+                    "PACK_ANIMALS",
+                    returnedPackAnimals);
+                message.SetTextVariable("MOUNTS", returnedMounts);
+                ModLogger.Notice(message.ToString());
             }
 
             DestroyPartyAction.Apply(null, party);

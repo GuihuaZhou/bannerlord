@@ -41,5 +41,7 @@
     <string id="ModifiedPolitics_TraitHonor" text="荣誉" />
     <string id="ModifiedPolitics_TraitGenerosity" text="慷慨" />
     <string id="ModifiedPolitics_TraitCalculating" text="谋算" />
+    <string id="ModifiedPolitics_WarDispositionClanChanged" text="[战争倾向] {CLAN_NAME}变化{DELTA}, 当前{CURRENT}." />
+    <string id="ModifiedPolitics_WarDispositionKingdomSpread" text="[战争倾向] {CLAN_NAME}的事件影响了其他{CLAN_COUNT}个家族." />
   </strings>
 </base>

@@ -54,7 +54,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Decisions
 
             support += adjustment;
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 决议支持度 | 决议={decisionType} | " +
                 $"家族={clan.Name} | 结果={outcomeType} | " +
                 $"本体分数={originalSupport:0.00} | " +

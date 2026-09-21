@@ -5,6 +5,7 @@ using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Classification;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
@@ -58,9 +59,11 @@ namespace ModifiedArmy.Patch
                     mercenaryData.ChangeMercenaryType(selectedTroop, finalCount);
 
                     // 仅在实际生成雇佣兵时打印，验证 XML 配置是否生效
-                    ModLogger.Info(
-                        $"[RecruitmentPatches] {town.Name} 更新了 {finalCount} 名 {selectedTroop.Name}"
-                    );
+                    if (RecruitmentLogFilter.ShouldLog(town.OwnerClan))
+                    {
+                        ModLogger.Debug(
+                            $"[Recruitment] {town.Name}新增了{finalCount}名{selectedTroop.Name}.");
+                    }
 
                     return false;
                 }
@@ -161,7 +164,12 @@ namespace ModifiedArmy.Patch
                 float recruitProbability = MathF.Clamp(weight, 0f, 1f);
                 // 应用衰减后的最终概率
                 float finalProbability = recruitProbability * currentProbabilityMultiplier;
-                ModLogger.Info($"[AI招募] {mobileParty.MapFaction?.Name} | {mobileParty.ActualClan?.Name} | {mobileParty.Name} 在 {settlement.Name} 尝试招募 {source} 概率: {finalProbability:P2}");
+                if (RecruitmentLogFilter.ShouldLog(mobileParty))
+                {
+                    ModLogger.Debug(
+                        $"[AIRecruitment] {mobileParty.Name} is trying to recruit from {source} at {settlement.Name}. " +
+                        $"The success chance is {finalProbability:P2}.");
+                }
 
                 // 生成随机数，小于权重（概率）则招募
                 if (MBRandom.RandomFloat < finalProbability)
@@ -438,6 +446,11 @@ namespace ModifiedArmy.Patch
             int offeredCount,
             int approvedCount)
         {
+            if (!RecruitmentLogFilter.ShouldLog(party))
+            {
+                return;
+            }
+
             RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
 
             foreach (RecruitmentEvaluationResult evaluation in
@@ -450,19 +463,22 @@ namespace ModifiedArmy.Patch
                 }
             }
 
-            TextObject message = new TextObject(
-                "{=ModifiedArmy_AIRecruitmentVolunteerPlan}" +
-                "[AIRecruitment] Party='{PARTY_NAME}' | " +
-                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
-                "VolunteerOffers={OFFERED} | Approved={APPROVED} | " +
-                "FirstLimit={LIMIT}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_ai_recruitment_volunteer_plan");
             message.SetTextVariable("PARTY_NAME", party.Name);
             message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("OFFERED", offeredCount);
             message.SetTextVariable("APPROVED", approvedCount);
             message.SetTextVariable("LIMIT", GetLimitReasonText(mainLimit));
-            ModLogger.Notice(message.ToString());
+            if (approvedCount > 0)
+            {
+                ModLogger.Notice(message.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(message.ToString());
+            }
         }
 
         /// <summary>
@@ -570,15 +586,13 @@ namespace ModifiedArmy.Patch
             RecruitmentPlan plan,
             RecruitmentEvaluationResult evaluation)
         {
-            TextObject message = new TextObject(
-                "{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}" +
-                "[AIRecruitment] Party='{PARTY_NAME}' | " +
-                "Settlement='{SETTLEMENT_NAME}' | Culture={CULTURE_ID} | " +
-                "Troop='{TROOP_NAME}' | Tier={TIER} | " +
-                "Role={ROLE} | Quality={QUALITY} | " +
-                "Requested={REQUESTED} | Approved={APPROVED} | " +
-                "Limit={LIMIT} | UnitCost={UNIT_COST} | " +
-                "UnitWage={UNIT_WAGE} | SustainableDays={DAYS}");
+            if (!RecruitmentLogFilter.ShouldLog(party))
+            {
+                return;
+            }
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_ai_recruitment_mercenary_evaluation");
 
             message.SetTextVariable("PARTY_NAME", party.Name);
             message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
@@ -601,7 +615,14 @@ namespace ModifiedArmy.Patch
                 evaluation.UnitRecruitmentCost);
             message.SetTextVariable("UNIT_WAGE", evaluation.UnitDailyWage);
             message.SetTextVariable("DAYS", evaluation.SustainableDays);
-            ModLogger.Notice(message.ToString());
+            if (evaluation.RecruitableCount > 0)
+            {
+                ModLogger.Notice(message.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(message.ToString());
+            }
         }
 
         /// <summary>
@@ -613,13 +634,13 @@ namespace ModifiedArmy.Patch
             switch (role)
             {
                 case CombatRole.Ranged:
-                    return new TextObject("{=ModifiedArmy_RecruitRoleRanged}Ranged");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_role_ranged");
                 case CombatRole.Cavalry:
-                    return new TextObject("{=ModifiedArmy_RecruitRoleCavalry}Cavalry");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_role_cavalry");
                 case CombatRole.HorseArcher:
-                    return new TextObject("{=ModifiedArmy_RecruitRoleHorseArcher}Horse Archer");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_role_horse_archer");
                 default:
-                    return new TextObject("{=ModifiedArmy_RecruitRoleInfantry}Infantry");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_role_infantry");
             }
         }
 
@@ -632,11 +653,11 @@ namespace ModifiedArmy.Patch
             switch (quality)
             {
                 case TroopQuality.MiddleTier:
-                    return new TextObject("{=ModifiedArmy_RecruitQualityMiddle}Middle Tier");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_middle");
                 case TroopQuality.TopTier:
-                    return new TextObject("{=ModifiedArmy_RecruitQualityTop}Top Tier");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_top");
                 default:
-                    return new TextObject("{=ModifiedArmy_RecruitQualityLow}Low Tier");
+                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_low");
             }
         }
 
@@ -646,8 +667,33 @@ namespace ModifiedArmy.Patch
         private static TextObject GetLimitReasonText(
             RecruitmentLimitReason reason)
         {
-            return new TextObject(
-                "{=ModifiedArmy_RecruitLimit_" + reason + "}" + reason);
+            return GameTexts.FindText(GetLimitReasonTextId(reason));
+        }
+
+        private static string GetLimitReasonTextId(
+            RecruitmentLimitReason reason)
+        {
+            switch (reason)
+            {
+                case RecruitmentLimitReason.InvalidParty:
+                    return "str_modifiedarmy_recruit_limit_invalid_party";
+                case RecruitmentLimitReason.InvalidTroop:
+                    return "str_modifiedarmy_recruit_limit_invalid_troop";
+                case RecruitmentLimitReason.PartySize:
+                    return "str_modifiedarmy_recruit_limit_party_size";
+                case RecruitmentLimitReason.CombatRole:
+                    return "str_modifiedarmy_recruit_limit_combat_role";
+                case RecruitmentLimitReason.Quality:
+                    return "str_modifiedarmy_recruit_limit_quality";
+                case RecruitmentLimitReason.WageLimit:
+                    return "str_modifiedarmy_recruit_limit_wage";
+                case RecruitmentLimitReason.RecruitmentCost:
+                    return "str_modifiedarmy_recruit_limit_cost";
+                case RecruitmentLimitReason.MaintenanceFunds:
+                    return "str_modifiedarmy_recruit_limit_maintenance";
+                default:
+                    return "str_modifiedarmy_recruit_limit_none";
+            }
         }
     }
 }

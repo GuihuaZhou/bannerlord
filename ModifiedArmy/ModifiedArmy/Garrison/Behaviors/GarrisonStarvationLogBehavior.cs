@@ -2,6 +2,8 @@ using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Behaviors
 {
@@ -34,11 +36,18 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return;
             }
 
-            ModLogger.Notice(
-                $"[GarrisonLogistics] Starving garrison desertion | " +
-                $"Settlement='{party.CurrentSettlement.Name}' | " +
-                $"Deserted={desertedTroops.TotalManCount} | " +
-                $"Remaining={party.MemberRoster.TotalManCount}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_garrison_starvation_desertion");
+            message.SetTextVariable(
+                "SETTLEMENT_NAME",
+                party.CurrentSettlement.Name);
+            message.SetTextVariable(
+                "DESERTED",
+                desertedTroops.TotalManCount);
+            message.SetTextVariable(
+                "REMAINING",
+                party.MemberRoster.TotalManCount);
+            ModLogger.Notice(message.ToString());
         }
     }
 }

@@ -3,6 +3,7 @@ using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Behaviors
 {
@@ -56,12 +57,14 @@ namespace ModifiedArmy.Garrison.Behaviors
 
             if (settlement.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[GarrisonLogistics] Local production allocation | " +
-                    $"Settlement='{settlement.Name}' | " +
-                    $"Transferred={allocation} | " +
-                    $"MilitaryFood=" +
-                    $"{town.GarrisonParty.ItemRoster.TotalFood}");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_local_production");
+                message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+                message.SetTextVariable("TRANSFERRED", allocation);
+                message.SetTextVariable(
+                    "CURRENT_FOOD",
+                    town.GarrisonParty.ItemRoster.TotalFood);
+                ModLogger.Info(message.ToString());
             }
         }
     }

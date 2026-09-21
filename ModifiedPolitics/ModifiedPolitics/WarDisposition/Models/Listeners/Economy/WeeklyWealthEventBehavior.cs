@@ -89,14 +89,14 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Economy
 
             if (playerData != null)
             {
-                ModLogger.Notice(
+                ModLogger.Info(
                     $"[战争倾向] 每周财富结算 | 家族={Clan.PlayerClan.Name} | " +
                     $"财富变化={playerData.WeeklyWealthChangePercent:+0.##;-0.##;0}% | " +
                     $"倾向影响={playerData.WeeklyWealthInfluence:+0.00;-0.00;0.00} | " +
                     $"当前={playerData.Value:0.00}");
             }
 
-            ModLogger.Notice(
+            ModLogger.Info(
                 $"[战争倾向] 每周财富结算完成 | 非零财富事件={eventCount}");
         }
 

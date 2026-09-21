@@ -3,6 +3,8 @@ using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -55,6 +57,15 @@ namespace ModifiedArmy.Garrison.Patches
                 return;
             }
 
+            Clan ownerClan = party.CurrentSettlement.OwnerClan;
+            Kingdom playerKingdom = Clan.PlayerClan?.Kingdom;
+
+            if (ownerClan != Clan.PlayerClan &&
+                (playerKingdom == null || ownerClan?.Kingdom != playerKingdom))
+            {
+                return;
+            }
+
             int foodAfter = party.ItemRoster.TotalFood;
             bool isStarving = party.Party.IsStarving;
 
@@ -66,13 +77,21 @@ namespace ModifiedArmy.Garrison.Patches
                 return;
             }
 
-            ModLogger.Notice(
-                $"[GarrisonLogistics] Garrison food consumption | " +
-                $"Settlement='{party.CurrentSettlement.Name}' | " +
-                $"Demand={__state.DailyConsumption:0.##} | " +
-                $"Food={__state.FoodBefore}->{foodAfter} | " +
-                $"Remainder={party.Party.RemainingFoodPercentage}% | " +
-                $"Starving={isStarving}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_garrison_food_consumption");
+            message.SetTextVariable(
+                "SETTLEMENT_NAME",
+                party.CurrentSettlement.Name);
+            message.SetTextVariable(
+                "DEMAND",
+                __state.DailyConsumption.ToString("0.##"));
+            message.SetTextVariable("FOOD_BEFORE", __state.FoodBefore);
+            message.SetTextVariable("FOOD_AFTER", foodAfter);
+            message.SetTextVariable(
+                "REMAINDER",
+                party.Party.RemainingFoodPercentage);
+            message.SetTextVariable("STARVING", isStarving.ToString());
+            ModLogger.Info(message.ToString());
         }
     }
 }

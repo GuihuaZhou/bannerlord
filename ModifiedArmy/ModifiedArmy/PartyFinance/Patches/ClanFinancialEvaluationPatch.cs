@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
+using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
 namespace ModifiedArmy.PartyFinance.Patches
@@ -59,28 +60,27 @@ namespace ModifiedArmy.PartyFinance.Patches
             MobileParty party,
             int wageLimit)
         {
+            Kingdom playerKingdom = Clan.PlayerClan?.Kingdom;
+
+            if (clan != Clan.PlayerClan &&
+                (playerKingdom == null || clan.Kingdom != playerKingdom))
+            {
+                return;
+            }
+
             int currentWage = party.TotalWage;
             bool isExceeded = currentWage > wageLimit;
             TextObject message = isExceeded
-                ? new TextObject(
-                    "{=ModifiedArmy_PartyWageLimitExceeded}" +
-                    "[PartyFinance] Wage limit exceeded | " +
-                    "Party='{PARTY_NAME}' | Clan='{CLAN_NAME}' | " +
-                    "CurrentWage={CURRENT_WAGE} | " +
-                    "WageLimit={WAGE_LIMIT} | " +
-                    "LeaderGold={LEADER_GOLD} | State={WAR_STATE}")
-                : new TextObject(
-                    "{=ModifiedArmy_PartyWageLimitEvaluated}" +
-                    "[PartyFinance] Party='{PARTY_NAME}' | " +
-                    "Clan='{CLAN_NAME}' | CurrentWage={CURRENT_WAGE} | " +
-                    "WageLimit={WAGE_LIMIT} | " +
-                    "LeaderGold={LEADER_GOLD} | State={WAR_STATE}");
+                ? GameTexts.FindText(
+                    "str_modifiedarmy_party_wage_limit_exceeded")
+                : GameTexts.FindText(
+                    "str_modifiedarmy_party_wage_limit_evaluated");
             TextObject warState =
                 NewPartyWageModel.GetWarWageMultiplier(party) > 1f
-                    ? new TextObject(
-                        "{=ModifiedArmy_PartyWageStateWar}War")
-                    : new TextObject(
-                        "{=ModifiedArmy_PartyWageStatePeace}Peace");
+                    ? GameTexts.FindText(
+                        "str_modifiedarmy_party_wage_state_war")
+                    : GameTexts.FindText(
+                        "str_modifiedarmy_party_wage_state_peace");
 
             message.SetTextVariable("PARTY_NAME", party.Name);
             message.SetTextVariable("CLAN_NAME", clan.Name);

@@ -91,8 +91,16 @@ namespace ModifiedArmy.Models.Fief
             // 只有玩家领地打印 Daily Debuff 日志
             if (_settlement.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[DailyDebuff] Fief '{_settlement?.Name}' lost {dailyProsperityLoss:F2} Prosperity from {recruitedTroopCount} recruited troops.");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_fief_daily_prosperity_loss");
+                message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+                message.SetTextVariable(
+                    "PROSPERITY_LOSS",
+                    dailyProsperityLoss.ToString("F2"));
+                message.SetTextVariable(
+                    "RECRUITED_COUNT",
+                    recruitedTroopCount);
+                ModLogger.Info(message.ToString());
             }
         }
 

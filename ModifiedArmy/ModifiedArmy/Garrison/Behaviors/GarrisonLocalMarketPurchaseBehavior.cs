@@ -5,6 +5,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Behaviors
 {
@@ -143,12 +144,15 @@ namespace ModifiedArmy.Garrison.Behaviors
 
             if (settlement.OwnerClan == Clan.PlayerClan)
             {
-                ModLogger.Notice(
-                    $"[GarrisonLogistics] Local market purchase | " +
-                    $"Settlement='{settlement.Name}' | " +
-                    $"Purchased={purchasedFood} | Cost={totalCost} | " +
-                    $"MilitaryFood=" +
-                    $"{town.GarrisonParty.ItemRoster.TotalFood}");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_market_purchase");
+                message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+                message.SetTextVariable("PURCHASED", purchasedFood);
+                message.SetTextVariable("COST", totalCost);
+                message.SetTextVariable(
+                    "CURRENT_FOOD",
+                    town.GarrisonParty.ItemRoster.TotalFood);
+                ModLogger.Info(message.ToString());
             }
         }
     }

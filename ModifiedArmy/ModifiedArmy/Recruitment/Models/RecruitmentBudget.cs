@@ -2,6 +2,7 @@ using ModifiedArmy.PartyFinance.Models;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 
 namespace ModifiedArmy.Recruitment.Models
 {
@@ -50,26 +51,90 @@ namespace ModifiedArmy.Recruitment.Models
                 0f,
                 party.PaymentLimit * WageLimitUsageRatio);
 
-            Clan clan = party.ActualClan ?? party.LeaderHero?.Clan;
-            int partyCount = Math.Max(
-                1,
-                clan?.WarPartyComponents.Count ?? 1);
-            float allocatedClanGold = (clan?.Gold ?? 0) / (float)partyCount;
-            float liquidFunds = Math.Max(
-                0f,
-                party.PartyTradeGold + allocatedClanGold);
+            float operatingFunds = GetOperatingFunds(party);
 
             result.SpendableFunds =
-                liquidFunds * (1f - EmergencyReserveRatio);
+                operatingFunds * (1f - EmergencyReserveRatio);
             // Lord recruitment transactions withdraw from the leader, not
             // directly from PartyTradeGold. Keep this immediate-payment limit
-            // separate from the broader long-term maintenance pool.
-            Hero payingHero = party.LeaderHero
-                ?? party.CurrentSettlement?.OwnerClan?.Leader;
-            result.AvailablePurchaseFunds = Math.Max(
-                0f,
-                payingHero?.Gold ?? party.PartyTradeGold);
+            // separate from the broader long-term maintenance pool. Garrison
+            // purchases are deferred into Clan.AutoRecruitmentExpenses, so
+            // they use their allocated central share instead of requiring the
+            // clan leader to pay the full amount immediately.
+            result.AvailablePurchaseFunds = party.IsGarrison
+                ? GetAllocatedClanFunds(party)
+                : Math.Max(
+                    0f,
+                    party.LeaderHero?.Gold ?? party.PartyTradeGold);
             return result;
+        }
+
+        /// <summary>
+        /// Returns funds attributable to one party without counting clan gold
+        /// twice when the clan leader commands that party. Non-leader lord
+        /// parties retain their genuinely separate frontline cash in addition
+        /// to one share of central support.
+        /// </summary>
+        public static float GetOperatingFunds(MobileParty party)
+        {
+            if (party == null)
+            {
+                return 0f;
+            }
+
+            Clan clan = GetSupportingClan(party);
+            float allocatedClanFunds = GetAllocatedClanFunds(party);
+
+            if (party.IsGarrison ||
+                clan == null ||
+                party.LeaderHero == clan.Leader)
+            {
+                return allocatedClanFunds;
+            }
+
+            return Math.Max(
+                0f,
+                party.PartyTradeGold + allocatedClanFunds);
+        }
+
+        /// <summary>
+        /// Divides the central clan treasury among every active war party and
+        /// garrison that relies on the same daily clan-finance settlement.
+        /// </summary>
+        public static float GetAllocatedClanFunds(MobileParty party)
+        {
+            Clan clan = GetSupportingClan(party);
+
+            if (clan == null)
+            {
+                return 0f;
+            }
+
+            int supportedPartyCount = clan.WarPartyComponents.Count;
+
+            foreach (Town town in clan.Fiefs)
+            {
+                if (town?.GarrisonParty?.IsActive == true)
+                {
+                    supportedPartyCount++;
+                }
+            }
+
+            return Math.Max(0f, clan.Gold) /
+                Math.Max(1, supportedPartyCount);
+        }
+
+        private static Clan GetSupportingClan(MobileParty party)
+        {
+            if (party?.IsGarrison == true)
+            {
+                return party.CurrentSettlement?.OwnerClan
+                    ?? party.ActualClan;
+            }
+
+            return party?.ActualClan
+                ?? party?.LeaderHero?.Clan
+                ?? party?.CurrentSettlement?.OwnerClan;
         }
     }
 }

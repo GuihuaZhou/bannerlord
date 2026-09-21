@@ -1,6 +1,8 @@
 using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -43,7 +45,7 @@ namespace ModifiedArmy.Models
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDailyTick);
 
             var msg = GameTexts.FindText("str_modifiedarmy_ai_recruit_behavior_loaded");
-            ModLogger.Notice(msg.ToString());
+            ModLogger.Info(msg.ToString());
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -114,8 +116,17 @@ namespace ModifiedArmy.Models
                         };
                         candidates.Sort((a, b) => b.score.CompareTo(a.score));
 
-                        string preferences = string.Join(", ", candidates.Select(c => $"{c.source}={c.score:F3}"));
-                        ModLogger.Info($"[AI招兵] {GetPartyDisplayName(party)} | Need={needScore:F2} | 偏好=[{preferences}]");
+                        string preferences = string.Join(
+                            ", ",
+                            candidates.Select(
+                                candidate =>
+                                    $"{candidate.source} scores {candidate.score:F3}"));
+                        if (RecruitmentLogFilter.ShouldLog(party))
+                        {
+                            ModLogger.Debug(
+                                $"[AIRecruitment] {GetPartyDisplayName(party)} has a recruitment need of {needScore:F2}. " +
+                                $"Its source preferences are {preferences}.");
+                        }
 
                         string displayName = GetPartyDisplayName(party);
 
@@ -132,11 +143,19 @@ namespace ModifiedArmy.Models
 
                             if (target == null)
                             {
-                                ModLogger.Info($"[AI招兵] {displayName} | {source}无据点→回退");
+                                if (RecruitmentLogFilter.ShouldLog(party))
+                                {
+                                    ModLogger.Debug(
+                                        $"[AIRecruitment] {displayName} found no settlement for {source} recruitment and will try another source.");
+                                }
                                 continue;
                             }
 
-                            ModLogger.Info($"[AI招兵] {displayName} 决定前往 {target.Name} 招募 {source}");
+                            if (RecruitmentLogFilter.ShouldLog(party))
+                            {
+                                ModLogger.Debug(
+                                    $"[AIRecruitment] {displayName} is traveling to {target.Name} to recruit from {source}.");
+                            }
                             party.SetMoveGoToSettlement(
                                 target,
                                 MobileParty.NavigationType.Default,
@@ -148,7 +167,11 @@ namespace ModifiedArmy.Models
 
                         if (!dispatched)
                         {
-                            ModLogger.Info($"[AI招兵] {displayName} | 所有兵源无据点，放弃招募");
+                            if (RecruitmentLogFilter.ShouldLog(party))
+                            {
+                                ModLogger.Debug(
+                                    $"[AIRecruitment] {displayName} found no suitable recruitment settlement and abandoned this attempt.");
+                            }
                         }
                     }
                 }
@@ -203,7 +226,7 @@ namespace ModifiedArmy.Models
                 warUrgency = _config.AiNeedPeaceUrgency;
                 
             // 经济承受力：金库 / (周工资 × 周数)，衡量能撑多久
-            float gold = party.PartyTradeGold + (party.LeaderHero?.Clan.Gold ?? 0);
+            float gold = RecruitmentBudget.GetOperatingFunds(party);
             float economicCapacity = party.TotalWage > 0
                 ? Math.Min(1f, gold / (party.TotalWage * _config.AiNeedEconomicWeeks))
                 : 1f;
@@ -268,7 +291,13 @@ namespace ModifiedArmy.Models
                 chosen = RecruitSource.Volunteer;
 
             string displayName = GetPartyDisplayName(party);
-            ModLogger.Info($"[AI招兵-偏好] {displayName} | {cultureId} | Fief={fiefScore:F3}, Volunteer={volScore:F3}, Mercenary={mercScore:F3} | chosen={chosen}");
+            if (RecruitmentLogFilter.ShouldLog(party))
+            {
+                ModLogger.Debug(
+                    $"[AIRecruitment] {displayName} uses the {cultureId} culture preference. " +
+                    $"Fief troops score {fiefScore:F3}, volunteers score {volScore:F3}, " +
+                    $"and mercenaries score {mercScore:F3}. The first choice is {chosen}.");
+            }
 
             return (chosen, fiefScore, volScore, mercScore);
         }
@@ -303,7 +332,7 @@ namespace ModifiedArmy.Models
             }
 
             // 经济紧张（Gold < brokeThreshold × TotalWage）
-            float gold = party.PartyTradeGold + (party.LeaderHero?.Clan.Gold ?? 0);
+            float gold = RecruitmentBudget.GetOperatingFunds(party);
             float brokeThreshold = _config.GetAiSituationalThreshold("broke");
             if (party.TotalWage > 0 && gold < party.TotalWage * brokeThreshold)
             {
@@ -322,7 +351,13 @@ namespace ModifiedArmy.Models
             }
             
             string displayName = GetPartyDisplayName(party);
-            ModLogger.Info($"[AI招兵-情境] {displayName} | [{string.Join("+", active)}] mul=({fiefMod:F3},{volMod:F3},{mercMod:F3})");
+            if (RecruitmentLogFilter.ShouldLog(party))
+            {
+                ModLogger.Debug(
+                    $"[AIRecruitment] {displayName} is affected by {string.Join(", ", active)}. " +
+                    $"The fief modifier is {fiefMod:F3}, the volunteer modifier is {volMod:F3}, " +
+                    $"and the mercenary modifier is {mercMod:F3}.");
+            }
         }
 
         /// <summary>

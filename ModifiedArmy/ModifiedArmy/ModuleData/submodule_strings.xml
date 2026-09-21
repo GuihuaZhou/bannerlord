@@ -57,10 +57,10 @@
 
     <!-- Army finance: mobile-party wage limit diagnostics. -->
     <string id="str_modifiedarmy_party_wage_limit_evaluated"
-        text="{=ModifiedArmy_PartyWageLimitEvaluated}[军队财政] 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
+        text="{=ModifiedArmy_PartyWageLimitEvaluated}[部队财政] {CLAN_NAME}的{PARTY_NAME}每日工资为{CURRENT_WAGE}, 工资上限为{WAGE_LIMIT}. 家族领袖拥有{LEADER_GOLD}第纳尔, 当前处于{WAR_STATE}状态." />
 
     <string id="str_modifiedarmy_party_wage_limit_exceeded"
-        text="{=ModifiedArmy_PartyWageLimitExceeded}[军队财政] 工资超过上限 | 部队='{PARTY_NAME}' | 家族='{CLAN_NAME}' | 当前工资={CURRENT_WAGE} | 工资上限={WAGE_LIMIT} | 领袖金币={LEADER_GOLD} | 状态={WAR_STATE}" />
+        text="{=ModifiedArmy_PartyWageLimitExceeded}[部队财政] {PARTY_NAME}工资{CURRENT_WAGE}, 已超过{WAGE_LIMIT}的上限." />
 
     <string id="str_modifiedarmy_party_wage_state_war"
         text="{=ModifiedArmy_PartyWageStateWar}战争" />
@@ -70,16 +70,16 @@
 
     <!-- Unified AI recruitment: mercenary evaluation diagnostics. -->
     <string id="str_modifiedarmy_ai_recruitment_mercenary_evaluation"
-        text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 士兵='{TROOP_NAME}' | 等级={TIER} | 兵种={ROLE} | 质量={QUALITY} | 请求={REQUESTED} | 批准={APPROVED} | 限制={LIMIT} | 单人费用={UNIT_COST} | 单人工资={UNIT_WAGE} | 可维持天数={DAYS}" />
+        text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名{TROOP_NAME}." />
 
     <string id="str_modifiedarmy_ai_recruitment_volunteer_plan"
-        text="{=ModifiedArmy_AIRecruitmentVolunteerPlan}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 志愿兵候选={OFFERED} | 批准={APPROVED} | 首个限制={LIMIT}" />
+        text="{=ModifiedArmy_AIRecruitmentVolunteerPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名志愿兵." />
 
     <string id="str_modifiedarmy_ai_recruitment_fief_plan"
-        text="{=ModifiedArmy_AIRecruitmentFiefPlan}[AI招募] 部队='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 封邑兵候选={OFFERED} | 批准={APPROVED} | 首个限制={LIMIT}" />
+        text="{=ModifiedArmy_AIRecruitmentFiefPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}征召了{APPROVED}名封邑兵." />
 
     <string id="str_modifiedarmy_ai_recruitment_garrison_plan"
-        text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] 驻军='{PARTY_NAME}' | 定居点='{SETTLEMENT_NAME}' | 文化={CULTURE_ID} | 志愿兵候选={OFFERED} | 批准={APPROVED} | 每日上限={DAILY_LIMIT} | 首个限制={LIMIT}" />
+        text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名志愿兵候选, 实际招募{APPROVED}名, 每日上限{DAILY_LIMIT}名. 当前使用{CULTURE_ID}文化模板, 首要限制是{LIMIT}." />
 
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />
@@ -97,4 +97,37 @@
     <string id="str_modifiedarmy_recruit_limit_wage" text="{=ModifiedArmy_RecruitLimit_WageLimit}工资上限" />
     <string id="str_modifiedarmy_recruit_limit_cost" text="{=ModifiedArmy_RecruitLimit_RecruitmentCost}招募费用" />
     <string id="str_modifiedarmy_recruit_limit_maintenance" text="{=ModifiedArmy_RecruitLimit_MaintenanceFunds}维持资金" />
+
+    <string id="str_modifiedarmy_garrison_market_purchase"
+        text="{=ModifiedArmy_GarrisonMarketPurchase}[驻军后勤] {SETTLEMENT_NAME}从市场购买{PURCHASED}单位食物, 花费{COST}第纳尔, 驻军粮仓现有{CURRENT_FOOD}单位食物." />
+    <string id="str_modifiedarmy_garrison_local_production"
+        text="{=ModifiedArmy_GarrisonLocalProduction}[驻军后勤] {SETTLEMENT_NAME}将{TRANSFERRED}单位本地产出送入驻军粮仓, 粮仓现有{CURRENT_FOOD}单位食物." />
+    <string id="str_modifiedarmy_garrison_food_consumption"
+        text="{=ModifiedArmy_GarrisonFoodConsumption}[驻军后勤] {SETTLEMENT_NAME}驻军需要{DEMAND}单位食物, 库存从{FOOD_BEFORE}降至{FOOD_AFTER}, 剩余消耗进度为{REMAINDER}%, 饥饿状态为{STARVING}." />
+    <string id="str_modifiedarmy_garrison_starvation_desertion"
+        text="{=ModifiedArmy_GarrisonStarvationDesertion}[驻军后勤] {SETTLEMENT_NAME}因饥饿有{DESERTED}名驻军逃亡, 目前还剩{REMAINING}人." />
+    <string id="str_modifiedarmy_supply_party_loaded"
+        text="{=ModifiedArmy_SupplyPartyLoaded}[驻军后勤] {HOME_NAME}征粮队在{SOURCE_NAME}获得{FOOD}单位食物, 花费{COST}第纳尔. 队伍购买{MOUNTS}匹马, 花费{MOUNT_COST}第纳尔, 现携带{CARGO_FOOD}单位食物." />
+    <string id="str_modifiedarmy_supply_party_destroyed"
+        text="{=ModifiedArmy_SupplyPartyDestroyed}[驻军后勤] {HOME_NAME}的征粮队已被消灭, 定居点需要等待{COOLDOWN_DAYS}天才能再次派出征粮队." />
+    <string id="str_modifiedarmy_supply_party_creation_failed"
+        text="{=ModifiedArmy_SupplyPartyCreationFailed}[驻军后勤] {HOME_NAME}无法创建征粮队. 错误信息为{ERROR}." />
+    <string id="str_modifiedarmy_supply_party_dispatched"
+        text="{=ModifiedArmy_SupplyPartyDispatched}[驻军后勤] {HOME_NAME}派出{ESCORT}人的征粮队前往{SOURCE_NAME}, 计划运回{REQUESTED}单位食物." />
+    <string id="str_modifiedarmy_supply_party_returned"
+        text="{=ModifiedArmy_SupplyPartyReturned}[驻军后勤] {HOME_NAME}征粮队带回{FOOD}单位食物." />
+    <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
+        text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {SETTLEMENT_NAME}驻军每日工资为{CURRENT_WAGE}第纳尔. 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军因工资上限而解散." />
+    <string id="str_modifiedarmy_garrison_wage_still_exceeded"
+        text="{=ModifiedArmy_GarrisonWageStillExceeded}[驻军工资] {SETTLEMENT_NAME}驻军每日工资为{CURRENT_WAGE}第纳尔, 仍然超过{NEW_LIMIT}第纳尔的上限, 超出{EXCESS}第纳尔." />
+    <string id="str_modifiedarmy_recruitment_config_loaded"
+        text="{=ModifiedArmy_RecruitmentConfigLoaded}[配置] AI招募配置已加载, 包含{CULTURE_COUNT}条文化偏好和{SITUATION_COUNT}条情境修正. 需求阈值为{NEED_THRESHOLD}, 随机概率为{RANDOM_CHANCE}." />
+    <string id="str_modifiedarmy_recruitment_config_missing"
+        text="{=ModifiedArmy_RecruitmentConfigMissing}[配置] 未找到AI招募配置节点, 将使用默认值." />
+    <string id="str_modifiedarmy_recruitment_culture_invalid"
+        text="{=ModifiedArmy_RecruitmentCultureInvalid}[配置] 无法识别文化{CULTURE_ID}, 已跳过该文化的AI招募配置." />
+    <string id="str_modifiedarmy_fief_daily_prosperity_loss"
+        text="{=ModifiedArmy_FiefDailyProsperityLoss}[封邑] {SETTLEMENT_NAME}因维持{RECRUITED_COUNT}名被征召的封邑兵, 今日损失{PROSPERITY_LOSS}点繁荣度." />
+    <string id="str_modifiedarmy_fief_prisoner_recruited"
+        text="{=ModifiedArmy_FiefPrisonerRecruited}[封邑] {SETTLEMENT_NAME}的封邑部队从俘虏中招募了{COUNT}名{TROOP_NAME}." />
 </strings>
