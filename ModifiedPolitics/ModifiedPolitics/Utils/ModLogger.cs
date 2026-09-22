@@ -1,11 +1,11 @@
 using MCM.Abstractions.Base.Global;
-using ModifiedArmy.Utils;
+using ModifiedPolitics.Utils;
 using TaleWorlds.Library;
 
-namespace ModifiedArmy.Tool
+namespace ModifiedPolitics.Tool
 {
     /// <summary>
-    /// Severity levels used by the ModifiedArmy message logger.
+    /// Severity levels used by the ModifiedPolitics message logger.
     /// </summary>
     public enum LogLevel
     {
@@ -18,7 +18,8 @@ namespace ModifiedArmy.Tool
     }
 
     /// <summary>
-    /// Displays messages emitted by ModifiedArmy systems.
+    /// Displays messages emitted by ModifiedPolitics without sharing
+    /// ModifiedArmy's logging threshold.
     /// </summary>
     public static class ModLogger
     {
@@ -33,28 +34,12 @@ namespace ModifiedArmy.Tool
         private static readonly Color ErrorColor =
             new Color(1.0f, 0.3f, 0.3f);
 
-        /// <summary>
-        /// Reads MCM on every call so a changed threshold applies immediately.
-        /// The XML setting remains a fallback before MCM becomes available.
-        /// </summary>
         private static LogLevel CurrentMinLogLevel
         {
             get
             {
                 Settings settings = GlobalSettings<Settings>.Instance;
-                if (settings != null)
-                {
-                    return settings.MinLogLevel.SelectedValue;
-                }
-
-                int level = ModifiedArmy.common.ModConfigManager.Instance
-                    .GetActiveConfig()?.MinLogLevel ?? 2;
-                if (level < 0 || level > 4)
-                {
-                    level = 2;
-                }
-
-                return (LogLevel)level;
+                return settings?.MinLogLevel.SelectedValue ?? LogLevel.Notice;
             }
         }
 

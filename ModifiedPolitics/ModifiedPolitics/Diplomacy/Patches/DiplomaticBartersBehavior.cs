@@ -1,5 +1,5 @@
 ﻿using HarmonyLib;
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;

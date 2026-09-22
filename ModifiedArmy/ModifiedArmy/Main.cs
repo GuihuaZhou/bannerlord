@@ -1,6 +1,5 @@
 ﻿using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using MCM.Abstractions.Base.Global;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Garrison.Models;
@@ -9,7 +8,6 @@ using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.SettlementInspection.Behaviors;
-using ModifiedArmy.Utils;
 using System.Collections.Generic;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -58,18 +56,6 @@ namespace ModifiedArmy
 
     public class Main : MBSubModuleBase
     {
-
-        // public static Settings ModSettings { get; private set; }
-
-        // protected override void OnBeforeInitialModuleScreenSetAsRoot()
-        // {
-        //    base.OnBeforeInitialModuleScreenSetAsRoot();
-        //    if (Main.ModSettings == null)
-        //    {
-        //        Main.ModSettings = GlobalSettings<Settings>.Instance;
-        //    }
-        // }
-
         private UIExtender _uiExtender;
 
         protected override void OnSubModuleLoad()

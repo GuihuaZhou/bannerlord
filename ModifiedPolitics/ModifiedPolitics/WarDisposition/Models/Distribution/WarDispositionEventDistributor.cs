@@ -1,4 +1,4 @@
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Events;
 using ModifiedPolitics.Models.WarDisposition.Rules;

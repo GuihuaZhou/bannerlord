@@ -4,6 +4,12 @@
     <tag language="简体中文" />
   </tags>
   <strings>
+    <!-- MCM UI. -->
+    <string id="MP_Settings_DisplayName" text="内政优化" />
+    <string id="MP_Logging_Group" text="日志" />
+    <string id="MP_MinLogLevel" text="最低日志等级" />
+    <string id="MP_MinLogLevel_Desc" text="只显示等级不低于此设置的内政优化日志. Disabled 表示关闭全部日志." />
+
     <!-- Clan panel labels. -->
     <string id="ModifiedPolitics_WarPotential" text="战争潜力" />
     <string id="ModifiedPolitics_FiefTroops" text="军役兵力" />

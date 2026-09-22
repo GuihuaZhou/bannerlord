@@ -1,4 +1,4 @@
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using ModifiedPolitics.Models.WarDisposition.Rules;
 using TaleWorlds.CampaignSystem;
 

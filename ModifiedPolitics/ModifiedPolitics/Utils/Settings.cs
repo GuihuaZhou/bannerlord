@@ -2,36 +2,35 @@ using MCM.Abstractions.Attributes;
 using MCM.Abstractions.Attributes.v2;
 using MCM.Abstractions.Base.Global;
 using MCM.Common;
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.Utils
+namespace ModifiedPolitics.Utils
 {
     /// <summary>
-    /// Player-facing settings owned exclusively by ModifiedArmy.
-    /// Gameplay balance remains in ModConfigs.xml.
+    /// Player-facing settings owned exclusively by ModifiedPolitics.
     /// </summary>
     public sealed class Settings : AttributeGlobalSettings<Settings>
     {
-        public override string Id => "ModifiedArmySettings";
+        public override string Id => "ModifiedPoliticsSettings";
         public override string DisplayName => new TextObject(
-            "{=MA_Settings_DisplayName}Modified Army").ToString();
-        public override string FolderName => "ModifiedArmy";
+            "{=MP_Settings_DisplayName}Modified Politics").ToString();
+        public override string FolderName => "ModifiedPolitics";
         public override string FormatType => "json2";
 
         /// <summary>
-        /// Controls which ModifiedArmy messages are displayed. The setting is
-        /// read for every message, so changing it requires no restart.
+        /// Controls only messages emitted by ModifiedPolitics. The setting is
+        /// read for every message and therefore does not require a restart.
         /// </summary>
         [SettingPropertyGroup(
-            "{=MA_Logging_Group}Logging",
+            "{=MP_Logging_Group}Logging",
             GroupOrder = 0)]
         [SettingPropertyDropdown(
-            "{=MA_MinLogLevel}Minimum log level",
+            "{=MP_MinLogLevel}Minimum log level",
             Order = 0,
             RequireRestart = false,
             HintText =
-                "{=MA_MinLogLevel_Desc}Only messages at or above this level are displayed. Disabled hides every ModifiedArmy message.")]
+                "{=MP_MinLogLevel_Desc}Only messages at or above this level are displayed. Disabled hides every ModifiedPolitics message.")]
         public Dropdown<LogLevel> MinLogLevel { get; set; } =
             new Dropdown<LogLevel>(
                 new[]

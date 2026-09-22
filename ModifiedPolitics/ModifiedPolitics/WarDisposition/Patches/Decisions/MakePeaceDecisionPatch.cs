@@ -1,5 +1,5 @@
 using HarmonyLib;
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using ModifiedPolitics.Models.WarDisposition.Decisions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Election;

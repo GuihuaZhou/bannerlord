@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using ModifiedArmy.Tool;
+using ModifiedPolitics.Tool;
 using ModifiedPolitics.Models.WarDisposition.Calculation;
 using ModifiedPolitics.Models.WarDisposition.Distribution;
 using ModifiedPolitics.Models.WarDisposition.Events;
