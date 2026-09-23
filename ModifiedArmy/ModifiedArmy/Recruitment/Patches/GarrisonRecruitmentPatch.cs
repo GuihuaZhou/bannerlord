@@ -1,5 +1,6 @@
 using HarmonyLib;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
@@ -207,6 +208,11 @@ namespace ModifiedArmy.Recruitment.Patches
                 town.Settlement.OwnerClan.AutoRecruitmentExpenses +=
                     recruitmentCost;
                 offer.Notable.VolunteerTypes[offer.SlotIndex] = null;
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    garrison,
+                    1,
+                    recruitmentCost,
+                    evaluation.UnitDailyWage);
                 recruited++;
             }
 

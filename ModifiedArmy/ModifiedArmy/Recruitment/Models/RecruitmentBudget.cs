@@ -1,4 +1,5 @@
 using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.Recruitment.Finance;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -12,7 +13,6 @@ namespace ModifiedArmy.Recruitment.Models
     public sealed class RecruitmentBudget
     {
         public const int DefaultMaintenanceDays = 30;
-        public const float EmergencyReserveRatio = 0.20f;
         public const float WageLimitUsageRatio = 0.90f;
 
         private RecruitmentBudget()
@@ -51,21 +51,25 @@ namespace ModifiedArmy.Recruitment.Models
                 0f,
                 party.PaymentLimit * WageLimitUsageRatio);
 
-            float operatingFunds = GetOperatingFunds(party);
+            Clan supportingClan =
+                ClanRecruitmentBudgetManager.GetSupportingClan(party);
+            ClanRecruitmentBudgetSnapshot clanBudget =
+                ClanRecruitmentBudgetManager.GetSnapshot(supportingClan);
 
             result.SpendableFunds =
-                operatingFunds * (1f - EmergencyReserveRatio);
+                clanBudget.RemainingCommitmentBudget;
             // Lord recruitment transactions withdraw from the leader, not
             // directly from PartyTradeGold. Keep this immediate-payment limit
             // separate from the broader long-term maintenance pool. Garrison
             // purchases are deferred into Clan.AutoRecruitmentExpenses, so
             // they use their allocated central share instead of requiring the
             // clan leader to pay the full amount immediately.
-            result.AvailablePurchaseFunds = party.IsGarrison
-                ? GetAllocatedClanFunds(party)
-                : Math.Max(
-                    0f,
-                    party.LeaderHero?.Gold ?? party.PartyTradeGold);
+            float transactionFunds = party.IsGarrison
+                ? clanBudget.RemainingPurchaseBudget
+                : Math.Max(0f, party.LeaderHero?.Gold ?? party.PartyTradeGold);
+            result.AvailablePurchaseFunds = Math.Min(
+                clanBudget.RemainingPurchaseBudget,
+                transactionFunds);
             return result;
         }
 

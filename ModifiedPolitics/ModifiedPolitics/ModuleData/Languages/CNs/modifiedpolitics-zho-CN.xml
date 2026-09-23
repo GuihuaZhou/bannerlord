@@ -28,6 +28,8 @@
     <string id="ModifiedPolitics_TodayTerritoryInfluence" text="今日领地影响" />
     <string id="ModifiedPolitics_TodayWarGain" text="今日战争收益" />
     <string id="ModifiedPolitics_WeeklyWealthChange" text="本周财富变化" />
+    <string id="ModifiedPolitics_RecruitmentBudget" text="招募预算" />
+    <string id="ModifiedPolitics_ExpectedReserve" text="预期储备" />
 
     <!-- Dynamic values displayed by the clan panel. -->
     <string id="ModifiedPolitics_NotApplicable" text="不适用" />

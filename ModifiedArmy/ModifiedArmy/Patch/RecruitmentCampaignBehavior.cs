@@ -6,6 +6,7 @@ using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
@@ -370,6 +371,11 @@ namespace ModifiedArmy.Patch
                     evaluation.Troop,
                     offer.Notable,
                     offer.SlotIndex);
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    party,
+                    1,
+                    evaluation.UnitRecruitmentCost,
+                    evaluation.UnitDailyWage);
                 approvedCount++;
             }
 
@@ -574,6 +580,11 @@ namespace ModifiedArmy.Patch
                 settlement,
                 troopType,
                 evaluation.RecruitableCount);
+            ClanRecruitmentBudgetManager.CommitRecruitment(
+                party,
+                evaluation.RecruitableCount,
+                evaluation.UnitRecruitmentCost,
+                evaluation.UnitDailyWage);
 
             return true;
         }

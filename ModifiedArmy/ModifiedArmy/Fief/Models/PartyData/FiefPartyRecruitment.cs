@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
@@ -185,6 +186,21 @@ namespace ModifiedArmy.Models.Fief
                     0,
                     true,
                     -1);
+
+                // Fief troops have no immediate denar purchase price, but
+                // their post-exemption wage still consumes the clan's shared
+                // thirty-day recruitment commitment.
+                if (ClanRecruitmentBudgetManager
+                    .GetSupportingClan(targetParty) != Clan.PlayerClan)
+                {
+                    ClanRecruitmentBudgetManager.CommitRecruitment(
+                        targetParty,
+                        taken,
+                        0f,
+                        AiRecruitmentFinancialModel.EstimateUnitDailyWage(
+                            targetParty,
+                            troop));
+                }
 
                 tmpRecruitTroops[troop] = taken;
                 tmpRecruitSoldierTypeSize[type] += taken;

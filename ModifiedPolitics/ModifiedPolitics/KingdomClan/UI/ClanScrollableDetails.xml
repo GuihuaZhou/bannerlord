@@ -87,7 +87,7 @@
                     DataSource="{CurrentSelectedClan}"
                     WidthSizePolicy="StretchToParent"
                     HeightSizePolicy="Fixed"
-                    SuggestedHeight="280"
+                    SuggestedHeight="315"
                     MarginTop="5">
 
                   <Children>
@@ -111,7 +111,7 @@
                         WidthSizePolicy="Fixed"
                         HeightSizePolicy="Fixed"
                         SuggestedWidth="265"
-                        SuggestedHeight="280"
+                        SuggestedHeight="315"
                         HorizontalAlignment="Right"
                         VerticalAlignment="Top"
                         MarginRight="70"
@@ -192,8 +192,16 @@
 
                             <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
                               <Children>
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Text="@ExpectedGoldText" />
-                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.CurrentGold.Text" IntText="@ExpectedGold" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Text="@RecruitmentBudgetText" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.CurrentGold.Text" IntText="@RecruitmentBudget" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                              <Children>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" Brush="Clan.Finance.CurrentGold.Text" Text="@ExpectedReserveText" />
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" MarginRight="35" Brush="Clan.Finance.CurrentGold.Text" IntText="@ExpectedReserve" />
                                 <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" Sprite="General\Icons\Coin@2x" />
                               </Children>
                             </Widget>

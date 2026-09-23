@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ModifiedArmy.Recruitment.Finance;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.Core;
@@ -19,12 +20,14 @@ namespace ModifiedPolitics.UI.KingdomClan
         private string _totalExpensesText;
         private string _dailyChangeText;
         private string _currentGoldText;
-        private string _expectedGoldText;
+        private string _recruitmentBudgetText;
+        private string _expectedReserveText;
         private int _totalIncomeValue;
         private int _totalExpensesValue;
         private int _dailyChangeValue;
         private int _currentGold;
-        private int _expectedGold;
+        private int _recruitmentBudget;
+        private int _expectedReserve;
         private BasicTooltipViewModel _financeHint;
 
         [DataSourceProperty]
@@ -78,13 +81,23 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
-        public string ExpectedGoldText
+        public string RecruitmentBudgetText
         {
-            get => _expectedGoldText;
+            get => _recruitmentBudgetText;
             set => SetFinanceProperty(
-                ref _expectedGoldText,
+                ref _recruitmentBudgetText,
                 value,
-                nameof(ExpectedGoldText));
+                nameof(RecruitmentBudgetText));
+        }
+
+        [DataSourceProperty]
+        public string ExpectedReserveText
+        {
+            get => _expectedReserveText;
+            set => SetFinanceProperty(
+                ref _expectedReserveText,
+                value,
+                nameof(ExpectedReserveText));
         }
 
         [DataSourceProperty]
@@ -128,13 +141,23 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
-        public int ExpectedGold
+        public int RecruitmentBudget
         {
-            get => _expectedGold;
+            get => _recruitmentBudget;
             set => SetFinanceProperty(
-                ref _expectedGold,
+                ref _recruitmentBudget,
                 value,
-                nameof(ExpectedGold));
+                nameof(RecruitmentBudget));
+        }
+
+        [DataSourceProperty]
+        public int ExpectedReserve
+        {
+            get => _expectedReserve;
+            set => SetFinanceProperty(
+                ref _expectedReserve,
+                value,
+                nameof(ExpectedReserve));
         }
 
         [DataSourceProperty]
@@ -166,8 +189,12 @@ namespace ModifiedPolitics.UI.KingdomClan
                 "str_clan_finance_daily_change").ToString();
             CurrentGoldText = GameTexts.FindText(
                 "str_clan_finance_current_gold").ToString();
-            ExpectedGoldText = GameTexts.FindText(
-                "str_clan_finance_expected").ToString();
+            RecruitmentBudgetText = new TextObject(
+                "{=ModifiedPolitics_RecruitmentBudget}Recruitment Budget")
+                .ToString();
+            ExpectedReserveText = new TextObject(
+                "{=ModifiedPolitics_ExpectedReserve}Expected Reserve")
+                .ToString();
 
             FinanceHint = new BasicTooltipViewModel(
                 BuildClanFinanceTooltip);
@@ -183,7 +210,8 @@ namespace ModifiedPolitics.UI.KingdomClan
                 TotalExpensesValue = 0;
                 DailyChangeValue = 0;
                 CurrentGold = 0;
-                ExpectedGold = 0;
+                RecruitmentBudget = 0;
+                ExpectedReserve = 0;
                 return;
             }
 
@@ -221,7 +249,15 @@ namespace ModifiedPolitics.UI.KingdomClan
             TotalExpensesValue = totalExpenses;
             DailyChangeValue = dailyChange;
             CurrentGold = clan.Gold;
-            ExpectedGold = clan.Gold + dailyChange;
+            ClanRecruitmentBudgetSnapshot recruitmentSnapshot =
+                ClanRecruitmentBudgetManager.GetSnapshot(clan);
+
+            // The displayed budget is the amount still available today, so
+            // the panel immediately reflects recruitment by another party of
+            // the same clan. Expected reserve is the protected treasury floor.
+            RecruitmentBudget = (int)recruitmentSnapshot
+                .RemainingCommitmentBudget;
+            ExpectedReserve = (int)recruitmentSnapshot.ExpectedReserve;
         }
 
         /// <summary>

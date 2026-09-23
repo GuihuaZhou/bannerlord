@@ -310,16 +310,21 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
-        /// Combines immediate recruitment cost with the complete projected
-        /// party wage for the configured maintenance period.
+        /// Charges only newly recruited soldiers against the clan's shared
+        /// daily pool. Existing wages are already included in the clan finance
+        /// forecast used to calculate that pool and must not be counted twice.
         /// </summary>
         private static int GetAllowedByMaintenance(
             RecruitmentSimulationState state,
             float unitWage,
             int unitCost)
         {
+            float addedDailyWage = Math.Max(
+                0f,
+                state.ProjectedDailyWage
+                    - state.Budget.CurrentLongTermWage);
             float existingCommitment = state.CommittedRecruitmentCost
-                + state.ProjectedDailyWage * state.Budget.MaintenanceDays;
+                + addedDailyWage * state.Budget.MaintenanceDays;
             float remaining = state.Budget.SpendableFunds
                 - existingCommitment;
             float unitCommitment = unitCost
@@ -336,8 +341,8 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
-        /// Reports how many days the remaining spendable funds can support the
-        /// projected wage after the approved recruitment purchase.
+        /// Reports how many forecast days remain affordable for the newly
+        /// added wage commitment after recruitment purchases are deducted.
         /// </summary>
         private static int GetSustainableDays(
             RecruitmentSimulationState state,
@@ -348,8 +353,11 @@ namespace ModifiedArmy.Recruitment.Models
             float remainingFunds = state.Budget.SpendableFunds
                 - state.CommittedRecruitmentCost
                 - approvedCount * unitCost;
-            float projectedWage = state.ProjectedDailyWage
-                + approvedCount * unitWage;
+            float projectedWage = Math.Max(
+                0f,
+                state.ProjectedDailyWage
+                    - state.Budget.CurrentLongTermWage
+                    + approvedCount * unitWage);
 
             if (projectedWage <= 0f)
             {
