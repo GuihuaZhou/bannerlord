@@ -256,7 +256,7 @@ namespace ModifiedArmy.Models.Fief
 
             msg.SetTextVariable(
                 "PARTY_NAME",
-                targetParty.Name.ToString());
+                PartyLogFormatter.GetDisplayName(targetParty));
 
             msg.SetTextVariable(
                 "SETTLEMENT_NAME",
@@ -423,7 +423,9 @@ namespace ModifiedArmy.Models.Fief
 
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_ai_recruitment_fief_plan");
-            message.SetTextVariable("PARTY_NAME", targetParty.Name);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(targetParty));
             message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("OFFERED", offeredCount);
@@ -563,7 +565,9 @@ namespace ModifiedArmy.Models.Fief
             targetDetachment.AddTroops(tmpRecruitTroops);
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
-            msg.SetTextVariable("PARTY_NAME", targetParty.Name.ToString());
+            msg.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(targetParty));
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("RETINUE", tmpRecruitSoldierTypeSize[SoldierType.Retinue]);
             msg.SetTextVariable("SERGEANT", tmpRecruitSoldierTypeSize[SoldierType.Sergeant]);

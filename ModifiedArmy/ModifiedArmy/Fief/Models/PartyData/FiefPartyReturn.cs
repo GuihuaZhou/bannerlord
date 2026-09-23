@@ -303,7 +303,7 @@ namespace ModifiedArmy.Models.Fief
 
             msgResult.SetTextVariable(
                 "PARTY_NAME",
-                sourceParty.Name.ToString());
+                PartyLogFormatter.GetDisplayName(sourceParty));
 
             msgResult.SetTextVariable(
                 "SETTLEMENT_NAME",

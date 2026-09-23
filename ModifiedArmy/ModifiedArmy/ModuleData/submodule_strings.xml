@@ -46,7 +46,7 @@
         text="{=FiefPartyData_EnforceTroopLimits_0}[ModifiedArmy] 因兵力超限, 从{SETTLEMENT_NAME}移除了{RETINUE}名扈从, {SERGEANT}名军士, {MILITIA}名民兵" />
 
     <string id="str_modifiedarmy_fief_return_result"
-        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[ModifiedArmy] {PARTY_NAME}在{SETTLEMENT_NAME}解散了{RETURNED_COUNT}名士兵, 恢复{PROSPERITY_COST}点繁荣度, 归还附属村庄{HEARTH_COST}点户数. 当前封邑兵力：扈从{RETINUE_COUNT}/{MAX_RETINUE}, 军士{SERGEANT_COUNT}/{MAX_SERGEANT}, 水兵{MARINE_COUNT}/{MAX_MARINE}, 军事奴隶{SLAVE_COUNT}/{MAX_SLAVE}, 民兵{MILITIA_COUNT}/{MAX_MILITIA}, 总计{TROOP_COUNT}/{TOTAL_LIMIT}" />
+        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[封邑] {PARTY_NAME}在{SETTLEMENT_NAME}解散了{RETURNED_COUNT}名士兵, 提升{PROSPERITY_COST}点繁荣度, 归还附属村庄{HEARTH_COST}点户数. 当前封邑兵力: 扈从{RETINUE_COUNT}/{MAX_RETINUE}, 军士{SERGEANT_COUNT}/{MAX_SERGEANT}, 水兵{MARINE_COUNT}/{MAX_MARINE}, 军事奴隶{SLAVE_COUNT}/{MAX_SLAVE}, 民兵{MILITIA_COUNT}/{MAX_MILITIA}, 总计{TROOP_COUNT}/{TOTAL_LIMIT}." />
 
     <string id="str_modifiedarmy_fief_weekly_reinforcement"
         text="{=FiefPartyData_WeeklyUpdate_0}[ModifiedArmy] {SETTLEMENT_NAME}补充了{RETINUE}名扈从, {SERGEANT}名军士, {MARINE}名水兵, {SLAVE}名军事奴隶, {MILITIA}名民兵, 当前封邑兵力：扈从{RETINUE_COUNT}/{MAX_RETINUE}, 军士{SERGEANT_COUNT}/{MAX_SERGEANT}, 水兵{MARINE_COUNT}/{MAX_MARINE}, 军事奴隶{SLAVE_COUNT}/{MAX_SLAVE}, 民兵{MILITIA_COUNT}/{MAX_MILITIA}, 总计{TROOP_COUNT}/{TOTAL_LIMIT}" />
@@ -55,12 +55,24 @@
     <string id="str_modifiedarmy_fief_recruit_to_party"
         text="{=FiefPartyData_RecruitTroopsToParty_0}[ModifiedArmy] {PARTY_NAME}从{SETTLEMENT_NAME}招募了{RETINUE}名扈从, {SERGEANT}名军士, {MARINE}名水兵, {SLAVE}名军事奴隶, {MILITIA}名民兵, 消耗{PROSPERITY_COST}点繁荣度, 消耗附属村庄{HEARTH_COST}点户数" />
 
+    <!-- Consistent party ownership names used by log messages. -->
+    <string id="str_modifiedarmy_party_log_name_with_kingdom"
+        text="{=ModifiedArmy_PartyLogNameWithKingdom}{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
+    <string id="str_modifiedarmy_party_log_name_without_kingdom"
+        text="{=ModifiedArmy_PartyLogNameWithoutKingdom}{CLAN_NAME}家族的{PARTY_NAME}" />
+    <string id="str_modifiedarmy_party_log_clan_with_kingdom"
+        text="{=ModifiedArmy_PartyLogClanWithKingdom}{KINGDOM_NAME}{CLAN_NAME}家族" />
+    <string id="str_modifiedarmy_party_log_clan_without_kingdom"
+        text="{=ModifiedArmy_PartyLogClanWithoutKingdom}{CLAN_NAME}家族" />
+    <string id="str_modifiedarmy_party_log_owner_unknown"
+        text="{=ModifiedArmy_PartyLogOwnerUnknown}无所属家族" />
+
     <!-- Army finance: mobile-party wage limit diagnostics. -->
     <string id="str_modifiedarmy_party_wage_limit_evaluated"
-        text="{=ModifiedArmy_PartyWageLimitEvaluated}[部队财政] {CLAN_NAME}的{PARTY_NAME}每日工资为{CURRENT_WAGE}, 工资上限为{WAGE_LIMIT}. 家族领袖拥有{LEADER_GOLD}第纳尔, 当前处于{WAR_STATE}状态." />
+        text="{=ModifiedArmy_PartyWageLimitEvaluated}[部队财政] {PARTY_NAME}每日工资为{CURRENT_WAGE}第纳尔, 工资上限为{WAGE_LIMIT}第纳尔. 家族领袖拥有{LEADER_GOLD}第纳尔, 当前处于{WAR_STATE}状态." />
 
     <string id="str_modifiedarmy_party_wage_limit_exceeded"
-        text="{=ModifiedArmy_PartyWageLimitExceeded}[部队财政] {PARTY_NAME}工资{CURRENT_WAGE}, 已超过{WAGE_LIMIT}的上限." />
+        text="{=ModifiedArmy_PartyWageLimitExceeded}[部队财政] {PARTY_NAME}每日工资为{CURRENT_WAGE}第纳尔, 已超过{WAGE_LIMIT}第纳尔的上限. 若工资没有降低, 部队将解散士兵." />
 
     <string id="str_modifiedarmy_party_wage_state_war"
         text="{=ModifiedArmy_PartyWageStateWar}战争" />
@@ -117,9 +129,9 @@
     <string id="str_modifiedarmy_supply_party_returned"
         text="{=ModifiedArmy_SupplyPartyReturned}[驻军后勤] {HOME_NAME}征粮队带回{FOOD}单位食物." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
-        text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {SETTLEMENT_NAME}驻军每日工资为{CURRENT_WAGE}第纳尔. 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军因工资上限而解散." />
+        text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"
-        text="{=ModifiedArmy_GarrisonWageStillExceeded}[驻军工资] {SETTLEMENT_NAME}驻军每日工资为{CURRENT_WAGE}第纳尔, 仍然超过{NEW_LIMIT}第纳尔的上限, 超出{EXCESS}第纳尔." />
+        text="{=ModifiedArmy_GarrisonWageStillExceeded}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 驻军每日工资为{CURRENT_WAGE}第纳尔, 已超过{NEW_LIMIT}第纳尔的上限. 若工资没有降低, 驻军将解散士兵." />
     <string id="str_modifiedarmy_recruitment_config_loaded"
         text="{=ModifiedArmy_RecruitmentConfigLoaded}[配置] AI招募配置已加载, 包含{CULTURE_COUNT}条文化偏好和{SITUATION_COUNT}条情境修正. 需求阈值为{NEED_THRESHOLD}, 随机概率为{RANDOM_CHANCE}." />
     <string id="str_modifiedarmy_recruitment_config_missing"

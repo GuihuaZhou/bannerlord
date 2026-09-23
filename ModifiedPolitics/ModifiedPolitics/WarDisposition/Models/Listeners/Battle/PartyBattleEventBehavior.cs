@@ -57,7 +57,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
                 if (TryGetWarClan(destroyedParty, out Clan ignoredClan))
                 {
                     ModLogger.Info(
-                        $"[战争倾向] 忽略部队覆灭 | 被摧毁={destroyedParty.Name} " +
+                        $"[战争倾向] 忽略部队覆灭 | 被摧毁=" +
+                        $"{PartyLogFormatter.GetDisplayName(destroyedParty)} " +
                         $"({ignoredClan.Name}) | 摧毁者={GetPartyName(destroyerParty)} | " +
                         "原因=摧毁者不是政治势力");
                 }
@@ -150,7 +151,8 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
                 if (TryGetWarClan(party.MobileParty, out Clan clan))
                 {
                     ModLogger.Info(
-                        $"[战争倾向] 识别战斗事件 | 部队={party.Name} | " +
+                        $"[战争倾向] 识别战斗事件 | 部队=" +
+                        $"{PartyLogFormatter.GetDisplayName(party.MobileParty)} | " +
                         $"家族={clan.Name} | 事件={eventType}");
                     WarDispositionEventDistributor.DistributeClanEvent(
                         clan,
@@ -193,6 +195,13 @@ namespace ModifiedPolitics.Models.WarDisposition.Listeners.Battle
 
         private static string GetPartyName(PartyBase party)
         {
+            if (party?.MobileParty != null)
+            {
+                return PartyLogFormatter
+                    .GetDisplayName(party.MobileParty)
+                    .ToString();
+            }
+
             return party?.Name?.ToString() ?? "无/未知";
         }
     }

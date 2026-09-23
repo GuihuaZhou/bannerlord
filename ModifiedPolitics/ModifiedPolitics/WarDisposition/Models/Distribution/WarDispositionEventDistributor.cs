@@ -51,14 +51,28 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
             {
                 TextObject message = new TextObject(
                     "{=ModifiedPolitics_WarDispositionClanChanged}" +
-                    "[War Disposition] {CLAN_NAME} experienced {EVENT_TYPE}. " +
-                    "Its disposition changed by {DELTA} and is now {CURRENT}.");
+                    "[War Disposition] {CLAN_NAME} changed because of " +
+                    "{EVENT_TYPE}. Its disposition {CHANGE_DIRECTION} " +
+                    "by {CHANGE_AMOUNT} and is now {CURRENT}.");
                 message.SetTextVariable("CLAN_NAME", eventClan.Name);
-                message.SetTextVariable("EVENT_TYPE", eventType.ToString());
                 message.SetTextVariable(
-                    "DELTA",
-                    (ownResult?.AppliedDelta ?? 0f)
-                        .ToString("+0.00;-0.00;0.00"));
+                    "EVENT_TYPE",
+                    WarDispositionEventText.GetReason(
+                        eventType,
+                        baseValueOverride));
+                float appliedDelta = ownResult?.AppliedDelta ?? 0f;
+                message.SetTextVariable(
+                    "CHANGE_DIRECTION",
+                    appliedDelta >= 0f
+                        ? new TextObject(
+                            "{=ModifiedPolitics_WarDispositionIncreased}" +
+                            "increased")
+                        : new TextObject(
+                            "{=ModifiedPolitics_WarDispositionDecreased}" +
+                            "decreased"));
+                message.SetTextVariable(
+                    "CHANGE_AMOUNT",
+                    System.Math.Abs(appliedDelta).ToString("0.00"));
                 message.SetTextVariable(
                     "CURRENT",
                     (ownData?.Value ?? 0f).ToString("0.00"));
@@ -72,8 +86,6 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                 return;
             }
 
-            int sharedClanCount = 0;
-
             foreach (Clan clan in kingdom.Clans)
             {
                 if (clan != eventClan
@@ -84,19 +96,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Distribution
                         eventType,
                         false,
                         baseValueOverride);
-                    sharedClanCount++;
                 }
-            }
-
-            if (shouldLog)
-            {
-                TextObject message = new TextObject(
-                    "{=ModifiedPolitics_WarDispositionKingdomSpread}" +
-                    "[War Disposition] The event affecting {CLAN_NAME} also influenced " +
-                    "{CLAN_COUNT} other clans in the kingdom at twenty percent strength.");
-                message.SetTextVariable("CLAN_NAME", eventClan.Name);
-                message.SetTextVariable("CLAN_COUNT", sharedClanCount);
-                ModLogger.Notice(message.ToString());
             }
         }
 

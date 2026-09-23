@@ -76,7 +76,8 @@ namespace ModifiedArmy.Models
             // === 结果汇总 ===
             if (mobileParty.IsGarrison && troopsToDesert.TotalManCount > 0)
             {
-                string basicInfo = $"[逃兵调试] 部队: '{mobileParty.Name}' | " +
+                string basicInfo = $"[逃兵调试] 部队: '" +
+                    $"{PartyLogFormatter.GetDisplayName(mobileParty)}' | " +
                                    $"士气: {mobileParty.Morale:F1} | " +
                                    $"总成员数: {mobileParty.Party.NumberOfAllMembers} | " +
                                    $"部队规模上限: {mobileParty.Party.PartySizeLimit} | " +

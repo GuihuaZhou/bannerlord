@@ -82,8 +82,9 @@ namespace ModifiedArmy.PartyFinance.Patches
                     : GameTexts.FindText(
                         "str_modifiedarmy_party_wage_state_peace");
 
-            message.SetTextVariable("PARTY_NAME", party.Name);
-            message.SetTextVariable("CLAN_NAME", clan.Name);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable("CURRENT_WAGE", currentWage);
             message.SetTextVariable("WAGE_LIMIT", wageLimit);
             message.SetTextVariable(

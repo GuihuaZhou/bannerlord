@@ -54,10 +54,7 @@ namespace ModifiedArmy.Models
         
         private static string GetPartyDisplayName(MobileParty party)
         {
-            Kingdom kingdom = party.LeaderHero?.Clan?.Kingdom;
-            if (kingdom != null)
-                return $"[{kingdom.Name}] {party.Name}";
-            return party.Name.ToString();
+            return PartyLogFormatter.GetDisplayName(party).ToString();
         }
 
 

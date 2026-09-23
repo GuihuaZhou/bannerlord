@@ -239,7 +239,9 @@ namespace ModifiedArmy.Recruitment.Patches
 
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_ai_recruitment_garrison_plan");
-            message.SetTextVariable("PARTY_NAME", town.GarrisonParty.Name);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(town.GarrisonParty));
             message.SetTextVariable("SETTLEMENT_NAME", town.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("OFFERED", offeredCount);

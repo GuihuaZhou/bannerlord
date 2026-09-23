@@ -79,7 +79,10 @@ namespace ModifiedArmy.Patch
                 if (troopRoster.TotalManCount > 0)
                 {
                     SellPrisonersAction.ApplyForSelectedPrisoners(mobileParty.Party, settlement.Party, troopRoster);
-                    ModLogger.Info($"{mobileParty.Name}转移了{troopRoster.TotalRegulars}名俘虏到{settlement.Name}");
+                    ModLogger.Info(
+                        $"{PartyLogFormatter.GetDisplayName(mobileParty)}" +
+                        $"转移了{troopRoster.TotalRegulars}名俘虏到" +
+                        $"{settlement.Name}");
                 }
             }
             return false;

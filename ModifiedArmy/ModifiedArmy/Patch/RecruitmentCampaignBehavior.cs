@@ -167,7 +167,7 @@ namespace ModifiedArmy.Patch
                 if (RecruitmentLogFilter.ShouldLog(mobileParty))
                 {
                     ModLogger.Debug(
-                        $"[AIRecruitment] {mobileParty.Name} is trying to recruit from {source} at {settlement.Name}. " +
+                        $"[AIRecruitment] {PartyLogFormatter.GetDisplayName(mobileParty)} is trying to recruit from {source} at {settlement.Name}. " +
                         $"The success chance is {finalProbability:P2}.");
                 }
 
@@ -465,7 +465,9 @@ namespace ModifiedArmy.Patch
 
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_ai_recruitment_volunteer_plan");
-            message.SetTextVariable("PARTY_NAME", party.Name);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("OFFERED", offeredCount);
@@ -594,7 +596,9 @@ namespace ModifiedArmy.Patch
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_ai_recruitment_mercenary_evaluation");
 
-            message.SetTextVariable("PARTY_NAME", party.Name);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("TROOP_NAME", evaluation.Troop.Name);

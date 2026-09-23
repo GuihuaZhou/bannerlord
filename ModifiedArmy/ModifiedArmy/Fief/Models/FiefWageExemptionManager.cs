@@ -107,7 +107,10 @@ namespace ModifiedArmy.Models.Fief
                     string key = GetPartyKey(mobileParty);
                     if (!string.IsNullOrEmpty(key) && _exemptionMap.Remove(key))
                     {
-                        ModLogger.Debug($"[FiefWage] Removed exemptions due to party removal: {mobileParty.Name} (ID: {key})");
+                        ModLogger.Debug(
+                            $"[FiefWage] Removed exemptions due to party removal: " +
+                            $"{PartyLogFormatter.GetDisplayName(mobileParty)} " +
+                            $"(ID: {key})");
                     }
                 }
             }
@@ -183,14 +186,18 @@ namespace ModifiedArmy.Models.Fief
             {
                 _exemptionMap.Remove(key);
                 if (party.IsMainParty)
-                    //ModLogger.Notice($"[FiefWage] Cleared all exemptions for {party.Name} (ID: {key})");
                 {
                     TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_cleared");
-                    msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                    msg.SetTextVariable(
+                        "PARTY_NAME",
+                        PartyLogFormatter.GetDisplayName(party));
                     ModLogger.Notice(msg.ToString());
                 }
                 else
-                    ModLogger.Debug($"[FiefWage] Cleared all exemptions for {party.Name} (ID: {key})");
+                    ModLogger.Debug(
+                        $"[FiefWage] Cleared all exemptions for " +
+                        $"{PartyLogFormatter.GetDisplayName(party)} " +
+                        $"(ID: {key})");
             }
         }
 
@@ -222,15 +229,19 @@ namespace ModifiedArmy.Models.Fief
             list.Add(new FiefWageExemption(troopCount, durationDays));
             if (party.IsMainParty)
             {
-                //ModLogger.Notice($"[FiefWage] Added {troopCount} troops for {party.Name} (ID: {key}) for {durationDays} days");
                 TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_added");
-                msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                msg.SetTextVariable(
+                    "PARTY_NAME",
+                    PartyLogFormatter.GetDisplayName(party));
                 msg.SetTextVariable("COUNT", troopCount);
                 msg.SetTextVariable("DAYS", durationDays);
                 ModLogger.Notice(msg.ToString());
             }
             else
-                ModLogger.Debug($"[FiefWage] Added {troopCount} troops for {party.Name} (ID: {key}) for {durationDays} days");
+                ModLogger.Debug(
+                    $"[FiefWage] Added {troopCount} troops for " +
+                    $"{PartyLogFormatter.GetDisplayName(party)} " +
+                    $"(ID: {key}) for {durationDays} days");
         }
 
         /// <summary>
@@ -272,7 +283,10 @@ namespace ModifiedArmy.Models.Fief
 
             if (!_exemptionMap.TryGetValue(key, out var list) || list == null)
             {
-                ModLogger.Debug($"[FiefWage] No exemption record found for party: {party.Name} (ID: {key})");
+                ModLogger.Debug(
+                    $"[FiefWage] No exemption record found for party: " +
+                    $"{PartyLogFormatter.GetDisplayName(party)} " +
+                    $"(ID: {key})");
                 return;
             }
 
@@ -300,15 +314,19 @@ namespace ModifiedArmy.Models.Fief
 
             if (party.IsMainParty)
             {
-                //ModLogger.Notice($"[FiefWage] Consumed {consumed}/{dismissedCount} troops for {party.Name} (ID: {key})");
                 TextObject msg = GameTexts.FindText("str_modifiedarmy_wage_exemption_consumed");
-                msg.SetTextVariable("PARTY_NAME", party.Name.ToString());
+                msg.SetTextVariable(
+                    "PARTY_NAME",
+                    PartyLogFormatter.GetDisplayName(party));
                 msg.SetTextVariable("CONSUMED", consumed);
                 msg.SetTextVariable("REQUESTED", dismissedCount);
                 ModLogger.Notice(msg.ToString());
             }
             else
-                ModLogger.Debug($"[FiefWage] Consumed {consumed}/{dismissedCount} troops for {party.Name} (ID: {key})");
+                ModLogger.Debug(
+                    $"[FiefWage] Consumed {consumed}/{dismissedCount} " +
+                    $"troops for {PartyLogFormatter.GetDisplayName(party)} " +
+                    $"(ID: {key})");
         }
 
         /// <summary>

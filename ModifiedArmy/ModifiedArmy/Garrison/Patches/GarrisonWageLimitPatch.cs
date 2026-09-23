@@ -64,6 +64,9 @@ namespace ModifiedArmy.Garrison.Patches
                 {
                     TextObject message = GameTexts.FindText(
                         "str_modifiedarmy_garrison_wage_dismissal_prevented");
+                    message.SetTextVariable(
+                        "OWNER_NAME",
+                        PartyLogFormatter.GetClanDisplayName(clan));
                     message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                     message.SetTextVariable("CURRENT_WAGE", currentGarrisonWage);
                     message.SetTextVariable("PREVIOUS_LIMIT", previousLimit);
@@ -74,6 +77,9 @@ namespace ModifiedArmy.Garrison.Patches
                 {
                     TextObject message = GameTexts.FindText(
                         "str_modifiedarmy_garrison_wage_still_exceeded");
+                    message.SetTextVariable(
+                        "OWNER_NAME",
+                        PartyLogFormatter.GetClanDisplayName(clan));
                     message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                     message.SetTextVariable("CURRENT_WAGE", currentGarrisonWage);
                     message.SetTextVariable("NEW_LIMIT", newLimit);
