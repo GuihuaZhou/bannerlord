@@ -7,6 +7,7 @@ using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.PartyFinance.Behaviors;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using System.Collections.Generic;
@@ -141,7 +142,7 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new GarrisonLocalMarketPurchaseBehavior());
                 campaignStarter.AddBehavior(
-                    new GarrisonStarvationLogBehavior());
+                    new PartyPersonnelLossLogBehavior());
                 campaignStarter.AddBehavior(
                     new SupplyPartyBehavior());
                 campaignStarter.AddBehavior(

@@ -116,8 +116,16 @@
         text="{=ModifiedArmy_GarrisonLocalProduction}[驻军后勤] {SETTLEMENT_NAME}将{TRANSFERRED}单位本地产出送入驻军粮仓, 粮仓现有{CURRENT_FOOD}单位食物." />
     <string id="str_modifiedarmy_garrison_food_consumption"
         text="{=ModifiedArmy_GarrisonFoodConsumption}[驻军后勤] {SETTLEMENT_NAME}驻军需要{DEMAND}单位食物, 库存从{FOOD_BEFORE}降至{FOOD_AFTER}, 剩余消耗进度为{REMAINDER}%, 饥饿状态为{STARVING}." />
-    <string id="str_modifiedarmy_garrison_starvation_desertion"
-        text="{=ModifiedArmy_GarrisonStarvationDesertion}[驻军后勤] {SETTLEMENT_NAME}因饥饿有{DESERTED}名驻军逃亡, 目前还剩{REMAINING}人." />
+    <string id="str_modifiedarmy_party_troops_deserted"
+        text="{=ModifiedArmy_PartyTroopsDeserted}[部队损耗] {PARTY_NAME}因{REASON}逃亡{DESERTED}人, 目前还剩{REMAINING}人." />
+    <string id="str_modifiedarmy_party_disband_started"
+        text="{=ModifiedArmy_PartyDisbandStarted}[部队解散] {PARTY_NAME}开始解散, 当前共有{MEMBERS}人." />
+    <string id="str_modifiedarmy_desertion_reason_starvation" text="{=ModifiedArmy_DesertionReasonStarvation}缺少食物" />
+    <string id="str_modifiedarmy_desertion_reason_unpaid_wages" text="{=ModifiedArmy_DesertionReasonUnpaidWages}拖欠工资" />
+    <string id="str_modifiedarmy_desertion_reason_wage_limit" text="{=ModifiedArmy_DesertionReasonWageLimit}工资超过上限" />
+    <string id="str_modifiedarmy_desertion_reason_party_size" text="{=ModifiedArmy_DesertionReasonPartySize}部队超编" />
+    <string id="str_modifiedarmy_desertion_reason_morale" text="{=ModifiedArmy_DesertionReasonMorale}士气低落" />
+    <string id="str_modifiedarmy_desertion_reason_unknown" text="{=ModifiedArmy_DesertionReasonUnknown}人员流失" />
     <string id="str_modifiedarmy_supply_party_loaded"
         text="{=ModifiedArmy_SupplyPartyLoaded}[驻军后勤] {HOME_NAME}征粮队在{SOURCE_NAME}获得{FOOD}单位食物, 花费{COST}第纳尔. 队伍购买{MOUNTS}匹马, 花费{MOUNT_COST}第纳尔, 现携带{CARGO_FOOD}单位食物." />
     <string id="str_modifiedarmy_supply_party_destroyed"
