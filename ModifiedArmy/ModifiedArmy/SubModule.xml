@@ -1,0 +1,73 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Module>
+	<Name value = "ModifiedArmy"/>
+	<Id value = "ModifiedArmy"/>
+	<Version value = "v1.0.0"/>
+	<DefaultModule value="false"/>
+	<ModuleCategory value="Singleplayer"/>
+	<ModuleType value ="Community" />
+	<DependedModules>
+		<DependedModule Id="ModifiedTroop" DependentVersion="v1.0.0" />
+	</DependedModules>
+	<Xmls>    
+		<XmlNode>   
+			<XmlName id="FiefPartyTemplates" path="fiefPartyTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode> 
+		<XmlNode>                
+			<XmlName id="BasicTroopGroups" path="basic_troop_config" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>  
+		<XmlNode>                
+			<XmlName id="ModConfigs" path="modConfigs" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>  
+		<XmlNode>                
+			<XmlName id="MercenaryTemplates" path="mercenaryTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>  
+		<XmlNode>
+			<XmlName id="AIRecruitmentTemplates" path="aiRecruitmentTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>
+		<XmlNode>                
+			<XmlName id="GameText" path="submodule_strings" />
+		</XmlNode>  
+	</Xmls>
+	<SubModules>
+		<SubModule>
+			<Name value="ModifiedArmy" />
+			<DLLName value="ModifiedArmy.dll" />
+			<SubModuleClassType value="ModifiedArmy.Main"/>
+			<Tags>
+			</Tags>
+		</SubModule>
+	</SubModules>
+	<Xmls>     
+	</Xmls>
+</Module>

@@ -1,0 +1,202 @@
+<?xml version="1.0" encoding="utf-8"?>
+<AIRecruitmentTemplates>
+  <!--
+    AI party composition templates.
+
+    min is a soft target used to prioritize missing troop groups.
+    max is a hard recruitment limit. Values are percentages of the party's
+    size limit, not fixed troop counts.
+
+    culture must be a Bannerlord object reference such as Culture.aserai.
+    partyType accepts mobileParty or garrison.
+  -->
+
+  <AIRecruitmentTemplate id="empire_mobile_party" culture="Culture.empire" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="25" max="50"/>
+      <Ranged min="15" max="35"/>
+      <Cavalry min="20" max="40"/>
+      <HorseArcher min="0" max="10"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="empire_garrison" culture="Culture.empire" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="45" max="70"/>
+      <Ranged min="25" max="50"/>
+      <Cavalry min="5" max="15"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="vlandia_mobile_party" culture="Culture.vlandia" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="25" max="50"/>
+      <Ranged min="15" max="35"/>
+      <Cavalry min="20" max="45"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="vlandia_garrison" culture="Culture.vlandia" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="40" max="70"/>
+      <Ranged min="30" max="55"/>
+      <Cavalry min="0" max="15"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="sturgia_mobile_party" culture="Culture.sturgia" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="45" max="70"/>
+      <Ranged min="15" max="35"/>
+      <Cavalry min="5" max="20"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="sturgia_garrison" culture="Culture.sturgia" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="55" max="80"/>
+      <Ranged min="20" max="45"/>
+      <Cavalry min="0" max="10"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="nord_mobile_party" culture="Culture.nord" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="45" max="70"/>
+      <Ranged min="15" max="35"/>
+      <Cavalry min="5" max="20"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="nord_garrison" culture="Culture.nord" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="55" max="80"/>
+      <Ranged min="20" max="45"/>
+      <Cavalry min="0" max="10"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="battania_mobile_party" culture="Culture.battania" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="30" max="55"/>
+      <Ranged min="25" max="50"/>
+      <Cavalry min="5" max="20"/>
+      <HorseArcher min="0" max="10"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="battania_garrison" culture="Culture.battania" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="40" max="65"/>
+      <Ranged min="35" max="60"/>
+      <Cavalry min="0" max="10"/>
+      <HorseArcher min="0" max="5"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="aserai_mobile_party" culture="Culture.aserai" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="25" max="50"/>
+      <Ranged min="15" max="35"/>
+      <Cavalry min="15" max="35"/>
+      <HorseArcher min="5" max="25"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="aserai_garrison" culture="Culture.aserai" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="45" max="70"/>
+      <Ranged min="25" max="50"/>
+      <Cavalry min="0" max="15"/>
+      <HorseArcher min="5" max="15"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+
+  <AIRecruitmentTemplate id="khuzait_mobile_party" culture="Culture.khuzait" partyType="mobileParty">
+    <CombatRoles>
+      <Infantry min="15" max="40"/>
+      <Ranged min="5" max="25"/>
+      <Cavalry min="20" max="45"/>
+      <HorseArcher min="20" max="50"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="15" max="50"/>
+      <MiddleTier min="30" max="70"/>
+      <TopTier min="5" max="30"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+  <AIRecruitmentTemplate id="khuzait_garrison" culture="Culture.khuzait" partyType="garrison">
+    <CombatRoles>
+      <Infantry min="35" max="60"/>
+      <Ranged min="15" max="40"/>
+      <Cavalry min="10" max="25"/>
+      <HorseArcher min="15" max="35"/>
+    </CombatRoles>
+    <Qualities>
+      <LowTier min="40" max="50"/>
+      <MiddleTier min="35" max="55"/>
+      <TopTier min="10" max="25"/>
+    </Qualities>
+  </AIRecruitmentTemplate>
+</AIRecruitmentTemplates>

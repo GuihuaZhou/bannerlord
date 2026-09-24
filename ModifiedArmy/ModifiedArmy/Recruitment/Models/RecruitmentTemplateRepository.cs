@@ -17,7 +17,7 @@ namespace ModifiedArmy.Recruitment.Models
 
         public RecruitmentTemplateRepository()
         {
-            RegisterDefaults();
+            RegisterFallbacks();
         }
 
         /// <summary>
@@ -55,27 +55,14 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
-        /// Registers the agreed role ratios. Mobile and garrison quality ranges
-        /// are shared across cultures in the first implementation batch.
+        /// Registers only culture-neutral fallbacks. Culture-specific values
+        /// are loaded from ModuleData/aiRecruitmentTemplates.xml and replace
+        /// these entries through Register.
         /// </summary>
-        private void RegisterDefaults()
+        private void RegisterFallbacks()
         {
             RegisterCulture("default", 25, 55, 15, 40, 10, 35, 0, 20,
                 45, 75, 25, 55, 0, 15, 0, 10);
-            RegisterCulture("empire", 25, 50, 15, 35, 20, 40, 0, 10,
-                45, 70, 25, 50, 5, 15, 0, 5);
-            RegisterCulture("vlandia", 25, 50, 15, 35, 20, 45, 0, 5,
-                40, 70, 30, 55, 0, 15, 0, 5);
-            RegisterCulture("sturgia", 45, 70, 15, 35, 5, 20, 0, 5,
-                55, 80, 20, 45, 0, 10, 0, 5);
-            RegisterCulture("nord", 45, 70, 15, 35, 5, 20, 0, 5,
-                55, 80, 20, 45, 0, 10, 0, 5);
-            RegisterCulture("battania", 30, 55, 25, 50, 5, 20, 0, 10,
-                40, 65, 35, 60, 0, 10, 0, 5);
-            RegisterCulture("aserai", 25, 50, 15, 35, 15, 35, 5, 25,
-                45, 70, 25, 50, 0, 15, 5, 15);
-            RegisterCulture("khuzait", 15, 40, 5, 25, 20, 45, 20, 50,
-                35, 60, 15, 40, 10, 25, 15, 35);
         }
 
         /// <summary>
