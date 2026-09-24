@@ -84,6 +84,9 @@
     <string id="str_modifiedarmy_ai_recruitment_mercenary_evaluation"
         text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名{TROOP_NAME}." />
 
+    <string id="str_modifiedarmy_mercenary_market_refreshed"
+        text="{=ModifiedArmy_MercenaryMarketRefreshed}[雇佣兵市场] {SETTLEMENT_NAME}出现了{COUNT}名{TROOP_NAME}." />
+
     <string id="str_modifiedarmy_ai_recruitment_volunteer_plan"
         text="{=ModifiedArmy_AIRecruitmentVolunteerPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名志愿兵." />
 

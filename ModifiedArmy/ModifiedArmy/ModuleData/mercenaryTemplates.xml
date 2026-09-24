@@ -9,19 +9,73 @@
     - minCount: 每次刷新的最少人数
     - maxCount: 每次刷新的最多人数
     - spawnChance: 刷新概率（0-1），越高越容易刷新
+    - MercenaryTroops/troop: 该定居点文化可以生成的雇佣兵
+    - troop.id: 完整角色对象引用，例如 NPCCharacter.example_mercenary
+    - troop.weight: 成功刷新后抽取该兵种的相对权重
+
+    兵种节点格式：
+    <MercenaryTroops>
+      <troop id="NPCCharacter.example_mercenary" weight="10"/>
+    </MercenaryTroops>
+
+    Empire 可列出全部文化佣兵；其他输出文化通常只列本土佣兵。
+    下方兵种池刻意留空，等待实际兵种 ID 确定后填写。
   -->
 
   <!-- 帝国：东罗马，最依赖雇佣兵 -->
-  <MercenaryTemplate id="empire_mercenary" culture="Culture.empire" minCount="5" maxCount="15" spawnChance="0.8"/>
+  <MercenaryTemplate id="empire_mercenary" culture="Culture.empire" minCount="5" maxCount="15" spawnChance="0.8">
+    <MercenaryTroops>
+      <!-- Vlandian mercenaries -->
+      <troop id="NPCCharacter.western_crossbow_t4" weight="15"/>
+      <troop id="NPCCharacter.hire_knight" weight="8"/>
+      <!-- Rare direct T6 market offer. -->
+      <troop id="NPCCharacter.hire_elite_knight" weight="1"/>
 
-  <!-- 阿塞莱：阿拉伯佣兵，雇佣兵重要 -->
-  <MercenaryTemplate id="aserai_mercenary" culture="Culture.aserai" minCount="5" maxCount="15" spawnChance="0.6"/>
+      <!-- Sturgian mercenaries -->
+      <troop id="NPCCharacter.hire_northern_axeman" weight="20"/>
+      <troop id="NPCCharacter.hire_northern_greatsman" weight="12"/>
+
+      <!-- Khuzait mercenaries -->
+      <troop id="NPCCharacter.hire_steppe_lancer" weight="12"/>
+      <troop id="NPCCharacter.hire_steppe_horse_archer" weight="8"/>
+
+      <!-- Aserai mercenaries -->
+      <troop id="NPCCharacter.desert_veteran_ranger" weight="10"/>
+    </MercenaryTroops>
+  </MercenaryTemplate>
 
   <!-- 以下文化雇佣兵较少 -->
-  <MercenaryTemplate id="vlandia_mercenary" culture="Culture.vlandia" minCount="5" maxCount="10" spawnChance="0.3"/>
-  <MercenaryTemplate id="sturgia_mercenary" culture="Culture.sturgia" minCount="5" maxCount="10" spawnChance="0.3"/>
-  <MercenaryTemplate id="battania_mercenary" culture="Culture.battania" minCount="5" maxCount="10" spawnChance="0.3"/>
-  <MercenaryTemplate id="khuzait_mercenary" culture="Culture.khuzait" minCount="5" maxCount="10" spawnChance="0.3"/>
-  <MercenaryTemplate id="nord_mercenary" culture="Culture.nord" minCount="5" maxCount="10" spawnChance="0.3"/>
+  <MercenaryTemplate id="aserai_mercenary" culture="Culture.aserai" minCount="5" maxCount="10" spawnChance="0.05">
+    <MercenaryTroops>
+      <troop id="NPCCharacter.desert_veteran_ranger" weight="10"/>
+    </MercenaryTroops>
+  </MercenaryTemplate>
+  <MercenaryTemplate id="vlandia_mercenary" culture="Culture.vlandia" minCount="5" maxCount="10" spawnChance="0.05">
+    <MercenaryTroops>
+      <troop id="NPCCharacter.western_crossbow_t4" weight="15"/>
+      <troop id="NPCCharacter.hire_knight" weight="8"/>
+      <troop id="NPCCharacter.hire_elite_knight" weight="1"/>
+    </MercenaryTroops>
+  </MercenaryTemplate>
+  <MercenaryTemplate id="sturgia_mercenary" culture="Culture.sturgia" minCount="5" maxCount="10" spawnChance="0.05">
+    <MercenaryTroops>
+      <troop id="NPCCharacter.hire_northern_axeman" weight="20"/>
+      <troop id="NPCCharacter.hire_northern_greatsman" weight="12"/>
+    </MercenaryTroops>
+  </MercenaryTemplate>
+  <MercenaryTemplate id="battania_mercenary" culture="Culture.battania" minCount="5" maxCount="10" spawnChance="0">
+    <MercenaryTroops>
+    </MercenaryTroops>
+  </MercenaryTemplate>
+  <MercenaryTemplate id="khuzait_mercenary" culture="Culture.khuzait" minCount="5" maxCount="10" spawnChance="0.05">
+    <MercenaryTroops>
+      <troop id="NPCCharacter.hire_steppe_lancer" weight="12"/>
+      <troop id="NPCCharacter.hire_steppe_horse_archer" weight="8"/>
+    </MercenaryTroops>
+  </MercenaryTemplate>
+  <MercenaryTemplate id="nord_mercenary" culture="Culture.nord" minCount="5" maxCount="10" spawnChance="0">
+    <MercenaryTroops>
+    </MercenaryTroops>
+  </MercenaryTemplate>
 
 </MercenaryTemplates>

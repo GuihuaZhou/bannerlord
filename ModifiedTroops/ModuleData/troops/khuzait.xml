@@ -1145,7 +1145,7 @@
 					id="Item.khuzait_sword_4_t4" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_lamellar_base" />
+					id="Item.northern_brass_lamellar_over_mail" />
 				<equipment
 					slot="Head"
 					id="Item.eastern_vendel_helmet" />
@@ -1509,7 +1509,7 @@
 					id="Item.khuzait_polearm_1_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.khuzait_sword_2_t3" />
+					id="Item.steppe_arrows" />
 				<equipment
 					slot="Body"
 					id="Item.eastern_lamellar_armor" />
@@ -1521,10 +1521,10 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Gloves"
-					id="Item.steppe_leather_vambraces" />
+					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.lamellar_shoulders" />
+					id="Item.eastern_studded_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1538,10 +1538,10 @@
 					id="Item.khuzait_polearm_1_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.khuzait_sword_2_t3" />
+					id="Item.steppe_arrows" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_lamellar_armor" />
+					id="Item.sturgian_lamellar_gambeson_heavy" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
@@ -1550,10 +1550,10 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Gloves"
-					id="Item.steppe_leather_vambraces" />
+					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.lamellar_shoulders" />
+					id="Item.eastern_studded_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1567,10 +1567,10 @@
 					id="Item.khuzait_polearm_1_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.khuzait_sword_2_t3" />
+					id="Item.steppe_arrows" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_lamellar_armor" />
+					id="Item.sturgian_lamellar_gambeson_heavy" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
@@ -1579,10 +1579,10 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Gloves"
-					id="Item.steppe_leather_vambraces" />
+					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.lamellar_shoulders" />
+					id="Item.eastern_studded_shoulders" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="khuzait_troop_civilian_template_t2"
@@ -1642,19 +1642,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.steppe_war_bow" />
+					id="Item.noble_bow" />
 				<equipment
 					slot="Item1"
-					id="Item.bodkin_arrows_a" />
+					id="Item.bodkin_arrows_b" />
 				<equipment
 					slot="Item2"
 					id="Item.khuzait_polearm_1_t4" />
 				<equipment
 					slot="Item3"
-					id="Item.bodkin_arrows_a" />
+					id="Item.bodkin_arrows_b" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_lamellar_armor" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
@@ -1666,7 +1666,7 @@
 					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
+					id="Item.brass_lamellar_shoulder" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1683,7 +1683,7 @@
 					id="Item.bodkin_arrows_b" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_lamellar_gambeson_heavy" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
@@ -1695,12 +1695,12 @@
 					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
+					id="Item.brass_lamellar_shoulder" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.composite_steppe_bow" />
+					id="Item.steppe_war_bow" />
 				<equipment
 					slot="Item1"
 					id="Item.bodkin_arrows_b" />
@@ -1712,7 +1712,7 @@
 					id="Item.bodkin_arrows_b" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_lamellar_armor" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
@@ -1724,7 +1724,7 @@
 					id="Item.eastern_plated_leather_vambraces" />
 				<equipment
 					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
+					id="Item.brass_lamellar_shoulder" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="khuzait_troop_civilian_template_t3"
@@ -1779,77 +1779,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.steppe_war_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.khuzait_heavy_armor_bracer" />
-				<equipment
-					slot="Cape"
-					id="Item.lamellar_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_war_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Item2"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.khuzait_heavy_armor_bracer" />
-				<equipment
-					slot="Cape"
-					id="Item.lamellar_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
 					id="Item.noble_bow" />
 				<equipment
 					slot="Item1"
-					id="Item.bodkin_arrows_b" />
+					id="Item.bodkin_arrows_a" />
 				<equipment
 					slot="Item2"
-					id="Item.bodkin_arrows_b" />
+					id="Item.bodkin_arrows_a" />
 				<equipment
 					slot="Item3"
 					id="Item.khuzait_polearm_1_t4" />
 				<equipment
 					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
+					id="Item.northern_brass_lamellar_over_mail" />
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet_with_facemask" />
@@ -1861,7 +1803,65 @@
 					id="Item.khuzait_heavy_armor_bracer" />
 				<equipment
 					slot="Cape"
-					id="Item.lamellar_shoulders" />
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.noble_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_war_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="khuzait_troop_civilian_template_t3"

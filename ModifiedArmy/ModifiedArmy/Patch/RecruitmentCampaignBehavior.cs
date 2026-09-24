@@ -26,9 +26,9 @@ namespace ModifiedArmy.Patch
     public static class RecruitmentPatches
     {
         /// <summary>
-        /// 替换雇佣兵生成逻辑。
-        /// 根据文化模板（MercenaryTemplate）配置刷新人数和概率。
-        /// CaravanGuard 的生成由原版 RegularMercenariesSpawnChance 控制，不受影响。
+        /// Replaces tavern mercenary generation with the settlement culture's
+        /// XML-configured probability, quantity and weighted troop pool.
+        /// Caravan guards retain their separate native refresh chance.
         /// </summary>
         public static bool Prefix(
             RecruitmentCampaignBehavior __instance,
@@ -42,9 +42,7 @@ namespace ModifiedArmy.Patch
                 return false;
             }
 
-            // ============================================================
-            // 1. 尝试生成雇佣兵（使用模板配置）
-            // ============================================================
+            // Try the culture-specific mercenary market first.
             var template = MercenaryTemplateManager.Instance.GetTemplateByCulture(town.Culture);
             float spawnChance = template?.SpawnChance ?? 0.3f;
             int minCount = template?.MinCount ?? 5;
@@ -52,27 +50,48 @@ namespace ModifiedArmy.Patch
 
             if (MBRandom.RandomFloat < spawnChance)
             {
-                List<CharacterObject> basicMercenaries = town.Culture.BasicMercenaryTroops;
-                if (basicMercenaries != null && basicMercenaries.Count > 0)
+                CharacterObject selectedTroop =
+                    template?.SelectWeightedTroop();
+
+                // Older configurations without a MercenaryTroops child keep
+                // their previous native culture pool until the XML is filled.
+                if (selectedTroop == null
+                    && (template == null
+                        || !template.HasConfiguredTroopPool))
                 {
-                    CharacterObject selectedTroop = basicMercenaries[MBRandom.RandomInt(basicMercenaries.Count)];
-                    int finalCount = MBRandom.RandomInt(minCount, maxCount);
+                    List<CharacterObject> basicMercenaries =
+                        town.Culture.BasicMercenaryTroops;
+
+                    if (basicMercenaries != null
+                        && basicMercenaries.Count > 0)
+                    {
+                        selectedTroop = basicMercenaries[
+                            MBRandom.RandomInt(basicMercenaries.Count)];
+                    }
+                }
+
+                if (selectedTroop != null)
+                {
+                    int finalCount = MBRandom.RandomInt(
+                        minCount,
+                        maxCount + 1);
                     mercenaryData.ChangeMercenaryType(selectedTroop, finalCount);
 
-                    // 仅在实际生成雇佣兵时打印，验证 XML 配置是否生效
                     if (RecruitmentLogFilter.ShouldLog(town.OwnerClan))
                     {
-                        ModLogger.Debug(
-                            $"[Recruitment] {town.Name}新增了{finalCount}名{selectedTroop.Name}.");
+                        TextObject message = GameTexts.FindText(
+                            "str_modifiedarmy_mercenary_market_refreshed");
+                        message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+                        message.SetTextVariable("COUNT", finalCount);
+                        message.SetTextVariable("TROOP_NAME", selectedTroop.Name);
+                        ModLogger.Debug(message.ToString());
                     }
 
                     return false;
                 }
             }
 
-            // ============================================================
-            // 2. 原版逻辑：CaravanGuard 的生成由 RegularMercenariesSpawnChance 控制
-            // ============================================================
+            // Keep caravan guards on the native independent refresh chance.
             if (MBRandom.RandomFloat < Campaign.Current.Models.TavernMercenaryTroopsModel.RegularMercenariesSpawnChance)
             {
                 CharacterObject caravanGuard = town.Culture.CaravanGuard;

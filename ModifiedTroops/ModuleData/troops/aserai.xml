@@ -2150,7 +2150,7 @@
 					id="Item.mail_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.brass_aserai_helmet_b_leather" />
+					id="Item.emirs_helmet" />
 				<equipment
 					slot="Horse"
 					id="Item.aserai_horse" />
@@ -2182,7 +2182,7 @@
 					id="Item.mail_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.brass_aserai_helmet_b_open" />
+					id="Item.desert_mail_coif" />
 				<equipment
 					slot="Horse"
 					id="Item.aserai_horse" />
@@ -2247,19 +2247,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_lance_3_t5" />
+					id="Item.khuzait_lance_3_t5" />
 				<equipment
 					slot="Item1"
 					id="Item.aserai_sword_3_t3" />
 				<equipment
 					slot="Item2"
-					id="Item.noyans_shield" />
+					id="Item.chivalric_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.desert_mail_coif" />
 				<equipment
 					slot="Body"
-					id="Item.sturgia_cavalry_armor" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -2279,19 +2279,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_lance_3_t5" />
+					id="Item.khuzait_lance_3_t5" />
 				<equipment
 					slot="Item1"
-					id="Item.aserai_mace_4_t4" />
+					id="Item.aserai_sword_4_t4" />
 				<equipment
 					slot="Item2"
-					id="Item.noyans_shield" />
+					id="Item.chivalric_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.emirs_helmet" />
 				<equipment
 					slot="Body"
-					id="Item.sturgia_cavalry_armor" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -2355,19 +2355,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_lance_3_t5" />
+					id="Item.khuzait_lance_3_t5" />
 				<equipment
 					slot="Item1"
-					id="Item.aserai_mace_4_t4" />
+					id="Item.aserai_sword_4_t4" />
 				<equipment
 					slot="Item2"
-					id="Item.steel_round_shield" />
+					id="Item.steel_druzhinnik_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.southern_lord_helmet" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_lamellar_base" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -2387,13 +2387,13 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_lance_3_t5" />
+					id="Item.khuzait_lance_3_t5" />
 				<equipment
 					slot="Item1"
 					id="Item.aserai_sword_4_t4" />
 				<equipment
 					slot="Item2"
-					id="Item.steel_round_shield" />
+					id="Item.steel_druzhinnik_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.aserai_lord_helmet_a" />
@@ -2419,19 +2419,19 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.vlandia_lance_3_t5" />
+					id="Item.khuzait_lance_3_t5" />
 				<equipment
 					slot="Item1"
-					id="Item.aserai_mace_4_t4" />
+					id="Item.aserai_sword_4_t4" />
 				<equipment
 					slot="Item2"
-					id="Item.steel_round_shield" />
+					id="Item.steel_druzhinnik_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.southern_lord_helmet" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_lamellar_base" />
+					id="Item.brass_lamellar_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />

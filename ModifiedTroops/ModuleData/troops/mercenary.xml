@@ -4,7 +4,7 @@
 	<!-- #region Troops -->
 
 
-	<!-- 新增瓦兰迪亚雇佣骑兵 -->
+	<!-- 雇佣骑士 -->
 	<NPCCharacter
 		id="hire_knight"
 		default_group="Cavalry"
@@ -128,7 +128,6 @@
 				id="Item.chain_barding" />
 		</Equipments>
 	</NPCCharacter>
-	<!-- 更换装备 -->
 	<NPCCharacter
 		id="hire_veteran_knight"
 		default_group="Cavalry"
@@ -168,8 +167,8 @@
 				value="80" />
 		</skills>
 		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_elite_knight" />
+			<!-- <upgrade_target
+				id="NPCCharacter.hire_elite_knight" /> -->
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
@@ -255,7 +254,7 @@
 				civilian="true" />
 			<equipment
 				slot="Horse"
-				id="Item.t3_empire_horse" />
+				id="Item.t3_vlandia_horse" />
 			<equipment
 				slot="HorseHarness"
 				id="Item.chain_barding" />
@@ -267,6 +266,7 @@
 		level="31"
 		name="{=hire_elite_knight}Hire Elite Knight"
 		occupation="Mercenary"
+		is_basic_troop="true"
 		culture="Culture.vlandia">
 		<face>
 			<face_key_template
@@ -382,15 +382,2270 @@
 				civilian="true" />
 			<equipment
 				slot="Horse"
-				id="Item.t3_empire_horse" />
+				id="Item.t3_vlandia_horse" />
 			<equipment
 				slot="HorseHarness"
 				id="Item.chain_barding" />
 		</Equipments>
 	</NPCCharacter>
 
+	<!-- 雇佣北方双手斧兵 -->
+	<NPCCharacter
+		id="hire_northern_greatsman"
+		default_group="Infantry"
+		level="21"
+		name="{=hire_northern_greatsman}Hire Northern Greatsman"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="45" />
+			<skill
+				id="OneHanded"
+				value="40" />
+			<skill
+				id="TwoHanded"
+				value="120" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="50" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_veteran_northern_greatsman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_veteran_northern_greatsman"
+		default_group="Infantry"
+		level="26"
+		name="{=hire_veteran_northern_greatsman}Hire Veteran Northern Greatsman"
+		occupation="Mercenary"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="150" />
+			<skill
+				id="Riding"
+				value="40" />
+			<skill
+				id="OneHanded"
+				value="80" />
+			<skill
+				id="TwoHanded"
+				value="200" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="160" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_round_shield" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_plated_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_round_shield" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_2haxe_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_round_shield" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- 雇佣北方斧兵 -->
+	<NPCCharacter
+		id="hire_northern_axeman"
+		default_group="Infantry"
+		level="21"
+		name="{=hire_northern_axeman}Hire Northern Axeman"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="45" />
+			<skill
+				id="OneHanded"
+				value="120" />
+			<skill
+				id="TwoHanded"
+				value="120" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="50" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_veteran_northern_axeman" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Item3"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_veteran_northern_axeman"
+		default_group="Infantry"
+		formation_position_preference="Back"
+		level="26"
+		name="{=hire_veteran_northern_axeman}Hire Veteran Northern Axeman"
+		occupation="Mercenary"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="150" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="160" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="160" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.heavy_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.heavy_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_javelin_3_t4" />
+				<equipment
+					slot="Head"
+					id="Item.lendman_helmet_over_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.heavy_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_javelin_3_t4" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_chainmale_longsleeve" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
 
-	<!-- 更换sellsword的装备，禁止升级为骑兵 -->
+
+	<!-- 雇佣弩兵 -->
+	<NPCCharacter
+		id="western_mercenary"
+		default_group="Ranged"
+		level="16"
+		name="{=J4k9mg65}Hired Light Crossbow"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		is_hero="false"
+		culture="Culture.neutral_culture">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_vlandia" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="40" />
+			<skill
+				id="OneHanded"
+				value="70" />
+			<skill
+				id="TwoHanded"
+				value="30" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="10" />
+			<skill
+				id="Crossbow"
+				value="90" />
+			<skill
+				id="Throwing"
+				value="30" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.western_mercenary_t4" /> -->
+			<upgrade_target
+				id="NPCCharacter.western_crossbow_t4" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_b" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_b" />
+				<equipment
+					slot="Item2"
+					id="Item.vlandia_sword_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.segmented_cervelliere_over_laced_coif" />
+				<equipment
+					slot="Body"
+					id="Item.decorated_nordic_hauberk" />
+				<equipment
+					slot="Leg"
+					id="Item.wrapped_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.strapped_leather_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_b" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_b" />
+				<equipment
+					slot="Item2"
+					id="Item.vlandia_sword_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.nasal_cervelliere_over_padded_coif" />
+				<equipment
+					slot="Body"
+					id="Item.decorated_nordic_hauberk" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="vlandia_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="western_crossbow_t4"
+		default_group="Ranged"
+		is_hero="false"
+		level="21"
+		name="{=QfVe3IVw}Hired Crossbow"
+		occupation="Mercenary"
+		culture="Culture.neutral_culture">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="90" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="45" />
+			<skill
+				id="Bow"
+				value="15" />
+			<skill
+				id="Crossbow"
+				value="110" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.western_crossbow_t5" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_d" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item3"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_shoes" />
+				<equipment
+					slot="Body"
+					id="Item.hauberk" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+				<equipment
+					slot="Head"
+					id="Item.kettle_helmet_over_padded_cloth" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_d" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item3"
+					id="Item.empire_sword_3_t3" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_shoes" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+				<equipment
+					slot="Body"
+					id="Item.mail_shirt" />
+				<equipment
+					slot="Head"
+					id="Item.kettle_helmet_over_padded_cap" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="western_crossbow_t5"
+		default_group="Ranged"
+		is_hero="false"
+		level="26"
+		name="{=DxtSIxyZ}Elite Hired Crossbow"
+		occupation="Mercenary"
+		culture="Culture.neutral_culture">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="120" />
+			<skill
+				id="Riding"
+				value="30" />
+			<skill
+				id="OneHanded"
+				value="140" />
+			<skill
+				id="TwoHanded"
+				value="70" />
+			<skill
+				id="Polearm"
+				value="60" />
+			<skill
+				id="Bow"
+				value="80" />
+			<skill
+				id="Crossbow"
+				value="140" />
+			<skill
+				id="Throwing"
+				value="50" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_f" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_shoes" />
+				<equipment
+					slot="Body"
+					id="Item.banded_leather_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.kettle_hat_over_mail_coif" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_f" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_shoes" />
+				<equipment
+					slot="Body"
+					id="Item.banded_leather_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.segmented_skullcap_over_mail_coif" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_a" />
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_f" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_shoes" />
+				<equipment
+					slot="Body"
+					id="Item.nordic_sloven_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.segmented_skullcap_over_mail_coif" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
+
+	<!-- 雇佣沙漠标枪骑兵 -->
+	<NPCCharacter
+		id="desert_light_ranger"
+		default_group="Cavalry"
+		level="11"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.aserai"
+		name="{=desert_light_ranger}Desert Light Ranger">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_aserai_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="10" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="30" />
+			<skill
+				id="TwoHanded"
+				value="5" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="10" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="75" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.desert_ranger" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.loose_wrapped_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.ringed_desert_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Horse"
+					id="Item.aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.bandit_saddle_desert" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.loose_wrapped_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.ringed_desert_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Horse"
+					id="Item.aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.aseran_village_harness" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item2"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item3"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.loose_wrapped_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.ringed_desert_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Horse"
+					id="Item.aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.bandit_saddle_desert" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="aserai_troop_civilian_template_t1"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="desert_ranger"
+		default_group="Cavalry"
+		level="16"
+		occupation="Mercenary"
+		culture="Culture.aserai"
+		name="{=desert_ranger}Desert Ranger">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_aserai_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="100" />
+			<skill
+				id="OneHanded"
+				value="30" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="60" />
+			<skill
+				id="Bow"
+				value="30" />
+			<skill
+				id="Crossbow"
+				value="10" />
+			<skill
+				id="Throwing"
+				value="100" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.desert_veteran_ranger" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item2"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.desert_robe_over_mail" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Horse"
+					id="Item.aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.desert_cloth_harness" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item2"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.desert_robe_over_mail" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Horse"
+					id="Item.t2_aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.desert_cloth_harness" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.eastern_javelin_2_t3" />
+				<equipment
+					slot="Item2"
+					id="Item.large_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_3_t3" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_robe_c_chain" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.aserai_horseman_shoulder" />
+				<equipment
+					slot="Horse"
+					id="Item.aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.desert_cloth_harness" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="aserai_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="desert_veteran_ranger"
+		default_group="Cavalry"
+		level="21"
+		occupation="Mercenary"
+		culture="Culture.aserai"
+		name="{=desert_veteran_ranger}Desert Veteran Ranger"
+		upgrade_requires="ItemCategory.war_horse">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_aserai_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="65" />
+			<skill
+				id="Riding"
+				value="130" />
+			<skill
+				id="OneHanded"
+				value="60" />
+			<skill
+				id="TwoHanded"
+				value="15" />
+			<skill
+				id="Polearm"
+				value="110" />
+			<skill
+				id="Bow"
+				value="25" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="120" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.ornate_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_4_t4" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.desert_robe_over_mail" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.stitched_leather_shoulders" />
+				<equipment
+					slot="Horse"
+					id="Item.t2_aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.half_mail_and_plate_barding" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.ornate_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_4_t4" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_robe_c_chain" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.wrapped_scarf" />
+				<equipment
+					slot="Horse"
+					id="Item.t2_aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.half_mail_and_plate_barding" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.ornate_adarga" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_spear_4_t4" />
+				<equipment
+					slot="Head"
+					id="Item.closed_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_robe_c_chain" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.wrapped_scarf" />
+				<equipment
+					slot="Horse"
+					id="Item.t2_aserai_horse" />
+				<equipment
+					slot="HorseHarness"
+					id="Item.half_mail_and_plate_barding" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="aserai_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
+
+	<!-- 库塞特雇佣枪骑兵 -->
+	<NPCCharacter
+		id="hire_steppe_lancer"
+		default_group="Cavalry"
+		level="21"
+		name="{=hire_steppe_lancer}Hired Steppe Lancer"
+		upgrade_requires="ItemCategory.horse"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="55" />
+			<skill
+				id="Riding"
+				value="125" />
+			<skill
+				id="OneHanded"
+				value="120" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_veteran_steppe_lancer" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_1_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_lamellar_armor" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.steppe_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_1_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_lamellar_armor" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.steppe_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_1_t3" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.steppe_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t3_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_veteran_steppe_lancer"
+		default_group="Cavalry"
+		level="26"
+		name="{=hire_veteran_steppe_lancer}Hired Veteran Steppe Lancer"
+		occupation="Mercenary"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="70" />
+			<skill
+				id="Riding"
+				value="165" />
+			<skill
+				id="OneHanded"
+				value="150" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="165" />
+			<skill
+				id="Bow"
+				value="20" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_2_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_2_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.khuzait_lance_2_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_guardian_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.eastern_vendel_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t3"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t3_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- 库塞特雇佣骑射手 -->
+	<NPCCharacter
+		id="hire_steppe_horse_archer"
+		default_group="HorseArcher"
+		level="21"
+		name="{=hire_steppe_horse_archer}Hired Steppe Horse Archer"
+		upgrade_requires="ItemCategory.horse"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="65" />
+			<skill
+				id="Riding"
+				value="125" />
+			<skill
+				id="OneHanded"
+				value="110" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="45" />
+			<skill
+				id="Bow"
+				value="130" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_veteran_steppe_horse_archer" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_nomad_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.leather_lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Head"
+					id="Item.steppe_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.leather_lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_3_t3" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_lamellar_armor" />
+				<equipment
+					slot="Head"
+					id="Item.steppe_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.steppe_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.leather_lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t2_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_veteran_steppe_horse_archer"
+		default_group="HorseArcher"
+		level="26"
+		name="{=hire_veteran_steppe_horse_archer}Hired Veteran Steppe Horse Archer"
+		occupation="Mercenary"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="90" />
+			<skill
+				id="Riding"
+				value="160" />
+			<skill
+				id="OneHanded"
+				value="145" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="165" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_steppe_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_plated_leather" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_lamellar_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_steppe_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_lamellar_armor" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_lamellar_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.composite_steppe_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_sword_4_t4" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_plated_leather" />
+				<equipment
+					slot="Head"
+					id="Item.plumed_lamellar_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.reinforced_suede_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.lamellar_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t3"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t2_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+
+
+	<!-- 以下兵种废弃 -->
+
+	<!-- 雇佣库塞特可汗卫士 -->
+	<NPCCharacter
+		id="hire_steppe_guard"
+		default_group="HorseArcher"
+		level="21"
+		name="{=hire_steppe_guard}Hire Steppe Guard"
+		upgrade_requires="ItemCategory.war_horse"
+		occupation="Mercenary"
+		is_basic_troop="true"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_noble" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="45" />
+			<skill
+				id="Riding"
+				value="100" />
+			<skill
+				id="OneHanded"
+				value="55" />
+			<skill
+				id="TwoHanded"
+				value="45" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="130" />
+			<skill
+				id="Crossbow"
+				value="15" />
+			<skill
+				id="Throwing"
+				value="25" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_veteran_steppe_guard" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Body"
+					id="Item.eastern_lamellar_armor" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.eastern_studded_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.eastern_studded_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_heavy_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.steppe_arrows" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.eastern_studded_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t2"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t2_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_veteran_steppe_guard"
+		default_group="HorseArcher"
+		level="26"
+		name="{=hire_veteran_steppe_guard}Hire Veteran Steppe Guard"
+		occupation="Mercenary"
+		upgrade_requires="ItemCategory.war_horse"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_noble" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="80" />
+			<skill
+				id="Riding"
+				value="160" />
+			<skill
+				id="OneHanded"
+				value="50" />
+			<skill
+				id="TwoHanded"
+				value="50" />
+			<skill
+				id="Polearm"
+				value="160" />
+			<skill
+				id="Bow"
+				value="200" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.hire_elite_steppe_guard" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.noble_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Body"
+					id="Item.brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_war_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Body"
+					id="Item.brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_war_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Item2"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.bodkin_arrows_b" />
+				<equipment
+					slot="Body"
+					id="Item.brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.eastern_plated_leather_vambraces" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t3"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t3_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_elite_steppe_guard"
+		default_group="HorseArcher"
+		level="31"
+		name="{=hire_elite_steppe_guard}Hire Elite Steppe Guard"
+		occupation="Mercenary"
+		culture="Culture.khuzait">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_khuzait_noble" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="60" />
+			<skill
+				id="Riding"
+				value="230" />
+			<skill
+				id="OneHanded"
+				value="60" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="260" />
+			<skill
+				id="Bow"
+				value="300" />
+			<skill
+				id="Crossbow"
+				value="25" />
+			<skill
+				id="Throwing"
+				value="30" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.noble_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet_with_facemask" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.noble_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.steppe_war_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item2"
+					id="Item.bodkin_arrows_a" />
+				<equipment
+					slot="Item3"
+					id="Item.khuzait_polearm_1_t4" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Head"
+					id="Item.spiked_helmet" />
+				<equipment
+					slot="Leg"
+					id="Item.mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.khuzait_heavy_armor_bracer" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="khuzait_troop_civilian_template_t3"
+				civilian="true" />
+			<equipment
+				slot="Horse"
+				id="Item.t3_khuzait_horse" />
+			<equipment
+				slot="HorseHarness"
+				id="Item.steppe_half_barding" />
+		</Equipments>
+	</NPCCharacter>
+
+
+	<!-- 雇佣剑士 -->
 	<NPCCharacter
 		id="eastern_mercenary"
 		default_group="Infantry"
@@ -768,1083 +3023,7 @@
 		</Equipments>
 	</NPCCharacter>
 
-
-	<!-- 新增库塞特雇佣骑兵 -->
-	<NPCCharacter
-		id="hire_steppe_guard"
-		default_group="HorseArcher"
-		level="21"
-		name="{=hire_steppe_guard}Hire Steppe Guard"
-		upgrade_requires="ItemCategory.war_horse"
-		occupation="Mercenary"
-		is_basic_troop="true"
-		culture="Culture.khuzait">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_khuzait_noble" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="45" />
-			<skill
-				id="Riding"
-				value="100" />
-			<skill
-				id="OneHanded"
-				value="55" />
-			<skill
-				id="TwoHanded"
-				value="45" />
-			<skill
-				id="Polearm"
-				value="130" />
-			<skill
-				id="Bow"
-				value="130" />
-			<skill
-				id="Crossbow"
-				value="15" />
-			<skill
-				id="Throwing"
-				value="25" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_veteran_steppe_guard" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_heavy_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Body"
-					id="Item.eastern_lamellar_armor" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_heavy_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_gambeson_heavy" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_heavy_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.steppe_arrows" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_gambeson_heavy" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.eastern_studded_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="khuzait_troop_civilian_template_t2"
-				civilian="true" />
-			<equipment
-				slot="Horse"
-				id="Item.t2_khuzait_horse" />
-			<equipment
-				slot="HorseHarness"
-				id="Item.steppe_half_barding" />
-		</Equipments>
-	</NPCCharacter>
-	<!-- 更新装备 -->
-	<NPCCharacter
-		id="hire_veteran_steppe_guard"
-		default_group="HorseArcher"
-		level="26"
-		name="{=hire_veteran_steppe_guard}Hire Veteran Steppe Guard"
-		occupation="Mercenary"
-		upgrade_requires="ItemCategory.war_horse"
-		culture="Culture.khuzait">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_khuzait_noble" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="80" />
-			<skill
-				id="Riding"
-				value="160" />
-			<skill
-				id="OneHanded"
-				value="50" />
-			<skill
-				id="TwoHanded"
-				value="50" />
-			<skill
-				id="Polearm"
-				value="160" />
-			<skill
-				id="Bow"
-				value="200" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="60" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_elite_steppe_guard" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.noble_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_war_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_war_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Item2"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.bodkin_arrows_b" />
-				<equipment
-					slot="Body"
-					id="Item.brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.eastern_plated_leather_vambraces" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="khuzait_troop_civilian_template_t3"
-				civilian="true" />
-			<equipment
-				slot="Horse"
-				id="Item.t3_khuzait_horse" />
-			<equipment
-				slot="HorseHarness"
-				id="Item.steppe_half_barding" />
-		</Equipments>
-	</NPCCharacter>
-	<!-- 更新装备 -->
-	<NPCCharacter
-		id="hire_elite_steppe_guard"
-		default_group="HorseArcher"
-		level="31"
-		name="{=hire_elite_steppe_guard}Hire Elite Steppe Guard"
-		occupation="Mercenary"
-		culture="Culture.khuzait">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_khuzait_noble" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="60" />
-			<skill
-				id="Riding"
-				value="230" />
-			<skill
-				id="OneHanded"
-				value="60" />
-			<skill
-				id="TwoHanded"
-				value="60" />
-			<skill
-				id="Polearm"
-				value="260" />
-			<skill
-				id="Bow"
-				value="300" />
-			<skill
-				id="Crossbow"
-				value="25" />
-			<skill
-				id="Throwing"
-				value="30" />
-		</skills>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.noble_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet_with_facemask" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.khuzait_heavy_armor_bracer" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.noble_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.khuzait_heavy_armor_bracer" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.steppe_war_bow" />
-				<equipment
-					slot="Item1"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bodkin_arrows_a" />
-				<equipment
-					slot="Item3"
-					id="Item.khuzait_polearm_1_t4" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.spiked_helmet" />
-				<equipment
-					slot="Leg"
-					id="Item.mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.khuzait_heavy_armor_bracer" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="khuzait_troop_civilian_template_t3"
-				civilian="true" />
-			<equipment
-				slot="Horse"
-				id="Item.t3_khuzait_horse" />
-			<equipment
-				slot="HorseHarness"
-				id="Item.steppe_half_barding" />
-		</Equipments>
-	</NPCCharacter>
-
-
-	<!-- 新增斯特基亚雇佣步兵 -->
-	<NPCCharacter
-		id="hire_northern_light_infantry"
-		default_group="Infantry"
-		level="16"
-		name="{=hire_northern_light_infantry}Hire Northern Light Infantry"
-		occupation="Mercenary"
-		is_basic_troop="true"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="80" />
-			<skill
-				id="Riding"
-				value="30" />
-			<skill
-				id="OneHanded"
-				value="80" />
-			<skill
-				id="TwoHanded"
-				value="40" />
-			<skill
-				id="Polearm"
-				value="30" />
-			<skill
-				id="Bow"
-				value="40" />
-			<skill
-				id="Crossbow"
-				value="10" />
-			<skill
-				id="Throwing"
-				value="70" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_northern_axeman" />
-			<upgrade_target
-				id="NPCCharacter.hire_northern_greatsman" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_2_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.northern_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.nasalhelm_over_leather" />
-				<equipment
-					slot="Body"
-					id="Item.decorated_nordic_hauberk" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_armwraps" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_sword_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.northern_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.nasalhelm_over_leather" />
-				<equipment
-					slot="Body"
-					id="Item.decorated_nordic_hauberk" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_armwraps" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_2_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.northern_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.nasalhelm_over_leather" />
-				<equipment
-					slot="Body"
-					id="Item.nordic_hauberk" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_armwraps" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="hire_northern_greatsman"
-		default_group="Infantry"
-		level="21"
-		name="{=hire_northern_greatsman}Hire Northern Greatsman"
-		occupation="Mercenary"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="130" />
-			<skill
-				id="Riding"
-				value="45" />
-			<skill
-				id="OneHanded"
-				value="40" />
-			<skill
-				id="TwoHanded"
-				value="120" />
-			<skill
-				id="Polearm"
-				value="40" />
-			<skill
-				id="Bow"
-				value="45" />
-			<skill
-				id="Crossbow"
-				value="15" />
-			<skill
-				id="Throwing"
-				value="50" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_veteran_northern_greatsman" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_gambeson_heavy" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="hire_northern_axeman"
-		default_group="Infantry"
-		level="21"
-		name="{=hire_northern_axeman}Hire Northern Axeman"
-		occupation="Mercenary"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="130" />
-			<skill
-				id="Riding"
-				value="45" />
-			<skill
-				id="OneHanded"
-				value="120" />
-			<skill
-				id="TwoHanded"
-				value="120" />
-			<skill
-				id="Polearm"
-				value="40" />
-			<skill
-				id="Bow"
-				value="45" />
-			<skill
-				id="Crossbow"
-				value="15" />
-			<skill
-				id="Throwing"
-				value="50" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.hire_veteran_northern_axeman" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_gambeson_heavy" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<!-- 更新装备 -->
-	<NPCCharacter
-		id="hire_veteran_northern_greatsman"
-		default_group="Infantry"
-		level="26"
-		name="{=hire_veteran_northern_greatsman}Hire Veteran Northern Greatsman"
-		occupation="Mercenary"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="150" />
-			<skill
-				id="Riding"
-				value="40" />
-			<skill
-				id="OneHanded"
-				value="80" />
-			<skill
-				id="TwoHanded"
-				value="200" />
-			<skill
-				id="Polearm"
-				value="80" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="160" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
-				<equipment
-					slot="Head"
-					id="Item.northern_goggled_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_plated_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
-				<equipment
-					slot="Head"
-					id="Item.northern_goggled_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_fortified" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_plated_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_lord_helmet_b" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_base" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_brass_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="hire_veteran_northern_axeman"
-		default_group="Infantry"
-		formation_position_preference="Back"
-		level="26"
-		name="{=hire_veteran_northern_axeman}Hire Veteran Northern Axeman"
-		occupation="Mercenary"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="150" />
-			<skill
-				id="Riding"
-				value="60" />
-			<skill
-				id="OneHanded"
-				value="160" />
-			<skill
-				id="TwoHanded"
-				value="80" />
-			<skill
-				id="Polearm"
-				value="80" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="160" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.heavy_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Head"
-					id="Item.northern_goggled_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.heavy_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
-				<equipment
-					slot="Head"
-					id="Item.lendman_helmet_over_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_fortified" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.heavy_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_lord_helmet_b" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_base" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-
-
-	<!-- 新增巴丹尼亚雇佣兵 -->
+	<!-- 巴丹尼亚雇佣兵 -->
 	<NPCCharacter
 		id="highland_archer"
 		default_group="Ranged"
@@ -2424,9 +3603,270 @@
 		</Equipments>
 	</NPCCharacter>
 
+	<!-- 雇佣狂战士 -->
+	<NPCCharacter
+		id="hire_nord_ulfhednar"
+		default_group="Infantry"
+		level="26"
+		name="{=hire_nord_ulfhednar}Hire Nord Ulfhedinn"
+		occupation="Mercenary"
+		culture="Culture.nord">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_nord" />
+		</face>
+		<Traits>
+			<Trait
+				id="NavalSoldier"
+				value="1" />
+		</Traits>
+		<skills>
+			<skill
+				id="Athletics"
+				value="150" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="140" />
+			<skill
+				id="TwoHanded"
+				value="90" />
+			<skill
+				id="Polearm"
+				value="140" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="90" />
+			<skill
+				id="Mariner"
+				value="90" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.nord_sword_3_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.nord_shield_tier_5_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.norse_chainmail_pleatedtrousers" />
+				<equipment
+					slot="Head"
+					id="Item.wolfhead_ulfhedinn" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.wolf_shoulder_ulfhedinn" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_mail_mitten" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.nord_sword_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.nord_shield_tier_5_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.norse_chainmail_pleatedtrousers" />
+				<equipment
+					slot="Head"
+					id="Item.wolfhead_ulfhedinn" />
+				<equipment
+					slot="Cape"
+					id="Item.wolf_shoulder_ulfhedinn" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.lordly_mail_mitten" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.nord_sword_1_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.nord_shield_tier_5_a" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Body"
+					id="Item.norse_chainmail_pleatedtrousers" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_boots" />
+				<equipment
+					slot="Head"
+					id="Item.wolfhead_ulfhedinn" />
+				<equipment
+					slot="Cape"
+					id="Item.wolf_shoulder_ulfhedinn" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="nord_troop_civilian_template_t2"
+				equipmentType="Civilian" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="hire_nord_berserkr"
+		default_group="Infantry"
+		level="26"
+		name="{=hire_nord_berserkr}Hire Nord Berserkir"
+		occupation="Mercenary"
+		culture="Culture.nord">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_nord_berserkr" />
+		</face>
+		<Traits>
+			<Trait
+				id="NavalSoldier"
+				value="1" />
+		</Traits>
+		<skills>
+			<skill
+				id="Athletics"
+				value="140" />
+			<skill
+				id="Riding"
+				value="70" />
+			<skill
+				id="OneHanded"
+				value="140" />
+			<skill
+				id="TwoHanded"
+				value="140" />
+			<skill
+				id="Polearm"
+				value="40" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="140" />
+			<skill
+				id="Mariner"
+				value="90" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.berserkr_axe" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.nord_shield_tier_5_a" />
+				<equipment
+					slot="Head"
+					id="Item.berserker_helmet_reinforced" />
+				<equipment
+					slot="Body"
+					id="Item.nord_chainmail_armor" />
+				<equipment
+					slot="Cape"
+					id="Item.berserker_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northman_wrist_armor" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.berserkr_axe" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.nord_shield_tier_5_a" />
+				<equipment
+					slot="Head"
+					id="Item.berserker_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.nord_chainmail_armor" />
+				<equipment
+					slot="Cape"
+					id="Item.berserker_cloak" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_woodland_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.studded_arm_guards" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.berserkr_axe" />
+				<equipment
+					slot="Item2"
+					id="Item.western_javelin_3_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.nord_shield_tier_5_b" />
+				<equipment
+					slot="Head"
+					id="Item.berserker_helmet_reinforced" />
+				<equipment
+					slot="Body"
+					id="Item.nord_chainmail_armor" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.berserker_cloak" />
+				<equipment
+					slot="Gloves"
+					id="Item.splinted_bracers" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="nord_troop_civilian_template_t2"
+				equipmentType="Civilian" />
+		</Equipments>
+	</NPCCharacter>
 
 
-	<!-- 新增古拉姆骑兵 -->
+	<!-- 古拉姆雇佣骑兵 -->
 	<NPCCharacter
 		id="hired_ghulam"
 		default_group="Cavalry"
@@ -2760,340 +4200,6 @@
 		</Equipments>
 	</NPCCharacter>
 
-
-
-	<!-- 更换雇佣弩兵的装备 -->
-	<NPCCharacter
-		id="western_mercenary"
-		default_group="Ranged"
-		level="16"
-		name="{=J4k9mg65}Hired Light Crossbow"
-		occupation="Mercenary"
-		is_basic_troop="true"
-		is_hero="false"
-		culture="Culture.neutral_culture">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_vlandia" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="70" />
-			<skill
-				id="Riding"
-				value="40" />
-			<skill
-				id="OneHanded"
-				value="70" />
-			<skill
-				id="TwoHanded"
-				value="30" />
-			<skill
-				id="Polearm"
-				value="40" />
-			<skill
-				id="Bow"
-				value="10" />
-			<skill
-				id="Crossbow"
-				value="90" />
-			<skill
-				id="Throwing"
-				value="30" />
-		</skills>
-		<upgrade_targets>
-			<!-- <upgrade_target
-				id="NPCCharacter.western_mercenary_t4" /> -->
-			<upgrade_target
-				id="NPCCharacter.western_crossbow_t4" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_b" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_b" />
-				<equipment
-					slot="Item2"
-					id="Item.vlandia_sword_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.segmented_cervelliere_over_laced_coif" />
-				<equipment
-					slot="Body"
-					id="Item.decorated_nordic_hauberk" />
-				<equipment
-					slot="Leg"
-					id="Item.wrapped_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.strapped_leather_bracers" />
-				<equipment
-					slot="Cape"
-					id="Item.hood" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_b" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_b" />
-				<equipment
-					slot="Item2"
-					id="Item.vlandia_sword_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.nasal_cervelliere_over_padded_coif" />
-				<equipment
-					slot="Body"
-					id="Item.decorated_nordic_hauberk" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="vlandia_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="western_crossbow_t4"
-		default_group="Ranged"
-		is_hero="false"
-		level="21"
-		name="{=QfVe3IVw}Hired Crossbow"
-		occupation="Mercenary"
-		culture="Culture.neutral_culture">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="100" />
-			<skill
-				id="Riding"
-				value="60" />
-			<skill
-				id="OneHanded"
-				value="90" />
-			<skill
-				id="TwoHanded"
-				value="45" />
-			<skill
-				id="Polearm"
-				value="45" />
-			<skill
-				id="Bow"
-				value="15" />
-			<skill
-				id="Crossbow"
-				value="110" />
-			<skill
-				id="Throwing"
-				value="60" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.western_crossbow_t5" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_d" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item3"
-					id="Item.empire_sword_3_t3" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_shoes" />
-				<equipment
-					slot="Body"
-					id="Item.hauberk" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Head"
-					id="Item.kettle_helmet_over_padded_cloth" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_d" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item2"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item3"
-					id="Item.empire_sword_3_t3" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_shoes" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Body"
-					id="Item.mail_shirt" />
-				<equipment
-					slot="Head"
-					id="Item.kettle_helmet_over_padded_cap" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="western_crossbow_t5"
-		default_group="Ranged"
-		is_hero="false"
-		level="26"
-		name="{=DxtSIxyZ}Elite Hired Crossbow"
-		occupation="Mercenary"
-		culture="Culture.neutral_culture">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="120" />
-			<skill
-				id="Riding"
-				value="30" />
-			<skill
-				id="OneHanded"
-				value="140" />
-			<skill
-				id="TwoHanded"
-				value="70" />
-			<skill
-				id="Polearm"
-				value="60" />
-			<skill
-				id="Bow"
-				value="80" />
-			<skill
-				id="Crossbow"
-				value="140" />
-			<skill
-				id="Throwing"
-				value="50" />
-		</skills>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_f" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_shoes" />
-				<equipment
-					slot="Body"
-					id="Item.banded_leather_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.kettle_hat_over_mail_coif" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_f" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_shoes" />
-				<equipment
-					slot="Body"
-					id="Item.banded_leather_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.segmented_skullcap_over_mail_coif" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item1"
-					id="Item.bolt_a" />
-				<equipment
-					slot="Item0"
-					id="Item.crossbow_f" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_shoes" />
-				<equipment
-					slot="Body"
-					id="Item.nordic_sloven_over_mail" />
-				<equipment
-					slot="Head"
-					id="Item.segmented_skullcap_over_mail_coif" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-
-
-
 	<!-- 新增阿塞莱雇佣兵 -->
 	<NPCCharacter
 		id="hire_southern_light_infantry"
@@ -3223,7 +4329,6 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	<!-- 设置为ranged_basic_troop -->
 	<NPCCharacter
 		id="hire_southern_archer"
 		default_group="Ranged"
@@ -3605,7 +4710,6 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	<!-- 更换装备 -->
 	<NPCCharacter
 		id="hire_veteran_southern_axeman"
 		default_group="Infantry"
@@ -3729,706 +4833,139 @@
 		</Equipments>
 	</NPCCharacter>
 
-
-	<!-- 新增沙漠标枪骑兵 -->
+	<!-- 雇佣北方轻装步兵 -->
 	<NPCCharacter
-		id="desert_light_ranger"
-		default_group="Cavalry"
-		level="11"
+		id="hire_northern_light_infantry"
+		default_group="Infantry"
+		level="16"
+		name="{=hire_northern_light_infantry}Hire Northern Light Infantry"
 		occupation="Mercenary"
 		is_basic_troop="true"
-		culture="Culture.aserai"
-		name="{=desert_light_ranger}Desert Light Ranger">
+		culture="Culture.sturgia">
 		<face>
 			<face_key_template
-				value="BodyProperty.fighter_aserai_veteran" />
+				value="BodyProperty.fighter_sturgia" />
 		</face>
 		<skills>
 			<skill
 				id="Athletics"
-				value="10" />
+				value="80" />
 			<skill
 				id="Riding"
-				value="60" />
-			<skill
-				id="OneHanded"
 				value="30" />
 			<skill
-				id="TwoHanded"
-				value="5" />
+				id="OneHanded"
+				value="80" />
 			<skill
-				id="Polearm"
+				id="TwoHanded"
 				value="40" />
 			<skill
-				id="Bow"
-				value="10" />
-			<skill
-				id="Crossbow"
-				value="5" />
-			<skill
-				id="Throwing"
-				value="75" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.desert_ranger" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.loose_wrapped_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.ringed_desert_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Horse"
-					id="Item.aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.bandit_saddle_desert" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.loose_wrapped_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.ringed_desert_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Horse"
-					id="Item.aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.aseran_village_harness" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item2"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item3"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_1_t2" />
-				<equipment
-					slot="Head"
-					id="Item.loose_wrapped_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.ringed_desert_armor" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Horse"
-					id="Item.aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.bandit_saddle_desert" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="aserai_troop_civilian_template_t1"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="desert_ranger"
-		default_group="Cavalry"
-		level="16"
-		occupation="Mercenary"
-		culture="Culture.aserai"
-		name="{=desert_ranger}Desert Ranger">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_aserai_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="20" />
-			<skill
-				id="Riding"
-				value="100" />
-			<skill
-				id="OneHanded"
+				id="Polearm"
 				value="30" />
 			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="60" />
-			<skill
 				id="Bow"
-				value="30" />
+				value="40" />
 			<skill
 				id="Crossbow"
 				value="10" />
 			<skill
 				id="Throwing"
-				value="100" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.desert_veteran_ranger" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item2"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.desert_robe_over_mail" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Horse"
-					id="Item.aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.desert_cloth_harness" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item2"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.desert_robe_over_mail" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Horse"
-					id="Item.t2_aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.desert_cloth_harness" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item1"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
-					slot="Item2"
-					id="Item.large_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_3_t3" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_robe_c_chain" />
-				<equipment
-					slot="Leg"
-					id="Item.steppe_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.aserai_horseman_shoulder" />
-				<equipment
-					slot="Horse"
-					id="Item.aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.desert_cloth_harness" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="aserai_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="desert_veteran_ranger"
-		default_group="Cavalry"
-		level="21"
-		occupation="Mercenary"
-		culture="Culture.aserai"
-		name="{=desert_veteran_ranger}Desert Veteran Ranger"
-		upgrade_requires="ItemCategory.war_horse">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_aserai_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="65" />
-			<skill
-				id="Riding"
-				value="130" />
-			<skill
-				id="OneHanded"
-				value="60" />
-			<skill
-				id="TwoHanded"
-				value="15" />
-			<skill
-				id="Polearm"
-				value="110" />
-			<skill
-				id="Bow"
-				value="25" />
-			<skill
-				id="Crossbow"
-				value="15" />
-			<skill
-				id="Throwing"
-				value="120" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.ornate_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_4_t4" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.desert_robe_over_mail" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.stitched_leather_shoulders" />
-				<equipment
-					slot="Horse"
-					id="Item.t2_aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.half_mail_and_plate_barding" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.ornate_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_4_t4" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_robe_c_chain" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.wrapped_scarf" />
-				<equipment
-					slot="Horse"
-					id="Item.t2_aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.half_mail_and_plate_barding" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.ornate_adarga" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_spear_4_t4" />
-				<equipment
-					slot="Head"
-					id="Item.closed_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_robe_c_chain" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.guarded_padded_vambrace" />
-				<equipment
-					slot="Cape"
-					id="Item.wrapped_scarf" />
-				<equipment
-					slot="Horse"
-					id="Item.t2_aserai_horse" />
-				<equipment
-					slot="HorseHarness"
-					id="Item.half_mail_and_plate_barding" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="aserai_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-
-
-	<!-- 新增狂战士 -->
-	<NPCCharacter
-		id="hire_nord_ulfhednar"
-		default_group="Infantry"
-		level="26"
-		name="{=hire_nord_ulfhednar}Hire Nord Ulfhedinn"
-		occupation="Mercenary"
-		culture="Culture.nord">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_nord" />
-		</face>
-		<Traits>
-			<Trait
-				id="NavalSoldier"
-				value="1" />
-		</Traits>
-		<skills>
-			<skill
-				id="Athletics"
-				value="150" />
-			<skill
-				id="Riding"
-				value="60" />
-			<skill
-				id="OneHanded"
-				value="140" />
-			<skill
-				id="TwoHanded"
-				value="90" />
-			<skill
-				id="Polearm"
-				value="140" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="90" />
-			<skill
-				id="Mariner"
-				value="90" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.nord_sword_3_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.nord_shield_tier_5_a" />
-				<equipment
-					slot="Item2"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Body"
-					id="Item.norse_chainmail_pleatedtrousers" />
-				<equipment
-					slot="Head"
-					id="Item.wolfhead_ulfhedinn" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.wolf_shoulder_ulfhedinn" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_mail_mitten" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.nord_sword_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.nord_shield_tier_5_a" />
-				<equipment
-					slot="Item2"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Body"
-					id="Item.norse_chainmail_pleatedtrousers" />
-				<equipment
-					slot="Head"
-					id="Item.wolfhead_ulfhedinn" />
-				<equipment
-					slot="Cape"
-					id="Item.wolf_shoulder_ulfhedinn" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.lordly_mail_mitten" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.nord_sword_1_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.nord_shield_tier_5_a" />
-				<equipment
-					slot="Item2"
-					id="Item.western_javelin_3_t4" />
-				<equipment
-					slot="Body"
-					id="Item.norse_chainmail_pleatedtrousers" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_boots" />
-				<equipment
-					slot="Head"
-					id="Item.wolfhead_ulfhedinn" />
-				<equipment
-					slot="Cape"
-					id="Item.wolf_shoulder_ulfhedinn" />
-				<equipment
-					slot="Gloves"
-					id="Item.mail_mitten" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="nord_troop_civilian_template_t2"
-				equipmentType="Civilian" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="hire_nord_berserkr"
-		default_group="Infantry"
-		level="26"
-		name="{=hire_nord_berserkr}Hire Nord Berserkir"
-		occupation="Mercenary"
-		culture="Culture.nord">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_nord_berserkr" />
-		</face>
-		<Traits>
-			<Trait
-				id="NavalSoldier"
-				value="1" />
-		</Traits>
-		<skills>
-			<skill
-				id="Athletics"
-				value="140" />
-			<skill
-				id="Riding"
 				value="70" />
-			<skill
-				id="OneHanded"
-				value="140" />
-			<skill
-				id="TwoHanded"
-				value="140" />
-			<skill
-				id="Polearm"
-				value="40" />
-			<skill
-				id="Bow"
-				value="45" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="140" />
-			<skill
-				id="Mariner"
-				value="90" />
 		</skills>
-		<upgrade_targets></upgrade_targets>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.hire_northern_axeman" />
+			<upgrade_target
+				id="NPCCharacter.hire_northern_greatsman" /> -->
+		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.berserkr_axe" />
+					id="Item.sturgia_axe_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.nord_shield_tier_5_a" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Head"
-					id="Item.berserker_helmet_reinforced" />
+					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.nord_chainmail_armor" />
-				<equipment
-					slot="Cape"
-					id="Item.berserker_cloak" />
+					id="Item.decorated_nordic_hauberk" />
 				<equipment
 					slot="Leg"
-					id="Item.battania_woodland_boots" />
+					id="Item.highland_boots" />
 				<equipment
 					slot="Gloves"
-					id="Item.northman_wrist_armor" />
+					id="Item.guarded_armwraps" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.berserkr_axe" />
+					id="Item.sturgia_sword_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.nord_shield_tier_5_a" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Head"
-					id="Item.berserker_helmet" />
+					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.nord_chainmail_armor" />
-				<equipment
-					slot="Cape"
-					id="Item.berserker_cloak" />
+					id="Item.decorated_nordic_hauberk" />
 				<equipment
 					slot="Leg"
-					id="Item.battania_woodland_boots" />
+					id="Item.highland_boots" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
 				<equipment
 					slot="Gloves"
-					id="Item.studded_arm_guards" />
+					id="Item.guarded_armwraps" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.berserkr_axe" />
+					id="Item.sturgia_axe_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.northern_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.nord_shield_tier_5_b" />
+					id="Item.northern_javelin_1_t2" />
 				<equipment
 					slot="Head"
-					id="Item.berserker_helmet_reinforced" />
+					id="Item.nasalhelm_over_leather" />
 				<equipment
 					slot="Body"
-					id="Item.nord_chainmail_armor" />
+					id="Item.nordic_hauberk" />
 				<equipment
 					slot="Leg"
-					id="Item.battania_leather_boots" />
+					id="Item.highland_boots" />
 				<equipment
 					slot="Cape"
-					id="Item.berserker_cloak" />
+					id="Item.scarf" />
 				<equipment
 					slot="Gloves"
-					id="Item.splinted_bracers" />
+					id="Item.guarded_armwraps" />
 			</EquipmentRoster>
 			<EquipmentSet
-				id="nord_troop_civilian_template_t2"
-				equipmentType="Civilian" />
+				id="sturgia_troop_civilian_template_t2"
+				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
 

@@ -1669,13 +1669,13 @@
 					id="Item.northern_goggled_helmet" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
+					id="Item.sturgian_lamellar_fortified" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
 				<equipment
 					slot="Gloves"
-					id="Item.northern_brass_bracers" />
+					id="Item.northern_plated_gloves" />
 				<equipment
 					slot="Cape"
 					id="Item.brass_lamellar_shoulder_white" />
@@ -1692,10 +1692,10 @@
 					id="Item.sturgia_infantry_shield_b" />
 				<equipment
 					slot="Head"
-					id="Item.northern_goggled_helmet" />
+					id="Item.sturgian_lord_helmet_b" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
+					id="Item.sturgian_lamellar_base" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -2048,7 +2048,7 @@
 					id="Item.brass_lamellar_shoulder_white" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
+					id="Item.sturgian_lamellar_fortified" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -2071,10 +2071,10 @@
 					id="Item.brass_lamellar_shoulder_white" />
 				<equipment
 					slot="Head"
-					id="Item.northern_goggled_helmet" />
+					id="Item.sturgian_lord_helmet_b" />
 				<equipment
 					slot="Body"
-					id="Item.sturgian_chainmale_longsleeve" />
+					id="Item.sturgian_lamellar_base" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
