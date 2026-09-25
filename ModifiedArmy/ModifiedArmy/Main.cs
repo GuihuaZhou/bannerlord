@@ -138,6 +138,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
                 campaignStarter.AddBehavior(new GarrisonGranaryMenuBehavior());
                 campaignStarter.AddBehavior(
+                    new GarrisonInspectionMenuBehavior());
+                campaignStarter.AddBehavior(
                     new GarrisonLocalProductionSupplyBehavior());
                 campaignStarter.AddBehavior(
                     new GarrisonLocalMarketPurchaseBehavior());
