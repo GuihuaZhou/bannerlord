@@ -1,5 +1,5 @@
-using ModifiedArmy.common;
 using ModifiedArmy.Recruitment;
+using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -9,6 +9,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.CharacterDevelopment;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -30,6 +31,9 @@ namespace ModifiedArmy.Models
             CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(
                 this,
                 OnDailySettlementTick);
+            CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(
+                this,
+                OnWeeklyTick);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -50,8 +54,26 @@ namespace ModifiedArmy.Models
                 return;
             }
 
+            TroopRoster prisonRoster = settlement.Party.PrisonRoster;
+            int initialPrisonerCount = prisonRoster.TotalRegulars;
+
+            // Hero prisoners never participate in this system and do not
+            // cause a daily recruitment message by themselves.
+            if (initialPrisonerCount <= 0)
+            {
+                return;
+            }
+
+            int targetCount;
+            int readyCount;
+            int sold;
             List<RecruitmentCandidate> candidates =
-                CollectPrisonerCandidates(settlement.Party.PrisonRoster);
+                SelectAndPreparePrisonerCandidates(
+                    settlement,
+                    town.GarrisonParty,
+                    out targetCount,
+                    out readyCount,
+                    out sold);
             int dailyLimit = GetDailyRecruitmentLimit(town);
             RecruitmentPlan plan = null;
             int recruited = 0;
@@ -68,33 +90,47 @@ namespace ModifiedArmy.Models
                     dailyLimit);
             }
 
-            // Recruitment runs first. Ordinary prisoners that remain are sold
-            // only when the prison exceeds half of its capacity. Hero
-            // prisoners are never included in the sale roster.
-            int sold = SellExcessPrisoners(settlement);
+            LogDailyResult(
+                town,
+                initialPrisonerCount,
+                sold,
+                targetCount,
+                readyCount,
+                dailyLimit,
+                plan,
+                recruited);
+        }
 
-            if (plan != null)
+        private static void OnWeeklyTick()
+        {
+            foreach (Settlement settlement in Campaign.Current.Settlements)
             {
-                LogPlan(
-                    town,
-                    plan,
-                    GetOfferedCount(candidates),
-                    recruited,
-                    dailyLimit);
-            }
+                Town town = settlement?.Town;
 
-            LogSale(town, sold);
+                if (settlement?.IsFortification != true ||
+                    town?.GarrisonParty == null ||
+                    settlement.OwnerClan == Clan.PlayerClan)
+                {
+                    continue;
+                }
+
+                int dismissed = NormalizeGarrison(town.GarrisonParty);
+                LogWeeklyAdjustment(town, dismissed);
+            }
         }
 
         /// <summary>
-        /// Preserves native daily garrison growth and party capacity as the
-        /// transaction limit. The unified model applies finance constraints.
+        /// Uses the native maximum automatic recruitment count as a daily
+        /// transaction limit. CalculateBaseGarrisonChange is intentionally not
+        /// used here: that value describes rebellion and issue-driven natural
+        /// garrison changes, and is normally zero for an ordinary settlement.
+        /// The unified model applies all financial constraints separately.
         /// </summary>
         private static int GetDailyRecruitmentLimit(Town town)
         {
-            ExplainedNumber baseChange = Campaign.Current.Models
+            int maximumDailyRecruitment = Campaign.Current.Models
                 .SettlementGarrisonModel
-                .CalculateBaseGarrisonChange(town.Settlement, false);
+                .GetMaximumDailyAutoRecruitmentCount(town);
             int freeSlots = Math.Max(
                 0,
                 town.GarrisonParty.Party.PartySizeLimit
@@ -102,66 +138,200 @@ namespace ModifiedArmy.Models
 
             return Math.Min(
                 freeSlots,
-                Math.Max(0, (int)baseChange.ResultNumber));
+                Math.Max(0, maximumDailyRecruitment));
         }
 
         /// <summary>
-        /// Selects valuable regular troops for the unified recruitment plan.
-        /// Bandits and other non-military characters are never candidates.
-        /// Tier-four troops and above are valuable by quality; configured fief
-        /// troop lines are valuable even before reaching tier four.
+        /// Selects only prisoners that fill a current minimum-ratio shortage,
+        /// sells every surplus or non-military prisoner, then adds one day of
+        /// conformity to the retained targets. A
+        /// settlement party has no MobileParty, so the native hourly method
+        /// cannot be called safely. The same base rate, governor leadership
+        /// bonus and active model threshold are applied directly to the
+        /// settlement prison roster instead.
         /// </summary>
         private static List<RecruitmentCandidate>
-            CollectPrisonerCandidates(TroopRoster prisonRoster)
+            SelectAndPreparePrisonerCandidates(
+                Settlement settlement,
+                MobileParty garrison,
+                out int targetCount,
+                out int readyCount,
+                out int soldCount)
         {
             List<RecruitmentCandidate> result =
                 new List<RecruitmentCandidate>();
+            TroopRoster prisonRoster = settlement.Party.PrisonRoster;
+            TroopRoster saleRoster = TroopRoster.CreateDummyTroopRoster();
+            targetCount = 0;
+            readyCount = 0;
+            soldCount = 0;
 
             if (prisonRoster == null)
             {
                 return result;
             }
 
+            ArmyCompositionTemplate template = GetGarrisonTemplate(garrison);
+            int capacity = Math.Max(0, garrison.Party.PartySizeLimit);
+            Dictionary<CombatRole, int> roleCounts =
+                CreateRoleCounts(garrison.MemberRoster);
+            Dictionary<TroopQuality, int> qualityCounts =
+                CreateQualityCounts(garrison.MemberRoster);
+            // Hero prisoners are never sold. Their occupied capacity is
+            // deducted first so retained regular prisoners keep the whole
+            // prison roster as close as possible to half of its limit.
+            int remainingRetentionCapacity = Math.Max(
+                0,
+                settlement.Party.PrisonerSizeLimit / 2 -
+                    prisonRoster.TotalHeroes);
+
             foreach (TroopRosterElement element in
                 prisonRoster.GetTroopRoster())
             {
                 CharacterObject troop = element.Character;
 
-                if (!IsHighValueRecruitmentTarget(troop))
+                if (troop == null || troop.IsHero)
                 {
                     continue;
                 }
 
+                int retainedCount = GetTargetRetentionCount(
+                    troop,
+                    Math.Min(element.Number, remainingRetentionCapacity),
+                    capacity,
+                    template,
+                    roleCounts,
+                    qualityCounts);
+                int sellCount = element.Number - retainedCount;
+
+                if (sellCount > 0)
+                {
+                    saleRoster.AddToCounts(
+                        troop,
+                        sellCount,
+                        false,
+                        Math.Min(sellCount, element.WoundedNumber),
+                        0,
+                        true,
+                        -1);
+                }
+
+                if (retainedCount <= 0)
+                {
+                    continue;
+                }
+
+                CombatRole role =
+                    RecruitmentTroopClassifier.GetCombatRole(troop);
+                TroopQuality quality =
+                    RecruitmentTroopClassifier.GetQuality(troop);
+                roleCounts[role] += retainedCount;
+                qualityCounts[quality] += retainedCount;
+                remainingRetentionCapacity -= retainedCount;
+                targetCount += retainedCount;
+                int dailyConformity = CalculateDailyConformity(settlement);
+                prisonRoster.AddXpToTroop(troop, dailyConformity);
+                int conformityNeeded = Campaign.Current.Models
+                    .PrisonerRecruitmentCalculationModel
+                    .GetConformityNeededToRecruitPrisoner(troop);
+                int recruitableCount = conformityNeeded <= 0
+                    ? retainedCount
+                    : Math.Min(
+                        retainedCount,
+                        prisonRoster.GetElementXp(troop) /
+                            conformityNeeded);
+
+                if (recruitableCount <= 0)
+                {
+                    continue;
+                }
+
+                readyCount += recruitableCount;
                 result.Add(new RecruitmentCandidate(
                     troop,
-                    element.Number,
-                    RecruitmentSource.Prisoner));
+                    recruitableCount,
+                    RecruitmentSource.Prisoner,
+                    new PrisonerRecruitmentOffer(conformityNeeded)));
+            }
+
+            soldCount = saleRoster.TotalRegulars;
+
+            if (soldCount > 0)
+            {
+                SellPrisonersAction.ApplyForSelectedPrisoners(
+                    settlement.Party,
+                    null,
+                    saleRoster);
             }
 
             return result;
         }
 
-        private static bool IsHighValueRecruitmentTarget(
-            CharacterObject troop)
+        private static int GetTargetRetentionCount(
+            CharacterObject troop,
+            int availableCount,
+            int capacity,
+            ArmyCompositionTemplate template,
+            IDictionary<CombatRole, int> roleCounts,
+            IDictionary<TroopQuality, int> qualityCounts)
         {
-            if (troop == null ||
-                troop.IsHero ||
-                (troop.Occupation != Occupation.Soldier &&
-                    troop.Occupation != Occupation.Mercenary))
+            if (!IsRegularGarrisonTroop(troop) || availableCount <= 0)
             {
-                return false;
+                return 0;
             }
 
-            if (troop.Tier >= 4)
+            CombatRole role =
+                RecruitmentTroopClassifier.GetCombatRole(troop);
+            TroopQuality quality =
+                RecruitmentTroopClassifier.GetQuality(troop);
+            RatioRange roleRange = template.GetRange(role);
+            RatioRange qualityRange = template.GetRange(quality);
+            int roleMinimum = (int)Math.Ceiling(
+                capacity * roleRange.MinimumRatio);
+            int qualityMinimum = (int)Math.Ceiling(
+                capacity * qualityRange.MinimumRatio);
+            int roleMaximum = (int)Math.Floor(
+                capacity * roleRange.MaximumRatio);
+            int qualityMaximum = (int)Math.Floor(
+                capacity * qualityRange.MaximumRatio);
+            int roleShortage = Math.Max(
+                0,
+                roleMinimum - roleCounts[role]);
+            int qualityShortage = Math.Max(
+                0,
+                qualityMinimum - qualityCounts[quality]);
+
+            if (roleShortage <= 0 && qualityShortage <= 0)
             {
-                return true;
+                return 0;
             }
 
-            SoldierType type = SoldierTypeClassifier.GetSoldierType(troop);
-            return type == SoldierType.Retinue ||
-                type == SoldierType.Sergeant ||
-                type == SoldierType.Marine ||
-                type == SoldierType.Slave;
+            return Math.Max(
+                0,
+                Math.Min(
+                    availableCount,
+                    Math.Min(
+                        Math.Max(roleShortage, qualityShortage),
+                        Math.Min(
+                            roleMaximum - roleCounts[role],
+                            qualityMaximum - qualityCounts[quality]))));
+        }
+
+        private static int CalculateDailyConformity(
+            Settlement settlement)
+        {
+            float hourlyConformity = 10f;
+            Hero governor = settlement.Town?.Governor;
+
+            if (governor != null)
+            {
+                hourlyConformity += governor.GetSkillValue(
+                    DefaultSkills.Leadership) * 0.05f;
+            }
+
+            return Math.Max(
+                0,
+                MathF.Round(hourlyConformity * CampaignTime.HoursInDay));
         }
 
         /// <summary>
@@ -194,7 +364,9 @@ namespace ModifiedArmy.Models
                     Math.Min(evaluation.RecruitableCount, currentCount),
                     dailyLimit - recruited);
 
-                if (transferCount <= 0)
+                if (transferCount <= 0 ||
+                    !(evaluation.Candidate?.SourceContext is
+                        PrisonerRecruitmentOffer offer))
                 {
                     continue;
                 }
@@ -208,7 +380,7 @@ namespace ModifiedArmy.Models
                     -transferCount,
                     false,
                     -woundedCount,
-                    0,
+                    -offer.ConformityCost * transferCount,
                     true,
                     -1);
                 garrison.MemberRoster.AddToCounts(
@@ -219,10 +391,12 @@ namespace ModifiedArmy.Models
                     0,
                     true,
                     -1);
+                settlement.OwnerClan.AutoRecruitmentExpenses +=
+                    evaluation.UnitRecruitmentCost * transferCount;
                 ClanRecruitmentBudgetManager.CommitRecruitment(
                     garrison,
                     transferCount,
-                    0f,
+                    evaluation.UnitRecruitmentCost,
                     evaluation.UnitDailyWage);
                 recruited += transferCount;
             }
@@ -246,145 +420,330 @@ namespace ModifiedArmy.Models
             return 0;
         }
 
-        /// <summary>
-        /// Uses the native prisoner-sale transaction for disposable captives.
-        /// High-value recruitment targets and heroes remain in custody even
-        /// when selling every disposable prisoner cannot reach the target.
-        /// </summary>
-        private static int SellExcessPrisoners(Settlement settlement)
-        {
-            TroopRoster prisonRoster = settlement.Party.PrisonRoster;
-            int targetCount = Math.Max(
-                0,
-                settlement.Party.PrisonerSizeLimit / 2);
-            int amountToSell = Math.Max(
-                0,
-                prisonRoster.TotalManCount - targetCount);
-
-            if (amountToSell <= 0)
-            {
-                return 0;
-            }
-
-            TroopRoster saleRoster = TroopRoster.CreateDummyTroopRoster();
-            IEnumerable<TroopRosterElement> orderedPrisoners = prisonRoster
-                .GetTroopRoster()
-                .Where(element =>
-                    element.Character != null &&
-                    !element.Character.IsHero &&
-                    !IsHighValueRecruitmentTarget(element.Character))
-                .OrderBy(element => element.Character.Tier);
-
-            foreach (TroopRosterElement element in orderedPrisoners)
-            {
-                int count = Math.Min(amountToSell, element.Number);
-
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                int woundedCount = Math.Min(count, element.WoundedNumber);
-                saleRoster.AddToCounts(
-                    element.Character,
-                    count,
-                    false,
-                    woundedCount,
-                    0,
-                    true,
-                    -1);
-                amountToSell -= count;
-
-                if (amountToSell <= 0)
-                {
-                    break;
-                }
-            }
-
-            int sold = saleRoster.TotalRegulars;
-
-            if (sold > 0)
-            {
-                SellPrisonersAction.ApplyForSelectedPrisoners(
-                    settlement.Party,
-                    null,
-                    saleRoster);
-            }
-
-            return sold;
-        }
-
-        private static int GetOfferedCount(
-            IEnumerable<RecruitmentCandidate> candidates)
-        {
-            int count = 0;
-
-            foreach (RecruitmentCandidate candidate in candidates)
-            {
-                count += candidate.AvailableCount;
-            }
-
-            return count;
-        }
-
-        private static void LogSale(Town town, int soldCount)
-        {
-            if (soldCount <= 0 ||
-                !RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
-            {
-                return;
-            }
-
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_ai_recruitment_prisoner_sale");
-            message.SetTextVariable("SETTLEMENT_NAME", town.Name);
-            message.SetTextVariable("SOLD", soldCount);
-            message.SetTextVariable(
-                "REMAINING",
-                town.Settlement.Party.PrisonRoster.TotalManCount);
-            ModLogger.Info(message.ToString());
-        }
-
-        private static void LogPlan(
+        private static void LogDailyResult(
             Town town,
+            int initialPrisonerCount,
+            int soldCount,
+            int targetCount,
+            int readyCount,
+            int dailyLimit,
             RecruitmentPlan plan,
-            int offeredCount,
-            int approvedCount,
-            int dailyLimit)
+            int recruitedCount)
         {
             if (!RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
             {
                 return;
             }
 
-            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
+            if (recruitedCount > 0)
+            {
+                TextObject message = new TextObject(
+                    "{=ModifiedArmy_GarrisonPrisonerRecruited}" +
+                    "[Garrison recruitment] {SETTLEMENT_NAME} recruited " +
+                    "{RECRUITED} prisoners and sold {SOLD} surplus " +
+                    "prisoners.");
+                message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+                message.SetTextVariable("RECRUITED", recruitedCount);
+                message.SetTextVariable("SOLD", soldCount);
+                ModLogger.Notice(message.ToString());
+                return;
+            }
+
+            TextObject reason;
+
+            if (targetCount <= 0)
+            {
+                reason = new TextObject(
+                    "{=ModifiedArmy_GarrisonPrisonerNoTemplateTarget}" +
+                    "no prisoners matched the garrison template shortage");
+            }
+            else if (readyCount <= 0)
+            {
+                reason = new TextObject(
+                    "{=ModifiedArmy_GarrisonPrisonerNoConformity}" +
+                    "the retained prisoners lacked conformity");
+            }
+            else if (dailyLimit <= 0)
+            {
+                reason = new TextObject(
+                    "{=ModifiedArmy_GarrisonPrisonerNoDailyCapacity}" +
+                    "the daily limit or remaining garrison capacity was zero");
+            }
+            else
+            {
+                reason = GetPlanLimitText(plan);
+            }
+
+            TextObject skippedMessage = new TextObject(
+                "{=ModifiedArmy_GarrisonPrisonerSkipped}" +
+                "[Garrison recruitment] {SETTLEMENT_NAME} recruited no " +
+                "prisoners. It had {INITIAL} regular prisoners, sold " +
+                "{SOLD} surplus prisoners, and stopped because {REASON}.");
+            skippedMessage.SetTextVariable("SETTLEMENT_NAME", town.Name);
+            skippedMessage.SetTextVariable("INITIAL", initialPrisonerCount);
+            skippedMessage.SetTextVariable("SOLD", soldCount);
+            skippedMessage.SetTextVariable("REASON", reason);
+            ModLogger.Info(skippedMessage.ToString());
+        }
+
+        private static TextObject GetPlanLimitText(RecruitmentPlan plan)
+        {
+            if (plan == null)
+            {
+                return new TextObject(
+                    "{=ModifiedArmy_GarrisonPrisonerNoPlan}" +
+                    "no recruitment plan was available");
+            }
 
             foreach (RecruitmentEvaluationResult evaluation in
                 plan.Evaluations)
             {
                 if (evaluation.RecruitableCount <= 0)
                 {
-                    mainLimit = evaluation.PrimaryLimit;
-                    break;
+                    return GetLimitText(evaluation.PrimaryLimit);
                 }
             }
 
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_ai_recruitment_prisoner_plan");
-            message.SetTextVariable("SETTLEMENT_NAME", town.Name);
-            message.SetTextVariable("OFFERED", offeredCount);
-            message.SetTextVariable("APPROVED", approvedCount);
-            message.SetTextVariable("DAILY_LIMIT", dailyLimit);
-            message.SetTextVariable("LIMIT", GetLimitText(mainLimit));
+            return new TextObject(
+                "{=ModifiedArmy_GarrisonPrisonerPlanRejected}" +
+                "the unified recruitment plan approved no candidates");
+        }
 
-            if (approvedCount > 0)
+        private static ArmyCompositionTemplate GetGarrisonTemplate(
+            MobileParty garrison)
+        {
+            string cultureId = garrison.CurrentSettlement?.OwnerClan
+                ?.Culture?.StringId
+                ?? garrison.CurrentSettlement?.Culture?.StringId
+                ?? "default";
+            return RecruitmentModelManager.Templates.GetTemplate(
+                cultureId,
+                RecruitmentPartyType.Garrison);
+        }
+
+        private static Dictionary<CombatRole, int> CreateRoleCounts(
+            TroopRoster roster)
+        {
+            Dictionary<CombatRole, int> result = Enum
+                .GetValues(typeof(CombatRole))
+                .Cast<CombatRole>()
+                .ToDictionary(role => role, role => 0);
+
+            foreach (TroopRosterElement element in roster.GetTroopRoster())
             {
-                ModLogger.Info(message.ToString());
+                if (!IsRegularGarrisonTroop(element.Character))
+                {
+                    continue;
+                }
+
+                result[RecruitmentTroopClassifier.GetCombatRole(
+                    element.Character)] += element.Number;
             }
-            else
+
+            return result;
+        }
+
+        private static Dictionary<TroopQuality, int> CreateQualityCounts(
+            TroopRoster roster)
+        {
+            Dictionary<TroopQuality, int> result = Enum
+                .GetValues(typeof(TroopQuality))
+                .Cast<TroopQuality>()
+                .ToDictionary(quality => quality, quality => 0);
+
+            foreach (TroopRosterElement element in roster.GetTroopRoster())
             {
-                ModLogger.Debug(message.ToString());
+                if (!IsRegularGarrisonTroop(element.Character))
+                {
+                    continue;
+                }
+
+                result[RecruitmentTroopClassifier.GetQuality(
+                    element.Character)] += element.Number;
             }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Removes non-military characters unconditionally, then repeatedly
+        /// removes the lowest-tier soldier contributing to a hard template
+        /// maximum. Establishment, wages and wounds do not independently
+        /// select a soldier for this weekly composition adjustment.
+        /// </summary>
+        private static int NormalizeGarrison(MobileParty garrison)
+        {
+            TroopRoster roster = garrison.MemberRoster;
+            int dismissed = 0;
+
+            foreach (TroopRosterElement element in
+                new List<TroopRosterElement>(roster.GetTroopRoster()))
+            {
+                if (element.Character == null ||
+                    element.Character.IsHero ||
+                    IsRegularGarrisonTroop(element.Character))
+                {
+                    continue;
+                }
+
+                roster.AddToCounts(
+                    element.Character,
+                    -element.Number,
+                    false,
+                    -element.WoundedNumber,
+                    0,
+                    true,
+                    -1);
+                dismissed += element.Number;
+            }
+
+            ArmyCompositionTemplate template =
+                GetGarrisonTemplate(garrison);
+            int capacity = Math.Max(0, garrison.Party.PartySizeLimit);
+            int remainingSafetyIterations = roster.TotalRegulars;
+
+            while (remainingSafetyIterations-- > 0)
+            {
+                List<TroopRosterElement> troops = roster.GetTroopRoster()
+                    .Where(element =>
+                        element.Character != null &&
+                        !element.Character.IsHero &&
+                        IsRegularGarrisonTroop(element.Character) &&
+                        element.Number > 0)
+                    .ToList();
+
+                if (troops.Count == 0)
+                {
+                    break;
+                }
+
+                TroopRosterElement? removal = troops
+                    .Where(element =>
+                        ExceedsRoleMaximum(
+                            troops,
+                            element.Character,
+                            capacity,
+                            template) ||
+                        ExceedsQualityMaximum(
+                            troops,
+                            element.Character,
+                            capacity,
+                            template))
+                    // Every candidate already violates at least one hard
+                    // maximum. Remove lower-tier troops first; the excess
+                    // score only breaks ties between troops of equal tier.
+                    .OrderBy(element => element.Character.Tier)
+                    .ThenByDescending(element =>
+                        GetExcessScore(
+                            troops,
+                            element.Character,
+                            capacity,
+                            template))
+                    .Cast<TroopRosterElement?>()
+                    .FirstOrDefault();
+
+                if (!removal.HasValue)
+                {
+                    break;
+                }
+
+                TroopRosterElement selected = removal.Value;
+                int healthy = selected.Number - selected.WoundedNumber;
+                int wounded = healthy > 0 ? 0 : 1;
+                roster.AddToCounts(
+                    selected.Character,
+                    -1,
+                    false,
+                    -wounded,
+                    0,
+                    true,
+                    -1);
+                dismissed++;
+            }
+
+            return dismissed;
+        }
+
+        private static bool IsRegularGarrisonTroop(CharacterObject troop)
+        {
+            return troop != null &&
+                !troop.IsHero &&
+                (troop.Occupation == Occupation.Soldier ||
+                    troop.Occupation == Occupation.Mercenary);
+        }
+
+        private static int GetExcessScore(
+            IEnumerable<TroopRosterElement> troops,
+            CharacterObject troop,
+            int capacity,
+            ArmyCompositionTemplate template)
+        {
+            int score = 0;
+
+            if (ExceedsRoleMaximum(troops, troop, capacity, template))
+            {
+                score++;
+            }
+
+            if (ExceedsQualityMaximum(troops, troop, capacity, template))
+            {
+                score++;
+            }
+
+            return score;
+        }
+
+        private static bool ExceedsRoleMaximum(
+            IEnumerable<TroopRosterElement> troops,
+            CharacterObject troop,
+            int capacity,
+            ArmyCompositionTemplate template)
+        {
+            CombatRole role =
+                RecruitmentTroopClassifier.GetCombatRole(troop);
+            int count = troops
+                .Where(element =>
+                    RecruitmentTroopClassifier.GetCombatRole(
+                        element.Character) == role)
+                .Sum(element => element.Number);
+            int maximum = (int)Math.Floor(
+                capacity * template.GetRange(role).MaximumRatio);
+            return count > maximum;
+        }
+
+        private static bool ExceedsQualityMaximum(
+            IEnumerable<TroopRosterElement> troops,
+            CharacterObject troop,
+            int capacity,
+            ArmyCompositionTemplate template)
+        {
+            TroopQuality quality =
+                RecruitmentTroopClassifier.GetQuality(troop);
+            int count = troops
+                .Where(element =>
+                    RecruitmentTroopClassifier.GetQuality(
+                        element.Character) == quality)
+                .Sum(element => element.Number);
+            int maximum = (int)Math.Floor(
+                capacity * template.GetRange(quality).MaximumRatio);
+            return count > maximum;
+        }
+
+        private static void LogWeeklyAdjustment(
+            Town town,
+            int dismissedCount)
+        {
+            if (dismissedCount <= 0 ||
+                !RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
+            {
+                return;
+            }
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_garrison_weekly_adjustment");
+            message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+            message.SetTextVariable("DISMISSED", dismissedCount);
+            ModLogger.Notice(message.ToString());
         }
 
         private static TextObject GetLimitText(
@@ -420,6 +779,16 @@ namespace ModifiedArmy.Models
                     return GameTexts.FindText(
                         "str_modifiedarmy_recruit_limit_none");
             }
+        }
+
+        private sealed class PrisonerRecruitmentOffer
+        {
+            public PrisonerRecruitmentOffer(int conformityCost)
+            {
+                ConformityCost = Math.Max(0, conformityCost);
+            }
+
+            public int ConformityCost { get; }
         }
     }
 }

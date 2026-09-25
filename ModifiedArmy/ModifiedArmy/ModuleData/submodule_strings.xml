@@ -95,16 +95,28 @@
 
     <string id="str_modifiedarmy_ai_recruitment_garrison_plan"
         text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名志愿兵候选, 实际招募{APPROVED}名, 每日上限{DAILY_LIMIT}名. 当前使用{CULTURE_ID}文化模板, 首要限制是{LIMIT}." />
-    <string id="str_modifiedarmy_ai_recruitment_prisoner_plan"
-        text="{=ModifiedArmy_AIRecruitmentPrisonerPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名高价值俘虏候选, 实际吸收{APPROVED}名, 每日上限{DAILY_LIMIT}名, 首要限制是{LIMIT}." />
-    <string id="str_modifiedarmy_ai_recruitment_prisoner_sale"
-        text="{=ModifiedArmy_AIRecruitmentPrisonerSale}[AI招募] {SETTLEMENT_NAME}出售了{SOLD}名未被驻军吸收的俘虏, 目前保留{REMAINING}名俘虏." />
+    <string id="str_modifiedarmy_garrison_prisoner_recruited"
+        text="{=ModifiedArmy_GarrisonPrisonerRecruited}[驻军招募] {SETTLEMENT_NAME}从俘虏中招募了{RECRUITED}人, 并出售了{SOLD}名多余俘虏." />
+    <string id="str_modifiedarmy_garrison_prisoner_skipped"
+        text="{=ModifiedArmy_GarrisonPrisonerSkipped}[驻军招募] {SETTLEMENT_NAME}今日没有招募俘虏. 原有{INITIAL}名普通俘虏, 出售了{SOLD}名多余俘虏, 原因是{REASON}." />
+    <string id="str_modifiedarmy_garrison_prisoner_no_template_target"
+        text="{=ModifiedArmy_GarrisonPrisonerNoTemplateTarget}没有俘虏能够补足驻军模板缺口" />
+    <string id="str_modifiedarmy_garrison_prisoner_no_conformity"
+        text="{=ModifiedArmy_GarrisonPrisonerNoConformity}保留的俘虏尚未积累足够驯服度" />
+    <string id="str_modifiedarmy_garrison_prisoner_no_daily_capacity"
+        text="{=ModifiedArmy_GarrisonPrisonerNoDailyCapacity}每日招募上限或驻军剩余编制为0" />
+    <string id="str_modifiedarmy_garrison_prisoner_no_plan"
+        text="{=ModifiedArmy_GarrisonPrisonerNoPlan}没有可执行的招募计划" />
+    <string id="str_modifiedarmy_garrison_prisoner_plan_rejected"
+        text="{=ModifiedArmy_GarrisonPrisonerPlanRejected}统一招募计划没有批准候选人" />
     <string id="str_modifiedarmy_prisoner_transfer"
         text="{=ModifiedArmy_PrisonerTransfer}[俘虏] {PARTY_NAME}向{SETTLEMENT_NAME}移交了{COUNT}名俘虏." />
     <string id="str_modifiedarmy_prisoner_sale"
         text="{=ModifiedArmy_PrisonerSale}[俘虏] {SETTLEMENT_NAME}出售了{COUNT}名俘虏." />
     <string id="str_modifiedarmy_disband_garrison_merge"
         text="{=ModifiedArmy_DisbandGarrisonMerge}[驻军整编] {PARTY_NAME}解散后, {SETTLEMENT_NAME}驻军接收了{ACCEPTED}名士兵, 其余{DISMISSED}人离队." />
+    <string id="str_modifiedarmy_garrison_weekly_adjustment"
+        text="{=ModifiedArmy_GarrisonWeeklyAdjustment}[驻军整编] {SETTLEMENT_NAME}驻军完成每周检查, 解散了{DISMISSED}名非正规军或超过模板比例的士兵." />
 
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />

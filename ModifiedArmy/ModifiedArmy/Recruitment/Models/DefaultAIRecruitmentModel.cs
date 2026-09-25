@@ -128,19 +128,36 @@ namespace ModifiedArmy.Recruitment.Models
                 AiRecruitmentFinancialModel.EstimateUnitDailyWage(
                     party,
                     troop);
-            // Fief troops, converted prisoners and transferred soldiers
-            // require no purchase. Their future wages still consume the
-            // shared clan commitment budget.
-            int unitCost = source == RecruitmentSource.Fief ||
-                source == RecruitmentSource.Prisoner ||
-                source == RecruitmentSource.Transfer
-                ? 0
-                : Campaign.Current.Models.PartyWageModel
+            // Fief troops and transferred soldiers require no purchase.
+            // Converted prisoners use the discounted cost defined by the
+            // active prisoner recruitment model. Every source still reserves
+            // its future wages in the shared clan commitment budget.
+            int unitCost;
+
+            if (source == RecruitmentSource.Fief ||
+                source == RecruitmentSource.Transfer)
+            {
+                unitCost = 0;
+            }
+            else if (source == RecruitmentSource.Prisoner &&
+                Campaign.Current.Models.PrisonerRecruitmentCalculationModel
+                    is global::ModifiedArmy.Models.NewPrisonerRecruitmentCalculationModel
+                        model)
+            {
+                unitCost = model.CalculateGoldCostForRecruitment(
+                    troop,
+                    1,
+                    GetRecruitingHero(party));
+            }
+            else
+            {
+                unitCost = Campaign.Current.Models.PartyWageModel
                     .GetTroopRecruitmentCost(
                         troop,
                         GetRecruitingHero(party),
                         false)
                     .RoundedResultNumber;
+            }
 
             result.CombatRole = role;
             result.Quality = quality;
