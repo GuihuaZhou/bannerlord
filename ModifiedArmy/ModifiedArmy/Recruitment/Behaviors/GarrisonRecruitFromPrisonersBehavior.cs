@@ -3,6 +3,8 @@ using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -54,6 +56,16 @@ namespace ModifiedArmy.Models
                 return;
             }
 
+            // Professional manpower has first claim on the native daily
+            // garrison recruitment quota. Prisoners may use only what remains
+            // so the two sources cannot double the intended daily growth.
+            int dailyLimit = GetDailyRecruitmentLimit(town);
+            int professionalRecruited = RecruitProfessionalTroops(
+                settlement,
+                town.GarrisonParty,
+                dailyLimit);
+            dailyLimit = Math.Max(0, dailyLimit - professionalRecruited);
+
             TroopRoster prisonRoster = settlement.Party.PrisonRoster;
             int initialPrisonerCount = prisonRoster.TotalRegulars;
 
@@ -74,7 +86,6 @@ namespace ModifiedArmy.Models
                     out targetCount,
                     out readyCount,
                     out sold);
-            int dailyLimit = GetDailyRecruitmentLimit(town);
             RecruitmentPlan plan = null;
             int recruited = 0;
 
@@ -99,6 +110,143 @@ namespace ModifiedArmy.Models
                 dailyLimit,
                 plan,
                 recruited);
+        }
+
+        /// <summary>
+        /// Recruits from the settlement's professional pool through the same
+        /// composition, wage and clan-budget model used by mobile parties.
+        /// Garrison purchases are charged through AutoRecruitmentExpenses,
+        /// matching Bannerlord's deferred settlement accounting.
+        /// </summary>
+        private static int RecruitProfessionalTroops(
+            Settlement settlement,
+            MobileParty garrison,
+            int dailyLimit)
+        {
+            if (dailyLimit <= 0)
+            {
+                return 0;
+            }
+
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            if (pools == null)
+            {
+                return 0;
+            }
+
+            IReadOnlyDictionary<CharacterObject, int> available =
+                pools.GetAvailableTroops(
+                    settlement,
+                    RecruitmentPoolKind.Professional);
+            List<RecruitmentCandidate> candidates = available
+                .Where(entry => entry.Key != null && entry.Value > 0)
+                .Select(entry => new RecruitmentCandidate(
+                    entry.Key,
+                    entry.Value,
+                    RecruitmentSource.Professional))
+                .ToList();
+            if (candidates.Count == 0)
+            {
+                return 0;
+            }
+
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                garrison,
+                candidates);
+            int recruited = 0;
+
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                int count = Math.Min(
+                    evaluation.RecruitableCount,
+                    dailyLimit - recruited);
+                if (evaluation.Troop == null || count <= 0 ||
+                    !pools.TryConsume(
+                        settlement,
+                        RecruitmentPoolKind.Professional,
+                        evaluation.Troop,
+                        count))
+                {
+                    continue;
+                }
+
+                garrison.MemberRoster.AddToCounts(
+                    evaluation.Troop,
+                    count,
+                    false,
+                    0,
+                    0,
+                    true,
+                    -1);
+                settlement.OwnerClan.AutoRecruitmentExpenses +=
+                    evaluation.UnitRecruitmentCost * count;
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    garrison,
+                    count,
+                    evaluation.UnitRecruitmentCost,
+                    evaluation.UnitDailyWage);
+                recruited += count;
+
+                if (recruited >= dailyLimit)
+                {
+                    break;
+                }
+            }
+
+            LogProfessionalRecruitment(
+                settlement.Town,
+                candidates.Sum(candidate => candidate.AvailableCount),
+                recruited,
+                plan);
+            return recruited;
+        }
+
+        private static void LogProfessionalRecruitment(
+            Town town,
+            int offeredCount,
+            int recruitedCount,
+            RecruitmentPlan plan)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
+            {
+                return;
+            }
+
+            RecruitmentLimitReason reason = RecruitmentLimitReason.None;
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                if (evaluation.RecruitableCount < evaluation.RequestedCount)
+                {
+                    reason = evaluation.PrimaryLimit;
+                    break;
+                }
+            }
+
+            // Keep the Notice consistent with the former volunteer recruitment
+            // message. Failed attempts retain a detailed Info diagnostic, but
+            // neither message exposes the underlying manpower-pool mechanism.
+            string textId = recruitedCount > 0
+                ? "str_modifiedarmy_ai_recruitment_volunteer_plan"
+                : "str_modifiedarmy_garrison_professional_recruitment";
+            TextObject message = GameTexts.FindText(textId);
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(town.GarrisonParty));
+            message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+            message.SetTextVariable("OFFERED", offeredCount);
+            message.SetTextVariable("APPROVED", recruitedCount);
+            message.SetTextVariable("RECRUITED", recruitedCount);
+            message.SetTextVariable("LIMIT", GetLimitText(reason));
+
+            if (recruitedCount > 0)
+            {
+                ModLogger.Notice(message.ToString());
+            }
+            else
+            {
+                ModLogger.Info(message.ToString());
+            }
         }
 
         private static void OnWeeklyTick()

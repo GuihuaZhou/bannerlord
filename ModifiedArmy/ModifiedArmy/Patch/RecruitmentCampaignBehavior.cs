@@ -362,59 +362,8 @@ namespace ModifiedArmy.Patch
                 return false;
             }
 
-            // Towns and castles no longer create AI recruits from notable
-            // slots. Their professional manpower pool is the sole source.
-            if (settlement.IsFortification)
-            {
-                return TryRecruitProfessionalPool(party, settlement);
-            }
-
-            List<RecruitmentCandidate> candidates =
-                CollectVolunteerCandidates(party, settlement);
-
-            if (candidates.Count == 0)
-            {
-                return false;
-            }
-
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
-                party,
-                candidates);
-            int approvedCount = 0;
-
-            foreach (RecruitmentEvaluationResult evaluation in
-                plan.Evaluations)
-            {
-                if (evaluation.RecruitableCount <= 0
-                    || !(evaluation.Candidate?.SourceContext
-                        is VolunteerOffer offer))
-                {
-                    continue;
-                }
-
-                // Every candidate represents one concrete notable slot, so an
-                // approved evaluation can execute the native transaction once.
-                GetRecruitVolunteerFromIndividual(
-                    instance,
-                    party,
-                    evaluation.Troop,
-                    offer.Notable,
-                    offer.SlotIndex);
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    party,
-                    1,
-                    evaluation.UnitRecruitmentCost,
-                    evaluation.UnitDailyWage);
-                approvedCount++;
-            }
-
-            LogVolunteerPlan(
-                party,
-                settlement,
-                plan,
-                candidates.Count,
-                approvedCount);
-            return approvedCount > 0;
+            return settlement.IsFortification &&
+                TryRecruitProfessionalPool(party, settlement);
         }
 
         /// <summary>
@@ -528,8 +477,13 @@ namespace ModifiedArmy.Patch
                 }
             }
 
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_ai_recruitment_professional_plan");
+            // Successful pool recruitment is presented as ordinary volunteer
+            // recruitment. The manpower pool is an implementation detail and
+            // does not need to appear in the player-facing Notice message.
+            string textId = recruitedCount > 0
+                ? "str_modifiedarmy_ai_recruitment_volunteer_plan"
+                : "str_modifiedarmy_ai_recruitment_professional_plan";
+            TextObject message = GameTexts.FindText(textId);
             message.SetTextVariable(
                 "PARTY_NAME",
                 PartyLogFormatter.GetDisplayName(party));
@@ -546,124 +500,6 @@ namespace ModifiedArmy.Patch
             {
                 ModLogger.Debug(message.ToString());
             }
-        }
-
-        /// <summary>
-        /// Collects every non-empty volunteer slot currently unlocked by the
-        /// party leader's relation. No troop or gold is changed during this
-        /// discovery pass.
-        /// </summary>
-        private static List<RecruitmentCandidate> CollectVolunteerCandidates(
-            MobileParty party,
-            Settlement settlement)
-        {
-            List<RecruitmentCandidate> result =
-                new List<RecruitmentCandidate>();
-
-            foreach (Hero notable in settlement.Notables)
-            {
-                if (notable == null || !notable.IsAlive)
-                {
-                    continue;
-                }
-
-                int accessibleSlotCount = Campaign.Current.Models
-                    .VolunteerModel
-                    .MaximumIndexHeroCanRecruitFromHero(
-                        party.LeaderHero,
-                        notable,
-                        -101);
-                int slotCount = Math.Min(
-                    notable.VolunteerTypes.Length,
-                    Math.Max(0, accessibleSlotCount));
-
-                for (int slotIndex = 0;
-                    slotIndex < slotCount;
-                    slotIndex++)
-                {
-                    CharacterObject troop =
-                        notable.VolunteerTypes[slotIndex];
-
-                    if (troop == null)
-                    {
-                        continue;
-                    }
-
-                    result.Add(
-                        new RecruitmentCandidate(
-                            troop,
-                            1,
-                            RecruitmentSource.Volunteer,
-                            new VolunteerOffer(notable, slotIndex)));
-                }
-            }
-
-            return result;
-        }
-
-        /// <summary>
-        /// Logs one summary per settlement visit instead of one message per
-        /// volunteer slot, keeping Notice output readable during AI activity.
-        /// </summary>
-        private static void LogVolunteerPlan(
-            MobileParty party,
-            Settlement settlement,
-            RecruitmentPlan plan,
-            int offeredCount,
-            int approvedCount)
-        {
-            if (!RecruitmentLogFilter.ShouldLog(party))
-            {
-                return;
-            }
-
-            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
-
-            foreach (RecruitmentEvaluationResult evaluation in
-                plan.Evaluations)
-            {
-                if (evaluation.RecruitableCount <= 0)
-                {
-                    mainLimit = evaluation.PrimaryLimit;
-                    break;
-                }
-            }
-
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_ai_recruitment_volunteer_plan");
-            message.SetTextVariable(
-                "PARTY_NAME",
-                PartyLogFormatter.GetDisplayName(party));
-            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
-            message.SetTextVariable("CULTURE_ID", plan.CultureId);
-            message.SetTextVariable("OFFERED", offeredCount);
-            message.SetTextVariable("APPROVED", approvedCount);
-            message.SetTextVariable("LIMIT", GetLimitReasonText(mainLimit));
-            if (approvedCount > 0)
-            {
-                ModLogger.Notice(message.ToString());
-            }
-            else
-            {
-                ModLogger.Debug(message.ToString());
-            }
-        }
-
-        /// <summary>
-        /// Execution metadata linking a model candidate back to the native
-        /// notable volunteer slot that must be cleared after recruitment.
-        /// </summary>
-        private sealed class VolunteerOffer
-        {
-            public VolunteerOffer(Hero notable, int slotIndex)
-            {
-                Notable = notable;
-                SlotIndex = slotIndex;
-            }
-
-            public Hero Notable { get; }
-
-            public int SlotIndex { get; }
         }
 
         // ==========================================

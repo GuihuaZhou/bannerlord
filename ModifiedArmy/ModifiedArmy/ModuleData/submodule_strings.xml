@@ -96,9 +96,11 @@
     <string id="str_modifiedarmy_ai_recruitment_garrison_plan"
         text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名志愿兵候选, 实际招募{APPROVED}名, 每日上限{DAILY_LIMIT}名. 当前使用{CULTURE_ID}文化模板, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_ai_recruitment_professional_plan"
-        text="{=ModifiedArmy_AIRecruitmentProfessionalPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}从职业兵源池招募了{APPROVED}人, 当时共有{OFFERED}人可用, 首要限制是{LIMIT}." />
+        text="{=ModifiedArmy_AIRecruitmentProfessionalPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}没有招募志愿兵, 当时有{OFFERED}人可招募, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_garrison_prisoner_recruited"
         text="{=ModifiedArmy_GarrisonPrisonerRecruited}[驻军招募] {SETTLEMENT_NAME}从俘虏中招募了{RECRUITED}人, 并出售了{SOLD}名多余俘虏." />
+    <string id="str_modifiedarmy_garrison_professional_recruitment"
+        text="{=ModifiedArmy_GarrisonProfessionalRecruitment}[驻军招募] {SETTLEMENT_NAME}今日没有招募志愿兵, 当时有{OFFERED}人可招募, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"
         text="{=ModifiedArmy_GarrisonPrisonerSkipped}[驻军招募] {SETTLEMENT_NAME}今日没有招募俘虏. 原有{INITIAL}名普通俘虏, 出售了{SOLD}名多余俘虏, 原因是{REASON}." />
     <string id="str_modifiedarmy_garrison_prisoner_no_template_target"

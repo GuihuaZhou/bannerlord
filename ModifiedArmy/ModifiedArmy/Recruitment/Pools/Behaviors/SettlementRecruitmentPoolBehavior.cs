@@ -11,8 +11,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
     /// <summary>
     /// Owns the saved professional and fief manpower pools for every town and
-    /// castle. Daily production fills the largest weighted shortage first.
-    /// Recruitment transactions will consume these pools in a later batch.
+    /// castle. Daily production fills the largest weighted shortage first,
+    /// while AI recruitment and Fief Party reinforcement consume saved stock
+    /// through explicit transactions.
     /// </summary>
     public sealed class SettlementRecruitmentPoolBehavior :
         CampaignBehaviorBase

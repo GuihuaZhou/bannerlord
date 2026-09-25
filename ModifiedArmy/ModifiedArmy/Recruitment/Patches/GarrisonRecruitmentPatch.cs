@@ -4,9 +4,9 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
-    /// Disables native daily garrison volunteer recruitment. Garrison strength
-    /// should be supplied by troop transfers and explicit logistics instead of
-    /// silently growing beyond the settlement's sustainable establishment.
+    /// Disables native notable-slot recruitment. The mod's garrison behavior
+    /// now consumes the settlement professional pool through the unified
+    /// composition and clan-budget model.
     /// </summary>
     [HarmonyPatch(
         typeof(GarrisonRecruitmentCampaignBehavior),

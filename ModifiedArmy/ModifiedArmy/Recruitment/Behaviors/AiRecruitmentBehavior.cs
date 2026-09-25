@@ -472,9 +472,8 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// Finds the nearest clan settlement supplying the ordinary
-        /// recruitment source. Fortifications use their professional pool;
-        /// villages retain native notable volunteers.
+        /// Finds the nearest clan fortification with professional manpower.
+        /// Villages no longer provide recruits through notable slots.
         /// 按 文化匹配 × 距离 排序。
         /// </summary>
         private Settlement FindBestVolunteerSettlement(MobileParty party, Clan clan)
@@ -485,7 +484,7 @@ namespace ModifiedArmy.Models
 
             foreach (Settlement settlement in clan.Settlements)
             {
-                if (!settlement.IsFortification && !settlement.IsVillage)
+                if (!settlement.IsFortification)
                     continue;
 
                 if (!HasAvailableVolunteers(settlement)) continue;
@@ -506,32 +505,20 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// 检查定居点的 notable 是否有可招募的志愿兵。
+        /// Checks whether a fortification has professional manpower.
         /// </summary>
         private bool HasAvailableVolunteers(Settlement settlement)
         {
             if (settlement == null) return false;
 
-            if (settlement.IsFortification)
-            {
-                SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                    .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-                return pools != null && pools.GetAvailableTroops(
-                        settlement,
-                        RecruitmentPoolKind.Professional)
-                    .Values.Any(count => count > 0);
-            }
+            if (!settlement.IsFortification) return false;
 
-            foreach (Hero notable in settlement.Notables)
-            {
-                if (!notable.CanHaveRecruits || !notable.IsAlive) continue;
-                foreach (CharacterObject vol in notable.VolunteerTypes)
-                {
-                    if (vol != null)
-                        return true;
-                }
-            }
-            return false;
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            return pools != null && pools.GetAvailableTroops(
+                    settlement,
+                    RecruitmentPoolKind.Professional)
+                .Values.Any(count => count > 0);
         }
 
         /// <summary>
