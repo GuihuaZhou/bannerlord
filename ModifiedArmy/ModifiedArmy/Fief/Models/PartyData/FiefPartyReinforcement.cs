@@ -2,6 +2,8 @@ using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
@@ -27,88 +29,71 @@ namespace ModifiedArmy.Models.Fief
     public partial class FiefPartyData
     {
         /// <summary>
-        /// 获取当前定居点的兵营等级。
-        /// 城镇使用 SettlementBarracks，城堡使用 CastleBarracks。
+        /// Withdraws saved fief manpower for the legacy Fief Party roster.
+        /// Pool production already applies barracks unlocks and XML weights,
+        /// while this transfer applies the separate Fief Party establishment.
         /// </summary>
-        private int GetCurrentBarracksLevel()
+        private Dictionary<CharacterObject, int>
+        WithdrawFiefPoolTroops(
+            Dictionary<SoldierType, int> remainingTypeCapacity,
+            int maximumCount)
         {
-            if (_settlement?.Town == null) 
-                return 0;
-
-            var town = _settlement.Town;
-            var barracksType = _settlement.IsCastle 
-                ? DefaultBuildingTypes.CastleBarracks 
-                : DefaultBuildingTypes.SettlementBarracks;
-
-            foreach (var building in town.Buildings)
+            Dictionary<CharacterObject, int> result = new();
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            if (pools == null || maximumCount <= 0)
             {
-                if (building.BuildingType == barracksType)
+                return result;
+            }
+
+            IReadOnlyDictionary<CharacterObject, int> available =
+                pools.GetAvailableTroops(
+                    _settlement,
+                    RecruitmentPoolKind.Fief);
+            int remainingTotal = maximumCount;
+
+            // The pool already maintains the XML troop weights. Transfer its
+            // largest stocks first while respecting each legacy Fief Party
+            // SoldierType establishment limit.
+            foreach (KeyValuePair<CharacterObject, int> entry in available
+                .Where(entry => entry.Key != null && entry.Value > 0)
+                .OrderByDescending(entry => entry.Value)
+                .ThenBy(entry => entry.Key.StringId))
+            {
+                if (remainingTotal <= 0 ||
+                    !_fiefPartyTemplate.IsEnableTroop(entry.Key))
                 {
-                    return building.CurrentLevel;
+                    continue;
                 }
-            }
-            return 0; // 未找到兵营，等级为0
-        }
 
-
-        private CharacterObject WeightedRandomSelectFromBasicTroopEntries(List<BasicTroopEntry> candidates)
-        {
-            if (candidates == null || candidates.Count == 0)
-                return null;
-
-            int currentBarracksLevel = GetCurrentBarracksLevel();
-            List<BasicTroopEntry> availableCandidates = candidates
-                .Where(candidate =>
-                    candidate != null
-                    && candidate.Troop != null
-                    && candidate.RequiredBarracksLevel <= currentBarracksLevel)
-                .ToList();
-
-            if (availableCandidates.Count == 0)
-                return null;
-
-            int tmpTotalWeight = availableCandidates.Sum(c => c.Weight);
-            if (tmpTotalWeight <= 0)
-                return availableCandidates[0].Troop;
-
-            int rand = MBRandom.RandomInt(tmpTotalWeight); // 使用整数随机更高效且避免浮点误差
-            int sum = 0;
-
-            foreach (var candidate in availableCandidates)
-            {
-                sum += candidate.Weight;
-                if (rand < sum)
-                    return candidate.Troop;
-            }
-
-            return null;
-        }
-
-        // 根据模板生成新troops
-        private Dictionary<CharacterObject, int> 
-        GenerateNewTroops(Dictionary<SoldierType, int> tmpSoldierTypeSize)
-        {
-            // 获取基础troops
-            Dictionary<SoldierType, List<BasicTroopEntry>> tmpBasicTroops = _fiefPartyTemplate.GetBasicTroops();
-
-            Dictionary<CharacterObject, int> tmpNewTroops = new();
-            // 遍历生成新的basic troops
-            foreach (var kvp in tmpSoldierTypeSize)
-            {
-                for (int i = 0; i < kvp.Value; i++)
+                SoldierType type = SoldierTypeClassifier.GetSoldierType(
+                    entry.Key);
+                if (!remainingTypeCapacity.TryGetValue(
+                        type,
+                        out int typeCapacity) ||
+                    typeCapacity <= 0)
                 {
-                    var troop = WeightedRandomSelectFromBasicTroopEntries(tmpBasicTroops[kvp.Key]);
-                    if (troop != null)
-                    {
-                        if (tmpNewTroops.ContainsKey(troop))
-                            tmpNewTroops[troop]++;
-                        else
-                            tmpNewTroops[troop] = 1;
-                    }
+                    continue;
                 }
+
+                int count = Math.Min(
+                    entry.Value,
+                    Math.Min(typeCapacity, remainingTotal));
+                if (count <= 0 || !pools.TryConsume(
+                        _settlement,
+                        RecruitmentPoolKind.Fief,
+                        entry.Key,
+                        count))
+                {
+                    continue;
+                }
+
+                result[entry.Key] = count;
+                remainingTypeCapacity[type] -= count;
+                remainingTotal -= count;
             }
 
-            return tmpNewTroops;
+            return result;
         }
 
 
@@ -186,8 +171,20 @@ namespace ModifiedArmy.Models.Fief
                 return;
             }
 
-            // 生成新troops
-            var tmpNewTroops = GenerateNewTroops(tmpSoldierTypeSize);
+            // New fief soldiers must come from the settlement's saved fief
+            // manpower pool. No troop is created by this legacy weekly path.
+            Dictionary<SoldierType, int> remainingTypeCapacity =
+                new Dictionary<SoldierType, int>(tmpSoldierTypeSize);
+            var tmpNewTroops = WithdrawFiefPoolTroops(
+                remainingTypeCapacity,
+                maxReinforcements);
+
+            // Reuse the existing message fields, but report actual transfers
+            // instead of the desired allocation calculated above.
+            foreach (SoldierType type in tmpSoldierTypeSize.Keys.ToList())
+            {
+                tmpSoldierTypeSize[type] = 0;
+            }
 
             // 批量添加
             foreach (var kvp in tmpNewTroops)
@@ -196,6 +193,7 @@ namespace ModifiedArmy.Models.Fief
 
                 var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
                 _soldierTypeCounts[type] += kvp.Value;
+                tmpSoldierTypeSize[type] += kvp.Value;
             }
 
             _totalTroopCount = _soldierTypeCounts.Values.Sum();;

@@ -8,9 +8,12 @@ using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -359,6 +362,13 @@ namespace ModifiedArmy.Patch
                 return false;
             }
 
+            // Towns and castles no longer create AI recruits from notable
+            // slots. Their professional manpower pool is the sole source.
+            if (settlement.IsFortification)
+            {
+                return TryRecruitProfessionalPool(party, settlement);
+            }
+
             List<RecruitmentCandidate> candidates =
                 CollectVolunteerCandidates(party, settlement);
 
@@ -405,6 +415,137 @@ namespace ModifiedArmy.Patch
                 candidates.Count,
                 approvedCount);
             return approvedCount > 0;
+        }
+
+        /// <summary>
+        /// Offers the current professional pool to the unified recruitment
+        /// model, then applies only approved and successfully withdrawn
+        /// quantities. Player recruitment is intentionally not routed here.
+        /// </summary>
+        private static bool TryRecruitProfessionalPool(
+            MobileParty party,
+            Settlement settlement)
+        {
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            if (pools == null)
+            {
+                return false;
+            }
+
+            IReadOnlyDictionary<CharacterObject, int> available =
+                pools.GetAvailableTroops(
+                    settlement,
+                    RecruitmentPoolKind.Professional);
+            List<RecruitmentCandidate> candidates = new List<RecruitmentCandidate>();
+
+            foreach (KeyValuePair<CharacterObject, int> entry in available)
+            {
+                if (entry.Key != null && entry.Value > 0)
+                {
+                    candidates.Add(new RecruitmentCandidate(
+                        entry.Key,
+                        entry.Value,
+                        RecruitmentSource.Professional));
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return false;
+            }
+
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                party,
+                candidates);
+            int recruited = 0;
+
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                int count = evaluation.RecruitableCount;
+                if (evaluation.Troop == null || count <= 0 ||
+                    !pools.TryConsume(
+                        settlement,
+                        RecruitmentPoolKind.Professional,
+                        evaluation.Troop,
+                        count))
+                {
+                    continue;
+                }
+
+                int totalCost = evaluation.UnitRecruitmentCost * count;
+                GiveGoldAction.ApplyBetweenCharacters(
+                    party.LeaderHero,
+                    null,
+                    totalCost,
+                    true);
+                party.AddElementToMemberRoster(
+                    evaluation.Troop,
+                    count,
+                    false);
+                CampaignEventDispatcher.Instance.OnTroopRecruited(
+                    party.LeaderHero,
+                    settlement,
+                    null,
+                    evaluation.Troop,
+                    count);
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    party,
+                    count,
+                    evaluation.UnitRecruitmentCost,
+                    evaluation.UnitDailyWage);
+                recruited += count;
+            }
+
+            LogProfessionalPlan(
+                party,
+                settlement,
+                plan,
+                candidates.Sum(candidate => candidate.AvailableCount),
+                recruited);
+            return recruited > 0;
+        }
+
+        private static void LogProfessionalPlan(
+            MobileParty party,
+            Settlement settlement,
+            RecruitmentPlan plan,
+            int offeredCount,
+            int recruitedCount)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(party))
+            {
+                return;
+            }
+
+            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                if (evaluation.RecruitableCount < evaluation.RequestedCount)
+                {
+                    mainLimit = evaluation.PrimaryLimit;
+                    break;
+                }
+            }
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_ai_recruitment_professional_plan");
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+            message.SetTextVariable("OFFERED", offeredCount);
+            message.SetTextVariable("APPROVED", recruitedCount);
+            message.SetTextVariable("LIMIT", GetLimitReasonText(mainLimit));
+
+            if (recruitedCount > 0)
+            {
+                ModLogger.Notice(message.ToString());
+            }
+            else
+            {
+                ModLogger.Debug(message.ToString());
+            }
         }
 
         /// <summary>

@@ -437,11 +437,8 @@ namespace ModifiedArmy.Models
 
             if (recruitedCount > 0)
             {
-                TextObject message = new TextObject(
-                    "{=ModifiedArmy_GarrisonPrisonerRecruited}" +
-                    "[Garrison recruitment] {SETTLEMENT_NAME} recruited " +
-                    "{RECRUITED} prisoners and sold {SOLD} surplus " +
-                    "prisoners.");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_prisoner_recruited");
                 message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                 message.SetTextVariable("RECRUITED", recruitedCount);
                 message.SetTextVariable("SOLD", soldCount);
@@ -453,32 +450,26 @@ namespace ModifiedArmy.Models
 
             if (targetCount <= 0)
             {
-                reason = new TextObject(
-                    "{=ModifiedArmy_GarrisonPrisonerNoTemplateTarget}" +
-                    "no prisoners matched the garrison template shortage");
+                reason = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_prisoner_no_template_target");
             }
             else if (readyCount <= 0)
             {
-                reason = new TextObject(
-                    "{=ModifiedArmy_GarrisonPrisonerNoConformity}" +
-                    "the retained prisoners lacked conformity");
+                reason = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_prisoner_no_conformity");
             }
             else if (dailyLimit <= 0)
             {
-                reason = new TextObject(
-                    "{=ModifiedArmy_GarrisonPrisonerNoDailyCapacity}" +
-                    "the daily limit or remaining garrison capacity was zero");
+                reason = GameTexts.FindText(
+                    "str_modifiedarmy_garrison_prisoner_no_daily_capacity");
             }
             else
             {
                 reason = GetPlanLimitText(plan);
             }
 
-            TextObject skippedMessage = new TextObject(
-                "{=ModifiedArmy_GarrisonPrisonerSkipped}" +
-                "[Garrison recruitment] {SETTLEMENT_NAME} recruited no " +
-                "prisoners. It had {INITIAL} regular prisoners, sold " +
-                "{SOLD} surplus prisoners, and stopped because {REASON}.");
+            TextObject skippedMessage = GameTexts.FindText(
+                "str_modifiedarmy_garrison_prisoner_skipped");
             skippedMessage.SetTextVariable("SETTLEMENT_NAME", town.Name);
             skippedMessage.SetTextVariable("INITIAL", initialPrisonerCount);
             skippedMessage.SetTextVariable("SOLD", soldCount);
@@ -490,9 +481,8 @@ namespace ModifiedArmy.Models
         {
             if (plan == null)
             {
-                return new TextObject(
-                    "{=ModifiedArmy_GarrisonPrisonerNoPlan}" +
-                    "no recruitment plan was available");
+                return GameTexts.FindText(
+                    "str_modifiedarmy_garrison_prisoner_no_plan");
             }
 
             foreach (RecruitmentEvaluationResult evaluation in
@@ -504,9 +494,8 @@ namespace ModifiedArmy.Models
                 }
             }
 
-            return new TextObject(
-                "{=ModifiedArmy_GarrisonPrisonerPlanRejected}" +
-                "the unified recruitment plan approved no candidates");
+            return GameTexts.FindText(
+                "str_modifiedarmy_garrison_prisoner_plan_rejected");
         }
 
         private static ArmyCompositionTemplate GetGarrisonTemplate(

@@ -98,6 +98,62 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 GetBarracksLevel(settlement)) ?? 0f;
         }
 
+        /// <summary>
+        /// Returns a detached snapshot so recruitment callers cannot mutate
+        /// saved pool state without using the transaction method below.
+        /// </summary>
+        public IReadOnlyDictionary<CharacterObject, int> GetAvailableTroops(
+            Settlement settlement,
+            RecruitmentPoolKind kind)
+        {
+            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            return data == null
+                ? new Dictionary<CharacterObject, int>()
+                : new Dictionary<CharacterObject, int>(
+                    data.GetTroops(kind));
+        }
+
+        /// <summary>
+        /// Atomically removes an exact troop quantity from a settlement pool.
+        /// No partial withdrawal occurs when the requested stock is missing.
+        /// </summary>
+        public bool TryConsume(
+            Settlement settlement,
+            RecruitmentPoolKind kind,
+            CharacterObject troop,
+            int count)
+        {
+            if (troop == null || count <= 0)
+            {
+                return false;
+            }
+
+            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            if (data == null)
+            {
+                return false;
+            }
+
+            Dictionary<CharacterObject, int> troops = data.GetTroops(kind);
+            if (!troops.TryGetValue(troop, out int available) ||
+                available < count)
+            {
+                return false;
+            }
+
+            int remaining = available - count;
+            if (remaining > 0)
+            {
+                troops[troop] = remaining;
+            }
+            else
+            {
+                troops.Remove(troop);
+            }
+
+            return true;
+        }
+
         private void OnDailySettlementTick(Settlement settlement)
         {
             if (settlement?.IsFortification != true ||

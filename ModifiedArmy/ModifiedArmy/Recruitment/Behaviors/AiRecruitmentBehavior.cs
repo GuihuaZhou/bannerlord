@@ -3,6 +3,8 @@ using ModifiedArmy.common;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -470,7 +472,9 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// 找到本 clan 拥有的 town/village 中有志愿兵的最近定居点。
+        /// Finds the nearest clan settlement supplying the ordinary
+        /// recruitment source. Fortifications use their professional pool;
+        /// villages retain native notable volunteers.
         /// 按 文化匹配 × 距离 排序。
         /// </summary>
         private Settlement FindBestVolunteerSettlement(MobileParty party, Clan clan)
@@ -481,7 +485,8 @@ namespace ModifiedArmy.Models
 
             foreach (Settlement settlement in clan.Settlements)
             {
-                if (!settlement.IsTown && !settlement.IsVillage) continue;
+                if (!settlement.IsFortification && !settlement.IsVillage)
+                    continue;
 
                 if (!HasAvailableVolunteers(settlement)) continue;
 
@@ -506,6 +511,17 @@ namespace ModifiedArmy.Models
         private bool HasAvailableVolunteers(Settlement settlement)
         {
             if (settlement == null) return false;
+
+            if (settlement.IsFortification)
+            {
+                SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                    .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+                return pools != null && pools.GetAvailableTroops(
+                        settlement,
+                        RecruitmentPoolKind.Professional)
+                    .Values.Any(count => count > 0);
+            }
+
             foreach (Hero notable in settlement.Notables)
             {
                 if (!notable.CanHaveRecruits || !notable.IsAlive) continue;
