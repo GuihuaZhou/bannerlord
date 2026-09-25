@@ -117,6 +117,8 @@
         text="{=ModifiedArmy_DisbandGarrisonMerge}[驻军整编] {PARTY_NAME}解散后, {SETTLEMENT_NAME}驻军接收了{ACCEPTED}名士兵, 其余{DISMISSED}人离队." />
     <string id="str_modifiedarmy_garrison_weekly_adjustment"
         text="{=ModifiedArmy_GarrisonWeeklyAdjustment}[驻军整编] {SETTLEMENT_NAME}驻军完成每周检查, 解散了{DISMISSED}名非正规军或超过模板比例的士兵." />
+    <string id="str_modifiedarmy_professional_template_unknown_troop"
+        text="{=ModifiedArmy_ProfessionalTemplateUnknownTroop}[兵源池] 职业兵模板'{TEMPLATE_ID}'无法解析兵种'{TROOP_ID}'." />
 
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />

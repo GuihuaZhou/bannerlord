@@ -9,6 +9,9 @@ using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyFinance.Behaviors;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Pools.UI;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using System.Collections.Generic;
 using System.Reflection;
@@ -94,6 +97,8 @@ namespace ModifiedArmy
                     false);
                 MBObjectManager.Instance.LoadXML("BasicTroopGroups", true);
 
+                RecruitmentPoolTemplateRepository.Instance.Clear();
+
 
                 game.ObjectManager.RegisterType<FiefPartyTemplate>(
                     "FiefPartyTemplate",
@@ -102,6 +107,16 @@ namespace ModifiedArmy
                     true,
                     false);
                 MBObjectManager.Instance.LoadXML("FiefPartyTemplates", true);
+
+                game.ObjectManager.RegisterType<ProfessionalTroopTemplate>(
+                    "ProfessionalTroopTemplate",
+                    "ProfessionalTroopTemplates",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML(
+                    "ProfessionalTroopTemplates",
+                    true);
 
 
                 game.ObjectManager.RegisterType<ModConfig>(
@@ -174,6 +189,10 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefWageExemptionManager());
 
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
+                campaignStarter.AddBehavior(
+                    new SettlementRecruitmentPoolBehavior());
+                campaignStarter.AddBehavior(
+                    new RecruitmentPoolMenuBehavior());
 
 
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());

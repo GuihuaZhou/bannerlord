@@ -1,5 +1,6 @@
 ﻿using ModifiedArmy.common;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Recruitment.Pools.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -17,12 +18,29 @@ namespace ModifiedArmy.Models.Fief
     /// 模板通过 ID 标识，不包含文化/类型/港口等匹配信息——
     /// 这些由外部调用方根据命名约定或上下文决定。
     /// </summary>
-    public class FiefPartyTemplate : MBObjectBase
+    public class FiefPartyTemplate : MBObjectBase,
+        IRecruitmentPoolTemplate
     {
         /// <summary>
         /// 模板唯一标识符
         /// </summary>
         public string TemplateId => StringId;
+
+        public CultureObject Culture => culture;
+
+        public RecruitmentPoolKind PoolKind => RecruitmentPoolKind.Fief;
+
+        public int BaseCapacity { get; private set; }
+
+        public float BaseDailyProduction { get; private set; }
+
+        public float DailyProductionStep { get; private set; }
+
+        private readonly List<RecruitmentPoolTroopEntry> _poolTroops =
+            new List<RecruitmentPoolTroopEntry>();
+
+        public IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops =>
+            _poolTroops;
 
         /// <summary>
         /// 所有基础兵种
@@ -154,6 +172,23 @@ namespace ModifiedArmy.Models.Fief
             MinWeeklySupplement = XmlHelper.ReadInt(node, "minWeeklySupplement");
             MaxWeeklySupplement = XmlHelper.ReadInt(node, "maxWeeklySupplement");
 
+            BaseCapacity = RecruitmentPoolTemplateUtility.ReadOptionalInt(
+                node,
+                "baseCapacity",
+                BaseLimit);
+            BaseDailyProduction =
+                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                    node,
+                    "baseDailyProduction",
+                    MinWeeklySupplement / 7f);
+            DailyProductionStep =
+                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                    node,
+                    "dailyProductionStep",
+                    Math.Max(
+                        0f,
+                        (MaxWeeklySupplement - MinWeeklySupplement) / 21f));
+
             // ============================================================
             // 读取封邑经济/服役参数（可选，向后兼容）
             //
@@ -189,6 +224,20 @@ namespace ModifiedArmy.Models.Fief
             }
 
             FiefPartyTemplateManager.Instance.RegisterTemplate(this);
+            RecruitmentPoolTemplateRepository.Instance.Register(this);
+        }
+
+        public int GetCapacity()
+        {
+            return Math.Max(0, BaseCapacity);
+        }
+
+        public float GetDailyProduction(int barracksLevel)
+        {
+            return RecruitmentPoolTemplateUtility.CalculateDailyProduction(
+                BaseDailyProduction,
+                DailyProductionStep,
+                barracksLevel);
         }
 
 
@@ -204,22 +253,17 @@ namespace ModifiedArmy.Models.Fief
             string groupName,
             SoldierType troopType)
         {
-            // 默认某一类型的troop总体权重为0
-            if (!_soldierTypeWeights.TryGetValue(troopType, out var groupWeight))
+            // The legacy fief implementation still consumes a weight per
+            // SoldierType. Derive that compatibility value from the sum of
+            // concrete troop weights instead of restoring an XML group
+            // weight that the new shared pool format no longer supports.
+            if (!_soldierTypeWeights.ContainsKey(troopType))
+            {
                 _soldierTypeWeights[troopType] = 0;
+            }
 
             var groupNode = parent.SelectSingleNode(groupName);
             if (groupNode == null) return;
-
-            if (groupNode.Attributes?["weight"] != null)
-            {
-                _soldierTypeWeights[troopType] = XmlHelper.ReadInt(groupNode, "weight");
-            }
-            else
-            {
-                // 若有定义troop，权重至少为1
-                _soldierTypeWeights[troopType] = 1;
-            }
 
             if (!_allBasicTroops.TryGetValue(troopType, out var list))
             {
@@ -248,8 +292,17 @@ namespace ModifiedArmy.Models.Fief
                 {
                     continue;
                 }
-                basicTroop.SetWeight(troopWeight);
-                _allBasicTroops[troopType].Add(basicTroop);
+                BasicTroopEntry templateTroop = new BasicTroopEntry(
+                    basicTroop.Troop,
+                    troopWeight,
+                    troopType,
+                    basicTroop.RequiredBarracksLevel);
+                _allBasicTroops[troopType].Add(templateTroop);
+                _soldierTypeWeights[troopType] += troopWeight;
+                _poolTroops.Add(new RecruitmentPoolTroopEntry(
+                    templateTroop.Troop,
+                    troopWeight,
+                    templateTroop.RequiredBarracksLevel));
             }
         }
 

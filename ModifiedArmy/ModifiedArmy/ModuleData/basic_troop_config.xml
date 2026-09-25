@@ -17,31 +17,30 @@
       <troop id="NPCCharacter.empire_marine_t3" barracksLevel="2"/>
     </MarineTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.imperial_recruit" barracksLevel="0"/>
+      <troop id="NPCCharacter.imperial_infantryman" barracksLevel="0"/>
+      <troop id="NPCCharacter.imperial_archer" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_aserai" 
     culture="Culture.aserai">
     <RetinueTroops>
-      <troop id="NPCCharacter.aserai_faris" barracksLevel="3"/>
+      <troop id="NPCCharacter.aserai_faris" barracksLevel="0"/>
     </RetinueTroops>
     <SergeantTroops>
       <troop id="NPCCharacter.aserai_archer" barracksLevel="2"/>
       <troop id="NPCCharacter.aserai_infantry" barracksLevel="1"/>
-      <troop id="NPCCharacter.aserai_mameluke_axeman" barracksLevel="2"/>
-      <troop id="NPCCharacter.aserai_mameluke_regular" barracksLevel="3"/>
     </SergeantTroops>
     <MarineTroops>
       <troop id="NPCCharacter.aserai_marine_t4" barracksLevel="2"/>
     </MarineTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.aserai_recruit" barracksLevel="0"/>
+      <troop id="NPCCharacter.aserai_tribesman" barracksLevel="0"/>
     </MilitiaTroops>
-    <!-- <SlaveTroops>
+    <SlaveTroops>
       <troop id="NPCCharacter.aserai_mameluke_axeman" barracksLevel="2"/>
       <troop id="NPCCharacter.aserai_mameluke_regular" barracksLevel="3"/>
-    </SlaveTroops> -->
+    </SlaveTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_sturgia" 
@@ -59,14 +58,15 @@
       <troop id="NPCCharacter.sturgia_marine_t3" barracksLevel="2"/>
     </MarineTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.sturgian_recruit" barracksLevel="0"/>
+      <troop id="NPCCharacter.sturgian_warrior" barracksLevel="0"/>
+      <troop id="NPCCharacter.sturgian_woodsman" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_vlandia" 
     culture="Culture.vlandia">
     <RetinueTroops>
-      <troop id="NPCCharacter.vlandian_knight" barracksLevel="3"/>
+      <troop id="NPCCharacter.vlandian_knight" barracksLevel="0"/>
     </RetinueTroops>
     <SergeantTroops>
       <troop id="NPCCharacter.vlandian_billman" barracksLevel="1"/>
@@ -78,14 +78,15 @@
       <troop id="NPCCharacter.vlandian_marine_t4" barracksLevel="2"/>
     </MarineTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.vlandian_recruit" barracksLevel="0"/>
+      <troop id="NPCCharacter.vlandian_footman" barracksLevel="0"/>
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_battania" 
     culture="Culture.battania">
     <RetinueTroops>
-      <troop id="NPCCharacter.battanian_hero" barracksLevel="3"/>
+      <troop id="NPCCharacter.battanian_hero" barracksLevel="0"/>
     </RetinueTroops>
     <SergeantTroops>
       <troop id="NPCCharacter.battanian_veteran_skirmisher" barracksLevel="1"/>
@@ -95,36 +96,41 @@
       <troop id="NPCCharacter.battanian_marine_t4" barracksLevel="2"/>
     </MarineTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.battanian_volunteer" barracksLevel="0"/>
+      <troop id="NPCCharacter.battanian_clanwarrior" barracksLevel="0"/>
+      <troop id="NPCCharacter.battanian_woodrunner" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_khuzait" 
     culture="Culture.khuzait">
     <RetinueTroops>
-      <troop id="NPCCharacter.khuzait_torguud" barracksLevel="3"/>
+      <troop id="NPCCharacter.khuzait_torguud" barracksLevel="0"/>
     </RetinueTroops>
     <SergeantTroops>
       <troop id="NPCCharacter.khuzait_archer" barracksLevel="2"/>
       <troop id="NPCCharacter.khuzait_spear_infantry" barracksLevel="1"/>
-      <troop id="NPCCharacter.khuzait_horseman" barracksLevel="1"/>
+      <troop id="NPCCharacter.khuzait_lancer" barracksLevel="0"/>
+      <troop id="NPCCharacter.khuzait_horse_archer" barracksLevel="0"/>
     </SergeantTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.khuzait_nomad" barracksLevel="0"/>
+      <troop id="NPCCharacter.khuzait_footman" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
   <BasicTroopGroup 
     id="basic_troops_nord" 
     culture="Culture.nord">
     <RetinueTroops>
-      <troop id="NPCCharacter.nord_jarlsmann" barracksLevel="3"/>
+      <troop id="NPCCharacter.nord_jarlsmann" barracksLevel="0"/>
     </RetinueTroops>
     <SergeantTroops>
-      <troop id="NPCCharacter.nord_spear_warrior" barracksLevel="1"/>
+      <troop id="NPCCharacter.nord_boandi" barracksLevel="1"/>
+      <troop id="NPCCharacter.nord_vargr" barracksLevel="2"/>
+      <troop id="NPCCharacter.nord_hew-bearer" barracksLevel="2"/>
       <troop id="NPCCharacter.nord_marksman" barracksLevel="2"/>
     </SergeantTroops>
     <MilitiaTroops>
-      <troop id="NPCCharacter.nord_youngling" barracksLevel="0"/>
+      <troop id="NPCCharacter.nord_axe_warrior" barracksLevel="0"/>
+      <troop id="NPCCharacter.nord_freeman_archer" barracksLevel="0"/>
     </MilitiaTroops>
   </BasicTroopGroup>
 </BasicTroopGroups>

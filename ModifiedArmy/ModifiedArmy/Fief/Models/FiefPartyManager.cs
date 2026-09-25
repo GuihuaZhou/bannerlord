@@ -1,6 +1,7 @@
 ﻿using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
+using ModifiedArmy.Recruitment.Pools.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -37,6 +38,9 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(FiefPartyData), 2);
             base.AddClassDefinition(typeof(FiefWageExemption), 3);
             base.AddClassDefinition(typeof(FiefWageExemptionManager), 4);
+            base.AddClassDefinition(
+                typeof(SettlementRecruitmentPoolData),
+                5);
         }
 
         protected override void DefineContainerDefinitions()
@@ -44,6 +48,8 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(Dictionary<CharacterObject, int>));
             base.ConstructContainerDefinition(typeof(List<FiefTroopDetachment>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, FiefPartyData>));
+            base.ConstructContainerDefinition(
+                typeof(Dictionary<Settlement, SettlementRecruitmentPoolData>));
 
             base.ConstructContainerDefinition(typeof(List<FiefWageExemption>));
             base.ConstructContainerDefinition(typeof(Dictionary<String, List<FiefWageExemption>>));

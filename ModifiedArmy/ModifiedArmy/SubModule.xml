@@ -19,6 +19,15 @@
 				<GameType value="EditorGame" />
 			</IncludedGameTypes>
 		</XmlNode> 
+		<XmlNode>
+			<XmlName id="ProfessionalTroopTemplates" path="professionalTroopTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>
 		<XmlNode>                
 			<XmlName id="BasicTroopGroups" path="basic_troop_config" />
 			<IncludedGameTypes>

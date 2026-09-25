@@ -31,6 +31,11 @@
     <string id="ModifiedArmy_FiefMenu_DisbandPartial" text="解散部分军队" />
     <string id="ModifiedArmy_FiefMenu_Return" text="返回" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
+    <string id="ModifiedArmy_ViewRecruitmentPools" text="查看兵源" />
+    <string id="ModifiedArmy_RecruitmentPoolsReturn" text="返回" />
+    <string id="ModifiedArmy_RecruitmentPoolsUnavailable" text="无法读取兵源池数据." />
+    <string id="ModifiedArmy_RecruitmentPoolsEmpty" text="无" />
+    <string id="ModifiedArmy_RecruitmentPoolsDescription" text="{SETTLEMENT_NAME}的兵源池{NEWLINE}兵营等级: {BARRACKS_LEVEL}{NEWLINE}{NEWLINE}职业兵: {PROFESSIONAL_COUNT}/{PROFESSIONAL_CAPACITY}{NEWLINE}每日补充: {PROFESSIONAL_DAILY}{NEWLINE}补充进度: {PROFESSIONAL_PROGRESS}{NEWLINE}{PROFESSIONAL_TROOPS}{NEWLINE}{NEWLINE}封建兵: {FIEF_COUNT}/{FIEF_CAPACITY}{NEWLINE}每日补充: {FIEF_DAILY}{NEWLINE}补充进度: {FIEF_PROGRESS}{NEWLINE}{FIEF_TROOPS}" />
 
     <!-- Garrison and wage UI. -->
     <string id="ModifiedArmyWarPartyWage" text="战时工资" />
