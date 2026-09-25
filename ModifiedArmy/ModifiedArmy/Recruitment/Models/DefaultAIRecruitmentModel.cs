@@ -128,10 +128,12 @@ namespace ModifiedArmy.Recruitment.Models
                 AiRecruitmentFinancialModel.EstimateUnitDailyWage(
                     party,
                     troop);
-            // Fief troops and converted prisoners require no purchase. Their
-            // future wages still consume the shared clan commitment budget.
+            // Fief troops, converted prisoners and transferred soldiers
+            // require no purchase. Their future wages still consume the
+            // shared clan commitment budget.
             int unitCost = source == RecruitmentSource.Fief ||
-                source == RecruitmentSource.Prisoner
+                source == RecruitmentSource.Prisoner ||
+                source == RecruitmentSource.Transfer
                 ? 0
                 : Campaign.Current.Models.PartyWageModel
                     .GetTroopRecruitmentCost(

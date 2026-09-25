@@ -103,6 +103,8 @@
         text="{=ModifiedArmy_PrisonerTransfer}[俘虏] {PARTY_NAME}向{SETTLEMENT_NAME}移交了{COUNT}名俘虏." />
     <string id="str_modifiedarmy_prisoner_sale"
         text="{=ModifiedArmy_PrisonerSale}[俘虏] {SETTLEMENT_NAME}出售了{COUNT}名俘虏." />
+    <string id="str_modifiedarmy_disband_garrison_merge"
+        text="{=ModifiedArmy_DisbandGarrisonMerge}[驻军整编] {PARTY_NAME}解散后, {SETTLEMENT_NAME}驻军接收了{ACCEPTED}名士兵, 其余{DISMISSED}人离队." />
 
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />

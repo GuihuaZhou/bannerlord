@@ -5,6 +5,7 @@ namespace ModifiedArmy.Recruitment.Models
         Volunteer,
         Fief,
         Prisoner,
+        Transfer,
         Mercenary,
         Special
     }
