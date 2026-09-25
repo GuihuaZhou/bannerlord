@@ -4,6 +4,7 @@ namespace ModifiedArmy.Recruitment.Models
     {
         Volunteer,
         Fief,
+        Prisoner,
         Mercenary,
         Special
     }

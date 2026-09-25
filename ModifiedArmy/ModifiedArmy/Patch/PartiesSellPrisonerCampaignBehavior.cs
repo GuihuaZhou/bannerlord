@@ -2,6 +2,7 @@
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -15,6 +16,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Patch
 {
@@ -79,10 +81,22 @@ namespace ModifiedArmy.Patch
                 if (troopRoster.TotalManCount > 0)
                 {
                     SellPrisonersAction.ApplyForSelectedPrisoners(mobileParty.Party, settlement.Party, troopRoster);
-                    ModLogger.Info(
-                        $"{PartyLogFormatter.GetDisplayName(mobileParty)}" +
-                        $"转移了{troopRoster.TotalRegulars}名俘虏到" +
-                        $"{settlement.Name}");
+
+                    if (RecruitmentLogFilter.ShouldLog(mobileParty))
+                    {
+                        TextObject message = GameTexts.FindText(
+                            "str_modifiedarmy_prisoner_transfer");
+                        message.SetTextVariable(
+                            "PARTY_NAME",
+                            PartyLogFormatter.GetDisplayName(mobileParty));
+                        message.SetTextVariable(
+                            "COUNT",
+                            troopRoster.TotalRegulars);
+                        message.SetTextVariable(
+                            "SETTLEMENT_NAME",
+                            settlement.Name);
+                        ModLogger.Info(message.ToString());
+                    }
                 }
             }
             return false;
@@ -107,6 +121,14 @@ namespace ModifiedArmy.Patch
 
         public static bool Prefix(Settlement settlement)
         {
+            // AI settlement recruitment now owns its recruit-then-sell order.
+            // Keep this legacy patch only for player-clan settlements so the
+            // same prisoners cannot be sold twice during one daily tick.
+            if (settlement?.OwnerClan != Clan.PlayerClan)
+            {
+                return false;
+            }
+
             if (settlement.IsFortification)
             {
                 TroopRoster prisonRoster = settlement.Party.PrisonRoster;
@@ -150,7 +172,20 @@ namespace ModifiedArmy.Patch
                         if (troopRoster.TotalManCount > 0)
                         {
                             SellPrisonersAction.ApplyForSelectedPrisoners(settlement.Party, null, troopRoster);
-                            ModLogger.Info($"{settlement.Name}卖掉了{troopRoster.TotalRegulars}名俘虏");
+
+                            if (RecruitmentLogFilter.ShouldLog(
+                                settlement.OwnerClan))
+                            {
+                                TextObject message = GameTexts.FindText(
+                                    "str_modifiedarmy_prisoner_sale");
+                                message.SetTextVariable(
+                                    "SETTLEMENT_NAME",
+                                    settlement.Name);
+                                message.SetTextVariable(
+                                    "COUNT",
+                                    troopRoster.TotalRegulars);
+                                ModLogger.Info(message.ToString());
+                            }
                         }
                     }
                 }

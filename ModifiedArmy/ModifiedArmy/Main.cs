@@ -174,7 +174,7 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
 
 
-                //campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
+                campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 

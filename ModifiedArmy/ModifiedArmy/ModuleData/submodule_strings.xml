@@ -95,6 +95,14 @@
 
     <string id="str_modifiedarmy_ai_recruitment_garrison_plan"
         text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名志愿兵候选, 实际招募{APPROVED}名, 每日上限{DAILY_LIMIT}名. 当前使用{CULTURE_ID}文化模板, 首要限制是{LIMIT}." />
+    <string id="str_modifiedarmy_ai_recruitment_prisoner_plan"
+        text="{=ModifiedArmy_AIRecruitmentPrisonerPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名高价值俘虏候选, 实际吸收{APPROVED}名, 每日上限{DAILY_LIMIT}名, 首要限制是{LIMIT}." />
+    <string id="str_modifiedarmy_ai_recruitment_prisoner_sale"
+        text="{=ModifiedArmy_AIRecruitmentPrisonerSale}[AI招募] {SETTLEMENT_NAME}出售了{SOLD}名未被驻军吸收的俘虏, 目前保留{REMAINING}名俘虏." />
+    <string id="str_modifiedarmy_prisoner_transfer"
+        text="{=ModifiedArmy_PrisonerTransfer}[俘虏] {PARTY_NAME}向{SETTLEMENT_NAME}移交了{COUNT}名俘虏." />
+    <string id="str_modifiedarmy_prisoner_sale"
+        text="{=ModifiedArmy_PrisonerSale}[俘虏] {SETTLEMENT_NAME}出售了{COUNT}名俘虏." />
 
     <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
     <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />
