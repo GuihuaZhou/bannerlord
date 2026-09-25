@@ -105,7 +105,7 @@ ModifiedArmy/
 
 ## 3. 士兵类型体系
 
-**文件**：`common/common.cs` + `Models/NewBasicTroopManager.cs`
+**文件**：`common/common.cs` + `Recruitment/Models/NewBasicTroopManager.cs`
 
 ### SoldierType 枚举
 
@@ -336,7 +336,7 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 ### 4.7 AiRecruitmentBehavior（AI 征召）
 
-**文件**：`Models/AiRecruitmentBehavior.cs`
+**文件**：`Recruitment/Behaviors/AiRecruitmentBehavior.cs`
 
 | 事件 | 行为 |
 |------|------|
@@ -367,7 +367,7 @@ CampaignBehaviorBase，管理所有定居点的封邑数据。
 
 ## 5. 志愿兵系统 (Volunteer)
 
-**文件**：`Models/NewVolunteerModel.cs`（941行）
+**文件**：`Recruitment/Models/NewVolunteerModel.cs`（941行）
 
 继承 `DefaultVolunteerModel`，重写三个核心方法：
 
@@ -427,7 +427,7 @@ Harmony Prefix 替换 `RecruitmentCampaignBehavior.UpdateCurrentMercenaryTroopAn
 
 ### 6.2 俘虏招募
 
-**文件**：`Models/NewPrisonerRecruitmentCalculationModel.cs`
+**文件**：`Recruitment/Models/NewPrisonerRecruitmentCalculationModel.cs`
 
 按 SoldierType 差异化驯服度需求：
 | 类型 | levelOffset | 说明 |
@@ -463,7 +463,7 @@ Harmony Prefix 替换 `RecruitmentCampaignBehavior.UpdateCurrentMercenaryTroopAn
 
 ### 7.1 驻军人数限制
 
-**文件**：`Models/NewPartySizeLimitModel.cs`
+**文件**：`PartyManagement/Models/NewPartySizeLimitModel.cs`
 
 `CalculateGarrisonPartySizeLimit`：
 - 基础人数 = 100（`GarrisonConstants.BaseGarrisonSize`）
@@ -482,7 +482,7 @@ militia -= fiefManager.GetAvailableTroopCount(settlement);
 
 ### 7.3 驻军从俘虏招募（已注释）
 
-**文件**：`Models/GarrisonRecruitFromPrisonersBehavior.cs`
+**文件**：`Recruitment/Behaviors/GarrisonRecruitFromPrisonersBehavior.cs`
 
 - 定居点每天自动从俘虏中招募守军
 - Militia/Other 类型 10% 概率，高阶 40% 概率
@@ -511,7 +511,7 @@ Harmony Prefix 替换 `Settlement.RemoveMilitiasFromParty`：
 
 ### 8.1 招募费用
 
-**文件**：`Models/NewPartyWageModel.cs`
+**文件**：`PartyFinance/Models/NewPartyWageModel.cs`
 
 `GetTroopRecruitmentCost`：大幅提高高等级兵的招募费用
 
@@ -532,7 +532,7 @@ Harmony Prefix 替换 `Settlement.RemoveMilitiasFromParty`：
 
 ### 8.2 日常工资
 
-**文件**：`Models/NewPartyWageModel.cs`
+**文件**：`PartyFinance/Models/NewPartyWageModel.cs`
 
 `GetCharacterWage`：大幅提高 Tier 4+ 工资
 
@@ -551,7 +551,7 @@ Mercenary 职业：×1.25
 
 ### 8.3 GetTotalWage（已注释）
 
-**文件**：`Models/NewPartyWageModel.cs`（注释代码，约100行）
+**文件**：`PartyFinance/Models/NewPartyWageModel.cs`（注释代码，约100行）
 
 完整的工资计算逻辑，包含：
 - FiefWageExemption 豁免消费
@@ -580,7 +580,7 @@ Mercenary 职业：×1.25
 
 ### 9.1 部队升级经验
 
-**文件**：`Models/NewPartyTroopUpgradeModel.cs`
+**文件**：`PartyManagement/Models/NewPartyTroopUpgradeModel.cs`
 
 `GetXpCostForUpgrade`：大幅提高 Tier 4+ 升级经验
 
@@ -596,7 +596,7 @@ Mercenary 职业：×1.25
 
 ### 9.2 Clan 分队数
 
-**文件**：`Models/NewClanTierModel.cs`
+**文件**：`PartyManagement/Models/NewClanTierModel.cs`
 
 `GetPartyLimitForTier`：基于定居点数量而非 Clan Tier
 
@@ -939,7 +939,7 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 3. **Hero 差异化志愿兵** — 所有 Hero 的志愿兵来源相同
    - 建议根据 Hero 的技能/性格调整志愿兵质量和类型
-   - 文件位置：`Models/NewVolunteerModel.cs`
+   - 文件位置：`Recruitment/Models/NewVolunteerModel.cs`
 
 ### 中优先级
 
@@ -949,11 +949,11 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 
 5. **工资豁免逻辑生效** — `GetTotalWage` 中的豁免逻辑已注释
    - 需要取消注释并测试
-   - 文件位置：`Models/NewPartyWageModel.cs`
+   - 文件位置：`PartyFinance/Models/NewPartyWageModel.cs`
 
 6. **AI 征召逻辑优化** — 当前只看 PartySizeRatio 和金钱
    - 建议增加战争状态、敌军距离、围城状态判断
-   - 文件位置：`Models/AiRecruitmentBehavior.cs`
+   - 文件位置：`Recruitment/Behaviors/AiRecruitmentBehavior.cs`
 
 7. **封邑驻军防守** — 封邑兵可以部分留守定居点防守
    - 文件位置：`Fief/Models/PartyData/FiefPartyData.cs`
@@ -975,10 +975,10 @@ Harmony Prefix 替换 `PrisonerReleaseCampaignBehavior.DailyHeroTick`：
 | 文件 | 行数 | 说明 |
 |------|------|------|
 | `Fief/Models/PartyData/FiefPartyData.cs` | ~425 | 封邑核心数据与初始化逻辑 |
-| `Models/NewVolunteerModel.cs` | ~941 | 志愿兵系统 |
+| `Recruitment/Models/NewVolunteerModel.cs` | ~941 | 志愿兵系统 |
 | `Patch/DiplomaticBartersBehavior.cs` | ~180 | AI 外交补丁 |
-| `Models/NewPartyWageModel.cs` | ~280 | 工资系统（含注释的 GetTotalWage） |
-| `Models/NewBasicTroopManager.cs` | ~280 | 兵种管理 + SoldierTypeClassifier |
+| `PartyFinance/Models/NewPartyWageModel.cs` | ~280 | 工资系统（含注释的 GetTotalWage） |
+| `Recruitment/Models/NewBasicTroopManager.cs` | ~280 | 兵种管理 + SoldierTypeClassifier |
 | `Fief/Models/FiefPartyManager.cs` | ~230 | 封邑管理器 |
 | `Fief/Models/FiefPartyTemplate.cs` | ~180 | 封邑模板 |
 | `Fief/Models/FiefMenuBehavior.cs` | ~250 | 封邑菜单 |
