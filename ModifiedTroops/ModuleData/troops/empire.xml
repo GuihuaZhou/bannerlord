@@ -6,136 +6,12 @@
 	
 	<!-- 设置为basic_troop -->
 	<NPCCharacter
-		id="imperial_recruit"
-		default_group="Infantry"
-		level="6"
-		name="{=s3IJIFUw}Imperial Recruit"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.empire">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="20" />
-			<skill
-				id="Riding"
-				value="0" />
-			<skill
-				id="OneHanded"
-				value="20" />
-			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="20" />
-			<skill
-				id="Bow"
-				value="5" />
-			<skill
-				id="Crossbow"
-				value="5" />
-			<skill
-				id="Throwing"
-				value="10" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.imperial_infantryman" />
-			<upgrade_target
-				id="NPCCharacter.imperial_archer" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.imperial_spear_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_sickle_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_bound_kite_shield" />
-				<equipment
-					slot="Body"
-					id="Item.tunic_with_shoulder_pads" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.imperial_spear_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_sickle_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_bound_kite_shield" />
-				<equipment
-					slot="Head"
-					id="Item.laced_cloth_coif" />
-				<equipment
-					slot="Body"
-					id="Item.bandit_leather_water_flask" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.imperial_spear_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_bound_kite_shield" />
-				<equipment
-					slot="Head"
-					id="Item.leather_cap" />
-				<equipment
-					slot="Body"
-					id="Item.bandit_leather_water_flask" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster
-				civilian="true">
-				<equipment
-					slot="Item0"
-					id="Item.imperial_spear_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_mace_1_t2" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_bound_kite_shield" />
-				<equipment
-					slot="Head"
-					id="Item.laced_cloth_coif" />
-				<equipment
-					slot="Body"
-					id="Item.hemp_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.empire_horseman_boots" />
-			</EquipmentRoster>
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
 		id="imperial_infantryman"
 		default_group="Infantry"
 		level="11"
 		name="{=IfjWyWjc}Imperial Infantryman"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -372,6 +248,7 @@
 		level="11"
 		name="{=LbjxH9yp}Imperial Archer"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.empire">
 		<face>
 			<face_key_template
@@ -796,7 +673,7 @@
 				id="Item.half_scale_barding" />
 		</Equipments>
 	</NPCCharacter>
-		<NPCCharacter
+	<NPCCharacter
 		id="bucellarii"
 		default_group="HorseArcher"
 		level="21"
@@ -3020,6 +2897,132 @@
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
 				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="imperial_recruit"
+		default_group="Infantry"
+		level="6"
+		name="{=s3IJIFUw}Imperial Recruit"
+		occupation="Soldier"
+		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="0" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="5" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="10" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.imperial_infantryman" />
+			<upgrade_target
+				id="NPCCharacter.imperial_archer" /> -->
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.imperial_spear_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_sickle_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_bound_kite_shield" />
+				<equipment
+					slot="Body"
+					id="Item.tunic_with_shoulder_pads" />
+				<equipment
+					slot="Leg"
+					id="Item.empire_horseman_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.imperial_spear_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_sickle_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_bound_kite_shield" />
+				<equipment
+					slot="Head"
+					id="Item.laced_cloth_coif" />
+				<equipment
+					slot="Body"
+					id="Item.bandit_leather_water_flask" />
+				<equipment
+					slot="Leg"
+					id="Item.empire_horseman_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.imperial_spear_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_bound_kite_shield" />
+				<equipment
+					slot="Head"
+					id="Item.leather_cap" />
+				<equipment
+					slot="Body"
+					id="Item.bandit_leather_water_flask" />
+				<equipment
+					slot="Leg"
+					id="Item.empire_horseman_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.imperial_spear_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_mace_1_t2" />
+				<equipment
+					slot="Item2"
+					id="Item.leather_bound_kite_shield" />
+				<equipment
+					slot="Head"
+					id="Item.laced_cloth_coif" />
+				<equipment
+					slot="Body"
+					id="Item.hemp_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.empire_horseman_boots" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	<!-- #endregion -->

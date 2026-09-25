@@ -5,158 +5,6 @@
 	<!-- #region Vlandia Troops -->
 
 	<!-- 设置为basic_troop -->
-	<NPCCharacter
-		id="vlandian_recruit"
-		default_group="Infantry"
-		level="6"
-		name="{=GEnwDYp1}Vlandian Recruit"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.vlandia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_vlandia" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="20" />
-			<skill
-				id="Riding"
-				value="5" />
-			<skill
-				id="OneHanded"
-				value="20" />
-			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="20" />
-			<skill
-				id="Bow"
-				value="5" />
-			<skill
-				id="Crossbow"
-				value="5" />
-			<skill
-				id="Throwing"
-				value="5" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.vlandian_levy_crossbowman" />
-			<upgrade_target
-				id="NPCCharacter.vlandian_footman" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_2_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.bracketed_heater_shield" />
-				<equipment
-					slot="Head"
-					id="Item.leather_cap" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Body"
-					id="Item.bandit_leather_water_flask" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_shoes" />
-				<equipment
-					slot="Cape"
-					id="Item.hood" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.peasant_pitchfork_1_t1" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_pickaxe_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.heavy_heater_shield" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Body"
-					id="Item.bandit_leather_water_flask" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_shoes" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.bracketed_heater_shield" />
-				<equipment
-					slot="Item3"
-					id="Item.peasant_hammer_2_t1" />
-				<equipment
-					slot="Head"
-					id="Item.leather_cap" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.hood" />
-				<equipment
-					slot="Body"
-					id="Item.long_woolen_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_shoes" />
-			</EquipmentRoster>
-			<EquipmentRoster
-				civilian="true">
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.bracketed_heater_shield" />
-				<equipment
-					slot="Item3"
-					id="Item.falchion_sword_t2" />
-				<equipment
-					slot="Head"
-					id="Item.leather_cap" />
-				<equipment
-					slot="Gloves"
-					id="Item.leather_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.hood" />
-				<equipment
-					slot="Body"
-					id="Item.long_woolen_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_shoes" />
-			</EquipmentRoster>
-		</Equipments>
-	</NPCCharacter>
 	<!-- 禁止升级到轻骑兵 -->
 	<NPCCharacter
 		id="vlandian_footman"
@@ -164,6 +12,7 @@
 		level="11"
 		name="{=yPF32fbh}Vlandian Footman"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.vlandia">
 		<face>
 			<face_key_template
@@ -407,6 +256,7 @@
 		level="11"
 		name="{=SvAADOwm}Vlandian Levy Crossbowman"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.vlandia">
 		<face>
 			<face_key_template
@@ -1232,9 +1082,6 @@
 	</NPCCharacter>
 
 
-
-
-
 	<!-- 设置为ranged_basic_troop -->
 	<NPCCharacter
 		id="vlandian_hardened_crossbowman"
@@ -1698,10 +1545,6 @@
 		</Equipments>
 	</NPCCharacter>
 	
-
-
-
-
 
 	<!-- 设置为cavalry_basic_troop -->
 	<NPCCharacter
@@ -2832,6 +2675,159 @@
 			<EquipmentSet
 				id="vlandia_troop_civilian_template_t2"
 				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="vlandian_recruit"
+		default_group="Infantry"
+		level="6"
+		name="{=GEnwDYp1}Vlandian Recruit"
+		occupation="Soldier"
+		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
+		culture="Culture.vlandia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_vlandia" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="5" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="5" />
+			<skill
+				id="Crossbow"
+				value="5" />
+			<skill
+				id="Throwing"
+				value="5" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.vlandian_levy_crossbowman" />
+			<upgrade_target
+				id="NPCCharacter.vlandian_footman" /> -->
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_2_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
+				<equipment
+					slot="Head"
+					id="Item.leather_cap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Body"
+					id="Item.bandit_leather_water_flask" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.peasant_pitchfork_1_t1" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_pickaxe_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.heavy_heater_shield" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Body"
+					id="Item.bandit_leather_water_flask" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
+				<equipment
+					slot="Item3"
+					id="Item.peasant_hammer_2_t1" />
+				<equipment
+					slot="Head"
+					id="Item.leather_cap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+				<equipment
+					slot="Body"
+					id="Item.long_woolen_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
+			</EquipmentRoster>
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.bracketed_heater_shield" />
+				<equipment
+					slot="Item3"
+					id="Item.falchion_sword_t2" />
+				<equipment
+					slot="Head"
+					id="Item.leather_cap" />
+				<equipment
+					slot="Gloves"
+					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.hood" />
+				<equipment
+					slot="Body"
+					id="Item.long_woolen_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_shoes" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	<!-- #endregion -->

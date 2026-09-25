@@ -6,139 +6,12 @@
 
 	<!-- basic_troop，禁止升级到马穆鲁克 -->
 	<NPCCharacter
-		id="aserai_recruit"
-		default_group="Infantry"
-		level="6"
-		name="{=H5HJUejD}Aserai Recruit"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.aserai">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_aserai" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="20" />
-			<skill
-				id="Riding"
-				value="5" />
-			<skill
-				id="OneHanded"
-				value="20" />
-			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="20" />
-			<skill
-				id="Bow"
-				value="10" />
-			<skill
-				id="Crossbow"
-				value="0" />
-			<skill
-				id="Throwing"
-				value="5" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.aserai_tribesman" />
-			<!-- <upgrade_target
-				id="NPCCharacter.aserai_mameluke_soldier" /> -->
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.desert_oval_shield" />
-				<equipment
-					slot="Head"
-					id="Item.aserai_civil_hscarf_a" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_a" />
-				<equipment
-					slot="Leg"
-					id="Item.khuzait_curved_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.desert_oval_shield" />
-				<equipment
-					slot="Head"
-					id="Item.aserai_civil_hscarf_b" />
-				<equipment
-					slot="Body"
-					id="Item.layered_robe" />
-				<equipment
-					slot="Leg"
-					id="Item.khuzait_curved_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.desert_oval_shield" />
-				<equipment
-					slot="Head"
-					id="Item.aserai_civil_hscarf_a" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_e" />
-				<equipment
-					slot="Leg"
-					id="Item.khuzait_curved_boots" />
-			</EquipmentRoster>
-			<EquipmentRoster
-				civilian="true">
-				<equipment
-					slot="Item0"
-					id="Item.eastern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.desert_oval_shield" />
-				<equipment
-					slot="Head"
-					id="Item.open_desert_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.aserai_civil_e" />
-				<equipment
-					slot="Leg"
-					id="Item.khuzait_curved_boots" />
-			</EquipmentRoster>
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
 		id="aserai_tribesman"
 		default_group="Infantry"
 		level="11"
 		name="{=arb5nRri}Aserai Tribesman"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.aserai">
 		<face>
 			<face_key_template
@@ -2981,6 +2854,135 @@
 			<EquipmentSet
 				id="aserai_troop_civilian_template_t1"
 				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="aserai_recruit"
+		default_group="Infantry"
+		level="6"
+		name="{=H5HJUejD}Aserai Recruit"
+		occupation="Soldier"
+		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
+		culture="Culture.aserai">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_aserai" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="5" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="10" />
+			<skill
+				id="Crossbow"
+				value="0" />
+			<skill
+				id="Throwing"
+				value="5" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.aserai_tribesman" /> -->
+			<!-- <upgrade_target
+				id="NPCCharacter.aserai_mameluke_soldier" /> -->
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.aserai_civil_hscarf_a" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_civil_a" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.aserai_civil_hscarf_b" />
+				<equipment
+					slot="Body"
+					id="Item.layered_robe" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.aserai_civil_hscarf_a" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_civil_e" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.eastern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Item2"
+					id="Item.desert_oval_shield" />
+				<equipment
+					slot="Head"
+					id="Item.open_desert_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.aserai_civil_e" />
+				<equipment
+					slot="Leg"
+					id="Item.khuzait_curved_boots" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	

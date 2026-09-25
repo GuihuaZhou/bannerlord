@@ -6,157 +6,12 @@
 
 	<!-- 设置为basic_troop -->
 	<NPCCharacter
-		id="sturgian_recruit"
-		default_group="Infantry"
-		level="6"
-		name="{=BBJKgKj2}Sturgian Recruit"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="20" />
-			<skill
-				id="Riding"
-				value="5" />
-			<skill
-				id="OneHanded"
-				value="20" />
-			<skill
-				id="TwoHanded"
-				value="10" />
-			<skill
-				id="Polearm"
-				value="20" />
-			<skill
-				id="Bow"
-				value="5" />
-			<skill
-				id="Crossbow"
-				value="0" />
-			<skill
-				id="Throwing"
-				value="10" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.sturgian_warrior" />
-			<upgrade_target
-				id="NPCCharacter.sturgian_woodsman" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.northern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.peasant_hammer_2_t1" />
-				<equipment
-					slot="Head"
-					id="Item.nordic_leather_cap" />
-				<equipment
-					slot="Body"
-					id="Item.northern_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.battania_fur_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.highland_gloves" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.northern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Body"
-					id="Item.northern_tunic" />
-				<equipment
-					slot="Leg"
-					id="Item.battania_leather_boots" />
-				<equipment
-					slot="Gloves"
-					id="Item.highland_gloves" />
-				<equipment
-					slot="Cape"
-					id="Item.padded_leather_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.northern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.peasant_hatchet_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.nordic_fur_cap" />
-				<equipment
-					slot="Body"
-					id="Item.tundra_tunic" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_leg_wrappings" />
-				<equipment
-					slot="Gloves"
-					id="Item.highland_gloves" />
-			</EquipmentRoster>
-			<EquipmentRoster
-				civilian="true">
-				<equipment
-					slot="Item0"
-					id="Item.northern_spear_1_t2" />
-				<equipment
-					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.peasant_hammer_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.nordic_leather_cap" />
-				<equipment
-					slot="Body"
-					id="Item.roughcloth_shortcoat" />
-				<equipment
-					slot="Cape"
-					id="Item.scarf" />
-				<equipment
-					slot="Leg"
-					id="Item.highland_leg_wrappings" />
-				<equipment
-					slot="Gloves"
-					id="Item.highland_gloves" />
-			</EquipmentRoster>
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
 		id="sturgian_warrior"
 		default_group="Infantry"
 		level="11"
 		name="{=96pj2wxH}Sturgian Warrior"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -395,6 +250,7 @@
 		level="11"
 		name="{=fdaZ3tri}Sturgian Woodsman"
 		occupation="Soldier"
+		is_basic_troop="true"
 		culture="Culture.sturgia">
 		<face>
 			<face_key_template
@@ -3168,6 +3024,153 @@
 			<EquipmentSet
 				id="sturgia_troop_civilian_template_t3"
 				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="sturgian_recruit"
+		default_group="Infantry"
+		level="6"
+		name="{=BBJKgKj2}Sturgian Recruit"
+		occupation="Soldier"
+		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="20" />
+			<skill
+				id="Riding"
+				value="5" />
+			<skill
+				id="OneHanded"
+				value="20" />
+			<skill
+				id="TwoHanded"
+				value="10" />
+			<skill
+				id="Polearm"
+				value="20" />
+			<skill
+				id="Bow"
+				value="5" />
+			<skill
+				id="Crossbow"
+				value="0" />
+			<skill
+				id="Throwing"
+				value="10" />
+		</skills>
+		<upgrade_targets>
+			<!-- <upgrade_target
+				id="NPCCharacter.sturgian_warrior" />
+			<upgrade_target
+				id="NPCCharacter.sturgian_woodsman" /> -->
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hammer_2_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_leather_cap" />
+				<equipment
+					slot="Body"
+					id="Item.northern_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_fur_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Body"
+					id="Item.northern_tunic" />
+				<equipment
+					slot="Leg"
+					id="Item.battania_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.padded_leather_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hatchet_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_fur_cap" />
+				<equipment
+					slot="Body"
+					id="Item.tundra_tunic" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				<equipment
+					slot="Leg"
+					id="Item.highland_leg_wrappings" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+			</EquipmentRoster>
+			<EquipmentRoster
+				civilian="true">
+				<equipment
+					slot="Item0"
+					id="Item.northern_spear_1_t2" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.peasant_hammer_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.nordic_leather_cap" />
+				<equipment
+					slot="Body"
+					id="Item.roughcloth_shortcoat" />
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				<equipment
+					slot="Leg"
+					id="Item.highland_leg_wrappings" />
+				<equipment
+					slot="Gloves"
+					id="Item.highland_gloves" />
+			</EquipmentRoster>
 		</Equipments>
 	</NPCCharacter>
 	
