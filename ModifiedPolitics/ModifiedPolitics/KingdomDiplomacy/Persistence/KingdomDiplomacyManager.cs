@@ -134,14 +134,31 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
         public bool TryEstablishSubjectRelation(
             Kingdom overlord,
             Kingdom subject,
-            SubjectType type)
+            SubjectType type,
+            int dailyTribute)
         {
             if (!CanEstablishSubjectRelation(overlord, subject, type))
             {
                 return false;
             }
 
-            _subjectData.Add(new SubjectRelationData(subject, overlord, type));
+            _subjectData.Add(new SubjectRelationData(
+                subject,
+                overlord,
+                type,
+                Math.Max(0, dailyTribute)));
+            return true;
+        }
+
+        public bool SetDailyTribute(Kingdom subject, int dailyTribute)
+        {
+            SubjectRelationData relation = GetSubjectRelation(subject);
+            if (relation == null)
+            {
+                return false;
+            }
+
+            relation.DailyTribute = Math.Max(0, dailyTribute);
             return true;
         }
 

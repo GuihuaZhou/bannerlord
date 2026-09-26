@@ -17,7 +17,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
         public static bool TryEstablish(
             Kingdom overlord,
             Kingdom subject,
-            SubjectType type)
+            SubjectType type,
+            int dailyTribute = 0)
         {
             KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
             if (manager == null
@@ -37,7 +38,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
                 MakePeaceAction.Apply(overlord, subject);
             }
 
-            if (!manager.TryEstablishSubjectRelation(overlord, subject, type))
+            if (!manager.TryEstablishSubjectRelation(
+                overlord,
+                subject,
+                type,
+                dailyTribute))
             {
                 return false;
             }

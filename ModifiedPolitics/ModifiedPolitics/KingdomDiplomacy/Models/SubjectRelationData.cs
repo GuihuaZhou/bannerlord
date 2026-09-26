@@ -21,6 +21,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         [SaveableProperty(4)]
         public CampaignTime EstablishedTime { get; set; }
 
+        [SaveableProperty(5)]
+        public int DailyTribute { get; set; }
+
         public SubjectRelationData()
         {
         }
@@ -28,12 +31,14 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public SubjectRelationData(
             Kingdom subjectKingdom,
             Kingdom overlordKingdom,
-            SubjectType type)
+            SubjectType type,
+            int dailyTribute)
         {
             SubjectKingdom = subjectKingdom;
             OverlordKingdom = overlordKingdom;
             Type = type;
             EstablishedTime = CampaignTime.Now;
+            DailyTribute = dailyTribute < 0 ? 0 : dailyTribute;
         }
     }
 }

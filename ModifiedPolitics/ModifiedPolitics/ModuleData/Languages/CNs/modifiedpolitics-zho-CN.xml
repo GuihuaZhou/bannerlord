@@ -20,6 +20,8 @@
     <string id="ModifiedPolitics_IndependenceReasonPuppetDefiance" text="傀儡国违背宗主的外交路线" />
     <string id="ModifiedPolitics_IndependenceReasonWarWithOverlord" text="臣属国与宗主进入战争" />
     <string id="ModifiedPolitics_IndependenceReasonOverlordAggression" text="宗主进攻臣属国" />
+    <string id="ModifiedPolitics_SubjectTributeIncome" text="宗藩贡赋收入" />
+    <string id="ModifiedPolitics_SubjectTributeExpense" text="宗藩贡赋支出" />
 
     <!-- Clan panel labels. -->
     <string id="ModifiedPolitics_WarPotential" text="战争潜力" />
