@@ -23,7 +23,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
 
         protected override void DefineEnumTypes()
         {
-            AddEnumDefinition(typeof(SubjectType), 1, null);
+            // Class and enum definitions share the same local ID space.
+            AddEnumDefinition(typeof(SubjectType), 4, null);
         }
 
         protected override void DefineContainerDefinitions()

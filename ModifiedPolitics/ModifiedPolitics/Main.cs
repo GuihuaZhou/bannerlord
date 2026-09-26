@@ -46,8 +46,6 @@ namespace ModifiedPolitics
                 campaignStarter.AddModel(new ExiledClanDiplomacyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
-                campaignStarter.AddBehavior(new KingdomDiplomacyManager());
-                campaignStarter.AddBehavior(new PuppetDiplomacyBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
@@ -55,6 +53,9 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new WeeklyWealthEventBehavior());
                 campaignStarter.AddBehavior(
                     new ExiledClanRealignmentBehavior());
+
+                campaignStarter.AddBehavior(new KingdomDiplomacyManager());
+                campaignStarter.AddBehavior(new PuppetDiplomacyBehavior());
             }
         }
     }
