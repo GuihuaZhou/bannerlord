@@ -56,6 +56,8 @@ namespace ModifiedPolitics
 
                 campaignStarter.AddBehavior(new KingdomDiplomacyManager());
                 campaignStarter.AddBehavior(new PuppetDiplomacyBehavior());
+                campaignStarter.AddBehavior(
+                    new SubjectAllianceRestrictionBehavior());
             }
         }
     }

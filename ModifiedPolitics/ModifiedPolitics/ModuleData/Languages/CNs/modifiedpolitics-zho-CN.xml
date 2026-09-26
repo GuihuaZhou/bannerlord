@@ -22,6 +22,14 @@
     <string id="ModifiedPolitics_IndependenceReasonOverlordAggression" text="宗主进攻臣属国" />
     <string id="ModifiedPolitics_SubjectTributeIncome" text="宗藩贡赋收入" />
     <string id="ModifiedPolitics_SubjectTributeExpense" text="宗藩贡赋支出" />
+    <string id="ModifiedPolitics_DemandVassal" text="要求成为附庸" />
+    <string id="ModifiedPolitics_DemandVassalDescription" text="要求{TARGET}成为你的附庸. 当前开发阶段中, 所有有效要求都会被接受." />
+    <string id="ModifiedPolitics_DemandPuppet" text="要求成为傀儡" />
+    <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 当前开发阶段中, 所有有效要求都会被接受." />
+    <string id="ModifiedPolitics_SubjectDemandRequiresRuler" text="只有王国统治者可以提出该要求." />
+    <string id="ModifiedPolitics_SubjectDemandUnavailable" text="当前无法与该王国建立宗藩关系." />
+    <string id="ModifiedPolitics_PuppetAllianceForbidden" text="傀儡国不能签订同盟条约." />
+    <string id="ModifiedPolitics_VassalAllianceForbidden" text="附庸国不能签订同盟条约." />
 
     <!-- Clan panel labels. -->
     <string id="ModifiedPolitics_WarPotential" text="战争潜力" />

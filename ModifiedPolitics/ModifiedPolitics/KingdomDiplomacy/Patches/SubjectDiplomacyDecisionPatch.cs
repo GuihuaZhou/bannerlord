@@ -1,6 +1,8 @@
 using HarmonyLib;
+using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem.Election;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Patches
 {
@@ -39,6 +41,44 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
                     .CanStartNormalDiplomacy(
                         __instance.Kingdom,
                         __instance.FactionToMakePeaceWith);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(StartAllianceDecision), nameof(StartAllianceDecision.IsAllowed))]
+        private static void StartAllianceIsAllowedPostfix(
+            StartAllianceDecision __instance,
+            ref bool __result)
+        {
+            if (__result)
+            {
+                __result = SubjectAllianceRestrictionService.CanFormAlliance(
+                    __instance.Kingdom,
+                    __instance.KingdomToStartAllianceWith);
+            }
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(StartAllianceDecision), nameof(StartAllianceDecision.CanMakeDecision))]
+        private static void StartAllianceCanMakeDecisionPostfix(
+            StartAllianceDecision __instance,
+            ref bool __result,
+            ref TextObject reason)
+        {
+            if (!SubjectAllianceRestrictionService.CanFormAlliance(
+                    __instance.Kingdom,
+                    __instance.KingdomToStartAllianceWith))
+            {
+                __result = false;
+                SubjectType blockingType = SubjectAllianceRestrictionService
+                    .GetBlockingSubjectType(
+                        __instance.Kingdom,
+                        __instance.KingdomToStartAllianceWith);
+                reason = blockingType == SubjectType.Puppet
+                    ? new TextObject(
+                        "{=ModifiedPolitics_PuppetAllianceForbidden}Puppet kingdoms cannot form alliances.")
+                    : new TextObject(
+                        "{=ModifiedPolitics_VassalAllianceForbidden}Vassal kingdoms cannot form alliances.");
             }
         }
     }

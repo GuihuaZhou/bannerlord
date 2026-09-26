@@ -5,17 +5,11 @@ using TaleWorlds.CampaignSystem;
 namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
-    /// Centralizes foreign-policy permissions for subject kingdoms.
-    /// Vassals retain normal diplomacy; puppets may only follow their overlord.
+    /// Centralizes war and peace permissions for subject kingdoms. Alliance
+    /// restrictions are handled separately; trade diplomacy stays independent.
     /// </summary>
     public static class SubjectDiplomacyPermissionService
     {
-        public static bool HasIndependentDiplomacy(Kingdom kingdom)
-        {
-            return KingdomDiplomacyManager.Current?.GetSubjectType(kingdom)
-                != SubjectType.Puppet;
-        }
-
         public static bool CanStartNormalDiplomacy(
             Kingdom actingKingdom,
             IFaction targetFaction)

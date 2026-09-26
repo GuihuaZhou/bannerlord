@@ -52,6 +52,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
                 PuppetDiplomacySynchronizer.SynchronizeAllWars(subject);
             }
 
+            SubjectAllianceRestrictionService
+                .RemoveExistingAlliances(subject);
+
             TextObject message = new TextObject(
                 "{=ModifiedPolitics_SubjectEstablished}[Kingdom diplomacy] {SUBJECT} became a {SUBJECT_TYPE} of {OVERLORD}.");
             message.SetTextVariable("SUBJECT", subject.Name);
