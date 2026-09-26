@@ -227,12 +227,9 @@ namespace ModifiedArmy.Models
             // message. Failed attempts retain a detailed Info diagnostic, but
             // neither message exposes the underlying manpower-pool mechanism.
             string textId = recruitedCount > 0
-                ? "str_modifiedarmy_ai_recruitment_volunteer_plan"
+                ? "str_modifiedarmy_ai_recruitment_garrison_plan"
                 : "str_modifiedarmy_garrison_professional_recruitment";
             TextObject message = GameTexts.FindText(textId);
-            message.SetTextVariable(
-                "PARTY_NAME",
-                PartyLogFormatter.GetDisplayName(town.GarrisonParty));
             message.SetTextVariable("SETTLEMENT_NAME", town.Name);
             message.SetTextVariable("OFFERED", offeredCount);
             message.SetTextVariable("APPROVED", recruitedCount);

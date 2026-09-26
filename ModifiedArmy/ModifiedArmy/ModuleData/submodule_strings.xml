@@ -94,7 +94,7 @@
         text="{=ModifiedArmy_AIRecruitmentFiefPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}征召了{APPROVED}名封邑兵." />
 
     <string id="str_modifiedarmy_ai_recruitment_garrison_plan"
-        text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[AI招募] {SETTLEMENT_NAME}驻军有{OFFERED}名志愿兵候选, 实际招募{APPROVED}名, 每日上限{DAILY_LIMIT}名. 当前使用{CULTURE_ID}文化模板, 首要限制是{LIMIT}." />
+        text="{=ModifiedArmy_AIRecruitmentGarrisonPlan}[驻军招募] {SETTLEMENT_NAME}驻军招募了{APPROVED}名志愿兵." />
     <string id="str_modifiedarmy_ai_recruitment_professional_plan"
         text="{=ModifiedArmy_AIRecruitmentProfessionalPlan}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}没有招募志愿兵, 当时有{OFFERED}人可招募, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_garrison_prisoner_recruited"
