@@ -1,4 +1,5 @@
 ﻿using HarmonyLib;
+using ModifiedPolitics.Diplomacy.Policies;
 using ModifiedPolitics.Tool;
 using System;
 using System.Collections.Generic;
@@ -199,7 +200,9 @@ namespace ModifiedPolitics.Patch
             }
             //else if (MBRandom.RandomFloat < ((clan.MapFaction.Leader == Hero.MainHero) ? 0.2f : 0.4f))
             // 提高独立clan加入新kingdom的概率
-            else if (MBRandom.RandomFloat < ((clan.MapFaction.Leader == Hero.MainHero) ? 0.2f : 0.8f))
+            else if (!ExiledClanPolicy.IsEligibleExiledClan(clan) &&
+                     MBRandom.RandomFloat <
+                     ((clan.MapFaction.Leader == Hero.MainHero) ? 0.2f : 0.8f))
             {
                 // === 第一步：分组收集候选王国 ===
                 List<Kingdom> sameCultureKingdoms = new List<Kingdom>();

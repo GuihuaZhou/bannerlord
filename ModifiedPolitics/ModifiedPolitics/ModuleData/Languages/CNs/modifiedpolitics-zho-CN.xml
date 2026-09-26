@@ -71,5 +71,14 @@
     <string id="ModifiedPolitics_WarDispositionEventWeeklyWealthChange" text="家族财富变化" />
     <string id="ModifiedPolitics_WarDispositionEventWealthIncreased" text="家族财富增长" />
     <string id="ModifiedPolitics_WarDispositionEventWealthDecreased" text="家族财富下降" />
+    <string id="ModifiedPolitics_ExiledClanPreserved" text="[家族存续] {CLAN_NAME}仍有成年成员, 不会因长期流亡而灭亡." />
+    <string id="ModifiedPolitics_ExiledClanTargetRejected" text="[家族投奔] {CLAN_NAME}无法投奔{KINGDOM_NAME}, 因为该王国当前不是有效目标." />
+    <string id="ModifiedPolitics_ExiledClanJoinScore" text="[家族投奔] {CLAN_NAME}加入{KINGDOM_NAME}的意愿为{SCORE}. 该王国控制其文化的{TOWNS}座城镇和{CASTLES}座城堡, 占全部同文化要塞的{TERRITORY_SHARE}%. 与统治家族关系为{RELATION}, 已流亡{EXILE_DAYS}天." />
+    <string id="ModifiedPolitics_ExiledClanAttemptSkipped" text="[家族投奔] {CLAN_NAME}今日没有尝试寻找新王国." />
+    <string id="ModifiedPolitics_ExiledClanTemporarilyBlocked" text="[家族投奔] {CLAN_NAME}因阵营承诺尚未结束或部队正在战斗, 暂时不会寻找新王国." />
+    <string id="ModifiedPolitics_ExiledClanNoTarget" text="[家族投奔] {CLAN_NAME}当前没有可以投奔的王国." />
+    <string id="ModifiedPolitics_ExiledClanCandidate" text="[家族投奔] {CLAN_NAME}选择与{KINGDOM_NAME}谈判. 目标权重为{WEIGHT}, 家族意愿为{CLAN_SCORE}, 王国接纳意愿为{KINGDOM_SCORE}, 合计为{TOTAL_SCORE}." />
+    <string id="ModifiedPolitics_ExiledClanJoined" text="[家族投奔] {CLAN_NAME}已经加入{KINGDOM_NAME}." />
+    <string id="ModifiedPolitics_ExiledClanBarterFailed" text="[家族投奔] {CLAN_NAME}与{KINGDOM_NAME}的谈判没有达成协议." />
   </strings>
 </base>

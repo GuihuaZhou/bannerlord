@@ -1,5 +1,7 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using ModifiedPolitics.Diplomacy.Behaviors;
+using ModifiedPolitics.Diplomacy.Models;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Battle;
@@ -39,6 +41,7 @@ namespace ModifiedPolitics
             {
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
+                campaignStarter.AddModel(new ExiledClanDiplomacyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
@@ -46,6 +49,8 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
                 campaignStarter.AddBehavior(new SettlementWarEventBehavior());
                 campaignStarter.AddBehavior(new WeeklyWealthEventBehavior());
+                campaignStarter.AddBehavior(
+                    new ExiledClanRealignmentBehavior());
             }
         }
     }
