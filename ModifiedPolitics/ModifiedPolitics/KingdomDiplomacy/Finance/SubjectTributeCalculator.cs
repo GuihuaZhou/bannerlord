@@ -18,7 +18,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Finance
         {
             Kingdom kingdom = clan?.Kingdom;
             KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
-            if (!IsEligibleClan(clan) || manager == null)
+            if (kingdom == null
+                || !IsEligibleClan(clan)
+                || manager == null)
             {
                 return 0;
             }
@@ -45,7 +47,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Finance
             Kingdom kingdom = clan?.Kingdom;
             SubjectRelationData relation = KingdomDiplomacyManager.Current
                 ?.GetSubjectRelation(kingdom);
-            if (!IsEligibleClan(clan) || !IsActive(relation))
+            if (kingdom == null
+                || !IsEligibleClan(clan)
+                || !IsActive(relation))
             {
                 return 0;
             }
