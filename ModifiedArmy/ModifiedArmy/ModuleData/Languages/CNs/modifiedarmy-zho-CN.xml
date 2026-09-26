@@ -25,17 +25,17 @@
     <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
     <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵, 已有 {RECRUITED} 名士兵随你出征, 另有 {WAITCYCLE} 名士兵正在返回自己的土地, 每周最多可补充 {WEEKLY_REINFORCEMENT} 名士兵.{NEWLINE}{NEWLINE}当前部队构成:{NEWLINE}- 扈从: {RETINUE_COUNT}/{RETINUE_MAX}{NEWLINE}- 军士: {SERGEANT_COUNT}/{SERGEANT_MAX}{NEWLINE}- 水兵: {MARINE_COUNT}/{MARINE_MAX}{NEWLINE}- 军事奴隶: {SLAVE_COUNT}/{SLAVE_MAX}{NEWLINE}- 民兵: {MILITIA_COUNT}/{MILITIA_MAX}" />
     <string id="ModifiedArmy_FiefMenu_Entry" text="查看封邑" />
-    <string id="ModifiedArmy_FiefMenu_Recruit" text="征召封邑军队" />
-    <string id="ModifiedArmy_FiefMenu_Disband" text="解散封邑军队" />
-    <string id="ModifiedArmy_FiefMenu_RecruitPartial" text="征召部分军队" />
+    <string id="ModifiedArmy_FiefMenu_Recruit" text="全部征召" />
+    <string id="ModifiedArmy_FiefMenu_Disband" text="解散部队" />
+    <string id="ModifiedArmy_FiefMenu_RecruitPartial" text="部分征召" />
     <string id="ModifiedArmy_FiefMenu_DisbandPartial" text="解散部分军队" />
     <string id="ModifiedArmy_FiefMenu_Return" text="返回" />
+    <string id="ModifiedArmy_FiefPool_Entry" text="查看兵源" />
+    <string id="ModifiedArmy_FiefMenu_ViewTroops" text="查看部队" />
+    <string id="ModifiedArmy_FiefPool_Unavailable" text="无法读取封邑兵源数据." />
+    <string id="ModifiedArmy_FiefPool_Empty" text="暂无士兵" />
+    <string id="ModifiedArmy_FiefPool_Description" text="{SETTLEMENT_NAME}的封邑兵源{NEWLINE}当前兵力: {CURRENT}/{CAPACITY}{NEWLINE}每日补充: {DAILY}{NEWLINE}{NEWLINE}{TROOPS}" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
-    <string id="ModifiedArmy_ViewRecruitmentPools" text="查看兵源" />
-    <string id="ModifiedArmy_RecruitmentPoolsReturn" text="返回" />
-    <string id="ModifiedArmy_RecruitmentPoolsUnavailable" text="无法读取兵源池数据." />
-    <string id="ModifiedArmy_RecruitmentPoolsEmpty" text="无" />
-    <string id="ModifiedArmy_RecruitmentPoolsDescription" text="{SETTLEMENT_NAME}的兵源池{NEWLINE}兵营等级: {BARRACKS_LEVEL}{NEWLINE}{NEWLINE}职业兵: {PROFESSIONAL_COUNT}/{PROFESSIONAL_CAPACITY}{NEWLINE}每日补充: {PROFESSIONAL_DAILY}{NEWLINE}补充进度: {PROFESSIONAL_PROGRESS}{NEWLINE}{PROFESSIONAL_TROOPS}{NEWLINE}{NEWLINE}封建兵: {FIEF_COUNT}/{FIEF_CAPACITY}{NEWLINE}每日补充: {FIEF_DAILY}{NEWLINE}补充进度: {FIEF_PROGRESS}{NEWLINE}{FIEF_TROOPS}" />
 
     <!-- Garrison and wage UI. -->
     <string id="ModifiedArmyWarPartyWage" text="战时工资" />

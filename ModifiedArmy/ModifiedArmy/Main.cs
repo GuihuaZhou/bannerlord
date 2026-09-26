@@ -192,7 +192,7 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SettlementRecruitmentPoolBehavior());
                 campaignStarter.AddBehavior(
-                    new RecruitmentPoolMenuBehavior());
+                    new PlayerRecruitmentMenuBehavior());
 
 
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());

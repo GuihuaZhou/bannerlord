@@ -375,6 +375,14 @@ namespace ModifiedArmy.Patch
             MobileParty party,
             Settlement settlement)
         {
+            // Professional manpower belongs to the owning clan. Allied and
+            // foreign parties must not consume another clan's local pool.
+            if (party?.ActualClan == null ||
+                party.ActualClan != settlement?.OwnerClan)
+            {
+                return false;
+            }
+
             SettlementRecruitmentPoolBehavior pools = Campaign.Current
                 .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
             if (pools == null)

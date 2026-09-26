@@ -35,14 +35,18 @@ namespace ModifiedArmy.Recruitment.Patches
             MenuCallbackArgs args,
             ref bool __result)
         {
-            if (Settlement.CurrentSettlement?.IsVillage != true)
+            Settlement settlement = Settlement.CurrentSettlement;
+            if (settlement?.IsVillage == true)
             {
-                return true;
+                args.optionLeaveType = GameMenuOption.LeaveType.Recruit;
+                __result = false;
+                return false;
             }
 
-            args.optionLeaveType = GameMenuOption.LeaveType.Recruit;
-            __result = false;
-            return false;
+            // Fortifications remain inspectable. The replacement recruitment
+            // ViewModel greys out every troop when the player clan is not the
+            // owner, while the transaction layer independently rejects edits.
+            return true;
         }
     }
 }

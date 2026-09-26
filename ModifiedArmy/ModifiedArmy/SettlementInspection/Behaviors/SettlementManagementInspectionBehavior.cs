@@ -10,7 +10,8 @@ namespace ModifiedArmy.SettlementInspection.Behaviors
     /// </summary>
     public class SettlementManagementInspectionBehavior : CampaignBehaviorBase
     {
-        private const string TownMenuId = "town";
+        // Town administration is grouped under the keep/main-building menu.
+        private const string TownMenuId = "town_keep";
         private const string CastleMenuId = "castle";
         private const string TownOptionId =
             "modified_army_view_town_management";

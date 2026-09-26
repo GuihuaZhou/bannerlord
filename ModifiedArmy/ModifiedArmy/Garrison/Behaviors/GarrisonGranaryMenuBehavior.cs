@@ -13,7 +13,9 @@ namespace ModifiedArmy.Garrison.Behaviors
     /// </summary>
     public class GarrisonGranaryMenuBehavior : CampaignBehaviorBase
     {
-        private const string TownMenuId = "town";
+        // Town military facilities are grouped under "Go to the keep".
+        // Castles already use their outer menu as the keep menu.
+        private const string TownMenuId = "town_keep";
         private const string CastleMenuId = "castle";
         private const string GranaryOptionId =
             "modified_army_open_military_granary";

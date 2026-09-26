@@ -6,13 +6,14 @@ using TaleWorlds.CampaignSystem.Settlements;
 namespace ModifiedArmy.Garrison.Behaviors
 {
     /// <summary>
-    /// Exposes allied garrison rosters from the outer town and castle menus.
+    /// Exposes allied garrison rosters from the town keep and castle menus.
     /// The native manage-troops screen is reused for complete roster details,
     /// while Harmony guards make the screen read-only for foreign clans.
     /// </summary>
     public class GarrisonInspectionMenuBehavior : CampaignBehaviorBase
     {
-        private const string TownMenuId = "town";
+        // Town military information belongs under "Go to the keep".
+        private const string TownMenuId = "town_keep";
         private const string CastleMenuId = "castle";
         private const string OptionId =
             "modified_army_view_allied_garrison";

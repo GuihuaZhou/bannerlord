@@ -101,6 +101,8 @@
         text="{=ModifiedArmy_GarrisonPrisonerRecruited}[驻军招募] {SETTLEMENT_NAME}从俘虏中招募了{RECRUITED}人, 并出售了{SOLD}名多余俘虏." />
     <string id="str_modifiedarmy_garrison_professional_recruitment"
         text="{=ModifiedArmy_GarrisonProfessionalRecruitment}[驻军招募] {SETTLEMENT_NAME}今日没有招募志愿兵, 当时有{OFFERED}人可招募, 首要限制是{LIMIT}." />
+    <string id="str_modifiedarmy_recruits_unavailable"
+        text="{=ModifiedArmy_RecruitsUnavailable}部分士兵已无法招募, 请重新选择." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"
         text="{=ModifiedArmy_GarrisonPrisonerSkipped}[驻军招募] {SETTLEMENT_NAME}今日没有招募俘虏. 原有{INITIAL}名普通俘虏, 出售了{SOLD}名多余俘虏, 原因是{REASON}." />
     <string id="str_modifiedarmy_garrison_prisoner_no_template_target"
