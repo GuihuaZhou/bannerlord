@@ -16,6 +16,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
         private static readonly HashSet<Kingdom> ActiveSynchronizations =
             new HashSet<Kingdom>();
 
+        /// <summary>
+        /// Returns true while the given puppet's overlord is intentionally
+        /// mirroring a diplomatic state. Event listeners use this distinction
+        /// to avoid treating legitimate synchronization as puppet defiance.
+        /// </summary>
+        public static bool IsSynchronizationInProgressFor(Kingdom puppet)
+        {
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            Kingdom overlord = manager?.GetOverlord(puppet);
+            return overlord != null && ActiveSynchronizations.Contains(overlord);
+        }
+
         public static void SynchronizePuppetsAgainst(
             Kingdom overlord,
             IFaction otherFaction)

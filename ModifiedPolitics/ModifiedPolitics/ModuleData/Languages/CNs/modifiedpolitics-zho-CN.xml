@@ -15,6 +15,11 @@
     <string id="ModifiedPolitics_SubjectTypePuppet" text="傀儡国" />
     <string id="ModifiedPolitics_SubjectEstablished" text="[王国外交] {SUBJECT}成为{OVERLORD}的{SUBJECT_TYPE}." />
     <string id="ModifiedPolitics_SubjectReleased" text="[王国外交] {SUBJECT}不再是{OVERLORD}的臣属国." />
+    <string id="ModifiedPolitics_SubjectIndependence" text="[王国外交] {SUBJECT}反抗{OVERLORD}. 原因是{REASON}." />
+    <string id="ModifiedPolitics_IndependenceReasonVoluntary" text="臣属国宣布独立" />
+    <string id="ModifiedPolitics_IndependenceReasonPuppetDefiance" text="傀儡国违背宗主的外交路线" />
+    <string id="ModifiedPolitics_IndependenceReasonWarWithOverlord" text="臣属国与宗主进入战争" />
+    <string id="ModifiedPolitics_IndependenceReasonOverlordAggression" text="宗主进攻臣属国" />
 
     <!-- Clan panel labels. -->
     <string id="ModifiedPolitics_WarPotential" text="战争潜力" />
