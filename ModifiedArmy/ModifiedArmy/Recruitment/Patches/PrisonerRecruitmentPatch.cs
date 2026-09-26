@@ -14,7 +14,7 @@ using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Recruitment;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 
-namespace ModifiedArmy.Patch
+namespace ModifiedArmy.Recruitment.Patches
 {
     [HarmonyPatch(typeof(RecruitPrisonersCampaignBehavior), "RecruitPrisonersAi")]
     public static class RecruitPrisonersAiPatch

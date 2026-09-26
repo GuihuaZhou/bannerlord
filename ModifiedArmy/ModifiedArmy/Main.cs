@@ -175,9 +175,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
                 campaignStarter.AddModel(new NewClanTierModel());
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
-                // //campaignStarter.AddModel(new NewDiplomacyModel());
                 campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
-                //campaignStarter.AddModel(new NewMinorFactionsModel());
                 //campaignStarter.AddModel(new FiefSettlementTaxModel());、
                 ////campaignStarter.AddModel(new DebugGarrisonMoraleModel());
                 ////campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());

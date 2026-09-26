@@ -10,7 +10,7 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 
-namespace ModifiedArmy.Patch
+namespace ModifiedArmy.Garrison.Patches
 {
     /// <summary>
     /// 补丁：严格限制 AI 领主向定居点捐赠/抽取士兵的行为。
@@ -24,7 +24,7 @@ namespace ModifiedArmy.Patch
     /// </summary>
     [HarmonyPatch(typeof(GarrisonTroopsCampaignBehavior))]
     [HarmonyPatch("OnSettlementEntered")]
-    public static class GarrisonTroopsCampaignBehavior_OnSettlementEntered_Patch
+    public static class GarrisonTroopDonationPatch
     {
         /// <summary>
         /// Prefix 补丁，在原方法执行前运行。

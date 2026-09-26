@@ -18,10 +18,10 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.Patch
+namespace ModifiedArmy.Recruitment.Patches
 {
     [HarmonyPatch(typeof(PartiesSellPrisonerCampaignBehavior), "OnSettlementEntered")]
-    public static class PartiesSellPrisonerCampaignBehaviorPatch
+    public static class PrisonerSaleOnSettlementEnteredPatch
     {
         public static bool Prefix(MobileParty mobileParty, Settlement settlement, Hero hero)
         {
@@ -105,7 +105,7 @@ namespace ModifiedArmy.Patch
 
 
     [HarmonyPatch(typeof(PartiesSellPrisonerCampaignBehavior), "DailyTickSettlement")]
-    public static class DailyTickSettlementPatch
+    public static class PrisonerSaleDailySettlementPatch
     {
         private static float GetAISellPrisonerRatio(Settlement settlement)
         {

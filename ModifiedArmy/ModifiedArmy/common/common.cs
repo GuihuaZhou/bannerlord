@@ -91,7 +91,6 @@ namespace ModifiedArmy.common
         public static float EMPIRE_VOLUNTEER_GENERATION_MULTIPLIER => Cfg?.EmpireVolunteerMultiplier ?? 0.6f;
         public static float ASERAI_VOLUNTEER_GENERATION_MULTIPLIER => Cfg?.AseraiVolunteerMultiplier ?? 0.7f;
 
-        public static float PlayerSettlementPrisonerEscapeChance => Cfg?.PlayerSettlementPrisonerEscapeChance ?? 0.01f;
     }
 
 

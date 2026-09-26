@@ -64,13 +64,6 @@
       </Aserai>
     </VolunteerRecruitment>
 
-    <!-- ========== 囚犯逃逸 ========== -->
-    <Prisoners>
-      <PlayerSettlement>
-        <EscapeChance value="0.01"/>
-      </PlayerSettlement>
-    </Prisoners>
-
     <!-- ========== AI 招募决策 ========== -->
     <!--
       三层决策模型：

@@ -157,11 +157,6 @@ namespace ModifiedArmy.common
         /// </summary>
         public float AseraiVolunteerMultiplier { get; private set; } = 0.7f;
 
-        /// <summary>
-        /// 玩家定居点囚犯逃逸概率。默认 0.01（1%）。
-        /// </summary>
-        public float PlayerSettlementPrisonerEscapeChance { get; private set; } = 0.01f;
-
         // ========== AI 招募决策配置 ==========
 
         // --- Need Score（招兵紧迫度）---
@@ -358,17 +353,6 @@ namespace ModifiedArmy.common
                 if (aseraiNode != null)
                 {
                     AseraiVolunteerMultiplier = ReadFloatVal(aseraiNode, "GenerationMultiplier", 0.7f);
-                }
-            }
-
-            // ========== Prisoners ==========
-            XmlNode prisonersNode = node.SelectSingleNode("Prisoners");
-            if (prisonersNode != null)
-            {
-                XmlNode playerSettlementNode = prisonersNode.SelectSingleNode("PlayerSettlement");
-                if (playerSettlementNode != null)
-                {
-                    PlayerSettlementPrisonerEscapeChance = ReadFloatVal(playerSettlementNode, "EscapeChance", 0.01f);
                 }
             }
 

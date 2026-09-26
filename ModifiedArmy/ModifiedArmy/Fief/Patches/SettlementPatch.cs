@@ -8,7 +8,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
-namespace ModifiedArmy.Patch
+namespace ModifiedArmy.Fief.Patches
 {
     /// <summary>
     /// 避免移除民兵部队中的封邑士兵

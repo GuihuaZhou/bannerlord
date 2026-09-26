@@ -79,8 +79,6 @@
     <string id="MA_Fief_Group_Advanced" text="高级设置" />
     <string id="MA_Fief_MinLogLevel" text="日志等级" />
     <string id="MA_Prisoner_Group" text="囚犯逃逸" />
-    <string id="MA_Prisoner_EscapeChance_PlayerSettlement" text="玩家领地内囚犯逃逸概率" />
-    <string id="MA_Prisoner_EscapeChance_PlayerSettlement_Desc" text="被关押在玩家拥有的城镇或城堡中的囚犯, 每日尝试逃逸的基础概率. 设为 0 可完全禁止逃逸." />
     <string id="MA_RecruitmentCost_Group" text="招募成本" />
     <string id="MA_CastleProsperityCostPerTier" text="城堡: 每级兵种消耗的繁荣度" />
     <string id="MA_CastleProsperityCostPerTier_Desc" text="从城堡招募士兵时, 每提升一级兵种等级所消耗的繁荣度." />
