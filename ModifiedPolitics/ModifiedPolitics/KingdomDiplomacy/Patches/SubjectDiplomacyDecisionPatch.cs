@@ -23,7 +23,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             if (__result)
             {
                 __result = SubjectDiplomacyPermissionService
-                    .CanStartNormalDiplomacy(
+                    .CanDeclareWar(
                         __instance.Kingdom,
                         __instance.FactionToDeclareWarOn);
             }
@@ -38,7 +38,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             if (__result)
             {
                 __result = SubjectDiplomacyPermissionService
-                    .CanStartNormalDiplomacy(
+                    .CanMakePeace(
                         __instance.Kingdom,
                         __instance.FactionToMakePeaceWith);
             }

@@ -51,6 +51,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
             {
                 PuppetDiplomacySynchronizer.SynchronizeAllWars(subject);
             }
+            else if (type == SubjectType.Vassal)
+            {
+                VassalWarObligationSynchronizer
+                    .JoinCurrentOverlordWars(subject);
+            }
 
             SubjectAllianceRestrictionService
                 .RemoveExistingAlliances(subject);
