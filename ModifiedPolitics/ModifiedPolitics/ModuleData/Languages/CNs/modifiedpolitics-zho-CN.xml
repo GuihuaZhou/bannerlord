@@ -28,6 +28,17 @@
     <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 当前开发阶段中, 所有有效要求都会被接受." />
     <string id="ModifiedPolitics_SubjectDemandRequiresRuler" text="只有王国统治者可以提出该要求." />
     <string id="ModifiedPolitics_SubjectDemandUnavailable" text="当前无法与该王国建立宗藩关系." />
+    <string id="ModifiedPolitics_OfferVassalage" text="主动成为附庸" />
+    <string id="ModifiedPolitics_OfferVassalageDescription" text="主动成为{TARGET}的附庸. 当前开发阶段中, 所有有效请求都会被接受." />
+    <string id="ModifiedPolitics_OfferPuppetSubmission" text="主动成为傀儡" />
+    <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 当前开发阶段中, 所有有效请求都会被接受." />
+    <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国统治者可以主动臣服." />
+    <string id="ModifiedPolitics_SubjectOfferUnavailable" text="你的王国当前无法成为该王国的臣属国." />
+    <string id="ModifiedPolitics_ReleaseVassal" text="解除附庸" />
+    <string id="ModifiedPolitics_ReleasePuppet" text="解除傀儡" />
+    <string id="ModifiedPolitics_ReleaseSubjectDescription" text="和平解除与{TARGET}的宗藩关系." />
+    <string id="ModifiedPolitics_DeclareIndependence" text="宣布独立" />
+    <string id="ModifiedPolitics_DeclareIndependenceDescription" text="解除与{TARGET}的宗藩关系并进入独立战争." />
     <string id="ModifiedPolitics_PuppetAllianceForbidden" text="傀儡国不能签订同盟条约." />
     <string id="ModifiedPolitics_VassalAllianceForbidden" text="附庸国不能签订同盟条约." />
 

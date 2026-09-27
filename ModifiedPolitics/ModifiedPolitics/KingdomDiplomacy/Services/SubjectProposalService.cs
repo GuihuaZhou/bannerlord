@@ -69,5 +69,61 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 subject,
                 type);
         }
+
+        public static bool CanOfferSubmission(
+            Kingdom subject,
+            Kingdom overlord,
+            SubjectType type,
+            out TextObject reason)
+        {
+            reason = TextObject.GetEmpty();
+            if (subject == null
+                || overlord == null
+                || type == SubjectType.None
+                || Clan.PlayerClan?.Kingdom != subject
+                || subject.RulingClan != Clan.PlayerClan)
+            {
+                reason = new TextObject(
+                    "{=ModifiedPolitics_SubjectOfferRequiresRuler}Only the ruler of a kingdom can offer submission.");
+                return false;
+            }
+
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            if (manager == null
+                || !manager.CanEstablishSubjectRelation(
+                    overlord,
+                    subject,
+                    type))
+            {
+                reason = new TextObject(
+                    "{=ModifiedPolitics_SubjectOfferUnavailable}Your kingdom cannot become a subject of this kingdom.");
+                return false;
+            }
+
+            return true;
+        }
+
+        public static bool OfferSubmission(
+            Kingdom subject,
+            Kingdom overlord,
+            SubjectType type)
+        {
+            TextObject reason;
+            if (!CanOfferSubmission(
+                subject,
+                overlord,
+                type,
+                out reason))
+            {
+                return false;
+            }
+
+            // Temporary development rule: every valid player offer is
+            // accepted. Future AI evaluation belongs at this point.
+            return SubjectRelationAction.TryEstablish(
+                overlord,
+                subject,
+                type);
+        }
     }
 }
