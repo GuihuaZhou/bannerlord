@@ -22,6 +22,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public CampaignTime EstablishedTime { get; set; }
 
         [SaveableProperty(5)]
+        // Retained for save compatibility with the first subject-relation
+        // format. Live tribute is now derived from current settlement count.
         public int DailyTribute { get; set; }
 
         public SubjectRelationData()

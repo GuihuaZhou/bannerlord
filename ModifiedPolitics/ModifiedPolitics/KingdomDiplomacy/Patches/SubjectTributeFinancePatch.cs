@@ -53,6 +53,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             Clan clan,
             ref ExplainedNumber result)
         {
+            if (SubjectTributeCalculator.IsBuildingAssessment)
+            {
+                return;
+            }
+
             int income = SubjectTributeCalculator.GetIncomeForClan(clan);
             if (income <= 0)
             {
@@ -70,6 +75,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             Clan clan,
             ref ExplainedNumber result)
         {
+            if (SubjectTributeCalculator.IsBuildingAssessment)
+            {
+                return;
+            }
+
             int expense = SubjectTributeCalculator.GetExpenseForClan(clan);
             if (expense <= 0)
             {

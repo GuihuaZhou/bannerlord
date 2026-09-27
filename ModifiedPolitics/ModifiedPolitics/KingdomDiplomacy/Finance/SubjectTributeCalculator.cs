@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Models;
@@ -7,109 +8,196 @@ using TaleWorlds.CampaignSystem;
 namespace ModifiedPolitics.KingdomDiplomacy.Finance
 {
     /// <summary>
-    /// Calculates each clan's share of subject tribute. Subject expenses mirror
-    /// Bannerlord's native tribute weights: towns count as three, castles as one,
-    /// every clan receives one base share, and the ruling clan receives one
-    /// additional share. All income is paid to the overlord's ruling clan.
+    /// Builds one balanced tribute assessment per campaign day. Every payment
+    /// is charged to the clan that owns the assessed settlement, while all
+    /// collected money is credited to the overlord's ruling clan.
     /// </summary>
     public static class SubjectTributeCalculator
     {
+        public const int TributePerVillage = 100;
+        public const int TributePerCastle = 200;
+        public const int TributePerTown = 400;
+
+        private static readonly Dictionary<Clan, int> ClanExpenses =
+            new Dictionary<Clan, int>();
+        private static readonly Dictionary<Clan, int> RulingClanIncome =
+            new Dictionary<Clan, int>();
+
+        private static int _assessmentDay = int.MinValue;
+        private static bool _isBuildingAssessment;
+
+        /// <summary>
+        /// True while native clan finances are queried to determine how much a
+        /// payer can afford. Finance postfixes must return zero during this
+        /// query so tribute is not recursively included in itself.
+        /// </summary>
+        public static bool IsBuildingAssessment => _isBuildingAssessment;
+
         public static int GetIncomeForClan(Clan clan)
         {
-            Kingdom kingdom = clan?.Kingdom;
-            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
-            if (kingdom == null
-                || !IsEligibleClan(clan)
-                || manager == null)
-            {
-                return 0;
-            }
-
-            if (kingdom.RulingClan != clan)
-            {
-                return 0;
-            }
-
-            int totalIncome = 0;
-            foreach (SubjectRelationData relation in manager.GetSubjects(kingdom))
-            {
-                if (IsActive(relation))
-                {
-                    totalIncome += relation.DailyTribute;
-                }
-            }
-
-            return totalIncome;
+            EnsureDailyAssessment();
+            return clan != null
+                && RulingClanIncome.TryGetValue(clan, out int income)
+                    ? income
+                    : 0;
         }
 
         public static int GetExpenseForClan(Clan clan)
         {
-            Kingdom kingdom = clan?.Kingdom;
-            SubjectRelationData relation = KingdomDiplomacyManager.Current
-                ?.GetSubjectRelation(kingdom);
-            if (kingdom == null
-                || !IsEligibleClan(clan)
-                || !IsActive(relation))
-            {
-                return 0;
-            }
-
-            return GetAllocatedShare(kingdom, clan, relation.DailyTribute);
+            EnsureDailyAssessment();
+            return clan != null
+                && ClanExpenses.TryGetValue(clan, out int expense)
+                    ? expense
+                    : 0;
         }
 
-        private static int GetAllocatedShare(
-            Kingdom kingdom,
-            Clan targetClan,
-            int totalAmount)
+        /// <summary>
+        /// Returns the amount that can actually be collected today. Unpaid
+        /// tribute is waived instead of being created from nothing.
+        /// </summary>
+        public static int GetDailyTribute(SubjectRelationData relation)
         {
-            if (kingdom == null || targetClan == null || totalAmount <= 0)
+            EnsureDailyAssessment();
+            if (!IsActive(relation))
             {
                 return 0;
             }
 
-            List<Clan> clans = kingdom.Clans
+            return relation.SubjectKingdom.Clans
                 .Where(IsEligibleClan)
-                .ToList();
-            int targetIndex = clans.IndexOf(targetClan);
-            if (targetIndex < 0)
-            {
-                return 0;
-            }
-
-            int totalWeight = clans.Sum(clan => GetClanWeight(kingdom, clan));
-            if (totalWeight <= 0)
-            {
-                return 0;
-            }
-
-            int floorShare = GetFloorShare(
-                totalAmount,
-                GetClanWeight(kingdom, targetClan),
-                totalWeight);
-            int allFloorShares = clans.Sum(clan => GetFloorShare(
-                totalAmount,
-                GetClanWeight(kingdom, clan),
-                totalWeight));
-            int remainder = totalAmount - allFloorShares;
-
-            // Give one remainder denar to clans in stable kingdom-list order.
-            // This makes all independently calculated clan shares total exactly
-            // the configured tribute amount without storing transient wallets.
-            return floorShare + (targetIndex < remainder ? 1 : 0);
+                .Sum(clan => ClanExpenses.TryGetValue(clan, out int expense)
+                    ? expense
+                    : 0);
         }
 
-        private static int GetFloorShare(
-            int totalAmount,
-            int clanWeight,
-            int totalWeight)
+        public static void InvalidateAssessment()
         {
-            return (int)((long)totalAmount * clanWeight / totalWeight);
+            _assessmentDay = int.MinValue;
+            ClanExpenses.Clear();
+            RulingClanIncome.Clear();
         }
 
-        private static int GetClanWeight(Kingdom kingdom, Clan clan)
+        private static void EnsureDailyAssessment()
         {
-            int fiefWeight = clan.Fiefs.Sum(fief => fief.IsCastle ? 1 : 3);
-            return fiefWeight + 1 + (clan == kingdom.RulingClan ? 1 : 0);
+            if (_isBuildingAssessment || Campaign.Current == null)
+            {
+                return;
+            }
+
+            int currentDay = (int)CampaignTime.Now.ToDays;
+            if (_assessmentDay == currentDay)
+            {
+                return;
+            }
+
+            ClanExpenses.Clear();
+            RulingClanIncome.Clear();
+            _isBuildingAssessment = true;
+            try
+            {
+                BuildAssessment();
+                _assessmentDay = currentDay;
+            }
+            finally
+            {
+                _isBuildingAssessment = false;
+            }
+        }
+
+        private static void BuildAssessment()
+        {
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            if (manager == null)
+            {
+                return;
+            }
+
+            foreach (Kingdom overlord in Kingdom.All)
+            {
+                Clan receiver = overlord?.RulingClan;
+                if (!IsEligibleClan(receiver))
+                {
+                    continue;
+                }
+
+                int collectedForOverlord = 0;
+                foreach (SubjectRelationData relation in
+                    manager.GetSubjects(overlord))
+                {
+                    if (!IsActive(relation))
+                    {
+                        continue;
+                    }
+
+                    foreach (Clan clan in relation.SubjectKingdom.Clans)
+                    {
+                        if (!IsEligibleClan(clan))
+                        {
+                            continue;
+                        }
+
+                        int assessed = CalculateClanAssessment(
+                            relation.SubjectKingdom,
+                            clan);
+                        if (assessed <= 0)
+                        {
+                            continue;
+                        }
+
+                        int available = CalculateAvailableGold(clan);
+                        int payable = Math.Min(assessed, available);
+                        if (payable <= 0)
+                        {
+                            continue;
+                        }
+
+                        ClanExpenses[clan] = payable;
+                        collectedForOverlord += payable;
+                    }
+                }
+
+                if (collectedForOverlord > 0)
+                {
+                    RulingClanIncome[receiver] = collectedForOverlord;
+                }
+            }
+        }
+
+        private static int CalculateClanAssessment(
+            Kingdom subject,
+            Clan clan)
+        {
+            int amount = 0;
+            foreach (var settlement in subject.Settlements)
+            {
+                if (settlement?.OwnerClan != clan)
+                {
+                    continue;
+                }
+
+                if (settlement.IsTown)
+                {
+                    amount += TributePerTown;
+                }
+                else if (settlement.IsCastle)
+                {
+                    amount += TributePerCastle;
+                }
+            }
+
+            amount += subject.Villages.Count(village =>
+                village?.Settlement?.OwnerClan == clan) * TributePerVillage;
+            return amount;
+        }
+
+        private static int CalculateAvailableGold(Clan clan)
+        {
+            // Query the complete native daily balance without tribute. The
+            // recursion guard makes our finance postfixes contribute zero.
+            float nativeBalance = Campaign.Current.Models.ClanFinanceModel
+                .CalculateClanGoldChange(clan, false, false, false)
+                .ResultNumber;
+            return Math.Max(0, (int)(clan.Gold + nativeBalance));
         }
 
         private static bool IsEligibleClan(Clan clan)
@@ -123,7 +211,6 @@ namespace ModifiedPolitics.KingdomDiplomacy.Finance
         private static bool IsActive(SubjectRelationData relation)
         {
             return relation != null
-                && relation.DailyTribute > 0
                 && relation.SubjectKingdom != null
                 && relation.OverlordKingdom != null
                 && !relation.SubjectKingdom.IsEliminated

@@ -1,3 +1,4 @@
+using ModifiedPolitics.KingdomDiplomacy.Finance;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
@@ -29,6 +30,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
             {
                 return false;
             }
+
+            SubjectTributeCalculator.InvalidateAssessment();
 
             // The relation must be removed before declaring war. Otherwise the
             // resulting native war event would be interpreted as another act

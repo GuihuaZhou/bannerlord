@@ -1,3 +1,4 @@
+using ModifiedPolitics.KingdomDiplomacy.Finance;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
@@ -61,6 +62,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
                 .RemoveExistingAlliances(subject);
             SubjectTradeRestrictionService
                 .RemoveInvalidTradeAgreements(subject);
+            SubjectTributeCalculator.InvalidateAssessment();
 
             TextObject message = new TextObject(
                 "{=ModifiedPolitics_SubjectEstablished}[Kingdom diplomacy] {SUBJECT} became a {SUBJECT_TYPE} of {OVERLORD}.");
@@ -81,6 +83,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
             {
                 return false;
             }
+
+            SubjectTributeCalculator.InvalidateAssessment();
 
             TextObject message = new TextObject(
                 "{=ModifiedPolitics_SubjectReleased}[Kingdom diplomacy] {SUBJECT} is no longer a subject of {OVERLORD}.");
