@@ -41,6 +41,9 @@
     <string id="ModifiedPolitics_DeclareIndependenceDescription" text="解除与{TARGET}的宗藩关系并进入独立战争." />
     <string id="ModifiedPolitics_PuppetAllianceForbidden" text="傀儡国不能签订同盟条约." />
     <string id="ModifiedPolitics_VassalEnemyAllianceForbidden" text="附庸国不能与宗主的敌国签订同盟条约." />
+    <string id="ModifiedPolitics_DiplomacyCategoryOverlord" text="宗主" />
+    <string id="ModifiedPolitics_DiplomacyCategoryVassals" text="附庸" />
+    <string id="ModifiedPolitics_DiplomacyCategoryPuppets" text="傀儡" />
 
     <!-- Clan panel labels. -->
     <string id="ModifiedPolitics_WarPotential" text="战争潜力" />

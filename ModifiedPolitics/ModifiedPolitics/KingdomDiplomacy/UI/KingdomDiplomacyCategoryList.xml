@@ -1,0 +1,100 @@
+<NavigatableListPanel
+    Id="WarsList"
+    WidthSizePolicy="CoverChildren"
+    HeightSizePolicy="CoverChildren"
+    StackLayout.LayoutMethod="VerticalTopToBottom"
+    MinIndex="0"
+    StepSize="1000">
+
+  <Children>
+
+    <PartyHeaderToggleWidget
+        Id="OverlordToggleButton"
+        DoNotPassEventsToChildren="true"
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="Fixed"
+        SuggestedWidth="!DiplomacyToggle.Width"
+        SuggestedHeight="!DiplomacyToggle.Height"
+        Brush="Kingdom.Policy.Toggle.Tuple"
+        CollapseIndicator="Description\CollapseIndicator"
+        ListPanel="..\OverlordParentWidget\OverlordList"
+        WidgetToClose="..\OverlordParentWidget">
+      <Children>
+        <ListPanel Id="Description" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" IsDisabled="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+            <BrushWidget Id="CollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginRight="5" Brush="Party.Text.Toggle" Text="@OverlordText" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginLeft="5" Brush="Party.Text.Toggle" Text="@NumOfOverlordsText" />
+          </Children>
+        </ListPanel>
+      </Children>
+    </PartyHeaderToggleWidget>
+    <Widget Id="OverlordParentWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <NavigatableListPanel Id="OverlordList" DataSource="{OverlordKingdoms}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate><TruceTuple IsSelected="@IsSelected" /></ItemTemplate>
+        </NavigatableListPanel>
+      </Children>
+    </Widget>
+
+    <PartyHeaderToggleWidget Id="VassalsToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!DiplomacyToggle.Width" SuggestedHeight="!DiplomacyToggle.Height" Brush="Kingdom.Policy.Toggle.Tuple" CollapseIndicator="Description\CollapseIndicator" ListPanel="..\VassalsParentWidget\VassalsList" WidgetToClose="..\VassalsParentWidget">
+      <Children>
+        <ListPanel Id="Description" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" IsDisabled="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+            <BrushWidget Id="CollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginRight="5" Brush="Party.Text.Toggle" Text="@VassalsText" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginLeft="5" Brush="Party.Text.Toggle" Text="@NumOfVassalsText" />
+          </Children>
+        </ListPanel>
+      </Children>
+    </PartyHeaderToggleWidget>
+    <Widget Id="VassalsParentWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <NavigatableListPanel Id="VassalsList" DataSource="{VassalKingdoms}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate><TruceTuple IsSelected="@IsSelected" /></ItemTemplate>
+        </NavigatableListPanel>
+      </Children>
+    </Widget>
+
+    <PartyHeaderToggleWidget Id="PuppetsToggleButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!DiplomacyToggle.Width" SuggestedHeight="!DiplomacyToggle.Height" Brush="Kingdom.Policy.Toggle.Tuple" CollapseIndicator="Description\CollapseIndicator" ListPanel="..\PuppetsParentWidget\PuppetsList" WidgetToClose="..\PuppetsParentWidget">
+      <Children>
+        <ListPanel Id="Description" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" IsDisabled="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+          <Children>
+            <BrushWidget Id="CollapseIndicator" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Party.Toggle.ExpandIndicator.Width" SuggestedHeight="!Party.Toggle.ExpandIndicator.Height" VerticalAlignment="Center" MarginRight="5" Brush="Party.Toggle.ExpandIndicator" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginRight="5" Brush="Party.Text.Toggle" Text="@PuppetsText" />
+            <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" MarginLeft="5" Brush="Party.Text.Toggle" Text="@NumOfPuppetsText" />
+          </Children>
+        </ListPanel>
+      </Children>
+    </PartyHeaderToggleWidget>
+    <Widget Id="PuppetsParentWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <NavigatableListPanel Id="PuppetsList" DataSource="{PuppetKingdoms}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate><TruceTuple IsSelected="@IsSelected" /></ItemTemplate>
+        </NavigatableListPanel>
+      </Children>
+    </Widget>
+
+    <NavigationAutoScrollWidget TrackedWidget="..\PlayerWarsHeader" />
+    <ScrollablePanelFixedHeaderWidget Id="PlayerWarsHeader" FixedHeader="..\..\..\PlayerWarsToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!DiplomacyToggle.Width" HeaderHeight="!DiplomacyToggle.Height" />
+    <Widget Id="PlayerWarsParentWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\PlayerWarsList" />
+        <NavigatableListPanel Id="PlayerWarsList" DataSource="{PlayerWars}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate><WarTuple IsSelected="@IsSelected" /></ItemTemplate>
+        </NavigatableListPanel>
+      </Children>
+    </Widget>
+
+    <NavigationAutoScrollWidget TrackedWidget="..\OtherWarsHeader" />
+    <ScrollablePanelFixedHeaderWidget Id="OtherWarsHeader" FixedHeader="..\..\..\OtherWarsToggleButton" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!DiplomacyToggle.Width" HeaderHeight="!DiplomacyToggle.Height" AdditionalBottomOffset="!DiplomacyToggle.Height" />
+    <Widget Id="OtherWarsParentWidget" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+      <Children>
+        <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\OtherWarsList" />
+        <NavigatableListPanel Id="OtherWarsList" DataSource="{OrdinaryTruces}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom" UseSelfIndexForMinimum="true">
+          <ItemTemplate><TruceTuple IsSelected="@IsSelected" /></ItemTemplate>
+        </NavigatableListPanel>
+      </Children>
+    </Widget>
+  </Children>
+</NavigatableListPanel>
