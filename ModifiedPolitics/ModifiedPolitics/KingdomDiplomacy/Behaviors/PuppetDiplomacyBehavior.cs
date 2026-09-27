@@ -90,6 +90,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
         {
             if (!(actingFaction is Kingdom actingKingdom)
                 || otherFaction == null
+                || SubjectFormerWarResolutionService
+                    .IsResolutionInProgressFor(actingKingdom)
                 || PuppetDiplomacySynchronizer
                     .IsSynchronizationInProgressFor(actingKingdom))
             {

@@ -113,6 +113,35 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             }
         }
 
+        /// <summary>
+        /// Adds the overlord's wars without erasing wars inherited by a newly
+        /// established puppet. Former enemies resolve those wars separately.
+        /// </summary>
+        public static void JoinCurrentOverlordWars(Kingdom puppet)
+        {
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            SubjectRelationData relation = manager?.GetSubjectRelation(puppet);
+            if (relation?.Type != SubjectType.Puppet
+                || !IsUsable(relation.OverlordKingdom))
+            {
+                return;
+            }
+
+            Kingdom overlord = relation.OverlordKingdom;
+            foreach (Kingdom other in Kingdom.All.ToList())
+            {
+                if (!IsUsable(other)
+                    || other == overlord
+                    || other == puppet
+                    || !FactionManager.IsAtWarAgainstFaction(overlord, other))
+                {
+                    continue;
+                }
+
+                SynchronizePuppetsAgainst(overlord, other);
+            }
+        }
+
         private static bool IsUsable(Kingdom kingdom)
         {
             return kingdom != null && !kingdom.IsEliminated;

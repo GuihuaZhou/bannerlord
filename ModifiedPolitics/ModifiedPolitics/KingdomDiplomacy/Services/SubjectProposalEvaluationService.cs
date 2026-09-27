@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Finance;
 using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Models.WarDisposition;
 using ModifiedPolitics.Tool;
 using ModifiedPolitics.Models;
@@ -90,7 +91,14 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 
             foreach (SubjectClanSupportEvaluation clanResult in evaluation.ClanEvaluations)
             {
-                LogClanDetail(evaluation, clanResult);
+                if (evaluation.EvaluatesSubjectConsent)
+                {
+                    LogClanDetail(evaluation, clanResult);
+                }
+                else
+                {
+                    LogReceivingClanDetail(evaluation, clanResult);
+                }
             }
         }
 
@@ -142,23 +150,51 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 proposal.Overlord, proposal.Subject);
             float disposition = GetWarDisposition(clan);
             float relativeSubjectStrength = 1f / Math.Max(0.01f, proposal.StrengthRatio);
+            float directWarDelta = proposal.OverlordWarProgress
+                - proposal.SubjectWarProgress;
+            bool isRulingClan = clan == proposal.Overlord.RulingClan;
             return new SubjectClanSupportEvaluation
             {
                 Clan = clan,
-                SovereigntyScore = proposal.SubjectType == SubjectType.Puppet ? -10f : 5f,
-                MilitaryScore = Clamp(Log2(1f + relativeSubjectStrength) * 20f, 0f, 30f),
-                WarProgressScore = atWar ? -35f : 0f,
+                SovereigntyScore = 0f,
+                MilitaryScore = 0f,
+                WarProgressScore = atWar
+                    ? Clamp(-directWarDelta / 15f, -30f, 30f)
+                    : 0f,
                 ExternalEnemyPressureScore = 0f,
                 MultiFrontPressureScore = 0f,
                 ProtectorStrengthScore = 0f,
                 WarPotential = GetWarPotential(clan),
                 WarPotentialScore = 0f,
                 WarDisposition = disposition,
-                WarDispositionScore = atWar ? Clamp(disposition * 0.25f, -15f, 15f) : 0f,
-                TerritoryScore = Clamp(proposal.SubjectSettlementCount * 3f, 0f, 30f),
+                WarDispositionScore = atWar
+                    ? Clamp(-disposition * 0.35f, -20f, 20f)
+                    : 0f,
+                TerritoryScore = 0f,
                 DailyTribute = 0,
                 TributeScore = 0f,
-                RulingClanScore = clan == proposal.Overlord.RulingClan ? 10f : 0f
+                RulingClanScore = isRulingClan ? 5f : 0f,
+                ControlValueScore = proposal.SubjectType == SubjectType.Puppet
+                    ? 15f
+                    : 5f,
+                SubjectMilitaryValueScore = Clamp(
+                    Log2(1f + relativeSubjectStrength) * 20f,
+                    0f,
+                    30f),
+                StrategicTerritoryScore = Clamp(
+                    proposal.SubjectSettlementCount
+                        * (proposal.SubjectType == SubjectType.Puppet ? 3f : 2f),
+                    0f,
+                    30f),
+                TributeIncomeScore = isRulingClan
+                    ? Clamp(proposal.NominalDailyTribute / 150f, 0f, 30f)
+                    : 0f,
+                WarBurdenScore = proposal.DynamicWarRiskScore,
+                ExistingSubjectsScore = -Clamp(
+                    proposal.ExistingSubjectCount
+                        * (proposal.SubjectType == SubjectType.Puppet ? 10f : 6f),
+                    0f,
+                    30f)
             };
         }
 
@@ -189,6 +225,37 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 OverlordWarProgress = atWar ? GetWarProgress(overlord, subject) : 0f,
                 SubjectWarProgress = atWar ? GetWarProgress(subject, overlord) : 0f
             };
+            result.OverlordActiveWarCount = CountActiveKingdomWars(overlord);
+            result.NewWarObligationCount = CountNewWarObligations(
+                overlord,
+                subject);
+            result.UnsharedSubjectWarCount = CountUnsharedSubjectWars(
+                overlord,
+                subject);
+            result.DynamicWarRiskScore =
+                SubjectFormerWarResolutionService.CalculateAdmissionWarRisk(
+                    overlord,
+                    subject,
+                    out int expectedEscalations,
+                    out float defenseCapacity,
+                    out float currentEnemyStrength,
+                    out float potentialEnemyStrength,
+                    out float availableWarCapacity,
+                    out float combinedEnemyStrength,
+                    out float pressureRatio);
+            result.ExpectedFormerWarEscalationCount = expectedEscalations;
+            result.OverlordDefenseCapacity = defenseCapacity;
+            result.CurrentEnemyStrength = currentEnemyStrength;
+            result.PotentialEnemyStrength = potentialEnemyStrength;
+            result.AvailableWarCapacity = availableWarCapacity;
+            result.CombinedEnemyStrength = combinedEnemyStrength;
+            result.CombinedWarPressureRatio = pressureRatio;
+            result.ExistingSubjectCount = KingdomDiplomacyManager.Current
+                ?.GetSubjects(overlord).Count ?? 0;
+            result.NominalDailyTribute = EligibleClans(subject).Sum(clan =>
+                SubjectTributeCalculator.GetAssessedTributeForClan(
+                    subject,
+                    clan));
             PopulateExternalWarPressure(result, subjectStrength);
             return result;
         }
@@ -370,10 +437,127 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             ModLogger.Info(message.ToString());
         }
 
+        private static void LogReceivingClanDetail(
+            SubjectProposalEvaluation proposal,
+            SubjectClanSupportEvaluation result)
+        {
+            TextObject message = new TextObject(
+                "{=MP_SubjectAdmissionDetail}" +
+                "[Subject diplomacy] {CLAN} scores {TOTAL} and would " +
+                "{DECISION} admission. Control value {CONTROL}, subject " +
+                "military value {MILITARY_VALUE}, strategic territory " +
+                "{TERRITORY_VALUE}, nominal daily tribute {TRIBUTE} adding " +
+                "{TRIBUTE_VALUE}, direct war progress {WAR_PROGRESS}, war " +
+                "disposition {DISPOSITION} adding {DISPOSITION_SCORE}, " +
+                "overlord active wars {OVERLORD_WARS}, subject active wars " +
+                "{SUBJECT_WARS}, new war obligations {NEW_WARS}, unshared " +
+                "subject wars {UNSHARED_WARS}, likely escalations " +
+                "{ESCALATIONS}, defense capacity {DEFENSE}, combined enemy " +
+                "strength {ENEMY_STRENGTH}, current enemies {CURRENT_ENEMIES}, " +
+                "potential enemies {POTENTIAL_ENEMIES}, available capacity " +
+                "{AVAILABLE}, incremental pressure ratio {PRESSURE}, war " +
+                "risk {WAR_BURDEN}, existing subjects " +
+                "{SUBJECT_COUNT} adding {SUBJECT_PENALTY}, ruling clan " +
+                "{RULER}. Support converts to accept {ACCEPT} and reject " +
+                "{REJECT}.");
+            message.SetTextVariable("CLAN", result.Clan.Name);
+            message.SetTextVariable("TOTAL", Format(result.RawScore));
+            message.SetTextVariable("DECISION", DecisionText(result.WouldAccept));
+            message.SetTextVariable("CONTROL", Format(result.ControlValueScore));
+            message.SetTextVariable(
+                "MILITARY_VALUE", Format(result.SubjectMilitaryValueScore));
+            message.SetTextVariable(
+                "TERRITORY_VALUE", Format(result.StrategicTerritoryScore));
+            message.SetTextVariable("TRIBUTE", proposal.NominalDailyTribute);
+            message.SetTextVariable(
+                "TRIBUTE_VALUE", Format(result.TributeIncomeScore));
+            message.SetTextVariable(
+                "WAR_PROGRESS", Format(result.WarProgressScore));
+            message.SetTextVariable(
+                "DISPOSITION", Format(result.WarDisposition));
+            message.SetTextVariable(
+                "DISPOSITION_SCORE", Format(result.WarDispositionScore));
+            message.SetTextVariable(
+                "OVERLORD_WARS", proposal.OverlordActiveWarCount);
+            message.SetTextVariable("SUBJECT_WARS", proposal.ActiveWarCount);
+            message.SetTextVariable(
+                "NEW_WARS", proposal.NewWarObligationCount);
+            message.SetTextVariable(
+                "UNSHARED_WARS", proposal.UnsharedSubjectWarCount);
+            message.SetTextVariable(
+                "ESCALATIONS", proposal.ExpectedFormerWarEscalationCount);
+            message.SetTextVariable(
+                "DEFENSE", proposal.OverlordDefenseCapacity.ToString("F0"));
+            message.SetTextVariable(
+                "ENEMY_STRENGTH", proposal.CombinedEnemyStrength.ToString("F0"));
+            message.SetTextVariable(
+                "CURRENT_ENEMIES", proposal.CurrentEnemyStrength.ToString("F0"));
+            message.SetTextVariable(
+                "POTENTIAL_ENEMIES", proposal.PotentialEnemyStrength.ToString("F0"));
+            message.SetTextVariable(
+                "AVAILABLE", proposal.AvailableWarCapacity.ToString("F0"));
+            message.SetTextVariable(
+                "PRESSURE", proposal.CombinedWarPressureRatio.ToString("F2"));
+            message.SetTextVariable("WAR_BURDEN", Format(result.WarBurdenScore));
+            message.SetTextVariable("SUBJECT_COUNT", proposal.ExistingSubjectCount);
+            message.SetTextVariable(
+                "SUBJECT_PENALTY", Format(result.ExistingSubjectsScore));
+            message.SetTextVariable("RULER", Format(result.RulingClanScore));
+            message.SetTextVariable("ACCEPT", result.AcceptSupport.ToString("F0"));
+            message.SetTextVariable("REJECT", result.RejectSupport.ToString("F0"));
+            ModLogger.Info(message.ToString());
+        }
+
         private static Clan[] EligibleClans(Kingdom kingdom)
         {
             return kingdom?.Clans.Where(x => x != null && !x.IsEliminated
                 && !x.IsUnderMercenaryService).ToArray() ?? new Clan[0];
+        }
+
+        private static int CountActiveKingdomWars(Kingdom kingdom)
+        {
+            return kingdom == null
+                ? 0
+                : Kingdom.All.Count(other => other != null
+                    && !other.IsEliminated
+                    && other != kingdom
+                    && kingdom.IsAtWarWith(other));
+        }
+
+        /// <summary>
+        /// Counts overlord wars that the prospective subject has not already
+        /// joined. These are the actual new wars created by subject status.
+        /// </summary>
+        private static int CountNewWarObligations(
+            Kingdom overlord,
+            Kingdom subject)
+        {
+            return overlord == null || subject == null
+                ? 0
+                : Kingdom.All.Count(other => other != null
+                    && !other.IsEliminated
+                    && other != overlord
+                    && other != subject
+                    && overlord.IsAtWarWith(other)
+                    && !subject.IsAtWarWith(other));
+        }
+
+        /// <summary>
+        /// Counts wars unique to the prospective subject. Vassals retain these
+        /// wars, while puppets discard them when synchronizing with overlord.
+        /// </summary>
+        private static int CountUnsharedSubjectWars(
+            Kingdom overlord,
+            Kingdom subject)
+        {
+            return overlord == null || subject == null
+                ? 0
+                : Kingdom.All.Count(other => other != null
+                    && !other.IsEliminated
+                    && other != overlord
+                    && other != subject
+                    && subject.IsAtWarWith(other)
+                    && !overlord.IsAtWarWith(other));
         }
 
         private static int GetWarPotential(Clan clan)

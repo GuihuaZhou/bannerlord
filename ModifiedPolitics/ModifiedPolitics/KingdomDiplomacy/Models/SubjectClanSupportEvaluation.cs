@@ -23,12 +23,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public int DailyTribute { get; set; }
         public float TributeScore { get; set; }
         public float RulingClanScore { get; set; }
+        public float ControlValueScore { get; set; }
+        public float SubjectMilitaryValueScore { get; set; }
+        public float StrategicTerritoryScore { get; set; }
+        public float TributeIncomeScore { get; set; }
+        public float WarBurdenScore { get; set; }
+        public float ExistingSubjectsScore { get; set; }
 
         public float RawScore => SovereigntyScore + MilitaryScore
             + WarProgressScore + ExternalEnemyPressureScore
             + MultiFrontPressureScore + ProtectorStrengthScore
             + WarPotentialScore + WarDispositionScore + TerritoryScore
-            + TributeScore + RulingClanScore;
+            + TributeScore + RulingClanScore + ControlValueScore
+            + SubjectMilitaryValueScore + StrategicTerritoryScore
+            + TributeIncomeScore + WarBurdenScore + ExistingSubjectsScore;
         public bool WouldAccept => RawScore >= 0f;
         public float AcceptSupport => WouldAccept ? 200f : 0f;
         public float RejectSupport => WouldAccept ? 0f : 200f;

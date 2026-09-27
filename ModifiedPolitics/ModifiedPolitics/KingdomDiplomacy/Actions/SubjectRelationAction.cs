@@ -1,3 +1,5 @@
+using System.Collections.Generic;
+using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Finance;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
@@ -31,6 +33,17 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
                 return false;
             }
 
+            // Preserve wars unique to the prospective subject. Former enemies
+            // decide whether to accept peace or extend the war to the overlord.
+            List<Kingdom> formerEnemies = Kingdom.All
+                .Where(other => other != null
+                    && !other.IsEliminated
+                    && other != overlord
+                    && other != subject
+                    && FactionManager.IsAtWarAgainstFaction(subject, other)
+                    && !FactionManager.IsAtWarAgainstFaction(overlord, other))
+                .ToList();
+
             // The two kingdoms must first leave their former war state. This is
             // done before saving the relation so the peace event cannot be
             // mistaken for a puppet synchronization event.
@@ -50,13 +63,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Actions
 
             if (type == SubjectType.Puppet)
             {
-                PuppetDiplomacySynchronizer.SynchronizeAllWars(subject);
+                PuppetDiplomacySynchronizer.JoinCurrentOverlordWars(subject);
             }
             else if (type == SubjectType.Vassal)
             {
                 VassalWarObligationSynchronizer
                     .JoinCurrentOverlordWars(subject);
             }
+
+            SubjectFormerWarResolutionService.Resolve(
+                overlord,
+                subject,
+                formerEnemies);
 
             SubjectAllianceRestrictionService
                 .RemoveExistingAlliances(subject);

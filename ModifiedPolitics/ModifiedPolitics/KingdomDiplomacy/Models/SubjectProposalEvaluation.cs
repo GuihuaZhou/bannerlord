@@ -25,6 +25,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public float ExternalEnemyPressureScore { get; set; }
         public float MultiFrontPressureScore { get; set; }
         public float ProtectorStrengthScore { get; set; }
+        public int OverlordActiveWarCount { get; set; }
+        public int NewWarObligationCount { get; set; }
+        public int UnsharedSubjectWarCount { get; set; }
+        public int ExpectedFormerWarEscalationCount { get; set; }
+        public float OverlordDefenseCapacity { get; set; }
+        public float CurrentEnemyStrength { get; set; }
+        public float PotentialEnemyStrength { get; set; }
+        public float AvailableWarCapacity { get; set; }
+        public float CombinedEnemyStrength { get; set; }
+        public float CombinedWarPressureRatio { get; set; }
+        public float DynamicWarRiskScore { get; set; }
+        public int ExistingSubjectCount { get; set; }
+        public int NominalDailyTribute { get; set; }
         public List<SubjectClanSupportEvaluation> ClanEvaluations { get; } =
             new List<SubjectClanSupportEvaluation>();
 

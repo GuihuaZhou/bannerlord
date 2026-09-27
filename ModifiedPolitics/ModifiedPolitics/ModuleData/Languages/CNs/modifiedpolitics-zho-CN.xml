@@ -40,6 +40,7 @@
     <string id="MP_SubjectAdmissionVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}接纳{SUBJECT}为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
     <string id="MP_SubjectClanVoteDetail" text="[宗藩外交] {CLAN}的臣服意愿为{TOTAL}, 将会{DECISION}. 主权代价{SOVEREIGNTY}, 军事实力修正{MILITARY}, 与拟议宗主的战争进展修正{WAR_PROGRESS}, 最大外部敌国{EXTERNAL_ENEMY}, 其他敌国压力修正{EXTERNAL_PRESSURE}, 当前战争{WAR_COUNT}场, 多线战争修正{MULTI_FRONT}, 宗主保护能力修正{PROTECTOR}, 战争潜力{WAR_POTENTIAL}使臣服意愿修正{POTENTIAL_SCORE}, 战争倾向{DISPOSITION}使臣服意愿修正{DISPOSITION_SCORE}, 领土状况修正{TERRITORY}, 每日贡赋{TRIBUTE}使臣服意愿修正{TRIBUTE_SCORE}, 统治家族修正{RULER}. 转换后接受支持度为{ACCEPT}, 拒绝支持度为{REJECT}." />
     <string id="MP_SubjectEnemyPressure" text="[宗藩外交] {SUBJECT}对{ENEMY}. 敌方战争进展{ENEMY_PROGRESS}, 本国战争进展{SUBJECT_PROGRESS}, 敌我实力比{STRENGTH_RATIO}, 战争进展压力{PROGRESS_PRESSURE}, 实力压力{STRENGTH_PRESSURE}, 合成外部压力{COMBINED_PRESSURE}." />
+    <string id="MP_SubjectAdmissionDetail" text="[宗藩外交] {CLAN}的接纳意愿为{TOTAL}, 将会{DECISION}. 控制价值{CONTROL}, 臣属国军事价值{MILITARY_VALUE}, 战略领土价值{TERRITORY_VALUE}, 预计每日贡赋{TRIBUTE}使统治家族接纳意愿修正{TRIBUTE_VALUE}, 与臣属国的战争进展修正{WAR_PROGRESS}, 战争倾向{DISPOSITION}使接纳意愿修正{DISPOSITION_SCORE}, 宗主当前战争{OVERLORD_WARS}场, 臣属国当前战争{SUBJECT_WARS}场, 新增战争义务{NEW_WARS}场, 臣属国独有战争{UNSHARED_WARS}场, 预计其中{ESCALATIONS}场会扩大到宗主国, 宗主集团有效实力{DEFENSE}, 当前敌国集团实力{CURRENT_ENEMIES}, 潜在新增敌国集团实力{POTENTIAL_ENEMIES}, 剩余战争承受力{AVAILABLE}, 当前及潜在敌国集团总实力{ENEMY_STRENGTH}, 新增战争压力比{PRESSURE}, 战争风险修正{WAR_BURDEN}, 已有臣属国{SUBJECT_COUNT}个使接纳意愿修正{SUBJECT_PENALTY}, 统治家族修正{RULER}. 转换后接受支持度为{ACCEPT}, 拒绝支持度为{REJECT}." />
     <string id="ModifiedPolitics_SubjectProposalAccept" text="接受" />
     <string id="ModifiedPolitics_SubjectProposalReject" text="拒绝" />
     <string id="ModifiedPolitics_ReleaseVassal" text="解除附庸" />
@@ -125,5 +126,11 @@
     <string id="ModifiedPolitics_ExiledClanCandidate" text="[家族投奔] {CLAN_NAME}选择与{KINGDOM_NAME}谈判. 目标权重为{WEIGHT}, 家族意愿为{CLAN_SCORE}, 王国接纳意愿为{KINGDOM_SCORE}, 合计为{TOTAL_SCORE}." />
     <string id="ModifiedPolitics_ExiledClanJoined" text="[家族投奔] {CLAN_NAME}已经加入{KINGDOM_NAME}." />
     <string id="ModifiedPolitics_ExiledClanBarterFailed" text="[家族投奔] {CLAN_NAME}与{KINGDOM_NAME}的谈判没有达成协议." />
+    <string id="MP_SubjectFormerWarClanEvaluation" text="[宗藩外交] {SUBJECT}成为{OVERLORD}的臣属国后, {CLAN}评估是否与其停战. 本体停战支持度为{NATIVE}. 宗主集团实力为{SUBJECT_STRENGTH}, {ENEMY}集团实力为{ENEMY_STRENGTH}, 实力比为{RATIO}, 集团实力修正{BLOC_SCORE}. 最终分数为{FINAL}, 因此该家族支持{DECISION}." />
+    <string id="MP_SubjectFormerWarPeace" text="和平" />
+    <string id="MP_SubjectFormerWarEscalation" text="扩大战争" />
+    <string id="MP_SubjectFormerWarResolution" text="[宗藩外交] {SUBJECT}成为{OVERLORD}的臣属国后, {ENEMY}决定{RESULT}. 和平支持率为{SHARE}%." />
+    <string id="MP_SubjectFormerWarAcceptedPeace" text="与臣属国停战" />
+    <string id="MP_SubjectFormerWarDeclaredOverlord" text="向宗主国宣战" />
   </strings>
 </base>
