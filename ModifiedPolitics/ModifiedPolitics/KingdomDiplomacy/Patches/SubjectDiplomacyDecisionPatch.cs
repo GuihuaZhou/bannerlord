@@ -78,7 +78,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
                     ? new TextObject(
                         "{=ModifiedPolitics_PuppetAllianceForbidden}Puppet kingdoms cannot form alliances.")
                     : new TextObject(
-                        "{=ModifiedPolitics_VassalAllianceForbidden}Vassal kingdoms cannot form alliances.");
+                        "{=ModifiedPolitics_VassalEnemyAllianceForbidden}Vassal kingdoms cannot ally with an enemy of their overlord.");
             }
         }
     }

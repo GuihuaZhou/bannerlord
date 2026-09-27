@@ -7,7 +7,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
 {
     /// <summary>
     /// Guards the native mutation entry point so direct calls from Bannerlord
-    /// or another mod cannot establish an alliance involving a subject.
+    /// or another mod must obey puppet and vassal alliance rules.
     /// </summary>
     [HarmonyPatch(
         typeof(AllianceCampaignBehavior),

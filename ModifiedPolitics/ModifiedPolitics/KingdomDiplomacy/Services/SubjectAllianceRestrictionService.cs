@@ -7,9 +7,9 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
-    /// Enforces the rule that subject kingdoms cannot be members of native
-    /// alliances. Trade agreements and other non-alliance treaties remain
-    /// independent and are deliberately not handled here.
+    /// Applies alliance rules to both sides of a proposed alliance. Puppets
+    /// cannot form alliances. Vassals remain free to form alliances unless
+    /// the prospective ally is currently at war with their overlord.
     /// </summary>
     public static class SubjectAllianceRestrictionService
     {
@@ -20,10 +20,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return false;
             }
 
-            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
-            return manager == null
-                || (manager.GetSubjectType(first) == SubjectType.None
-                    && manager.GetSubjectType(second) == SubjectType.None);
+            return CanSubjectFormAlliance(first, second)
+                && CanSubjectFormAlliance(second, first);
         }
 
         public static SubjectType GetBlockingSubjectType(
@@ -42,15 +40,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return SubjectType.Puppet;
             }
 
-            return firstType == SubjectType.Vassal
-                || secondType == SubjectType.Vassal
+            return !CanSubjectFormAlliance(first, second)
+                    && firstType == SubjectType.Vassal
+                || !CanSubjectFormAlliance(second, first)
+                    && secondType == SubjectType.Vassal
                 ? SubjectType.Vassal
                 : SubjectType.None;
         }
 
         /// <summary>
-        /// Removes alliances that predate the subject relation. Iterating over
-        /// a copy is required because EndAlliance updates AlliedKingdoms.
+        /// Removes alliances that became invalid when the subject relation or
+        /// the overlord's wars changed. Iterating over a copy is required
+        /// because EndAlliance updates AlliedKingdoms.
         /// </summary>
         public static void RemoveExistingAlliances(Kingdom subject)
         {
@@ -70,8 +71,35 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 
             foreach (Kingdom ally in subject.AlliedKingdoms.ToList())
             {
-                behavior.EndAlliance(subject, ally);
+                if (!CanFormAlliance(subject, ally))
+                {
+                    behavior.EndAlliance(subject, ally);
+                }
             }
+        }
+
+        private static bool CanSubjectFormAlliance(
+            Kingdom possibleSubject,
+            Kingdom prospectiveAlly)
+        {
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            SubjectType type = manager?.GetSubjectType(possibleSubject)
+                ?? SubjectType.None;
+            if (type == SubjectType.None)
+            {
+                return true;
+            }
+
+            if (type == SubjectType.Puppet)
+            {
+                return false;
+            }
+
+            Kingdom overlord = manager.GetOverlord(possibleSubject);
+            return overlord == null
+                || !FactionManager.IsAtWarAgainstFaction(
+                    overlord,
+                    prospectiveAlly);
         }
     }
 }

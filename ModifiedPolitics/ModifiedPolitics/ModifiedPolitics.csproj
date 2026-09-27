@@ -15,7 +15,7 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
-    <None Update="KingdomDiplomacy\UI\KingdomDiplomacyActionRows.xml">
+    <None Update="KingdomDiplomacy\UI\KingdomDiplomacyScrollableDetails.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
