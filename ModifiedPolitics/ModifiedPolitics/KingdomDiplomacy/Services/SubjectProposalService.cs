@@ -1,16 +1,16 @@
 using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
-    /// Stable entry point for diplomatic subject proposals. The current
-    /// development rule makes every valid player demand succeed immediately;
-    /// later AI acceptance logic can replace that rule without changing UI or
-    /// the authoritative SubjectRelationAction.
+    /// Stable entry point for diplomatic subject proposals. Structural
+    /// validation is kept separate from clan voting so the UI can keep an
+    /// action available even when the other kingdom is likely to reject it.
     /// </summary>
     public static class SubjectProposalService
     {
@@ -62,15 +62,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return false;
             }
 
-            // Temporary development rule: every valid demand made by the
-            // player is accepted. The evaluation currently runs in observation
-            // mode so its weights can be tuned from real campaign data.
             SubjectProposalEvaluation evaluation =
                 SubjectProposalEvaluationService.EvaluateDemand(
                     overlord,
                     subject,
                     type);
             SubjectProposalEvaluationService.Log(evaluation);
+            if (!evaluation.WouldAccept)
+            {
+                LogDemandRejected(subject, type);
+                return false;
+            }
+
             return SubjectRelationAction.TryEstablish(
                 overlord,
                 subject,
@@ -125,14 +128,17 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return false;
             }
 
-            // Temporary development rule: every valid player offer is
-            // accepted. The evaluation currently runs in observation mode.
             SubjectProposalEvaluation subjectEvaluation =
                 SubjectProposalEvaluationService.EvaluateSubmissionIntent(
                     overlord,
                     subject,
                     type);
             SubjectProposalEvaluationService.Log(subjectEvaluation);
+            if (!subjectEvaluation.WouldAccept)
+            {
+                LogSubmissionCouncilRejected(subject, type);
+                return false;
+            }
 
             SubjectProposalEvaluation admissionEvaluation =
                 SubjectProposalEvaluationService.EvaluateSubmissionOffer(
@@ -140,10 +146,55 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                     subject,
                     type);
             SubjectProposalEvaluationService.Log(admissionEvaluation);
+            if (!admissionEvaluation.WouldAccept)
+            {
+                LogSubmissionRejected(overlord, type);
+                return false;
+            }
+
             return SubjectRelationAction.TryEstablish(
                 overlord,
                 subject,
                 type);
+        }
+
+        private static void LogDemandRejected(
+            Kingdom subject,
+            SubjectType type)
+        {
+            TextObject message = new TextObject(
+                "{=MP_SubjectDemandRejected}[Subject diplomacy] {KINGDOM} rejected the demand to become a {SUBJECT_TYPE}.");
+            message.SetTextVariable("KINGDOM", subject.Name);
+            message.SetTextVariable(
+                "SUBJECT_TYPE",
+                SubjectProposalEvaluationService.TypeText(type));
+            ModLogger.Notice(message.ToString());
+        }
+
+        private static void LogSubmissionCouncilRejected(
+            Kingdom subject,
+            SubjectType type)
+        {
+            TextObject message = new TextObject(
+                "{=MP_SubjectCouncilRejected}[Subject diplomacy] {KINGDOM}'s clans rejected becoming a {SUBJECT_TYPE}.");
+            message.SetTextVariable("KINGDOM", subject.Name);
+            message.SetTextVariable(
+                "SUBJECT_TYPE",
+                SubjectProposalEvaluationService.TypeText(type));
+            ModLogger.Notice(message.ToString());
+        }
+
+        private static void LogSubmissionRejected(
+            Kingdom overlord,
+            SubjectType type)
+        {
+            TextObject message = new TextObject(
+                "{=MP_SubjectOfferRejected}[Subject diplomacy] {KINGDOM} rejected the offer to accept your kingdom as a {SUBJECT_TYPE}.");
+            message.SetTextVariable("KINGDOM", overlord.Name);
+            message.SetTextVariable(
+                "SUBJECT_TYPE",
+                SubjectProposalEvaluationService.TypeText(type));
+            ModLogger.Notice(message.ToString());
         }
     }
 }

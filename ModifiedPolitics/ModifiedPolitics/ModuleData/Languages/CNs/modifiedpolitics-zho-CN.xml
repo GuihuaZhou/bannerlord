@@ -25,15 +25,18 @@
     <string id="ModifiedPolitics_SubjectTributeIncome" text="宗藩贡赋收入" />
     <string id="ModifiedPolitics_SubjectTributeExpense" text="宗藩贡赋支出" />
     <string id="ModifiedPolitics_DemandVassal" text="要求成为附庸" />
-    <string id="ModifiedPolitics_DemandVassalDescription" text="要求{TARGET}成为你的附庸. 当前开发阶段中, 所有有效要求都会被接受." />
+    <string id="ModifiedPolitics_DemandVassalDescription" text="要求{TARGET}成为你的附庸. 对方王国的家族将对此提议进行表决." />
     <string id="ModifiedPolitics_DemandPuppet" text="要求成为傀儡" />
-    <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 当前开发阶段中, 所有有效要求都会被接受." />
+    <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 对方王国的家族将对此提议进行表决." />
     <string id="ModifiedPolitics_SubjectDemandRequiresRuler" text="只有王国统治者可以提出该要求." />
     <string id="ModifiedPolitics_SubjectDemandUnavailable" text="当前无法与该王国建立宗藩关系." />
     <string id="ModifiedPolitics_OfferVassalage" text="主动成为附庸" />
-    <string id="ModifiedPolitics_OfferVassalageDescription" text="主动成为{TARGET}的附庸. 当前开发阶段中, 所有有效请求都会被接受." />
+    <string id="ModifiedPolitics_OfferVassalageDescription" text="主动成为{TARGET}的附庸. 双方王国的家族都将对此提议进行表决." />
     <string id="ModifiedPolitics_OfferPuppetSubmission" text="主动成为傀儡" />
-    <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 当前开发阶段中, 所有有效请求都会被接受." />
+    <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 双方王国的家族都将对此提议进行表决." />
+    <string id="MP_SubjectDemandRejected" text="[宗藩外交] {KINGDOM}拒绝了成为{SUBJECT_TYPE}的要求." />
+    <string id="MP_SubjectCouncilRejected" text="[宗藩外交] {KINGDOM}的家族拒绝成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectOfferRejected" text="[宗藩外交] {KINGDOM}拒绝接纳你的王国为{SUBJECT_TYPE}." />
     <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国统治者可以主动臣服." />
     <string id="ModifiedPolitics_SubjectOfferUnavailable" text="你的王国当前无法成为该王国的臣属国." />
     <string id="MP_SubjectConsentVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}成为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />

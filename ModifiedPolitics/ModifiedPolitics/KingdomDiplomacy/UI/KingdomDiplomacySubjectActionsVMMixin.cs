@@ -102,7 +102,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_DemandVassal}Demand Vassalage"),
                 new TextObject(
-                    "{=ModifiedPolitics_DemandVassalDescription}Demand that {TARGET} become your vassal. During development, every valid demand is accepted."));
+                    "{=ModifiedPolitics_DemandVassalDescription}Demand that {TARGET} become your vassal. Its clans will vote on the proposal."));
 
             AddDemandAction(
                 playerKingdom,
@@ -111,7 +111,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_DemandPuppet}Demand Submission"),
                 new TextObject(
-                    "{=ModifiedPolitics_DemandPuppetDescription}Demand that {TARGET} become your puppet. During development, every valid demand is accepted."));
+                    "{=ModifiedPolitics_DemandPuppetDescription}Demand that {TARGET} become your puppet. Its clans will vote on the proposal."));
 
             AddSubmissionAction(
                 playerKingdom,
@@ -120,7 +120,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_OfferVassalage}Offer Vassalage"),
                 new TextObject(
-                    "{=ModifiedPolitics_OfferVassalageDescription}Offer for your kingdom to become a vassal of {TARGET}. During development, every valid offer is accepted."));
+                    "{=ModifiedPolitics_OfferVassalageDescription}Offer for your kingdom to become a vassal of {TARGET}. Both kingdoms will vote on the proposal."));
 
             AddSubmissionAction(
                 playerKingdom,
@@ -129,7 +129,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_OfferPuppetSubmission}Offer Submission"),
                 new TextObject(
-                    "{=ModifiedPolitics_OfferPuppetSubmissionDescription}Offer for your kingdom to become a puppet of {TARGET}. During development, every valid offer is accepted."));
+                    "{=ModifiedPolitics_OfferPuppetSubmissionDescription}Offer for your kingdom to become a puppet of {TARGET}. Both kingdoms will vote on the proposal."));
         }
 
         private void AddDemandAction(

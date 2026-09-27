@@ -13,8 +13,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
     /// Clan-by-clan subject proposal scoring modeled after native kingdom
-    /// decisions. Enforcement remains disabled until real campaign logs have
-    /// been used to tune these weights.
+    /// decisions. The influence-weighted result authoritatively decides
+    /// whether a subject proposal is accepted.
     /// </summary>
     public static class SubjectProposalEvaluationService
     {
@@ -580,7 +580,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 .GetWarProgressScore(attacker, defender, false).ResultNumber;
         }
 
-        private static TextObject TypeText(SubjectType type)
+        public static TextObject TypeText(SubjectType type)
         {
             return type == SubjectType.Puppet
                 ? new TextObject("{=ModifiedPolitics_SubjectTypePuppet}puppet")
