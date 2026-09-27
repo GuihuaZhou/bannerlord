@@ -76,6 +76,8 @@
     <string id="MA_Logging_Group" text="日志" />
     <string id="MA_MinLogLevel" text="最低日志等级" />
     <string id="MA_MinLogLevel_Desc" text="只显示等级不低于此设置的军事优化日志. Disabled 表示关闭全部日志." />
+    <string id="MA_FileMinLogLevel" text="文件日志等级" />
+    <string id="MA_FileMinLogLevel_Desc" text="等级不低于此设置的日志会写入军事优化日志文件. Disabled 表示关闭文件日志." />
     <string id="MA_Fief_Group_Advanced" text="高级设置" />
     <string id="MA_Fief_MinLogLevel" text="日志等级" />
     <string id="MA_Prisoner_Group" text="囚犯逃逸" />

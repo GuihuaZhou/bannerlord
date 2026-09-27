@@ -63,7 +63,14 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             }
 
             // Temporary development rule: every valid demand made by the
-            // player is accepted. Future AI evaluation belongs at this point.
+            // player is accepted. The evaluation currently runs in observation
+            // mode so its weights can be tuned from real campaign data.
+            SubjectProposalEvaluation evaluation =
+                SubjectProposalEvaluationService.EvaluateDemand(
+                    overlord,
+                    subject,
+                    type);
+            SubjectProposalEvaluationService.Log(evaluation);
             return SubjectRelationAction.TryEstablish(
                 overlord,
                 subject,
@@ -119,7 +126,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             }
 
             // Temporary development rule: every valid player offer is
-            // accepted. Future AI evaluation belongs at this point.
+            // accepted. The evaluation currently runs in observation mode.
+            SubjectProposalEvaluation evaluation =
+                SubjectProposalEvaluationService.EvaluateSubmissionOffer(
+                    overlord,
+                    subject,
+                    type);
+            SubjectProposalEvaluationService.Log(evaluation);
             return SubjectRelationAction.TryEstablish(
                 overlord,
                 subject,

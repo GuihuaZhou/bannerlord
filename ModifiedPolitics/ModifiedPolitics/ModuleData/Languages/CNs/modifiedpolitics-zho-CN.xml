@@ -9,6 +9,8 @@
     <string id="MP_Logging_Group" text="日志" />
     <string id="MP_MinLogLevel" text="最低日志等级" />
     <string id="MP_MinLogLevel_Desc" text="只显示等级不低于此设置的内政优化日志. Disabled 表示关闭全部日志." />
+    <string id="MP_FileMinLogLevel" text="文件日志等级" />
+    <string id="MP_FileMinLogLevel_Desc" text="等级不低于此设置的日志会写入内政优化日志文件. Disabled 表示关闭文件日志." />
     <string id="ModifiedPolitics_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_SubjectTypeVassal" text="附庸国" />
@@ -34,6 +36,10 @@
     <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 当前开发阶段中, 所有有效请求都会被接受." />
     <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国统治者可以主动臣服." />
     <string id="ModifiedPolitics_SubjectOfferUnavailable" text="你的王国当前无法成为该王国的臣属国." />
+    <string id="ModifiedPolitics_SubjectProposalVoteSummary" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}{SUBJECT_TYPE}协议. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
+    <string id="ModifiedPolitics_SubjectProposalClanDetail" text="[宗藩外交] {CLAN}家族的意愿分为{TOTAL}, 将会{DECISION}. 主权代价{SOVEREIGNTY}, 军事实力{MILITARY}, 战争进展{WAR_PROGRESS}, 战争潜力{WAR_POTENTIAL}带来{POTENTIAL_SCORE}, 战争倾向{DISPOSITION}带来{DISPOSITION_SCORE}, 领土状况{TERRITORY}, 每日贡赋{TRIBUTE}带来{TRIBUTE_SCORE}, 统治家族修正{RULER}. 转换后接受支持度为{ACCEPT}, 拒绝支持度为{REJECT}." />
+    <string id="ModifiedPolitics_SubjectProposalAccept" text="接受" />
+    <string id="ModifiedPolitics_SubjectProposalReject" text="拒绝" />
     <string id="ModifiedPolitics_ReleaseVassal" text="解除附庸" />
     <string id="ModifiedPolitics_ReleasePuppet" text="解除傀儡" />
     <string id="ModifiedPolitics_ReleaseSubjectDescription" text="和平解除与{TARGET}的宗藩关系." />

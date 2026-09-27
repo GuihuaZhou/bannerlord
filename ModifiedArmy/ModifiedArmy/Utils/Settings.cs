@@ -44,5 +44,31 @@ namespace ModifiedArmy.Utils
                     LogLevel.Disabled
                 },
                 selectedIndex: 2);
+
+        /// <summary>
+        /// Controls which messages are also persisted to ModifiedArmy's file.
+        /// File logging is independent from the less verbose in-game display.
+        /// </summary>
+        [SettingPropertyGroup(
+            "{=MA_Logging_Group}Logging",
+            GroupOrder = 0)]
+        [SettingPropertyDropdown(
+            "{=MA_FileMinLogLevel}File log level",
+            Order = 1,
+            RequireRestart = false,
+            HintText =
+                "{=MA_FileMinLogLevel_Desc}Messages at or above this level are written to the ModifiedArmy log file. Disabled turns off file logging.")]
+        public Dropdown<LogLevel> FileMinLogLevel { get; set; } =
+            new Dropdown<LogLevel>(
+                new[]
+                {
+                    LogLevel.Debug,
+                    LogLevel.Info,
+                    LogLevel.Notice,
+                    LogLevel.Warn,
+                    LogLevel.Error,
+                    LogLevel.Disabled
+                },
+                selectedIndex: 1);
     }
 }

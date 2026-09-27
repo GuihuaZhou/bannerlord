@@ -43,5 +43,32 @@ namespace ModifiedPolitics.Utils
                     LogLevel.Disabled
                 },
                 selectedIndex: 2);
+
+        /// <summary>
+        /// Controls the independent persistent ModifiedPolitics log. Keeping
+        /// this below the display threshold permits detailed diagnostics
+        /// without flooding the in-game message feed.
+        /// </summary>
+        [SettingPropertyGroup(
+            "{=MP_Logging_Group}Logging",
+            GroupOrder = 0)]
+        [SettingPropertyDropdown(
+            "{=MP_FileMinLogLevel}File log level",
+            Order = 1,
+            RequireRestart = false,
+            HintText =
+                "{=MP_FileMinLogLevel_Desc}Messages at or above this level are written to the ModifiedPolitics log file. Disabled turns off file logging.")]
+        public Dropdown<LogLevel> FileMinLogLevel { get; set; } =
+            new Dropdown<LogLevel>(
+                new[]
+                {
+                    LogLevel.Debug,
+                    LogLevel.Info,
+                    LogLevel.Notice,
+                    LogLevel.Warn,
+                    LogLevel.Error,
+                    LogLevel.Disabled
+                },
+                selectedIndex: 1);
     }
 }

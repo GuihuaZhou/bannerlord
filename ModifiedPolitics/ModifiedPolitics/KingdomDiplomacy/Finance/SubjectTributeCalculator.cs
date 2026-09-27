@@ -52,6 +52,17 @@ namespace ModifiedPolitics.KingdomDiplomacy.Finance
         }
 
         /// <summary>
+        /// Returns the nominal daily burden. Proposal evaluation must consider
+        /// the lasting obligation rather than only today's affordable payment.
+        /// </summary>
+        public static int GetAssessedTributeForClan(Kingdom subject, Clan clan)
+        {
+            return subject == null || clan == null
+                ? 0
+                : CalculateClanAssessment(subject, clan);
+        }
+
+        /// <summary>
         /// Returns the amount that can actually be collected today. Unpaid
         /// tribute is waived instead of being created from nothing.
         /// </summary>
