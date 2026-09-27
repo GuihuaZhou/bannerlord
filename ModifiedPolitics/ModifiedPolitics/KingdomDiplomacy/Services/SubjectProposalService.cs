@@ -127,12 +127,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 
             // Temporary development rule: every valid player offer is
             // accepted. The evaluation currently runs in observation mode.
-            SubjectProposalEvaluation evaluation =
+            SubjectProposalEvaluation subjectEvaluation =
+                SubjectProposalEvaluationService.EvaluateSubmissionIntent(
+                    overlord,
+                    subject,
+                    type);
+            SubjectProposalEvaluationService.Log(subjectEvaluation);
+
+            SubjectProposalEvaluation admissionEvaluation =
                 SubjectProposalEvaluationService.EvaluateSubmissionOffer(
                     overlord,
                     subject,
                     type);
-            SubjectProposalEvaluationService.Log(evaluation);
+            SubjectProposalEvaluationService.Log(admissionEvaluation);
             return SubjectRelationAction.TryEstablish(
                 overlord,
                 subject,

@@ -36,8 +36,10 @@
     <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 当前开发阶段中, 所有有效请求都会被接受." />
     <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国统治者可以主动臣服." />
     <string id="ModifiedPolitics_SubjectOfferUnavailable" text="你的王国当前无法成为该王国的臣属国." />
-    <string id="ModifiedPolitics_SubjectProposalVoteSummary" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}{SUBJECT_TYPE}协议. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
-    <string id="ModifiedPolitics_SubjectProposalClanDetail" text="[宗藩外交] {CLAN}家族的意愿分为{TOTAL}, 将会{DECISION}. 主权代价{SOVEREIGNTY}, 军事实力{MILITARY}, 战争进展{WAR_PROGRESS}, 战争潜力{WAR_POTENTIAL}带来{POTENTIAL_SCORE}, 战争倾向{DISPOSITION}带来{DISPOSITION_SCORE}, 领土状况{TERRITORY}, 每日贡赋{TRIBUTE}带来{TRIBUTE_SCORE}, 统治家族修正{RULER}. 转换后接受支持度为{ACCEPT}, 拒绝支持度为{REJECT}." />
+    <string id="MP_SubjectConsentVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}成为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
+    <string id="MP_SubjectAdmissionVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}接纳{SUBJECT}为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
+    <string id="MP_SubjectClanVoteDetail" text="[宗藩外交] {CLAN}的臣服意愿为{TOTAL}, 将会{DECISION}. 主权代价{SOVEREIGNTY}, 军事实力修正{MILITARY}, 与拟议宗主的战争进展修正{WAR_PROGRESS}, 最大外部敌国{EXTERNAL_ENEMY}, 其他敌国压力修正{EXTERNAL_PRESSURE}, 当前战争{WAR_COUNT}场, 多线战争修正{MULTI_FRONT}, 宗主保护能力修正{PROTECTOR}, 战争潜力{WAR_POTENTIAL}使臣服意愿修正{POTENTIAL_SCORE}, 战争倾向{DISPOSITION}使臣服意愿修正{DISPOSITION_SCORE}, 领土状况修正{TERRITORY}, 每日贡赋{TRIBUTE}使臣服意愿修正{TRIBUTE_SCORE}, 统治家族修正{RULER}. 转换后接受支持度为{ACCEPT}, 拒绝支持度为{REJECT}." />
+    <string id="MP_SubjectEnemyPressure" text="[宗藩外交] {SUBJECT}对{ENEMY}. 敌方战争进展{ENEMY_PROGRESS}, 本国战争进展{SUBJECT_PROGRESS}, 敌我实力比{STRENGTH_RATIO}, 战争进展压力{PROGRESS_PRESSURE}, 实力压力{STRENGTH_PRESSURE}, 合成外部压力{COMBINED_PRESSURE}." />
     <string id="ModifiedPolitics_SubjectProposalAccept" text="接受" />
     <string id="ModifiedPolitics_SubjectProposalReject" text="拒绝" />
     <string id="ModifiedPolitics_ReleaseVassal" text="解除附庸" />

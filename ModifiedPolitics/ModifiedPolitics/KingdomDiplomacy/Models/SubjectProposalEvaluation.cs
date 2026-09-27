@@ -15,10 +15,16 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public Kingdom EvaluatingKingdom { get; set; }
         public SubjectType SubjectType { get; set; }
         public bool IsSubmissionOffer { get; set; }
+        public bool EvaluatesSubjectConsent { get; set; }
         public float StrengthRatio { get; set; }
         public int SubjectSettlementCount { get; set; }
         public float OverlordWarProgress { get; set; }
         public float SubjectWarProgress { get; set; }
+        public int ActiveWarCount { get; set; }
+        public Kingdom MostDangerousExternalEnemy { get; set; }
+        public float ExternalEnemyPressureScore { get; set; }
+        public float MultiFrontPressureScore { get; set; }
+        public float ProtectorStrengthScore { get; set; }
         public List<SubjectClanSupportEvaluation> ClanEvaluations { get; } =
             new List<SubjectClanSupportEvaluation>();
 

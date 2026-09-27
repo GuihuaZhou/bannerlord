@@ -12,6 +12,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public float SovereigntyScore { get; set; }
         public float MilitaryScore { get; set; }
         public float WarProgressScore { get; set; }
+        public float ExternalEnemyPressureScore { get; set; }
+        public float MultiFrontPressureScore { get; set; }
+        public float ProtectorStrengthScore { get; set; }
         public int WarPotential { get; set; }
         public float WarPotentialScore { get; set; }
         public float WarDisposition { get; set; }
@@ -22,8 +25,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Models
         public float RulingClanScore { get; set; }
 
         public float RawScore => SovereigntyScore + MilitaryScore
-            + WarProgressScore + WarPotentialScore + WarDispositionScore
-            + TerritoryScore + TributeScore + RulingClanScore;
+            + WarProgressScore + ExternalEnemyPressureScore
+            + MultiFrontPressureScore + ProtectorStrengthScore
+            + WarPotentialScore + WarDispositionScore + TerritoryScore
+            + TributeScore + RulingClanScore;
         public bool WouldAccept => RawScore >= 0f;
         public float AcceptSupport => WouldAccept ? 200f : 0f;
         public float RejectSupport => WouldAccept ? 0f : 200f;

@@ -21,7 +21,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             Kingdom overlord, Kingdom subject, SubjectType type)
         {
             SubjectProposalEvaluation result = CreateEvaluation(
-                overlord, subject, subject, type, false);
+                overlord, subject, subject, type, false, true);
             foreach (Clan clan in EligibleClans(subject))
             {
                 result.ClanEvaluations.Add(EvaluateSubjectClan(result, clan));
@@ -35,10 +35,27 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             // The receiving kingdom evaluates the offered realm as an asset and
             // as a possible military obligation.
             SubjectProposalEvaluation result = CreateEvaluation(
-                overlord, subject, overlord, type, true);
+                overlord, subject, overlord, type, true, false);
             foreach (Clan clan in EligibleClans(overlord))
             {
                 result.ClanEvaluations.Add(EvaluateReceivingClan(result, clan));
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// Evaluates whether the submitting kingdom's own council is willing
+        /// to surrender sovereignty. This is separate from the prospective
+        /// overlord's decision to accept the offer.
+        /// </summary>
+        public static SubjectProposalEvaluation EvaluateSubmissionIntent(
+            Kingdom overlord, Kingdom subject, SubjectType type)
+        {
+            SubjectProposalEvaluation result = CreateEvaluation(
+                overlord, subject, subject, type, true, true);
+            foreach (Clan clan in EligibleClans(subject))
+            {
+                result.ClanEvaluations.Add(EvaluateSubjectClan(result, clan));
             }
             return result;
         }
@@ -50,12 +67,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return;
             }
 
-            TextObject summary = new TextObject(
-                "{=ModifiedPolitics_SubjectProposalVoteSummary}" +
-                "[Subject diplomacy] {KINGDOM} clans predict {DECISION} for " +
-                "{SUBJECT_TYPE}. Support is {PERCENT}%, with {ACCEPTED} clans " +
-                "accepting and {REJECTED} rejecting.");
+            TextObject summary = evaluation.EvaluatesSubjectConsent
+                ? new TextObject(
+                    "{=MP_SubjectConsentVote}" +
+                    "[Subject diplomacy] {KINGDOM} clans predict {DECISION} " +
+                    "becoming a {SUBJECT_TYPE}. Support is {PERCENT}%, with " +
+                    "{ACCEPTED} clans accepting and {REJECTED} rejecting.")
+                : new TextObject(
+                    "{=MP_SubjectAdmissionVote}" +
+                    "[Subject diplomacy] {KINGDOM} clans predict {DECISION} " +
+                    "admitting {SUBJECT} as a {SUBJECT_TYPE}. Support is " +
+                    "{PERCENT}%, with {ACCEPTED} clans accepting and " +
+                    "{REJECTED} rejecting.");
             summary.SetTextVariable("KINGDOM", evaluation.EvaluatingKingdom.Name);
+            summary.SetTextVariable("SUBJECT", evaluation.Subject.Name);
             summary.SetTextVariable("DECISION", DecisionText(evaluation.WouldAccept));
             summary.SetTextVariable("SUBJECT_TYPE", TypeText(evaluation.SubjectType));
             summary.SetTextVariable("PERCENT", (evaluation.AcceptShare * 100f).ToString("F0"));
@@ -65,7 +90,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 
             foreach (SubjectClanSupportEvaluation clanResult in evaluation.ClanEvaluations)
             {
-                LogClanDetail(clanResult);
+                LogClanDetail(evaluation, clanResult);
             }
         }
 
@@ -96,6 +121,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 WarProgressScore = atWar
                     ? Clamp((proposal.OverlordWarProgress - proposal.SubjectWarProgress) / 10f, -60f, 60f)
                     : 0f,
+                ExternalEnemyPressureScore = proposal.ExternalEnemyPressureScore,
+                MultiFrontPressureScore = proposal.MultiFrontPressureScore,
+                ProtectorStrengthScore = proposal.ProtectorStrengthScore,
                 WarPotential = potential,
                 WarPotentialScore = Clamp((600f - potential) / 15f, -35f, 35f),
                 WarDisposition = disposition,
@@ -120,6 +148,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 SovereigntyScore = proposal.SubjectType == SubjectType.Puppet ? -10f : 5f,
                 MilitaryScore = Clamp(Log2(1f + relativeSubjectStrength) * 20f, 0f, 30f),
                 WarProgressScore = atWar ? -35f : 0f,
+                ExternalEnemyPressureScore = 0f,
+                MultiFrontPressureScore = 0f,
+                ProtectorStrengthScore = 0f,
                 WarPotential = GetWarPotential(clan),
                 WarPotentialScore = 0f,
                 WarDisposition = disposition,
@@ -133,34 +164,176 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 
         private static SubjectProposalEvaluation CreateEvaluation(
             Kingdom overlord, Kingdom subject, Kingdom evaluatingKingdom,
-            SubjectType type, bool isSubmissionOffer)
+            SubjectType type, bool isSubmissionOffer,
+            bool evaluatesSubjectConsent)
         {
-            float overlordStrength = Math.Max(1f, overlord?.CurrentTotalStrength ?? 0f);
-            float subjectStrength = Math.Max(1f, subject?.CurrentTotalStrength ?? 0f);
+            float overlordStrength = Math.Max(
+                1f,
+                SafeNumber(overlord?.CurrentTotalStrength ?? 0f, 1f));
+            float subjectStrength = Math.Max(
+                1f,
+                SafeNumber(subject?.CurrentTotalStrength ?? 0f, 1f));
             bool atWar = overlord != null && subject != null
                 && FactionManager.IsAtWarAgainstFaction(overlord, subject);
-            return new SubjectProposalEvaluation
+            SubjectProposalEvaluation result = new SubjectProposalEvaluation
             {
                 Overlord = overlord,
                 Subject = subject,
                 EvaluatingKingdom = evaluatingKingdom,
                 SubjectType = type,
                 IsSubmissionOffer = isSubmissionOffer,
+                EvaluatesSubjectConsent = evaluatesSubjectConsent,
                 StrengthRatio = overlordStrength / subjectStrength,
                 SubjectSettlementCount = subject?.Settlements.Count(x =>
                     x != null && (x.IsTown || x.IsCastle)) ?? 0,
                 OverlordWarProgress = atWar ? GetWarProgress(overlord, subject) : 0f,
                 SubjectWarProgress = atWar ? GetWarProgress(subject, overlord) : 0f
             };
+            PopulateExternalWarPressure(result, subjectStrength);
+            return result;
         }
 
-        private static void LogClanDetail(SubjectClanSupportEvaluation result)
+        /// <summary>
+        /// Measures wars against third parties. Direct capitulation to the
+        /// proposed overlord is already represented by bilateral war progress,
+        /// so that enemy is excluded here to avoid counting one defeat twice.
+        /// </summary>
+        private static void PopulateExternalWarPressure(
+            SubjectProposalEvaluation result,
+            float subjectStrength)
+        {
+            Kingdom[] enemies = Kingdom.All.Where(kingdom =>
+                kingdom != null
+                && !kingdom.IsEliminated
+                && kingdom != result.Subject
+                && result.Subject.IsAtWarWith(kingdom)).ToArray();
+            result.ActiveWarCount = enemies.Length;
+            result.MultiFrontPressureScore = Clamp(
+                Math.Max(0, enemies.Length - 1) * 10f,
+                0f,
+                30f);
+
+            // Start below zero so an active external enemy is still named in
+            // diagnostics when neither side has established an advantage yet.
+            float greatestPressure = -1f;
+            Kingdom greatestEnemy = null;
+            foreach (Kingdom enemy in enemies)
+            {
+                if (enemy == result.Overlord)
+                {
+                    continue;
+                }
+
+                float enemyProgress = SafeNumber(
+                    GetWarProgress(enemy, result.Subject));
+                float subjectProgress = SafeNumber(
+                    GetWarProgress(result.Subject, enemy));
+                float progressPressure = Clamp(
+                    (enemyProgress - subjectProgress) / 10f,
+                    0f,
+                    60f);
+                float enemyStrength = SafeNumber(
+                    enemy.CurrentTotalStrength,
+                    1f);
+                float strengthRatio = Math.Max(1f, enemyStrength)
+                    / subjectStrength;
+                float strengthPressure = Clamp(
+                    Log2(strengthRatio) * 20f,
+                    0f,
+                    40f);
+                // Raw strength is a risk, not proof of collapse. It amplifies
+                // an observed battlefield setback but cannot cause surrender
+                // immediately after war is declared.
+                float defeatScale = Clamp(progressPressure / 30f, 0f, 1f);
+                float pressure = progressPressure
+                    + strengthPressure * defeatScale;
+                LogExternalEnemyPressure(
+                    result.Subject,
+                    enemy,
+                    enemyProgress,
+                    subjectProgress,
+                    strengthRatio,
+                    progressPressure,
+                    strengthPressure,
+                    pressure);
+                if (greatestEnemy == null || pressure > greatestPressure)
+                {
+                    greatestPressure = pressure;
+                    greatestEnemy = enemy;
+                }
+            }
+
+            if (greatestEnemy == null)
+            {
+                return;
+            }
+
+            result.MostDangerousExternalEnemy = greatestEnemy;
+            result.ExternalEnemyPressureScore = Clamp(
+                greatestPressure,
+                0f,
+                80f);
+
+            // A realm in crisis only seeks a useful protector. A proposed
+            // overlord weaker than the greatest enemy reduces the benefit,
+            // while a clearly stronger protector increases it.
+            float protectorRatio = Math.Max(
+                1f,
+                SafeNumber(result.Overlord.CurrentTotalStrength, 1f))
+                / Math.Max(
+                    1f,
+                    SafeNumber(greatestEnemy.CurrentTotalStrength, 1f));
+            float crisisScale = Clamp(
+                result.ExternalEnemyPressureScore / 40f,
+                0f,
+                1f);
+            result.ProtectorStrengthScore = Clamp(
+                Log2(protectorRatio) * 15f,
+                -25f,
+                25f) * crisisScale;
+        }
+
+        private static void LogExternalEnemyPressure(
+            Kingdom subject,
+            Kingdom enemy,
+            float enemyProgress,
+            float subjectProgress,
+            float strengthRatio,
+            float progressPressure,
+            float strengthPressure,
+            float combinedPressure)
         {
             TextObject message = new TextObject(
-                "{=ModifiedPolitics_SubjectProposalClanDetail}" +
+                "{=MP_SubjectEnemyPressure}" +
+                "[Subject diplomacy] {SUBJECT} against {ENEMY}. Enemy war " +
+                "progress {ENEMY_PROGRESS}, subject war progress " +
+                "{SUBJECT_PROGRESS}, strength ratio {STRENGTH_RATIO}, " +
+                "progress pressure {PROGRESS_PRESSURE}, strength pressure " +
+                "{STRENGTH_PRESSURE}, combined external pressure " +
+                "{COMBINED_PRESSURE}.");
+            message.SetTextVariable("SUBJECT", subject.Name);
+            message.SetTextVariable("ENEMY", enemy.Name);
+            message.SetTextVariable("ENEMY_PROGRESS", enemyProgress.ToString("F1"));
+            message.SetTextVariable("SUBJECT_PROGRESS", subjectProgress.ToString("F1"));
+            message.SetTextVariable("STRENGTH_RATIO", strengthRatio.ToString("F2"));
+            message.SetTextVariable("PROGRESS_PRESSURE", Format(progressPressure));
+            message.SetTextVariable("STRENGTH_PRESSURE", Format(strengthPressure));
+            message.SetTextVariable("COMBINED_PRESSURE", Format(combinedPressure));
+            ModLogger.Info(message.ToString());
+        }
+
+        private static void LogClanDetail(
+            SubjectProposalEvaluation proposal,
+            SubjectClanSupportEvaluation result)
+        {
+            TextObject message = new TextObject(
+                "{=MP_SubjectClanVoteDetail}" +
                 "[Subject diplomacy] {CLAN} scores {TOTAL} and would {DECISION}. " +
                 "Sovereignty {SOVEREIGNTY}, military {MILITARY}, war progress " +
-                "{WAR_PROGRESS}, war potential {WAR_POTENTIAL} adding " +
+                "{WAR_PROGRESS}, external enemy pressure {EXTERNAL_PRESSURE}, " +
+                "greatest external enemy {EXTERNAL_ENEMY}, active wars " +
+                "{WAR_COUNT}, multi-front pressure {MULTI_FRONT}, protector strength " +
+                "{PROTECTOR}, war potential {WAR_POTENTIAL} adding " +
                 "{POTENTIAL_SCORE}, war disposition {DISPOSITION} adding " +
                 "{DISPOSITION_SCORE}, territory {TERRITORY}, daily tribute " +
                 "{TRIBUTE} adding {TRIBUTE_SCORE}, ruling clan {RULER}. " +
@@ -171,6 +344,17 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             message.SetTextVariable("SOVEREIGNTY", Format(result.SovereigntyScore));
             message.SetTextVariable("MILITARY", Format(result.MilitaryScore));
             message.SetTextVariable("WAR_PROGRESS", Format(result.WarProgressScore));
+            message.SetTextVariable(
+                "EXTERNAL_PRESSURE", Format(result.ExternalEnemyPressureScore));
+            message.SetTextVariable(
+                "EXTERNAL_ENEMY",
+                proposal.MostDangerousExternalEnemy?.Name
+                    ?? new TextObject("{=ModifiedPolitics_None}none"));
+            message.SetTextVariable("WAR_COUNT", proposal.ActiveWarCount);
+            message.SetTextVariable(
+                "MULTI_FRONT", Format(result.MultiFrontPressureScore));
+            message.SetTextVariable(
+                "PROTECTOR", Format(result.ProtectorStrengthScore));
             message.SetTextVariable("WAR_POTENTIAL", result.WarPotential);
             message.SetTextVariable("POTENTIAL_SCORE", Format(result.WarPotentialScore));
             message.SetTextVariable("DISPOSITION", Format(result.WarDisposition));
@@ -234,6 +418,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
         private static float Clamp(float value, float minimum, float maximum)
         {
             return Math.Max(minimum, Math.Min(maximum, value));
+        }
+
+        private static float SafeNumber(float value, float fallback = 0f)
+        {
+            return float.IsNaN(value) || float.IsInfinity(value)
+                ? fallback
+                : value;
         }
 
         private static string Format(float value)
