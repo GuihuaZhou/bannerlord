@@ -62,6 +62,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
         {
             SubjectActions.Clear();
 
+            // Native relation-banner collections can retain an obsolete war
+            // entry after peace. Refresh the selected item whenever the
+            // diplomacy selection is applied so its live relation mixin can
+            // rebuild those collections before the panel is rendered.
+            _vm?.CurrentSelectedDiplomacyItem?.RefreshValues();
+
             Kingdom playerKingdom = Clan.PlayerClan?.Kingdom;
             Kingdom target = _vm?.CurrentSelectedDiplomacyItem
                 ?.Faction2 as Kingdom;

@@ -53,4 +53,40 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
 
         public override string Value => "false";
     }
+
+    /// <summary>
+    /// The strategy selector is copied into the scrollable overview. Hide the
+    /// original fixed overlay so it does not remain on screen while scrolling.
+    /// </summary>
+    [PrefabExtension(
+        "DiplomacyPanel",
+        "descendant::Widget[not(@Id) and @MarginLeft='55' and @MarginTop='125' and @IsVisible='@IsAcceptableItemSelected']")]
+    public sealed class KingdomDiplomacyFixedStrategyOverlayPatch
+        : PrefabExtensionSetAttributePatch
+    {
+        public override string Id =>
+            "ModifiedPolitics_HideFixedDiplomacyStrategy";
+
+        public override string Attribute => "IsVisible";
+
+        public override string Value => "false";
+    }
+
+    /// <summary>
+    /// Treaty and war banners are also copied into the scrollable overview.
+    /// This removes Bannerlord's original fixed-position relation overlay.
+    /// </summary>
+    [PrefabExtension(
+        "DiplomacyPanel",
+        "descendant::ListPanel[not(@Id) and @DataSource='{CurrentSelectedDiplomacyItem}' and @SuggestedWidth='120' and @MarginRight='105' and @MarginTop='122']")]
+    public sealed class KingdomDiplomacyFixedRelationsOverlayPatch
+        : PrefabExtensionSetAttributePatch
+    {
+        public override string Id =>
+            "ModifiedPolitics_HideFixedDiplomacyRelations";
+
+        public override string Attribute => "IsVisible";
+
+        public override string Value => "false";
+    }
 }

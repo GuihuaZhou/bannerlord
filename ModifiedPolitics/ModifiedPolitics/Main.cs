@@ -60,6 +60,8 @@ namespace ModifiedPolitics
                     new VassalWarObligationBehavior());
                 campaignStarter.AddBehavior(
                     new SubjectAllianceRestrictionBehavior());
+                campaignStarter.AddBehavior(
+                    new SubjectTradeRestrictionBehavior());
             }
         }
     }
