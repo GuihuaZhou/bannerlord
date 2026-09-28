@@ -50,7 +50,7 @@
     <string id="ModifiedPolitics_ReleasePuppet" text="解除傀儡" />
     <string id="ModifiedPolitics_ReleaseSubjectDescription" text="和平解除与{TARGET}的宗藩关系. 议会支持率为{SUPPORT}%." />
     <string id="ModifiedPolitics_DeclareIndependence" text="宣布独立" />
-    <string id="ModifiedPolitics_DeclareIndependenceDescription" text="解除与{TARGET}的宗藩关系并进入独立战争." />
+    <string id="ModifiedPolitics_DeclareIndependenceDescription" text="解除与{TARGET}的宗藩关系并进入独立战争. 议会支持率为{SUPPORT}%." />
     <string id="ModifiedPolitics_PuppetAllianceForbidden" text="傀儡国不能签订同盟条约." />
     <string id="ModifiedPolitics_VassalEnemyAllianceForbidden" text="附庸国不能与宗主的敌国签订同盟条约." />
     <string id="ModifiedPolitics_SubjectEnemyTradeForbidden" text="臣属国不能与宗主的敌国签订贸易协定." />
@@ -160,5 +160,10 @@
     <string id="MP_SubjectReleasePanel" text="决定是否解除{KINGDOM}的{SUBJECT_TYPE}地位." />
     <string id="MP_SubjectReleaseSupportDescription" text="支持结束{SUBJECT_TYPE}关系." />
     <string id="MP_SubjectReleaseOpposeDescription" text="反对结束{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectIndependenceGeneral" text="向{KINGDOM}宣布独立" />
+    <string id="MP_SubjectIndependenceSupport" text="表决是否向{KINGDOM}宣布独立." />
+    <string id="MP_SubjectIndependenceDescription" text="议会必须决定是否结束宗藩关系并向{KINGDOM}发动独立战争. 你可以消耗影响力支持或反对这项提议." />
+    <string id="MP_SubjectIndependenceApproved" text="{SUBJECT}将向{KINGDOM}宣布独立." />
+    <string id="MP_SubjectIndependenceRejected" text="{SUBJECT}将继续作为{KINGDOM}的臣属国." />
   </strings>
 </base>

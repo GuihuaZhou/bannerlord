@@ -30,6 +30,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
                 typeof(SubjectReleaseKingdomDecision
                     .SubjectReleaseDecisionOutcome),
                 8);
+            AddClassDefinition(
+                typeof(SubjectIndependenceKingdomDecision),
+                9);
         }
 
         protected override void DefineEnumTypes()

@@ -3,7 +3,6 @@ using System.Linq;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
@@ -94,7 +93,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     ((x is SubjectProposalKingdomDecision proposal
                         && proposal.TargetKingdom == target)
                     || (x is SubjectReleaseKingdomDecision release
-                        && release.SubjectKingdom == target))
+                        && release.SubjectKingdom == target)
+                    || (x is SubjectIndependenceKingdomDecision independence
+                        && independence.OverlordKingdom == target))
                     && !x.ShouldBeCancelled());
             if (pendingDecision != null)
             {
@@ -313,26 +314,35 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
             Kingdom overlord)
         {
             TextObject explanation = new TextObject(
-                "{=ModifiedPolitics_DeclareIndependenceDescription}End the subject relation with {TARGET} and enter a war of independence.");
+                "{=ModifiedPolitics_DeclareIndependenceDescription}End the subject relation with {TARGET} and enter a war of independence. Council support is {SUPPORT}%.");
             explanation.SetTextVariable("TARGET", overlord.Name);
+
+            SubjectRelationData relation = KingdomDiplomacyManager.Current
+                ?.GetSubjectRelation(subject);
+            SubjectIndependenceKingdomDecision decision =
+                new SubjectIndependenceKingdomDecision(
+                    Clan.PlayerClan,
+                    overlord,
+                    relation?.Type ?? SubjectType.Vassal);
+            explanation.SetTextVariable(
+                "SUPPORT",
+                CalculateSupport(decision));
+
+            TextObject disabledReason = TextObject.GetEmpty();
+            bool isEnabled = ApplyDecisionRequirements(
+                decision,
+                decision.IsAllowed(),
+                ref disabledReason);
 
             SubjectActions.Add(
                 CreateAction(
                     new TextObject(
                         "{=ModifiedPolitics_DeclareIndependence}Declare Independence"),
                     explanation,
-                    0,
-                    true,
-                    TextObject.GetEmpty(),
-                    () =>
-                    {
-                        if (SubjectIndependenceAction.TryApply(
-                            subject,
-                            SubjectIndependenceReason.VoluntaryDeclaration))
-                        {
-                            RefreshAndSelect(overlord);
-                        }
-                    }));
+                    decision.GetProposalInfluenceCost(),
+                    isEnabled,
+                    disabledReason,
+                    () => StartDecision(decision)));
         }
 
         private void StartDecision(KingdomDecision decision)
