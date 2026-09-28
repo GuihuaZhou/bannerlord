@@ -27,6 +27,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
                         __instance.Kingdom,
                         __instance.FactionToDeclareWarOn);
             }
+
+            if (__result)
+            {
+                __result = AiWarProposalCooldownService
+                    .CanProposeWar(__instance);
+            }
         }
 
         [HarmonyPostfix]

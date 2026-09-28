@@ -165,5 +165,7 @@
     <string id="MP_SubjectIndependenceDescription" text="议会必须决定是否结束宗藩关系并向{KINGDOM}发动独立战争. 你可以消耗影响力支持或反对这项提议." />
     <string id="MP_SubjectIndependenceApproved" text="{SUBJECT}将向{KINGDOM}宣布独立." />
     <string id="MP_SubjectIndependenceRejected" text="{SUBJECT}将继续作为{KINGDOM}的臣属国." />
+    <string id="MP_AiSubjectOffer" text="[宗藩外交] {SUBJECT}提议成为{OVERLORD}的{SUBJECT_TYPE}, 提案已进入王国投票." />
+    <string id="MP_AiSubjectDemand" text="[宗藩外交] {OVERLORD}提议将{SUBJECT}纳为{SUBJECT_TYPE}, 提案已进入王国投票." />
   </strings>
 </base>
