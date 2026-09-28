@@ -124,7 +124,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             return new SubjectClanSupportEvaluation
             {
                 Clan = clan,
-                SovereigntyScore = proposal.SubjectType == SubjectType.Puppet ? -135f : -90f,
+                // An externally imposed demand and a voluntary surrender use
+                // the same strategic evaluation, but the submitting realm's
+                // own council carries an additional political burden: every
+                // clan is voting to surrender part of its sovereignty. Keep
+                // this resistance out of foreign-demand evaluation so the
+                // already tested capitulation thresholds remain unchanged.
+                SovereigntyScore = proposal.IsSubmissionOffer
+                    ? (proposal.SubjectType == SubjectType.Puppet
+                        ? -230f
+                        : -165f)
+                    : (proposal.SubjectType == SubjectType.Puppet
+                        ? -135f
+                        : -90f),
                 MilitaryScore = military,
                 WarProgressScore = atWar
                     ? Clamp((proposal.OverlordWarProgress - proposal.SubjectWarProgress) / 10f, -60f, 60f)

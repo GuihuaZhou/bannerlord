@@ -1,11 +1,17 @@
+using System;
+using System.Linq;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
+using HarmonyLib;
 using ModifiedPolitics.KingdomDiplomacy.Actions;
+using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
+using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -21,6 +27,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
         : BaseViewModelMixin<KingdomDiplomacyVM>
     {
         private readonly KingdomDiplomacyVM _vm;
+        private readonly Action<KingdomDecision> _forceDecision;
         private MBBindingList<KingdomDiplomacyProposalActionItemVM>
             _subjectActions;
 
@@ -29,6 +36,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
             : base(vm)
         {
             _vm = vm;
+            _forceDecision = AccessTools
+                .Field(typeof(KingdomDiplomacyVM), "_forceDecision")
+                ?.GetValue(vm) as Action<KingdomDecision>;
             _subjectActions =
                 new MBBindingList<KingdomDiplomacyProposalActionItemVM>();
             RefreshSubjectActions();
@@ -78,6 +88,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 return;
             }
 
+            KingdomDecision pendingDecision = playerKingdom
+                .UnresolvedDecisions
+                .FirstOrDefault(x =>
+                    ((x is SubjectProposalKingdomDecision proposal
+                        && proposal.TargetKingdom == target)
+                    || (x is SubjectReleaseKingdomDecision release
+                        && release.SubjectKingdom == target))
+                    && !x.ShouldBeCancelled());
+            if (pendingDecision != null)
+            {
+                AddPendingDecisionAction(pendingDecision);
+                return;
+            }
+
             KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
             SubjectRelationData targetRelation =
                 manager?.GetSubjectRelation(target);
@@ -102,7 +126,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_DemandVassal}Demand Vassalage"),
                 new TextObject(
-                    "{=ModifiedPolitics_DemandVassalDescription}Demand that {TARGET} become your vassal. Its clans will vote on the proposal."));
+                    "{=ModifiedPolitics_DemandVassalDescription}Demand that {TARGET} become your vassal. Council support is {SUPPORT}%."));
 
             AddDemandAction(
                 playerKingdom,
@@ -111,7 +135,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_DemandPuppet}Demand Submission"),
                 new TextObject(
-                    "{=ModifiedPolitics_DemandPuppetDescription}Demand that {TARGET} become your puppet. Its clans will vote on the proposal."));
+                    "{=ModifiedPolitics_DemandPuppetDescription}Demand that {TARGET} become your puppet. Council support is {SUPPORT}%."));
 
             AddSubmissionAction(
                 playerKingdom,
@@ -120,7 +144,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_OfferVassalage}Offer Vassalage"),
                 new TextObject(
-                    "{=ModifiedPolitics_OfferVassalageDescription}Offer for your kingdom to become a vassal of {TARGET}. Both kingdoms will vote on the proposal."));
+                    "{=ModifiedPolitics_OfferVassalageDescription}Offer for your kingdom to become a vassal of {TARGET}. Council support is {SUPPORT}%."));
 
             AddSubmissionAction(
                 playerKingdom,
@@ -129,7 +153,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 new TextObject(
                     "{=ModifiedPolitics_OfferPuppetSubmission}Offer Submission"),
                 new TextObject(
-                    "{=ModifiedPolitics_OfferPuppetSubmissionDescription}Offer for your kingdom to become a puppet of {TARGET}. Both kingdoms will vote on the proposal."));
+                    "{=ModifiedPolitics_OfferPuppetSubmissionDescription}Offer for your kingdom to become a puppet of {TARGET}. Council support is {SUPPORT}%."));
         }
 
         private void AddDemandAction(
@@ -141,6 +165,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
         {
             explanation.SetTextVariable("TARGET", target.Name);
 
+            SubjectProposalKingdomDecision decision =
+                SubjectProposalService.CreateDecision(
+                    target,
+                    type,
+                    false);
+            explanation.SetTextVariable(
+                "SUPPORT",
+                CalculateSupport(decision));
+
             TextObject disabledReason;
             bool isEnabled = SubjectProposalService
                 .CanDemandSubjectRelation(
@@ -148,14 +181,33 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     target,
                     type,
                     out disabledReason);
+            if (isEnabled)
+            {
+                SubjectProposalEvaluation foreignEvaluation =
+                    SubjectProposalEvaluationService.EvaluateDemand(
+                        overlord,
+                        target,
+                        type);
+                if (!foreignEvaluation.WouldAccept)
+                {
+                    isEnabled = false;
+                    disabledReason = new TextObject(
+                        "{=MP_SubjectNegotiationUnavailable}The other kingdom is unwilling to negotiate this subject relation.");
+                }
+            }
+            isEnabled = ApplyDecisionRequirements(
+                decision,
+                isEnabled,
+                ref disabledReason);
 
             SubjectActions.Add(
                 CreateAction(
                     actionName,
                     explanation,
+                    decision.GetProposalInfluenceCost(),
                     isEnabled,
                     disabledReason,
-                    () => ExecuteDemand(overlord, target, type)));
+                    () => StartDecision(decision)));
         }
 
         private void AddSubmissionAction(
@@ -167,23 +219,52 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
         {
             explanation.SetTextVariable("TARGET", target.Name);
 
+            SubjectProposalKingdomDecision decision =
+                SubjectProposalService.CreateDecision(
+                    target,
+                    type,
+                    true);
+            explanation.SetTextVariable(
+                "SUPPORT",
+                CalculateSupport(decision));
+
             TextObject disabledReason;
             bool isEnabled = SubjectProposalService.CanOfferSubmission(
                 playerKingdom,
                 target,
                 type,
                 out disabledReason);
+            if (isEnabled)
+            {
+                // A submission offer is still a bilateral agreement. Do not
+                // let the player spend influence when the proposed overlord
+                // is unwilling to accept the subject kingdom.
+                SubjectProposalEvaluation foreignEvaluation =
+                    SubjectProposalEvaluationService
+                        .EvaluateSubmissionOffer(
+                            target,
+                            playerKingdom,
+                            type);
+                if (!foreignEvaluation.WouldAccept)
+                {
+                    isEnabled = false;
+                    disabledReason = new TextObject(
+                        "{=MP_SubjectNegotiationUnavailable}The other kingdom is unwilling to negotiate this subject relation.");
+                }
+            }
+            isEnabled = ApplyDecisionRequirements(
+                decision,
+                isEnabled,
+                ref disabledReason);
 
             SubjectActions.Add(
                 CreateAction(
                     actionName,
                     explanation,
+                    decision.GetProposalInfluenceCost(),
                     isEnabled,
                     disabledReason,
-                    () => ExecuteSubmission(
-                        playerKingdom,
-                        target,
-                        type)));
+                    () => StartDecision(decision)));
         }
 
         private void AddReleaseAction(
@@ -196,22 +277,35 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 : new TextObject(
                     "{=ModifiedPolitics_ReleaseVassal}Release Vassal");
             TextObject explanation = new TextObject(
-                "{=ModifiedPolitics_ReleaseSubjectDescription}End the subject relation with {TARGET} peacefully.");
+                "{=ModifiedPolitics_ReleaseSubjectDescription}End the subject relation with {TARGET} peacefully. Council support is {SUPPORT}%.");
             explanation.SetTextVariable("TARGET", subject.Name);
+
+            // Releasing a subject is unilateral, but it is still a kingdom
+            // policy decision. It therefore skips foreign consent and goes
+            // directly to the overlord's council.
+            SubjectReleaseKingdomDecision decision =
+                new SubjectReleaseKingdomDecision(
+                    Clan.PlayerClan,
+                    subject,
+                    type);
+            explanation.SetTextVariable(
+                "SUPPORT",
+                CalculateSupport(decision));
+
+            TextObject disabledReason = TextObject.GetEmpty();
+            bool isEnabled = ApplyDecisionRequirements(
+                decision,
+                true,
+                ref disabledReason);
 
             SubjectActions.Add(
                 CreateAction(
                     name,
                     explanation,
-                    true,
-                    TextObject.GetEmpty(),
-                    () =>
-                    {
-                        if (SubjectRelationAction.TryRelease(subject))
-                        {
-                            RefreshAndSelect(subject);
-                        }
-                    }));
+                    decision.GetProposalInfluenceCost(),
+                    isEnabled,
+                    disabledReason,
+                    () => StartDecision(decision)));
         }
 
         private void AddIndependenceAction(
@@ -227,6 +321,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     new TextObject(
                         "{=ModifiedPolitics_DeclareIndependence}Declare Independence"),
                     explanation,
+                    0,
                     true,
                     TextObject.GetEmpty(),
                     () =>
@@ -240,32 +335,57 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     }));
         }
 
-        private void ExecuteDemand(
-            Kingdom overlord,
-            Kingdom target,
-            SubjectType type)
+        private void StartDecision(KingdomDecision decision)
         {
-            if (SubjectProposalService.DemandSubjectRelation(
-                overlord,
-                target,
-                type))
+            if (decision is SubjectProposalKingdomDecision proposal)
             {
-                RefreshAndSelect(target);
+                proposal.LogInitialCouncilEvaluation();
             }
+
+            decision.Kingdom.AddDecision(decision, false);
+            _forceDecision?.Invoke(decision);
         }
 
-        private void ExecuteSubmission(
-            Kingdom playerKingdom,
-            Kingdom target,
-            SubjectType type)
+        private static int CalculateSupport(KingdomDecision decision)
         {
-            if (SubjectProposalService.OfferSubmission(
-                playerKingdom,
-                target,
-                type))
+            return MathF.Round(
+                new KingdomElection(decision)
+                    .GetLikelihoodForSponsor(Clan.PlayerClan)
+                * 100f);
+        }
+
+        private void AddPendingDecisionAction(KingdomDecision decision)
+        {
+            SubjectActions.Add(
+                CreateAction(
+                    GameTexts.FindText("str_resolve", null),
+                    GameTexts.FindText("str_resolve_explanation", null),
+                    0,
+                    _forceDecision != null,
+                    TextObject.GetEmpty(),
+                    () => _forceDecision?.Invoke(decision)));
+        }
+
+        private static bool ApplyDecisionRequirements(
+            KingdomDecision decision,
+            bool isEnabled,
+            ref TextObject disabledReason)
+        {
+            if (!isEnabled)
             {
-                RefreshAndSelect(target);
+                return false;
             }
+
+            if (Clan.PlayerClan.Influence
+                < decision.GetProposalInfluenceCost())
+            {
+                disabledReason = GameTexts.FindText(
+                    "str_warning_you_dont_have_enough_influence",
+                    null);
+                return false;
+            }
+
+            return true;
         }
 
         private void RefreshAndSelect(Kingdom target)
@@ -279,6 +399,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
         private static KingdomDiplomacyProposalActionItemVM CreateAction(
             TextObject name,
             TextObject explanation,
+            int influenceCost,
             bool isEnabled,
             TextObject disabledReason,
             System.Action execute)
@@ -286,7 +407,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
             return new KingdomDiplomacyProposalActionItemVM(
                 name,
                 explanation,
-                0,
+                influenceCost,
                 isEnabled,
                 disabledReason,
                 execute);

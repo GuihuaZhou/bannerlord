@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Persistence
@@ -19,6 +20,16 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             AddClassDefinition(typeof(KingdomPoliticalData), 1);
             AddClassDefinition(typeof(KingdomRelationData), 2);
             AddClassDefinition(typeof(SubjectRelationData), 3);
+            AddClassDefinition(typeof(SubjectProposalKingdomDecision), 5);
+            AddClassDefinition(
+                typeof(SubjectProposalKingdomDecision
+                    .SubjectProposalDecisionOutcome),
+                6);
+            AddClassDefinition(typeof(SubjectReleaseKingdomDecision), 7);
+            AddClassDefinition(
+                typeof(SubjectReleaseKingdomDecision
+                    .SubjectReleaseDecisionOutcome),
+                8);
         }
 
         protected override void DefineEnumTypes()

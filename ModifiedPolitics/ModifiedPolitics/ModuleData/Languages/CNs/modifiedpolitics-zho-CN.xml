@@ -25,19 +25,19 @@
     <string id="ModifiedPolitics_SubjectTributeIncome" text="宗藩贡赋收入" />
     <string id="ModifiedPolitics_SubjectTributeExpense" text="宗藩贡赋支出" />
     <string id="ModifiedPolitics_DemandVassal" text="要求成为附庸" />
-    <string id="ModifiedPolitics_DemandVassalDescription" text="要求{TARGET}成为你的附庸. 对方王国的家族将对此提议进行表决." />
+    <string id="ModifiedPolitics_DemandVassalDescription" text="要求{TARGET}成为你的附庸. 当前议会支持率为{SUPPORT}%." />
     <string id="ModifiedPolitics_DemandPuppet" text="要求成为傀儡" />
-    <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 对方王国的家族将对此提议进行表决." />
-    <string id="ModifiedPolitics_SubjectDemandRequiresRuler" text="只有王国统治者可以提出该要求." />
+    <string id="ModifiedPolitics_DemandPuppetDescription" text="要求{TARGET}成为你的傀儡. 当前议会支持率为{SUPPORT}%." />
+    <string id="ModifiedPolitics_SubjectDemandRequiresRuler" text="只有王国的正式家族才能提出该要求." />
     <string id="ModifiedPolitics_SubjectDemandUnavailable" text="当前无法与该王国建立宗藩关系." />
     <string id="ModifiedPolitics_OfferVassalage" text="主动成为附庸" />
-    <string id="ModifiedPolitics_OfferVassalageDescription" text="主动成为{TARGET}的附庸. 双方王国的家族都将对此提议进行表决." />
+    <string id="ModifiedPolitics_OfferVassalageDescription" text="主动成为{TARGET}的附庸. 当前议会支持率为{SUPPORT}%." />
     <string id="ModifiedPolitics_OfferPuppetSubmission" text="主动成为傀儡" />
-    <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 双方王国的家族都将对此提议进行表决." />
+    <string id="ModifiedPolitics_OfferPuppetSubmissionDescription" text="主动成为{TARGET}的傀儡. 当前议会支持率为{SUPPORT}%." />
+    <string id="MP_SubjectNegotiationUnavailable" text="对方王国目前不愿就这一宗藩关系展开谈判." />
     <string id="MP_SubjectDemandRejected" text="[宗藩外交] {KINGDOM}拒绝了成为{SUBJECT_TYPE}的要求." />
-    <string id="MP_SubjectCouncilRejected" text="[宗藩外交] {KINGDOM}的家族拒绝成为{SUBJECT_TYPE}." />
     <string id="MP_SubjectOfferRejected" text="[宗藩外交] {KINGDOM}拒绝接纳你的王国为{SUBJECT_TYPE}." />
-    <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国统治者可以主动臣服." />
+    <string id="ModifiedPolitics_SubjectOfferRequiresRuler" text="只有王国的正式家族才能提出臣服请求." />
     <string id="ModifiedPolitics_SubjectOfferUnavailable" text="你的王国当前无法成为该王国的臣属国." />
     <string id="MP_SubjectConsentVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}成为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
     <string id="MP_SubjectAdmissionVote" text="[宗藩外交] {KINGDOM}的家族预计会{DECISION}接纳{SUBJECT}为{SUBJECT_TYPE}. 加权支持率为{PERCENT}%, {ACCEPTED}个家族接受, {REJECTED}个家族拒绝." />
@@ -48,7 +48,7 @@
     <string id="ModifiedPolitics_SubjectProposalReject" text="拒绝" />
     <string id="ModifiedPolitics_ReleaseVassal" text="解除附庸" />
     <string id="ModifiedPolitics_ReleasePuppet" text="解除傀儡" />
-    <string id="ModifiedPolitics_ReleaseSubjectDescription" text="和平解除与{TARGET}的宗藩关系." />
+    <string id="ModifiedPolitics_ReleaseSubjectDescription" text="和平解除与{TARGET}的宗藩关系. 议会支持率为{SUPPORT}%." />
     <string id="ModifiedPolitics_DeclareIndependence" text="宣布独立" />
     <string id="ModifiedPolitics_DeclareIndependenceDescription" text="解除与{TARGET}的宗藩关系并进入独立战争." />
     <string id="ModifiedPolitics_PuppetAllianceForbidden" text="傀儡国不能签订同盟条约." />
@@ -135,5 +135,30 @@
     <string id="MP_SubjectFormerWarResolution" text="[宗藩外交] {SUBJECT}成为{OVERLORD}的臣属国后, {ENEMY}决定{RESULT}. 和平支持率为{SHARE}%." />
     <string id="MP_SubjectFormerWarAcceptedPeace" text="与臣属国停战" />
     <string id="MP_SubjectFormerWarDeclaredOverlord" text="向宗主国宣战" />
+    <string id="MP_SubjectDecisionGeneralDemand" text="要求{KINGDOM}成为{SUBJECT_TYPE}" />
+    <string id="MP_SubjectDecisionGeneralOffer" text="主动成为{KINGDOM}的{SUBJECT_TYPE}" />
+    <string id="MP_SubjectDecisionSupportDemand" text="表决是否要求{KINGDOM}成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionSupportOffer" text="表决是否成为{KINGDOM}的{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionDescriptionDemand" text="议会必须决定是否要求{KINGDOM}成为{SUBJECT_TYPE}. 你可以消耗影响力支持或反对这项提议." />
+    <string id="MP_SubjectDecisionDescriptionOffer" text="议会必须决定是否主动成为{KINGDOM}的{SUBJECT_TYPE}. 你可以消耗影响力支持或反对这项提议." />
+    <string id="MP_SubjectDecisionPanelDemand" text="决定是否要求{KINGDOM}成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionPanelOffer" text="决定是否主动成为{KINGDOM}的{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionApprovedDemand" text="{KINGDOM}的议会同意发出成为{SUBJECT_TYPE}的要求." />
+    <string id="MP_SubjectDecisionRejectedDemand" text="{KINGDOM}的议会拒绝发出成为{SUBJECT_TYPE}的要求." />
+    <string id="MP_SubjectDecisionApprovedOffer" text="{KINGDOM}的议会同意主动成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionRejectedOffer" text="{KINGDOM}的议会拒绝主动成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectDecisionSupport" text="支持" />
+    <string id="MP_SubjectDecisionOppose" text="反对" />
+    <string id="MP_SubjectDecisionSupportDescription" text="支持建立提议中的{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectDecisionOpposeDescription" text="反对建立提议中的{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectReleaseUnavailable" text="这一宗藩关系已无法解除." />
+    <string id="MP_SubjectReleaseGeneral" text="解除{KINGDOM}的{SUBJECT_TYPE}地位" />
+    <string id="MP_SubjectReleaseSupport" text="表决是否解除{KINGDOM}的{SUBJECT_TYPE}地位." />
+    <string id="MP_SubjectReleaseDescription" text="议会必须决定是否解除与{KINGDOM}的宗藩关系. 你可以消耗影响力支持或反对这项提议." />
+    <string id="MP_SubjectReleaseApproved" text="{KINGDOM}的{SUBJECT_TYPE}地位将被解除." />
+    <string id="MP_SubjectReleaseRejected" text="{KINGDOM}将继续作为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectReleasePanel" text="决定是否解除{KINGDOM}的{SUBJECT_TYPE}地位." />
+    <string id="MP_SubjectReleaseSupportDescription" text="支持结束{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectReleaseOpposeDescription" text="反对结束{SUBJECT_TYPE}关系." />
   </strings>
 </base>

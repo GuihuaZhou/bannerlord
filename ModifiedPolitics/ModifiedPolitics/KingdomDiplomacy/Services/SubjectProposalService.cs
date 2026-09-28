@@ -1,4 +1,5 @@
 using ModifiedPolitics.KingdomDiplomacy.Actions;
+using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
@@ -9,8 +10,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
     /// Stable entry point for diplomatic subject proposals. Structural
-    /// validation is kept separate from clan voting so the UI can keep an
-    /// action available even when the other kingdom is likely to reject it.
+    /// validation, the player's kingdom decision, and the foreign response
+    /// remain separate stages so each side can make its own decision.
     /// </summary>
     public static class SubjectProposalService
     {
@@ -25,10 +26,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 || subject == null
                 || type == SubjectType.None
                 || Clan.PlayerClan?.Kingdom != overlord
-                || overlord.RulingClan != Clan.PlayerClan)
+                || Clan.PlayerClan.IsUnderMercenaryService)
             {
                 reason = new TextObject(
-                    "{=ModifiedPolitics_SubjectDemandRequiresRuler}Only the ruler of a kingdom can make this demand.");
+                    "{=ModifiedPolitics_SubjectDemandRequiresRuler}Only a full member clan of the kingdom can propose this demand.");
                 return false;
             }
 
@@ -47,21 +48,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             return true;
         }
 
-        public static bool DemandSubjectRelation(
+        /// <summary>
+        /// Resolves the foreign response after the player's own council has
+        /// approved sending a subject demand.
+        /// </summary>
+        public static bool ResolveApprovedDemand(
             Kingdom overlord,
             Kingdom subject,
             SubjectType type)
         {
-            TextObject reason;
-            if (!CanDemandSubjectRelation(
-                overlord,
-                subject,
-                type,
-                out reason))
-            {
-                return false;
-            }
-
             SubjectProposalEvaluation evaluation =
                 SubjectProposalEvaluationService.EvaluateDemand(
                     overlord,
@@ -91,10 +86,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 || overlord == null
                 || type == SubjectType.None
                 || Clan.PlayerClan?.Kingdom != subject
-                || subject.RulingClan != Clan.PlayerClan)
+                || Clan.PlayerClan.IsUnderMercenaryService)
             {
                 reason = new TextObject(
-                    "{=ModifiedPolitics_SubjectOfferRequiresRuler}Only the ruler of a kingdom can offer submission.");
+                    "{=ModifiedPolitics_SubjectOfferRequiresRuler}Only a full member clan of the kingdom can propose submission.");
                 return false;
             }
 
@@ -113,33 +108,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             return true;
         }
 
-        public static bool OfferSubmission(
+        /// <summary>
+        /// Resolves the prospective overlord's response after the player's
+        /// own council has approved offering submission.
+        /// </summary>
+        public static bool ResolveApprovedSubmission(
             Kingdom subject,
             Kingdom overlord,
             SubjectType type)
         {
-            TextObject reason;
-            if (!CanOfferSubmission(
-                subject,
-                overlord,
-                type,
-                out reason))
-            {
-                return false;
-            }
-
-            SubjectProposalEvaluation subjectEvaluation =
-                SubjectProposalEvaluationService.EvaluateSubmissionIntent(
-                    overlord,
-                    subject,
-                    type);
-            SubjectProposalEvaluationService.Log(subjectEvaluation);
-            if (!subjectEvaluation.WouldAccept)
-            {
-                LogSubmissionCouncilRejected(subject, type);
-                return false;
-            }
-
             SubjectProposalEvaluation admissionEvaluation =
                 SubjectProposalEvaluationService.EvaluateSubmissionOffer(
                     overlord,
@@ -158,25 +135,24 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 type);
         }
 
+        public static SubjectProposalKingdomDecision CreateDecision(
+            Kingdom targetKingdom,
+            SubjectType type,
+            bool isSubmissionOffer)
+        {
+            return new SubjectProposalKingdomDecision(
+                Clan.PlayerClan,
+                targetKingdom,
+                type,
+                isSubmissionOffer);
+        }
+
         private static void LogDemandRejected(
             Kingdom subject,
             SubjectType type)
         {
             TextObject message = new TextObject(
                 "{=MP_SubjectDemandRejected}[Subject diplomacy] {KINGDOM} rejected the demand to become a {SUBJECT_TYPE}.");
-            message.SetTextVariable("KINGDOM", subject.Name);
-            message.SetTextVariable(
-                "SUBJECT_TYPE",
-                SubjectProposalEvaluationService.TypeText(type));
-            ModLogger.Notice(message.ToString());
-        }
-
-        private static void LogSubmissionCouncilRejected(
-            Kingdom subject,
-            SubjectType type)
-        {
-            TextObject message = new TextObject(
-                "{=MP_SubjectCouncilRejected}[Subject diplomacy] {KINGDOM}'s clans rejected becoming a {SUBJECT_TYPE}.");
             message.SetTextVariable("KINGDOM", subject.Name);
             message.SetTextVariable(
                 "SUBJECT_TYPE",
