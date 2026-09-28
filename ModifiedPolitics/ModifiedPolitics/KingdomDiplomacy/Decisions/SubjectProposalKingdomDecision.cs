@@ -3,6 +3,7 @@ using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core.ImageIdentifiers;
@@ -172,8 +173,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Decisions
                 chosenOutcome as SubjectProposalDecisionOutcome;
             if (outcome?.ShouldAllianceBeStarted != true)
             {
+                LogCouncilResult(false);
                 return;
             }
+
+            LogCouncilResult(true);
 
             if (_isSubmissionOffer)
             {
@@ -189,6 +193,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Decisions
                     Subject,
                     _subjectType);
             }
+        }
+
+        private void LogCouncilResult(bool approved)
+        {
+            TextObject message = BuildText(
+                approved
+                    ? "{=MP_SubjectDemandVoteApprovedLog}[Subject diplomacy] {KINGDOM}'s council approved the demand for {SUBJECT_TYPE} status."
+                    : "{=MP_SubjectDemandVoteRejectedLog}[Subject diplomacy] {KINGDOM}'s council rejected the demand for {SUBJECT_TYPE} status.",
+                approved
+                    ? "{=MP_SubjectOfferVoteApprovedLog}[Subject diplomacy] {KINGDOM}'s council approved offering {SUBJECT_TYPE} status."
+                    : "{=MP_SubjectOfferVoteRejectedLog}[Subject diplomacy] {KINGDOM}'s council rejected offering {SUBJECT_TYPE} status.");
+            message.SetTextVariable("KINGDOM", Kingdom.Name);
+            ModLogger.Notice(message.ToString());
         }
 
         public override TextObject GetChosenOutcomeText(

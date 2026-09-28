@@ -1,6 +1,7 @@
 using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Localization;
@@ -106,9 +107,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Decisions
 
         public override void ApplyChosenOutcome(DecisionOutcome chosenOutcome)
         {
-            if ((chosenOutcome
+            bool approved = (chosenOutcome
                 as DeclareWarDecision.DeclareWarDecisionOutcome)
-                ?.ShouldWarBeDeclared == true)
+                ?.ShouldWarBeDeclared == true;
+            TextObject message = BuildText(approved
+                ? "{=MP_SubjectIndependenceVoteApprovedLog}[Subject diplomacy] {SUBJECT}'s council approved declaring independence from {KINGDOM}."
+                : "{=MP_SubjectIndependenceVoteRejectedLog}[Subject diplomacy] {SUBJECT}'s council rejected declaring independence from {KINGDOM}.");
+            ModLogger.Notice(message.ToString());
+
+            if (approved)
             {
                 SubjectIndependenceAction.TryApply(
                     Kingdom,

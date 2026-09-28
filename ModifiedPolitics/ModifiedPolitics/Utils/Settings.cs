@@ -45,6 +45,21 @@ namespace ModifiedPolitics.Utils
                 selectedIndex: 2);
 
         /// <summary>
+        /// Enables or disables persistent file output independently from the
+        /// in-game message threshold. This setting is applied immediately.
+        /// </summary>
+        [SettingPropertyGroup(
+            "{=MP_Logging_Group}Logging",
+            GroupOrder = 0)]
+        [SettingPropertyBool(
+            "{=MP_EnableFileLogging}Write logs to file",
+            Order = 1,
+            RequireRestart = false,
+            HintText =
+                "{=MP_EnableFileLogging_Desc}When enabled, ModifiedPolitics writes diagnostic messages to its log file in Documents.")]
+        public bool EnableFileLogging { get; set; } = true;
+
+        /// <summary>
         /// Controls the independent persistent ModifiedPolitics log. Keeping
         /// this below the display threshold permits detailed diagnostics
         /// without flooding the in-game message feed.
@@ -54,7 +69,7 @@ namespace ModifiedPolitics.Utils
             GroupOrder = 0)]
         [SettingPropertyDropdown(
             "{=MP_FileMinLogLevel}File log level",
-            Order = 1,
+            Order = 2,
             RequireRestart = false,
             HintText =
                 "{=MP_FileMinLogLevel_Desc}Messages at or above this level are written to the ModifiedPolitics log file. Disabled turns off file logging.")]

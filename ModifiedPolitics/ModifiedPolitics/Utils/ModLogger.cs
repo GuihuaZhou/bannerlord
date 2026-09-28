@@ -60,6 +60,15 @@ namespace ModifiedPolitics.Tool
             }
         }
 
+        private static bool IsFileLoggingEnabled
+        {
+            get
+            {
+                Settings settings = GlobalSettings<Settings>.Instance;
+                return settings?.EnableFileLogging ?? true;
+            }
+        }
+
         public static void Debug(string message, Color? color = null)
         {
             Display(LogLevel.Debug, message, color ?? DebugColor);
@@ -111,7 +120,8 @@ namespace ModifiedPolitics.Tool
         private static void WriteToFile(LogLevel level, string message)
         {
             LogLevel threshold = CurrentFileMinLogLevel;
-            if (_fileLoggerUnavailable
+            if (!IsFileLoggingEnabled
+                || _fileLoggerUnavailable
                 || threshold == LogLevel.Disabled
                 || (int)level < (int)threshold)
             {

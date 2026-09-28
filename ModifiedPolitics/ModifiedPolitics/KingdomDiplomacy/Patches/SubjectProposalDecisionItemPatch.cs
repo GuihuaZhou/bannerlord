@@ -35,6 +35,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
                 __instance.StartAllianceDescriptionText = release
                     .GetPanelDescription()
                     .ToString();
+                return;
+            }
+
+            if (decision is SubjectResponseKingdomDecision response)
+            {
+                __instance.NameText = response.GetGeneralTitle().ToString();
+                __instance.StartAllianceDescriptionText = response
+                    .GetPanelDescription()
+                    .ToString();
             }
         }
     }

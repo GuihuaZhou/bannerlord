@@ -95,7 +95,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     || (x is SubjectReleaseKingdomDecision release
                         && release.SubjectKingdom == target)
                     || (x is SubjectIndependenceKingdomDecision independence
-                        && independence.OverlordKingdom == target))
+                        && independence.OverlordKingdom == target)
+                    || (x is SubjectResponseKingdomDecision response
+                        && response.ForeignKingdom == target))
                     && !x.ShouldBeCancelled());
             if (pendingDecision != null)
             {

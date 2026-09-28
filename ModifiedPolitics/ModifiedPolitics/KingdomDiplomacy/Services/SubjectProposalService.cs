@@ -1,9 +1,11 @@
+using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.MapNotificationTypes;
 using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Services
@@ -57,6 +59,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             Kingdom subject,
             SubjectType type)
         {
+            if (subject == Clan.PlayerClan?.Kingdom
+                && overlord != subject)
+            {
+                return SendProposalToPlayer(
+                    overlord,
+                    type,
+                    true);
+            }
+
             SubjectProposalEvaluation evaluation =
                 SubjectProposalEvaluationService.EvaluateDemand(
                     overlord,
@@ -117,6 +128,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             Kingdom overlord,
             SubjectType type)
         {
+            if (overlord == Clan.PlayerClan?.Kingdom
+                && subject != overlord)
+            {
+                return SendProposalToPlayer(
+                    subject,
+                    type,
+                    false);
+            }
+
             SubjectProposalEvaluation admissionEvaluation =
                 SubjectProposalEvaluationService.EvaluateSubmissionOffer(
                     overlord,
@@ -145,6 +165,83 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 targetKingdom,
                 type,
                 isSubmissionOffer);
+        }
+
+        /// <summary>
+        /// Delivers a foreign council's approved proposal to the player's
+        /// kingdom. The notification opens a second, player-side council vote.
+        /// </summary>
+        private static bool SendProposalToPlayer(
+            Kingdom foreignKingdom,
+            SubjectType type,
+            bool playerBecomesSubject)
+        {
+            Kingdom playerKingdom = Clan.PlayerClan?.Kingdom;
+            if (playerKingdom == null
+                || Clan.PlayerClan.IsUnderMercenaryService
+                || foreignKingdom == null
+                || playerKingdom.UnresolvedDecisions
+                    .OfType<SubjectResponseKingdomDecision>()
+                    .Any(x => x.ForeignKingdom == foreignKingdom))
+            {
+                return false;
+            }
+
+            SubjectResponseKingdomDecision decision =
+                new SubjectResponseKingdomDecision(
+                    Clan.PlayerClan,
+                    foreignKingdom,
+                    type,
+                    playerBecomesSubject);
+            playerKingdom.AddDecision(decision, true);
+
+            TextObject notice = new TextObject(playerBecomesSubject
+                ? "{=MP_SubjectIncomingDemandNotice}{KINGDOM} has demanded that your kingdom become its {SUBJECT_TYPE}. Click to convene the council."
+                : "{=MP_SubjectIncomingOfferNotice}{KINGDOM} has offered to become your {SUBJECT_TYPE}. Click to convene the council.");
+            notice.SetTextVariable("KINGDOM", foreignKingdom.Name);
+            notice.SetTextVariable(
+                "SUBJECT_TYPE",
+                SubjectProposalEvaluationService.TypeText(type));
+            Campaign.Current.CampaignInformationManager.NewMapNoticeAdded(
+                new KingdomDecisionMapNotification(
+                    playerKingdom,
+                    decision,
+                    notice));
+
+            // The map notice already provides the visible player prompt.
+            // Keep the duplicate diagnostic in the file-oriented Info level.
+            ModLogger.Info(notice.ToString());
+            return true;
+        }
+
+        public static void LogPlayerResponse(
+            Kingdom foreignKingdom,
+            SubjectType type,
+            bool playerBecomesSubject,
+            bool accepted)
+        {
+            if (foreignKingdom == null)
+            {
+                return;
+            }
+
+            TextObject message = new TextObject(
+                "{=MP_SubjectPlayerResponseLog}[Subject diplomacy] The player's council {RESULT} {KINGDOM}'s {DIRECTION} proposal for {SUBJECT_TYPE} status.");
+            message.SetTextVariable(
+                "RESULT",
+                accepted
+                    ? new TextObject("{=MP_SubjectAccepted}accepted")
+                    : new TextObject("{=MP_SubjectRejected}rejected"));
+            message.SetTextVariable("KINGDOM", foreignKingdom.Name);
+            message.SetTextVariable(
+                "DIRECTION",
+                playerBecomesSubject
+                    ? new TextObject("{=MP_SubjectDemandDirection}demand")
+                    : new TextObject("{=MP_SubjectOfferDirection}submission offer"));
+            message.SetTextVariable(
+                "SUBJECT_TYPE",
+                SubjectProposalEvaluationService.TypeText(type));
+            ModLogger.Notice(message.ToString());
         }
 
         private static void LogDemandRejected(

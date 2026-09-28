@@ -11,6 +11,8 @@
     <string id="MP_MinLogLevel_Desc" text="只显示等级不低于此设置的内政优化日志. Disabled 表示关闭全部日志." />
     <string id="MP_FileMinLogLevel" text="文件日志等级" />
     <string id="MP_FileMinLogLevel_Desc" text="等级不低于此设置的日志会写入内政优化日志文件. Disabled 表示关闭文件日志." />
+    <string id="MP_EnableFileLogging" text="将日志写入文件" />
+    <string id="MP_EnableFileLogging_Desc" text="启用后, 内政优化会将诊断信息写入文档目录中的日志文件." />
     <string id="ModifiedPolitics_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_SubjectTypeVassal" text="附庸国" />
@@ -167,5 +169,35 @@
     <string id="MP_SubjectIndependenceRejected" text="{SUBJECT}将继续作为{KINGDOM}的臣属国." />
     <string id="MP_AiSubjectOffer" text="[宗藩外交] {SUBJECT}提议成为{OVERLORD}的{SUBJECT_TYPE}, 提案已进入王国投票." />
     <string id="MP_AiSubjectDemand" text="[宗藩外交] {OVERLORD}提议将{SUBJECT}纳为{SUBJECT_TYPE}, 提案已进入王国投票." />
+    <string id="MP_AiIndependenceProposal" text="[宗藩外交] {CLAN}提议由{KINGDOM}向{TARGET}宣布独立." />
+    <string id="MP_AiReleaseProposal" text="[宗藩外交] {CLAN}提议由{KINGDOM}解除与{TARGET}的宗藩关系." />
+    <string id="MP_SubjectResponseUnavailable" text="这项宗藩提案已经失效." />
+    <string id="MP_SubjectResponseGeneralDemand" text="回应{KINGDOM}的臣服要求" />
+    <string id="MP_SubjectResponseGeneralOffer" text="回应{KINGDOM}的臣服提议" />
+    <string id="MP_SubjectResponseSupportDemand" text="表决是否成为{KINGDOM}的{SUBJECT_TYPE}." />
+    <string id="MP_SubjectResponseSupportOffer" text="表决是否接纳{KINGDOM}为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectResponseDescriptionDemand" text="{KINGDOM}要求你的王国成为其{SUBJECT_TYPE}. 议会必须决定是否接受." />
+    <string id="MP_SubjectResponseDescriptionOffer" text="{KINGDOM}提议成为你的{SUBJECT_TYPE}. 议会必须决定是否接受." />
+    <string id="MP_SubjectResponseAcceptedDemand" text="你的议会接受了{KINGDOM}的要求." />
+    <string id="MP_SubjectResponseRejectedDemand" text="你的议会拒绝了{KINGDOM}的要求." />
+    <string id="MP_SubjectResponseAcceptedOffer" text="你的议会接受了{KINGDOM}的臣服提议." />
+    <string id="MP_SubjectResponseRejectedOffer" text="你的议会拒绝了{KINGDOM}的臣服提议." />
+    <string id="MP_SubjectResponseSupportDescription" text="支持接受所提议的{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectResponseOpposeDescription" text="反对接受所提议的{SUBJECT_TYPE}关系." />
+    <string id="MP_SubjectIncomingDemandNotice" text="{KINGDOM}要求你的王国成为其{SUBJECT_TYPE}. 点击召集议会." />
+    <string id="MP_SubjectIncomingOfferNotice" text="{KINGDOM}提议成为你的{SUBJECT_TYPE}. 点击召集议会." />
+    <string id="MP_SubjectPlayerResponseLog" text="[宗藩外交] 玩家议会{RESULT}了{KINGDOM}的{DIRECTION}{SUBJECT_TYPE}提案." />
+    <string id="MP_SubjectAccepted" text="接受" />
+    <string id="MP_SubjectRejected" text="拒绝" />
+    <string id="MP_SubjectDemandDirection" text="要求成为" />
+    <string id="MP_SubjectOfferDirection" text="主动成为" />
+    <string id="MP_SubjectDemandVoteApprovedLog" text="[宗藩外交] {KINGDOM}议会同意发出成为{SUBJECT_TYPE}的要求." />
+    <string id="MP_SubjectDemandVoteRejectedLog" text="[宗藩外交] {KINGDOM}议会拒绝发出成为{SUBJECT_TYPE}的要求." />
+    <string id="MP_SubjectOfferVoteApprovedLog" text="[宗藩外交] {KINGDOM}议会同意主动成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectOfferVoteRejectedLog" text="[宗藩外交] {KINGDOM}议会拒绝主动成为{SUBJECT_TYPE}." />
+    <string id="MP_SubjectReleaseVoteApprovedLog" text="[宗藩外交] {OVERLORD}议会同意解除{KINGDOM}的{SUBJECT_TYPE}地位." />
+    <string id="MP_SubjectReleaseVoteRejectedLog" text="[宗藩外交] {OVERLORD}议会拒绝解除{KINGDOM}的{SUBJECT_TYPE}地位." />
+    <string id="MP_SubjectIndependenceVoteApprovedLog" text="[宗藩外交] {SUBJECT}议会同意向{KINGDOM}宣布独立." />
+    <string id="MP_SubjectIndependenceVoteRejectedLog" text="[宗藩外交] {SUBJECT}议会拒绝向{KINGDOM}宣布独立." />
   </strings>
 </base>

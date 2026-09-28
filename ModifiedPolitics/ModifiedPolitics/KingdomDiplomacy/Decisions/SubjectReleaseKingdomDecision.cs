@@ -4,6 +4,7 @@ using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core.ImageIdentifiers;
@@ -155,8 +156,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Decisions
 
         public override void ApplyChosenOutcome(DecisionOutcome chosenOutcome)
         {
-            if ((chosenOutcome as SubjectReleaseDecisionOutcome)
-                ?.ShouldAllianceBeStarted == true)
+            bool approved = (chosenOutcome as SubjectReleaseDecisionOutcome)
+                ?.ShouldAllianceBeStarted == true;
+            TextObject message = BuildText(approved
+                ? "{=MP_SubjectReleaseVoteApprovedLog}[Subject diplomacy] {OVERLORD}'s council approved releasing {KINGDOM} from {SUBJECT_TYPE} status."
+                : "{=MP_SubjectReleaseVoteRejectedLog}[Subject diplomacy] {OVERLORD}'s council rejected releasing {KINGDOM} from {SUBJECT_TYPE} status.");
+            message.SetTextVariable("OVERLORD", Kingdom.Name);
+            ModLogger.Notice(message.ToString());
+
+            if (approved)
             {
                 SubjectRelationAction.TryRelease(SubjectKingdom);
             }

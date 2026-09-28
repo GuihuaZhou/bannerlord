@@ -64,6 +64,8 @@ namespace ModifiedPolitics
                     new SubjectTradeRestrictionBehavior());
                 campaignStarter.AddBehavior(
                     new SubjectProposalAiBehavior());
+                campaignStarter.AddBehavior(
+                    new SubjectRelationAiBehavior());
             }
         }
     }

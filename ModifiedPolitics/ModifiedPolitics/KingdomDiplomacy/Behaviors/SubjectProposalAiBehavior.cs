@@ -87,7 +87,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
             LogProposal(decision);
         }
 
-        private static bool CanConsiderProposal(Clan clan)
+        internal static bool CanConsiderProposal(Clan clan)
         {
             if ((int)Campaign.Current.Models.CampaignTimeModel
                     .CampaignStartTime.ElapsedDaysUntilNow < 5)
@@ -105,7 +105,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
                 && clan.Influence >= 100f;
         }
 
-        private static float CalculateNativeProposalChance(Clan clan)
+        internal static float CalculateNativeProposalChance(Clan clan)
         {
             int influentialClanCount = clan.Kingdom.Clans.Count(x =>
                 x.Influence > 100f);
