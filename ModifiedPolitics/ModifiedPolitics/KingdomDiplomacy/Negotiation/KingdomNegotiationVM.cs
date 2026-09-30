@@ -25,6 +25,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
     public sealed class KingdomNegotiationVM : ViewModel
     {
         private readonly Action _close;
+        private int _resultBarOtherPercentage;
+        private int _resultBarOffererPercentage;
+        private bool _isTargetSupportInsufficient = true;
+        private bool _isPlayerSupportInsufficient = true;
+        private bool _deferOfferRefresh;
 
         public KingdomNegotiationVM(
             Kingdom playerKingdom,
@@ -87,8 +92,82 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         [DataSourceProperty]
         public bool IsOfferDisabled => LeftOfferList.Count == 0
             && RightOfferList.Count == 0;
-        [DataSourceProperty] public int ResultBarOtherPercentage => 0;
-        [DataSourceProperty] public int ResultBarOffererPercentage => 0;
+        /// <summary>
+        /// Shows the target kingdom's influence-weighted council support for
+        /// the complete draft. This is refreshed whenever a term moves in or
+        /// out of the central offer.
+        /// </summary>
+        [DataSourceProperty]
+        public int ResultBarOtherPercentage
+        {
+            get => _resultBarOtherPercentage;
+            private set
+            {
+                if (_resultBarOtherPercentage == value)
+                {
+                    return;
+                }
+
+                _resultBarOtherPercentage = value;
+                OnPropertyChangedWithValue(
+                    value,
+                    nameof(ResultBarOtherPercentage));
+            }
+        }
+
+        [DataSourceProperty]
+        public bool IsTargetSupportInsufficient
+        {
+            get => _isTargetSupportInsufficient;
+            private set
+            {
+                if (_isTargetSupportInsufficient == value)
+                {
+                    return;
+                }
+
+                _isTargetSupportInsufficient = value;
+                OnPropertyChangedWithValue(
+                    value,
+                    nameof(IsTargetSupportInsufficient));
+            }
+        }
+
+        [DataSourceProperty]
+        public int ResultBarOffererPercentage
+        {
+            get => _resultBarOffererPercentage;
+            private set
+            {
+                if (_resultBarOffererPercentage == value)
+                {
+                    return;
+                }
+
+                _resultBarOffererPercentage = value;
+                OnPropertyChangedWithValue(
+                    value,
+                    nameof(ResultBarOffererPercentage));
+            }
+        }
+
+        [DataSourceProperty]
+        public bool IsPlayerSupportInsufficient
+        {
+            get => _isPlayerSupportInsufficient;
+            private set
+            {
+                if (_isPlayerSupportInsufficient == value)
+                {
+                    return;
+                }
+
+                _isPlayerSupportInsufficient = value;
+                OnPropertyChangedWithValue(
+                    value,
+                    nameof(IsPlayerSupportInsufficient));
+            }
+        }
         [DataSourceProperty] public HintViewModel AutoBalanceHint { get; }
         [DataSourceProperty] public InputKeyItemVM ResetInputKey { get; set; }
         [DataSourceProperty] public InputKeyItemVM DoneInputKey { get; set; }
@@ -192,7 +271,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         {
             ResetList(LeftOfferList);
             ResetList(RightOfferList);
-            OnPropertyChanged(nameof(IsOfferDisabled));
+            RefreshOfferState();
         }
 
         public void ExecuteAutoBalance()
@@ -440,7 +519,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             {
                 offer.Remove(item);
                 item.IsOffered = false;
-                OnPropertyChanged(nameof(IsOfferDisabled));
+                RefreshOfferState();
                 return;
             }
 
@@ -466,7 +545,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             item.IsOffered = true;
             offer.Add(item);
-            OnPropertyChanged(nameof(IsOfferDisabled));
+            RefreshOfferState();
         }
 
         private static void RemoveSubjectTerms(
@@ -497,11 +576,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         private void TransferAll(
             MBBindingList<KingdomNegotiationItemVM> source)
         {
-            foreach (KingdomNegotiationItemVM item in source
-                .Where(x => !x.IsOffered)
-                .ToList())
+            _deferOfferRefresh = true;
+            try
             {
-                TransferItem(item);
+                foreach (KingdomNegotiationItemVM item in source
+                    .Where(x => !x.IsOffered)
+                    .ToList())
+                {
+                    TransferItem(item);
+                }
+            }
+            finally
+            {
+                _deferOfferRefresh = false;
+                RefreshOfferState();
             }
         }
 
@@ -513,6 +601,54 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 item.IsOffered = false;
                 offer.Remove(item);
             }
+        }
+
+        /// <summary>
+        /// Re-evaluates the draft from both councils' perspectives and exposes
+        /// their influence-weighted acceptance shares to the two barter-style
+        /// progress bars. The proposal can still be assembled while support
+        /// is low; final submission performs authoritative validation again.
+        /// </summary>
+        private void RefreshOfferState()
+        {
+            if (_deferOfferRefresh)
+            {
+                return;
+            }
+
+            OnPropertyChanged(nameof(IsOfferDisabled));
+
+            if (LeftOfferList.Count == 0 && RightOfferList.Count == 0)
+            {
+                ResultBarOtherPercentage = 0;
+                ResultBarOffererPercentage = 0;
+                IsTargetSupportInsufficient = true;
+                IsPlayerSupportInsufficient = true;
+                return;
+            }
+
+            KingdomNegotiationDraft draft = CreateDraft();
+            KingdomNegotiationEvaluation targetEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    draft,
+                    TargetKingdom);
+            KingdomNegotiationEvaluation playerEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    draft,
+                    PlayerKingdom);
+
+            ResultBarOtherPercentage = ToPercentage(
+                targetEvaluation.AcceptShare);
+            ResultBarOffererPercentage = ToPercentage(
+                playerEvaluation.AcceptShare);
+            IsTargetSupportInsufficient = !targetEvaluation.WouldAccept;
+            IsPlayerSupportInsufficient = !playerEvaluation.WouldAccept;
+        }
+
+        private static int ToPercentage(float share)
+        {
+            return (int)Math.Round(
+                Math.Max(0f, Math.Min(1f, share)) * 100f);
         }
     }
 }

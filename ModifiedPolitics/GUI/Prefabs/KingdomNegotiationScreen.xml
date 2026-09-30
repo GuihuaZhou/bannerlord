@@ -182,7 +182,22 @@
                   <Children>
                     <Widget Id="FillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="262" SuggestedHeight="19" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="3" ClipContents="true">
                       <Children>
-                        <BoolBrushChangerBrushWidget Id="FillVisual" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="262" SuggestedHeight="19" HorizontalAlignment="Left" VerticalAlignment="Center" PositionYOffset="-1" BooleanCheck="@IsOfferDisabled" FalseBrush="Barter.Progress.Accepted" TrueBrush="Barter.Progress.NotAccepted" />
+                        <BoolBrushChangerBrushWidget Id="FillVisual" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="262" SuggestedHeight="19" HorizontalAlignment="Left" VerticalAlignment="Center" PositionYOffset="-1" BooleanCheck="@IsTargetSupportInsufficient" FalseBrush="Barter.Progress.Accepted" TrueBrush="Barter.Progress.NotAccepted" />
+                      </Children>
+                    </Widget>
+                  </Children>
+                </FillBarWidget>
+              </Children>
+            </Widget>
+
+            <!--The proposing kingdom's influence-weighted council support.-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="273" SuggestedHeight="28" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="88" MarginTop="36" Sprite="Barter\slider_boxy_canvas" IsEnabled="false">
+              <Children>
+                <FillBarWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="267" SuggestedHeight="24" HorizontalAlignment="Center" VerticalAlignment="Center" DividerWidget="PlayerDividerWidget" FillWidget="PlayerFillWidget" InitialAmount="@ResultBarOffererPercentage" IsEnabled="false" MaxAmount="100">
+                  <Children>
+                    <Widget Id="PlayerFillWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="262" SuggestedHeight="19" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="3" ClipContents="true">
+                      <Children>
+                        <BoolBrushChangerBrushWidget Id="PlayerFillVisual" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="262" SuggestedHeight="19" HorizontalAlignment="Left" VerticalAlignment="Center" PositionYOffset="-1" BooleanCheck="@IsPlayerSupportInsufficient" FalseBrush="Barter.Progress.Accepted" TrueBrush="Barter.Progress.NotAccepted" />
                       </Children>
                     </Widget>
                   </Children>
