@@ -199,5 +199,37 @@
     <string id="MP_SubjectReleaseVoteRejectedLog" text="[宗藩外交] {OVERLORD}议会拒绝解除{KINGDOM}的{SUBJECT_TYPE}地位." />
     <string id="MP_SubjectIndependenceVoteApprovedLog" text="[宗藩外交] {SUBJECT}议会同意向{KINGDOM}宣布独立." />
     <string id="MP_SubjectIndependenceVoteRejectedLog" text="[宗藩外交] {SUBJECT}议会拒绝向{KINGDOM}宣布独立." />
-  </strings>
+    <string id="MP_KingdomBarterAction" text="谈判" />
+    <string id="MP_KingdomBarterDescription" text="为{KINGDOM}组合一份外交提案." />
+    <string id="MP_KingdomNegotiationTitle" text="与{KINGDOM}谈判" />
+    <string id="MP_KingdomNegotiationAvailableTerms" text="可选条款" />
+    <string id="MP_KingdomNegotiationDraftTerms" text="提案草案" />
+    <string id="MP_KingdomNegotiationEmpty" text="当前提案尚未添加任何条款." />
+    <string id="MP_KingdomNegotiationRemove" text="移除" />
+    <string id="MP_KingdomNegotiationClose" text="关闭" />
+    <string id="MP_KingdomNegotiationSubmitLater" text="提交 (后续批次)" />
+    <string id="MP_NegotiationTermPeace" text="和平" />
+    <string id="MP_NegotiationTermTrade" text="贸易协定" />
+    <string id="MP_NegotiationTermAlliance" text="同盟" />
+    <string id="MP_NegotiationTermTargetVassal" text="要求对方成为附庸" />
+    <string id="MP_NegotiationTermTargetPuppet" text="要求对方成为傀儡" />
+    <string id="MP_NegotiationTermPlayerVassal" text="我国成为对方附庸" />
+    <string id="MP_NegotiationTermPlayerPuppet" text="我国成为对方傀儡" />
+    <string id="MP_KingdomNegotiationGoldTitle" text="统治者金钱" />
+    <string id="MP_KingdomNegotiationDenars" text="第纳尔" />
+    <string id="MP_KingdomNegotiationFiefsTitle" text="城镇和城堡" />
+    <string id="MP_KingdomNegotiationPrisonersTitle" text="英雄俘虏" />
+    <string id="MP_KingdomNegotiationDiplomacyTitle" text="外交条约" />
+    <string id="MP_KingdomNegotiationNoFiefs" text="没有城镇或城堡." />
+    <string id="MP_KingdomNegotiationNoPrisoners" text="没有英雄俘虏." />
+    <string id="MP_KingdomNegotiationGoldValue" text="{HERO}: {GOLD}第纳尔" />
+    <string id="MP_KingdomNegotiationFiefItem" text="{FIEF} ({OWNER})" />
+    <string id="MP_KingdomNegotiationPrisonerItem" text="{HERO} ({CLAN})" />
+    <string id="MP_KingdomNegotiationProvidedTerm" text="{KINGDOM}: {TERM}" />
+    <string id="MP_KingdomNegotiationOpenFailed" text="[王国外交] 无法打开王国谈判界面. {ERROR}" />
+    <string id="MP_KingdomNegotiationInvalidParties" text="参与谈判的王国已经失效." />
+    <string id="MP_KingdomNegotiationEmptyDraft" text="请至少向提案中添加一项条款." />
+    <string id="MP_KingdomNegotiationMultipleSubjectTerms" text="一份提案只能包含一项宗藩地位条款." />
+    <string id="MP_KingdomNegotiationStaleTerm" text="一项或多项提案条款已经失效." />
+</strings>
 </base>

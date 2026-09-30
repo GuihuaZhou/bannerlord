@@ -4,6 +4,7 @@ using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using HarmonyLib;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
@@ -105,6 +106,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                 return;
             }
 
+            AddNegotiationAction(target);
+
             KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
             SubjectRelationData targetRelation =
                 manager?.GetSubjectRelation(target);
@@ -157,6 +160,21 @@ namespace ModifiedPolitics.KingdomDiplomacy.UI
                     "{=ModifiedPolitics_OfferPuppetSubmission}Offer Submission"),
                 new TextObject(
                     "{=ModifiedPolitics_OfferPuppetSubmissionDescription}Offer for your kingdom to become a puppet of {TARGET}. Council support is {SUPPORT}%."));
+        }
+
+        private void AddNegotiationAction(Kingdom target)
+        {
+            TextObject explanation = new TextObject(
+                "{=MP_KingdomBarterDescription}Assemble a combined diplomatic proposal for {KINGDOM}.");
+            explanation.SetTextVariable("KINGDOM", target.Name);
+            SubjectActions.Add(CreateAction(
+                new TextObject(
+                    "{=MP_KingdomBarterAction}Negotiate"),
+                explanation,
+                0,
+                true,
+                TextObject.GetEmpty(),
+                () => KingdomNegotiationScreenService.Open(target)));
         }
 
         private void AddDemandAction(
