@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions;
@@ -24,6 +25,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 
         public static bool SubmitPlayerProposal(
             KingdomNegotiationDraft draft,
+            Action beforeDecisionAdded,
             out TextObject reason)
         {
             if (!KingdomNegotiationDraftValidator.TryValidate(
@@ -79,7 +81,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                         KingdomNegotiationTermRecord.FromDraftTerm),
                     false);
             ActiveProposalKeys.Add(proposalKey);
-            playerKingdom.AddDecision(decision, true);
+            try
+            {
+                // The kingdom decision screen may open synchronously from
+                // AddDecision. Close the modal negotiation layer first so it
+                // cannot survive underneath the vote and later expose a
+                // stale copy of the successfully executed proposal.
+                beforeDecisionAdded?.Invoke();
+                playerKingdom.AddDecision(decision, true);
+            }
+            catch
+            {
+                ActiveProposalKeys.Remove(proposalKey);
+                throw;
+            }
             LogFlow(
                 playerKingdom,
                 draft.TargetKingdom,

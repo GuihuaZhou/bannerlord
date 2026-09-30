@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -9,55 +10,88 @@ using TaleWorlds.Localization;
 namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 {
     /// <summary>
-    /// Executes proposals that already have a naturally atomic native action.
-    /// Asset packages deliberately remain disabled until the transactional
-    /// executor can validate and apply the complete package together.
+    /// Executes packages composed exclusively of supported native campaign
+    /// actions. Every term is preflighted before the first mutation, then the
+    /// package is applied in a deterministic dependency order.
     /// </summary>
     public static class KingdomNegotiationExecutionService
     {
         public static bool TryExecuteSupportedProposal(
             KingdomNegotiationDraft draft)
         {
-            if (draft?.Terms.Count != 1)
+            TextObject validationReason = null;
+            if (draft == null
+                || draft.Terms.Count == 0
+                || !KingdomNegotiationDraftValidator.TryValidate(
+                    draft,
+                    out validationReason))
             {
+                LogProposalFailure(
+                    validationReason
+                        ?? new TextObject(
+                            "{=MP_NegotiationDebugInvalidDraft}proposal validation failed"));
                 return false;
             }
 
-            KingdomNegotiationDraftTerm term = draft.Terms[0];
             Kingdom first = draft.PlayerKingdom;
             Kingdom second = draft.TargetKingdom;
-            LogExecution(
-                first,
-                second,
-                term.Type,
-                "{=MP_NegotiationDebugExecutionAttempt}execution requested");
-            bool executed;
+            if (draft.Terms.Any(term => !IsSupported(term.Type)))
+            {
+                LogProposalFailure(new TextObject(
+                    "{=MP_NegotiationDebugUnsupportedPackage}the proposal contains terms that are not executable yet"));
+                return false;
+            }
+
+            // Validate every term before changing campaign state. Native
+            // diplomacy actions are not generally reversible, so no term may
+            // execute until the complete supported package passes preflight.
+            foreach (KingdomNegotiationDraftTerm term in draft.Terms)
+            {
+                if (!CanExecuteTerm(first, second, term))
+                {
+                    LogExecution(
+                        first,
+                        second,
+                        term.Type,
+                        "{=MP_NegotiationDebugPreflightFailed}execution preflight failed");
+                    return false;
+                }
+            }
+
             try
             {
-                switch (term.Type)
+                // Peace changes the validity of other diplomacy actions, and
+                // settlement transfers are the most expensive world-state
+                // mutation. Keep a stable, explicit execution order.
+                KingdomNegotiationTermType[] order =
                 {
-                    case KingdomNegotiationTermType.Peace:
-                        executed = ExecutePeace(first, second);
-                        break;
-                    case KingdomNegotiationTermType.TradeAgreement:
-                        executed = ExecuteTrade(first, second);
-                        break;
-                    case KingdomNegotiationTermType.Alliance:
-                        executed = ExecuteAlliance(first, second);
-                        break;
-                    case KingdomNegotiationTermType.Settlement:
-                        executed = ExecuteSettlementTransfer(
-                            first,
-                            second,
-                            term);
-                        break;
-                    default:
+                    KingdomNegotiationTermType.Peace,
+                    KingdomNegotiationTermType.TradeAgreement,
+                    KingdomNegotiationTermType.Alliance,
+                    KingdomNegotiationTermType.Settlement
+                };
+                foreach (KingdomNegotiationTermType type in order)
+                {
+                    foreach (KingdomNegotiationDraftTerm term in draft.Terms
+                        .Where(x => x.Type == type))
+                    {
                         LogExecution(
                             first,
                             second,
                             term.Type,
-                            "{=MP_NegotiationDebugUnsupportedTerm}term is not a directly executable single treaty");
-                        return false;
+                            "{=MP_NegotiationDebugExecutionAttempt}execution requested");
+                        if (!ExecuteTerm(first, second, term))
+                        {
+                            LogExecution(
+                                first,
+                                second,
+                                term.Type,
+                                "{=MP_NegotiationDebugExecutionNotConfirmed}the native system did not confirm the treaty state");
+                            return false;
+                        }
+
+                        LogTermExecuted(term.Type);
+                    }
                 }
             }
             catch (Exception exception)
@@ -69,25 +103,66 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 return false;
             }
 
-            if (executed)
-            {
-                TextObject message = new TextObject(
-                    "{=MP_NegotiationSingleTreatyExecuted}[Kingdom negotiation] The proposal was approved and the {TREATY} is now in effect.");
-                message.SetTextVariable(
-                    "TREATY",
-                    TreatyText(term.Type));
-                ModLogger.Notice(message.ToString());
-            }
-            else
-            {
-                LogExecution(
-                    first,
-                    second,
-                    term.Type,
-                    "{=MP_NegotiationDebugExecutionNotConfirmed}the native system did not confirm the treaty state");
-            }
+            return true;
+        }
 
-            return executed;
+        private static bool IsSupported(KingdomNegotiationTermType type)
+        {
+            return type == KingdomNegotiationTermType.Peace
+                || type == KingdomNegotiationTermType.TradeAgreement
+                || type == KingdomNegotiationTermType.Alliance
+                || type == KingdomNegotiationTermType.Settlement;
+        }
+
+        private static bool CanExecuteTerm(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            switch (term.Type)
+            {
+                case KingdomNegotiationTermType.Peace:
+                    return first?.IsAtWarWith(second) == true;
+                case KingdomNegotiationTermType.TradeAgreement:
+                    ITradeAgreementsCampaignBehavior tradeBehavior =
+                        Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>();
+                    return tradeBehavior != null
+                        && !tradeBehavior.HasTradeAgreement(
+                            first,
+                            second,
+                            out _);
+                case KingdomNegotiationTermType.Alliance:
+                    IAllianceCampaignBehavior allianceBehavior =
+                        Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>();
+                    return allianceBehavior != null
+                        && !allianceBehavior.IsAllyWithKingdom(first, second);
+                case KingdomNegotiationTermType.Settlement:
+                    return CanTransferSettlement(first, second, term);
+                default:
+                    return false;
+            }
+        }
+
+        private static bool ExecuteTerm(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            switch (term.Type)
+            {
+                case KingdomNegotiationTermType.Peace:
+                    return ExecutePeace(first, second);
+                case KingdomNegotiationTermType.TradeAgreement:
+                    return ExecuteTrade(first, second);
+                case KingdomNegotiationTermType.Alliance:
+                    return ExecuteAlliance(first, second);
+                case KingdomNegotiationTermType.Settlement:
+                    return ExecuteSettlementTransfer(first, second, term);
+                default:
+                    return false;
+            }
         }
 
         private static bool ExecutePeace(Kingdom first, Kingdom second)
@@ -161,14 +236,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             Kingdom provider = term.ProviderKingdom;
             Kingdom receiver = provider == first ? second : first;
             Hero newOwner = receiver?.RulingClan?.Leader;
-            if (settlement == null
-                || !settlement.IsFortification
-                || provider == null
-                || receiver == null
-                || provider != first && provider != second
-                || settlement.OwnerClan?.Kingdom != provider
-                || newOwner == null
-                || !newOwner.IsAlive)
+            if (!CanTransferSettlement(first, second, term))
             {
                 LogExecution(
                     first,
@@ -189,6 +257,44 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 newOwner,
                 settlement);
             return settlement.OwnerClan?.Kingdom == receiver;
+        }
+
+        private static bool CanTransferSettlement(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            Settlement settlement = term.Subject as Settlement;
+            Kingdom provider = term.ProviderKingdom;
+            Kingdom receiver = provider == first ? second : first;
+            Hero newOwner = receiver?.RulingClan?.Leader;
+            return settlement != null
+                && settlement.IsFortification
+                && provider != null
+                && receiver != null
+                && (provider == first || provider == second)
+                && settlement.OwnerClan?.Kingdom == provider
+                && newOwner != null
+                && newOwner.IsAlive;
+        }
+
+        private static void LogTermExecuted(
+            KingdomNegotiationTermType type)
+        {
+            TextObject message = new TextObject(
+                "{=MP_NegotiationSingleTreatyExecuted}[Kingdom negotiation] The proposal was approved and the {TREATY} is now in effect.");
+            message.SetTextVariable("TREATY", TreatyText(type));
+            ModLogger.Notice(message.ToString());
+        }
+
+        private static void LogProposalFailure(TextObject reason)
+        {
+            TextObject message = new TextObject(
+                "{=MP_NegotiationDebugProposalExecutionRejected}[Kingdom negotiation debug] Proposal execution was rejected. {REASON}.");
+            message.SetTextVariable(
+                "REASON",
+                reason ?? TextObject.GetEmpty());
+            ModLogger.Error(message.ToString());
         }
 
         private static void LogExecution(

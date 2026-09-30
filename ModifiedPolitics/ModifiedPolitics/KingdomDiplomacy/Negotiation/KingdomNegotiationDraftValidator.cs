@@ -1,6 +1,7 @@
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 
@@ -55,13 +56,33 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             foreach (KingdomNegotiationDraftTerm term in draft.Terms)
             {
-                if (!IsParticipant(draft, term.ProviderKingdom)
-                    || term.Amount <= 0
-                    || !IsTermStillOwned(term)
-                    || !IsTreatyStillAvailable(draft, term))
+                if (!IsParticipant(draft, term.ProviderKingdom))
                 {
                     reason = new TextObject(
-                        "{=MP_KingdomNegotiationStaleTerm}One or more proposal terms are no longer available.");
+                        "{=MP_KingdomNegotiationInvalidProvider}A proposal term belongs to a kingdom outside this negotiation.");
+                    return false;
+                }
+
+                if (term.Amount <= 0)
+                {
+                    reason = new TextObject(
+                        "{=MP_KingdomNegotiationInvalidAmount}A proposal term has an invalid amount.");
+                    return false;
+                }
+
+                if (!IsTermStillOwned(term))
+                {
+                    TextObject staleAsset = new TextObject(
+                        "{=MP_KingdomNegotiationAssetUnavailable}{TERM} is no longer available to its offering kingdom.");
+                    staleAsset.SetTextVariable(
+                        "TERM",
+                        GetTermName(term));
+                    reason = staleAsset;
+                    return false;
+                }
+
+                if (!TryValidateTreaty(draft, term, out reason))
+                {
                     return false;
                 }
             }
@@ -106,16 +127,35 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             }
         }
 
-        private static bool IsTreatyStillAvailable(
+        private static bool TryValidateTreaty(
             KingdomNegotiationDraft draft,
-            KingdomNegotiationDraftTerm term)
+            KingdomNegotiationDraftTerm term,
+            out TextObject reason)
         {
+            reason = TextObject.GetEmpty();
             Kingdom first = draft.PlayerKingdom;
             Kingdom second = draft.TargetKingdom;
             switch (term.Type)
             {
                 case KingdomNegotiationTermType.Peace:
-                    return first.IsAtWarWith(second);
+                    if (!first.IsAtWarWith(second))
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationAlreadyAtPeace}The two kingdoms are already at peace.");
+                        return false;
+                    }
+
+                    if (draft.Terms.Count == 1)
+                    {
+                        return new MakePeaceKingdomDecision(
+                                first.RulingClan,
+                                second)
+                            .CanMakeDecision(
+                                out reason,
+                                false);
+                    }
+
+                    return true;
 
                 case KingdomNegotiationTermType.TradeAgreement:
                     ITradeAgreementsCampaignBehavior tradeBehavior =
@@ -127,6 +167,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                             second,
                             out _) == true)
                     {
+                        reason = first.IsAtWarWith(second)
+                            ? new TextObject(
+                                "{=MP_KingdomNegotiationTradeAtWar}Trade agreements cannot be signed while the kingdoms are at war.")
+                            : new TextObject(
+                                "{=MP_KingdomNegotiationTradeExists}The two kingdoms already have a trade agreement.");
                         return false;
                     }
 
@@ -135,28 +180,63 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                     // vote in the queried kingdom. A compound proposal uses
                     // the structural native checks here and applies its own
                     // package-wide foreign evaluation afterwards.
-                    TextObject tradeReason;
                     return Campaign.Current.Models.TradeAgreementModel
                         .CanMakeTradeAgreement(
                             first,
                             second,
                             draft.Terms.Count == 1,
-                            out tradeReason,
+                            out reason,
                             false);
 
                 case KingdomNegotiationTermType.Alliance:
                     IAllianceCampaignBehavior allianceBehavior =
                         Campaign.Current.GetCampaignBehavior<
                             IAllianceCampaignBehavior>();
-                    return !first.IsAtWarWith(second)
-                        && (allianceBehavior == null
-                            || !allianceBehavior.IsAllyWithKingdom(
-                                first,
-                                second));
+                    if (first.IsAtWarWith(second)
+                        || allianceBehavior?.IsAllyWithKingdom(
+                            first,
+                            second) == true)
+                    {
+                        reason = first.IsAtWarWith(second)
+                            ? new TextObject(
+                                "{=MP_KingdomNegotiationAllianceAtWar}An alliance cannot be formed while the kingdoms are at war.")
+                            : new TextObject(
+                                "{=MP_KingdomNegotiationAllianceExists}The two kingdoms are already allied.");
+                        return false;
+                    }
+
+                    if (draft.Terms.Count == 1)
+                    {
+                        return new StartAllianceDecision(
+                                first.RulingClan,
+                                second)
+                            .CanMakeDecision(
+                                out reason,
+                                false);
+                    }
+
+                    return true;
 
                 default:
                     return true;
             }
+        }
+
+        private static TextObject GetTermName(
+            KingdomNegotiationDraftTerm term)
+        {
+            if (term.Subject is Settlement settlement)
+            {
+                return settlement.Name;
+            }
+
+            if (term.Subject is Hero hero)
+            {
+                return hero.Name;
+            }
+
+            return new TextObject(
+                "{=MP_KingdomNegotiationUnknownTerm}This proposal term");
         }
     }
 }

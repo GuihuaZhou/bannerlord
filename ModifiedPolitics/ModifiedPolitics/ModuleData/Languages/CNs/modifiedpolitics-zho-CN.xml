@@ -232,6 +232,15 @@
     <string id="MP_KingdomNegotiationMultipleSubjectTerms" text="一份提案只能包含一项宗藩地位条款." />
     <string id="MP_KingdomNegotiationDuplicateTreaty" text="同一种双边条约不能在一份提案中重复出现." />
     <string id="MP_KingdomNegotiationStaleTerm" text="一项或多项提案条款已经失效." />
+    <string id="MP_KingdomNegotiationInvalidProvider" text="某项提案条款不属于参与谈判的王国." />
+    <string id="MP_KingdomNegotiationInvalidAmount" text="某项提案条款的数量无效." />
+    <string id="MP_KingdomNegotiationAssetUnavailable" text="{TERM} 已不再由提出该条款的王国支配." />
+    <string id="MP_KingdomNegotiationAlreadyAtPeace" text="双方已经处于和平状态." />
+    <string id="MP_KingdomNegotiationTradeAtWar" text="交战状态下无法签订贸易协定." />
+    <string id="MP_KingdomNegotiationTradeExists" text="双方已经签订了贸易协定." />
+    <string id="MP_KingdomNegotiationAllianceAtWar" text="交战状态下无法建立同盟." />
+    <string id="MP_KingdomNegotiationAllianceExists" text="双方已经建立了同盟." />
+    <string id="MP_KingdomNegotiationUnknownTerm" text="该项提案条款" />
     <string id="MP_NegotiationEvaluationSummary" text="[王国谈判] {KINGDOM}预计会{RESULT}这份组合提案. 加权支持率为{SUPPORT}%." />
     <string id="MP_NegotiationClanEvaluation" text="[王国谈判] {CLAN}对提案的评分为{SCORE}. 分项: {COMPONENTS}." />
     <string id="MP_NegotiationAccept" text="接受" />
@@ -294,6 +303,10 @@
     <string id="MP_NegotiationDebugUnsupportedTerm" text="该条款不是可以直接执行的单一条约" />
     <string id="MP_NegotiationDebugExecutionException" text="[王国谈判调试] 条约执行发生异常. {ERROR}" />
     <string id="MP_NegotiationDebugExecutionNotConfirmed" text="本体系统没有确认条约已经生效" />
+    <string id="MP_NegotiationDebugInvalidDraft" text="提案校验失败" />
+    <string id="MP_NegotiationDebugUnsupportedPackage" text="提案包含尚未支持执行的条款" />
+    <string id="MP_NegotiationDebugPreflightFailed" text="执行前检查失败" />
+    <string id="MP_NegotiationDebugProposalExecutionRejected" text="[王国谈判调试] 提案执行被拒绝. {REASON}." />
     <string id="MP_NegotiationDebugSettlementInvalid" text="定居点转移校验失败" />
     <string id="MP_NegotiationDebugSettlementTransfer" text="[王国谈判调试] 正在把{SETTLEMENT}从{PROVIDER}转交给{RECEIVER}的统治家族." />
     <string id="MP_NegotiationDebugTradeBehaviorMissing" text="无法获取贸易协定行为" />

@@ -174,6 +174,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             if (!KingdomNegotiationProposalService.SubmitPlayerProposal(
                     draft,
+                    _close,
                     out reason))
             {
                 InformationManager.DisplayMessage(
@@ -185,7 +186,6 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 "{=MP_KingdomNegotiationSubmitted}The compound proposal has been submitted to your council.");
             InformationManager.DisplayMessage(
                 new InformationMessage(result.ToString()));
-            _close?.Invoke();
         }
 
         public void ExecuteReset()
