@@ -1,5 +1,6 @@
 using HarmonyLib;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Decisions.ItemTypes;
 
@@ -42,6 +43,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             {
                 __instance.NameText = response.GetGeneralTitle().ToString();
                 __instance.StartAllianceDescriptionText = response
+                    .GetPanelDescription()
+                    .ToString();
+                return;
+            }
+
+            if (decision is KingdomNegotiationDecision negotiation)
+            {
+                __instance.NameText = negotiation.GetGeneralTitle().ToString();
+                __instance.StartAllianceDescriptionText = negotiation
                     .GetPanelDescription()
                     .ToString();
             }

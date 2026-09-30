@@ -1,5 +1,6 @@
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 
@@ -41,11 +42,23 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 return false;
             }
 
+            if (draft.Terms
+                .Where(x => KingdomNegotiationTermRules
+                    .IsBilateralTreaty(x.Type))
+                .GroupBy(x => x.Type)
+                .Any(x => x.Count() > 1))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationDuplicateTreaty}The same bilateral treaty cannot appear more than once in a proposal.");
+                return false;
+            }
+
             foreach (KingdomNegotiationDraftTerm term in draft.Terms)
             {
                 if (!IsParticipant(draft, term.ProviderKingdom)
                     || term.Amount <= 0
-                    || !IsTermStillOwned(term))
+                    || !IsTermStillOwned(term)
+                    || !IsTreatyStillAvailable(draft, term))
                 {
                     reason = new TextObject(
                         "{=MP_KingdomNegotiationStaleTerm}One or more proposal terms are no longer available.");
@@ -90,6 +103,59 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
                 default:
                     return term.Subject == term.ProviderKingdom;
+            }
+        }
+
+        private static bool IsTreatyStillAvailable(
+            KingdomNegotiationDraft draft,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom first = draft.PlayerKingdom;
+            Kingdom second = draft.TargetKingdom;
+            switch (term.Type)
+            {
+                case KingdomNegotiationTermType.Peace:
+                    return first.IsAtWarWith(second);
+
+                case KingdomNegotiationTermType.TradeAgreement:
+                    ITradeAgreementsCampaignBehavior tradeBehavior =
+                        Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>();
+                    if (first.IsAtWarWith(second)
+                        || tradeBehavior?.HasTradeAgreement(
+                            first,
+                            second,
+                            out _) == true)
+                    {
+                        return false;
+                    }
+
+                    // For a standalone trade proposal, reproduce the native
+                    // button/decision check exactly, including its simulated
+                    // vote in the queried kingdom. A compound proposal uses
+                    // the structural native checks here and applies its own
+                    // package-wide foreign evaluation afterwards.
+                    TextObject tradeReason;
+                    return Campaign.Current.Models.TradeAgreementModel
+                        .CanMakeTradeAgreement(
+                            first,
+                            second,
+                            draft.Terms.Count == 1,
+                            out tradeReason,
+                            false);
+
+                case KingdomNegotiationTermType.Alliance:
+                    IAllianceCampaignBehavior allianceBehavior =
+                        Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>();
+                    return !first.IsAtWarWith(second)
+                        && (allianceBehavior == null
+                            || !allianceBehavior.IsAllyWithKingdom(
+                                first,
+                                second));
+
+                default:
+                    return true;
             }
         }
     }

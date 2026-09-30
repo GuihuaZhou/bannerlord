@@ -230,6 +230,7 @@
     <string id="MP_KingdomNegotiationInvalidParties" text="参与谈判的王国已经失效." />
     <string id="MP_KingdomNegotiationEmptyDraft" text="请至少向提案中添加一项条款." />
     <string id="MP_KingdomNegotiationMultipleSubjectTerms" text="一份提案只能包含一项宗藩地位条款." />
+    <string id="MP_KingdomNegotiationDuplicateTreaty" text="同一种双边条约不能在一份提案中重复出现." />
     <string id="MP_KingdomNegotiationStaleTerm" text="一项或多项提案条款已经失效." />
     <string id="MP_NegotiationEvaluationSummary" text="[王国谈判] {KINGDOM}预计会{RESULT}这份组合提案. 加权支持率为{SUPPORT}%." />
     <string id="MP_NegotiationClanEvaluation" text="[王国谈判] {CLAN}对提案的评分为{SCORE}. 分项: {COMPONENTS}." />
@@ -246,5 +247,58 @@
     <string id="MP_NegotiationScoreSubject" text="宗藩地位" />
     <string id="MP_KingdomNegotiationEvaluate" text="评估提案" />
     <string id="MP_KingdomNegotiationEvaluationResult" text="预计议会支持率: {PLAYER_KINGDOM} {PLAYER_SUPPORT}%, {TARGET_KINGDOM} {TARGET_SUPPORT}%. 本次评估不会提交或执行提案." />
+    <string id="MP_KingdomNegotiationSubmit" text="提交提案" />
+    <string id="MP_KingdomNegotiationSubmitted" text="组合提案已提交本国议会审议." />
+    <string id="MP_NegotiationPlayerCannotPropose" text="只有王国正式成员家族才能提交王国提案." />
+    <string id="MP_NegotiationAlreadyPending" text="当前已经存在一份与该王国有关的组合提案." />
+    <string id="MP_NegotiationNoChannel" text="对方王国不愿就这份提案开启谈判." />
+    <string id="MP_NegotiationProposalDecisionTitle" text="向{KINGDOM}提交外交提案" />
+    <string id="MP_NegotiationResponseDecisionTitle" text="回应{KINGDOM}的外交提案" />
+    <string id="MP_NegotiationProposalVoteTitle" text="表决是否向{KINGDOM}提交整份组合提案." />
+    <string id="MP_NegotiationResponseVoteTitle" text="表决是否接受{KINGDOM}的整份组合提案." />
+    <string id="MP_NegotiationProposalVoteDescription" text="议会必须决定是否将整份提案提交给{KINGDOM}. 各项条款不可拆分表决." />
+    <string id="MP_NegotiationResponseVoteDescription" text="议会必须接受或拒绝{KINGDOM}提出的整份提案. 各项条款不可拆分表决." />
+    <string id="MP_NegotiationDecisionApproved" text="{KINGDOM}的议会通过了组合提案." />
+    <string id="MP_NegotiationDecisionRejected" text="{KINGDOM}的议会否决了组合提案." />
+    <string id="MP_NegotiationDecisionSupport" text="支持" />
+    <string id="MP_NegotiationDecisionOppose" text="反对" />
+    <string id="MP_NegotiationDecisionSupportDescription" text="支持整份外交提案." />
+    <string id="MP_NegotiationDecisionOpposeDescription" text="拒绝整份外交提案." />
+    <string id="MP_NegotiationDecisionPartiesInvalid" text="参与谈判的一个王国已经不存在." />
+    <string id="MP_NegotiationOwnCouncilNotice" text="你的外交提案已经可以提交议会审议." />
+    <string id="MP_NegotiationIncomingCouncilNotice" text="{KINGDOM}送来了一份组合外交提案. 请召集议会回应." />
+    <string id="MP_NegotiationCouncilApprovedLog" text="[王国谈判] {KINGDOM}议会通过了组合提案." />
+    <string id="MP_NegotiationCouncilRejectedLog" text="[王国谈判] {KINGDOM}议会否决了组合提案." />
+    <string id="MP_NegotiationBothCouncilsApproved" text="[王国谈判] 双方议会均已通过组合提案. 条款正在等待执行阶段." />
+    <string id="MP_NegotiationSingleTreatyExecuted" text="[王国谈判] 提案已经通过, {TREATY}现已生效." />
+    <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
+    <string id="MP_NegotiationExecutedPeace" text="和平条约" />
+    <string id="MP_NegotiationExecutedTrade" text="贸易协定" />
+    <string id="MP_NegotiationExecutedAlliance" text="同盟" />
+    <string id="MP_NegotiationExecutedSettlement" text="定居点转移" />
+    <string id="MP_NegotiationDebugFlow" text="[王国谈判调试] {FIRST}与{SECOND}. {STAGE}. 条款数量: {COUNT}. 结果: {RESULT}." />
+    <string id="MP_NegotiationDebugProposalCreated" text="已创建提案国议会决议" />
+    <string id="MP_NegotiationDebugProposingVoteResolved" text="提案国议会投票已结束" />
+    <string id="MP_NegotiationDebugReceivingVoteResolved" text="接收国议会投票已结束" />
+    <string id="MP_NegotiationDebugExecutionEntered" text="已进入最终执行阶段" />
+    <string id="MP_NegotiationDebugApproved" text="通过" />
+    <string id="MP_NegotiationDebugRejected" text="否决" />
+    <string id="MP_NegotiationDebugMissingReceiver" text="接收国不存在, 未创建接收国议会决议" />
+    <string id="MP_NegotiationDebugMissingSponsor" text="没有可用的提案家族, 未创建接收国议会决议" />
+    <string id="MP_NegotiationDebugDuplicateReceiver" text="存在另一份未决组合提案, 未创建接收国议会决议" />
+    <string id="MP_NegotiationDebugReceiverCreated" text="已创建接收国议会决议" />
+    <string id="MP_NegotiationDebugReceiverElectionStarting" text="即将结算接收方AI议会投票" />
+    <string id="MP_NegotiationDebugNotApplicable" text="无" />
+    <string id="MP_NegotiationDebugExecution" text="[王国谈判调试] {FIRST}与{SECOND}. 条约: {TREATY}. 状态: {DETAIL}." />
+    <string id="MP_NegotiationDebugExecutionAttempt" text="收到执行请求" />
+    <string id="MP_NegotiationDebugUnsupportedTerm" text="该条款不是可以直接执行的单一条约" />
+    <string id="MP_NegotiationDebugExecutionException" text="[王国谈判调试] 条约执行发生异常. {ERROR}" />
+    <string id="MP_NegotiationDebugExecutionNotConfirmed" text="本体系统没有确认条约已经生效" />
+    <string id="MP_NegotiationDebugSettlementInvalid" text="定居点转移校验失败" />
+    <string id="MP_NegotiationDebugSettlementTransfer" text="[王国谈判调试] 正在把{SETTLEMENT}从{PROVIDER}转交给{RECEIVER}的统治家族." />
+    <string id="MP_NegotiationDebugTradeBehaviorMissing" text="无法获取贸易协定行为" />
+    <string id="MP_NegotiationDebugTradeAlreadyExists" text="贸易协定已经存在" />
+    <string id="MP_NegotiationDebugAllianceBehaviorMissing" text="无法获取同盟行为" />
+    <string id="MP_NegotiationDebugAllianceAlreadyExists" text="同盟已经存在" />
 </strings>
 </base>

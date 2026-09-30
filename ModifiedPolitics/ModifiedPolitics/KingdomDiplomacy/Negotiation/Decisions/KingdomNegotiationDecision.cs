@@ -1,0 +1,288 @@
+using System.Collections.Generic;
+using System.Linq;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Election;
+using TaleWorlds.Core.ImageIdentifiers;
+using TaleWorlds.Library;
+using TaleWorlds.Localization;
+using TaleWorlds.SaveSystem;
+
+namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions
+{
+    /// <summary>
+    /// Runs one side of a compound diplomatic proposal through Bannerlord's
+    /// native kingdom voting system. Approval by the proposing council creates
+    /// a second decision for the receiving council; no terms execute here.
+    /// </summary>
+    public sealed class KingdomNegotiationDecision : StartAllianceDecision
+    {
+        [SaveableField(201)]
+        private readonly List<KingdomNegotiationTermRecord> _terms;
+
+        [SaveableField(202)]
+        private readonly bool _isReceivingCouncil;
+
+        private KingdomNegotiationEvaluation _cachedEvaluation;
+
+        public Kingdom OtherKingdom => KingdomToStartAllianceWith;
+        public bool IsReceivingCouncil => _isReceivingCouncil;
+        public IReadOnlyList<KingdomNegotiationTermRecord> Terms => _terms;
+
+        public KingdomNegotiationDecision(
+            Clan proposerClan,
+            Kingdom otherKingdom,
+            IEnumerable<KingdomNegotiationTermRecord> terms,
+            bool isReceivingCouncil)
+            : base(proposerClan, otherKingdom)
+        {
+            _terms = (terms ?? Enumerable.Empty<KingdomNegotiationTermRecord>())
+                .ToList();
+            _isReceivingCouncil = isReceivingCouncil;
+        }
+
+        public KingdomNegotiationDraft CreateDraft()
+        {
+            Kingdom proposingKingdom = _isReceivingCouncil
+                ? OtherKingdom
+                : Kingdom;
+            Kingdom receivingKingdom = _isReceivingCouncil
+                ? Kingdom
+                : OtherKingdom;
+            return new KingdomNegotiationDraft(
+                proposingKingdom,
+                receivingKingdom,
+                _terms.Select(x => x.ToDraftTerm()));
+        }
+
+        public override bool IsAllowed()
+        {
+            return CanStillVote(out _);
+        }
+
+        public override bool CanMakeDecision(
+            out TextObject reason,
+            bool includeReason = false)
+        {
+            return CanStillVote(out reason);
+        }
+
+        protected override bool ShouldBeCancelledInternal()
+        {
+            return !CanStillVote(out _);
+        }
+
+        public override int GetProposalInfluenceCost()
+        {
+            if (_isReceivingCouncil)
+            {
+                return 0;
+            }
+
+            // A larger package requires more political capital, while keeping
+            // the cost in the same range as native diplomatic proposals.
+            return 150 + System.Math.Min(150, (_terms.Count - 1) * 25);
+        }
+
+        public override TextObject GetGeneralTitle()
+        {
+            return BuildText(_isReceivingCouncil
+                ? "{=MP_NegotiationResponseDecisionTitle}Respond to {KINGDOM}'s diplomatic proposal"
+                : "{=MP_NegotiationProposalDecisionTitle}Send a diplomatic proposal to {KINGDOM}");
+        }
+
+        public override TextObject GetSupportTitle()
+        {
+            return BuildText(_isReceivingCouncil
+                ? "{=MP_NegotiationResponseVoteTitle}Vote on accepting {KINGDOM}'s compound proposal."
+                : "{=MP_NegotiationProposalVoteTitle}Vote on sending the compound proposal to {KINGDOM}.");
+        }
+
+        public override TextObject GetChooseTitle()
+        {
+            return GetSupportTitle();
+        }
+
+        public override TextObject GetSupportDescription()
+        {
+            return BuildText(_isReceivingCouncil
+                ? "{=MP_NegotiationResponseVoteDescription}The council must accept or reject the entire proposal from {KINGDOM}. Individual terms cannot be separated."
+                : "{=MP_NegotiationProposalVoteDescription}The council must decide whether to send the entire proposal to {KINGDOM}. Individual terms cannot be separated.");
+        }
+
+        public override TextObject GetChooseDescription()
+        {
+            return GetSupportDescription();
+        }
+
+        public override IEnumerable<DecisionOutcome> DetermineInitialCandidates()
+        {
+            yield return new KingdomNegotiationDecisionOutcome(
+                true,
+                Kingdom,
+                OtherKingdom,
+                _isReceivingCouncil);
+            yield return new KingdomNegotiationDecisionOutcome(
+                false,
+                Kingdom,
+                OtherKingdom,
+                _isReceivingCouncil);
+        }
+
+        public override void DetermineSponsors(
+            MBReadOnlyList<DecisionOutcome> possibleOutcomes)
+        {
+            foreach (DecisionOutcome outcome in possibleOutcomes)
+            {
+                KingdomNegotiationDecisionOutcome negotiationOutcome =
+                    outcome as KingdomNegotiationDecisionOutcome;
+                if (negotiationOutcome?.IsApproved == true)
+                {
+                    outcome.SetSponsor(ProposerClan);
+                }
+                else
+                {
+                    AssignDefaultSponsor(outcome);
+                }
+            }
+        }
+
+        public override float DetermineSupport(
+            Clan clan,
+            DecisionOutcome possibleOutcome)
+        {
+            KingdomNegotiationClanEvaluation clanEvaluation = GetEvaluation()
+                .ClanEvaluations.FirstOrDefault(x => x.Clan == clan);
+            float score = clanEvaluation?.RawScore ?? -200f;
+            return (possibleOutcome as KingdomNegotiationDecisionOutcome)
+                ?.IsApproved == true
+                    ? score
+                    : -score;
+        }
+
+        public override void ApplyChosenOutcome(DecisionOutcome chosenOutcome)
+        {
+            bool approved = (chosenOutcome
+                as KingdomNegotiationDecisionOutcome)?.IsApproved == true;
+            // Re-log the exact evaluation used by this council. Conditions may
+            // have changed since the negotiation screen was closed or since
+            // the proposing kingdom completed its vote.
+            KingdomNegotiationEvaluationService.Log(GetEvaluation());
+            KingdomNegotiationProposalService.ResolveCouncilVote(
+                this,
+                approved);
+        }
+
+        public override TextObject GetChosenOutcomeText(
+            DecisionOutcome chosenOutcome,
+            SupportStatus supportStatus,
+            bool isShortVersion = false)
+        {
+            bool approved = (chosenOutcome
+                as KingdomNegotiationDecisionOutcome)?.IsApproved == true;
+            return BuildText(approved
+                ? "{=MP_NegotiationDecisionApproved}{KINGDOM}'s council approved the compound proposal."
+                : "{=MP_NegotiationDecisionRejected}{KINGDOM}'s council rejected the compound proposal.");
+        }
+
+        public override DecisionOutcome GetQueriedDecisionOutcome(
+            MBReadOnlyList<DecisionOutcome> possibleOutcomes)
+        {
+            return possibleOutcomes.FirstOrDefault(x =>
+                (x as KingdomNegotiationDecisionOutcome)?.IsApproved == true);
+        }
+
+        public override TextObject GetSecondaryEffects()
+        {
+            return TextObject.GetEmpty();
+        }
+
+        public TextObject GetPanelDescription()
+        {
+            return GetSupportDescription();
+        }
+
+        public override void ApplySecondaryEffects(
+            MBReadOnlyList<DecisionOutcome> possibleOutcomes,
+            DecisionOutcome chosenOutcome)
+        {
+        }
+
+        private KingdomNegotiationEvaluation GetEvaluation()
+        {
+            return _cachedEvaluation ?? (_cachedEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    CreateDraft(),
+                    Kingdom));
+        }
+
+        private bool CanStillVote(out TextObject reason)
+        {
+            if (OtherKingdom == null
+                || OtherKingdom.IsEliminated
+                || Kingdom == null
+                || Kingdom.IsEliminated)
+            {
+                reason = new TextObject(
+                    "{=MP_NegotiationDecisionPartiesInvalid}One of the negotiating kingdoms no longer exists.");
+                return false;
+            }
+
+            return KingdomNegotiationDraftValidator.TryValidate(
+                CreateDraft(),
+                out reason);
+        }
+
+        private TextObject BuildText(string source)
+        {
+            TextObject text = new TextObject(source);
+            text.SetTextVariable("KINGDOM", OtherKingdom?.Name
+                ?? TextObject.GetEmpty());
+            return text;
+        }
+
+        public sealed class KingdomNegotiationDecisionOutcome
+            : StartAllianceDecision.StartAllianceDecisionOutcome
+        {
+            [SaveableField(201)]
+            private readonly bool _isReceivingCouncil;
+
+            public bool IsApproved => ShouldAllianceBeStarted;
+
+            public KingdomNegotiationDecisionOutcome(
+                bool approved,
+                Kingdom kingdom,
+                Kingdom otherKingdom,
+                bool isReceivingCouncil)
+                : base(approved, kingdom, otherKingdom)
+            {
+                _isReceivingCouncil = isReceivingCouncil;
+            }
+
+            public override TextObject GetDecisionTitle()
+            {
+                return new TextObject(IsApproved
+                    ? "{=MP_NegotiationDecisionSupport}Support"
+                    : "{=MP_NegotiationDecisionOppose}Oppose");
+            }
+
+            public override TextObject GetDecisionDescription()
+            {
+                return new TextObject(IsApproved
+                    ? "{=MP_NegotiationDecisionSupportDescription}Support the complete diplomatic proposal."
+                    : "{=MP_NegotiationDecisionOpposeDescription}Reject the complete diplomatic proposal.");
+            }
+
+            public override string GetDecisionLink()
+            {
+                return null;
+            }
+
+            public override ImageIdentifier GetDecisionImageIdentifier()
+            {
+                return null;
+            }
+        }
+    }
+}

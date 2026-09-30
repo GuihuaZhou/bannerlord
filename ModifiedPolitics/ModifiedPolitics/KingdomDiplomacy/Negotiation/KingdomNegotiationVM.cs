@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.ViewModelCollection;
 using TaleWorlds.CampaignSystem.ViewModelCollection.Input;
@@ -129,7 +130,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             CancelLbl = new TextObject("{=str_cancel}Cancel").ToString();
             ResetLbl = new TextObject("{=str_reset}Reset").ToString();
             OfferLbl = new TextObject(
-                "{=MP_KingdomNegotiationEvaluate}Evaluate Proposal")
+                "{=MP_KingdomNegotiationSubmit}Submit Proposal")
                 .ToString();
         }
 
@@ -171,18 +172,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             KingdomNegotiationEvaluationService.Log(playerEvaluation);
             KingdomNegotiationEvaluationService.Log(targetEvaluation);
 
+            if (!KingdomNegotiationProposalService.SubmitPlayerProposal(
+                    draft,
+                    out reason))
+            {
+                InformationManager.DisplayMessage(
+                    new InformationMessage(reason.ToString()));
+                return;
+            }
+
             TextObject result = new TextObject(
-                "{=MP_KingdomNegotiationEvaluationResult}Estimated council support: {PLAYER_KINGDOM} {PLAYER_SUPPORT}%, {TARGET_KINGDOM} {TARGET_SUPPORT}%. This evaluation does not submit or execute the proposal.");
-            result.SetTextVariable("PLAYER_KINGDOM", PlayerKingdom.Name);
-            result.SetTextVariable("TARGET_KINGDOM", TargetKingdom.Name);
-            result.SetTextVariable(
-                "PLAYER_SUPPORT",
-                (playerEvaluation.AcceptShare * 100f).ToString("F0"));
-            result.SetTextVariable(
-                "TARGET_SUPPORT",
-                (targetEvaluation.AcceptShare * 100f).ToString("F0"));
+                "{=MP_KingdomNegotiationSubmitted}The compound proposal has been submitted to your council.");
             InformationManager.DisplayMessage(
                 new InformationMessage(result.ToString()));
+            _close?.Invoke();
         }
 
         public void ExecuteReset()
@@ -339,12 +342,32 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             }
             else
             {
-                AddDiplomacyItem(list, kingdom, isPlayerSide,
-                    KingdomNegotiationTermType.TradeAgreement, "trade",
-                    "{=MP_NegotiationTermTrade}Trade Agreement");
-                AddDiplomacyItem(list, kingdom, isPlayerSide,
-                    KingdomNegotiationTermType.Alliance, "alliance",
-                    "{=MP_NegotiationTermAlliance}Alliance");
+                ITradeAgreementsCampaignBehavior tradeBehavior =
+                    Campaign.Current.GetCampaignBehavior<
+                        ITradeAgreementsCampaignBehavior>();
+                if (tradeBehavior == null
+                    || !tradeBehavior.HasTradeAgreement(
+                        kingdom,
+                        otherKingdom,
+                        out _))
+                {
+                    AddDiplomacyItem(list, kingdom, isPlayerSide,
+                        KingdomNegotiationTermType.TradeAgreement, "trade",
+                        "{=MP_NegotiationTermTrade}Trade Agreement");
+                }
+
+                IAllianceCampaignBehavior allianceBehavior =
+                    Campaign.Current.GetCampaignBehavior<
+                        IAllianceCampaignBehavior>();
+                if (allianceBehavior == null
+                    || !allianceBehavior.IsAllyWithKingdom(
+                        kingdom,
+                        otherKingdom))
+                {
+                    AddDiplomacyItem(list, kingdom, isPlayerSide,
+                        KingdomNegotiationTermType.Alliance, "alliance",
+                        "{=MP_NegotiationTermAlliance}Alliance");
+                }
             }
             AddDiplomacyItem(list, kingdom, isPlayerSide,
                 isPlayerSide

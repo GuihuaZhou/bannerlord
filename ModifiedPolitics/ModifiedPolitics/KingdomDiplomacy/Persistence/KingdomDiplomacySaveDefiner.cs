@@ -1,6 +1,9 @@
 using System.Collections.Generic;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Persistence
@@ -38,12 +41,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
                 typeof(SubjectResponseKingdomDecision
                     .SubjectResponseDecisionOutcome),
                 11);
+            AddClassDefinition(typeof(KingdomNegotiationTermRecord), 12);
+            AddClassDefinition(typeof(KingdomNegotiationDecision), 14);
+            AddClassDefinition(
+                typeof(KingdomNegotiationDecision
+                    .KingdomNegotiationDecisionOutcome),
+                15);
         }
 
         protected override void DefineEnumTypes()
         {
             // Class and enum definitions share the same local ID space.
             AddEnumDefinition(typeof(SubjectType), 4, null);
+            AddEnumDefinition(typeof(KingdomNegotiationTermType), 13, null);
         }
 
         protected override void DefineContainerDefinitions()
@@ -51,6 +61,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             ConstructContainerDefinition(typeof(List<KingdomPoliticalData>));
             ConstructContainerDefinition(typeof(List<KingdomRelationData>));
             ConstructContainerDefinition(typeof(List<SubjectRelationData>));
+            ConstructContainerDefinition(
+                typeof(List<KingdomNegotiationTermRecord>));
         }
     }
 }
