@@ -231,5 +231,20 @@
     <string id="MP_KingdomNegotiationEmptyDraft" text="请至少向提案中添加一项条款." />
     <string id="MP_KingdomNegotiationMultipleSubjectTerms" text="一份提案只能包含一项宗藩地位条款." />
     <string id="MP_KingdomNegotiationStaleTerm" text="一项或多项提案条款已经失效." />
+    <string id="MP_NegotiationEvaluationSummary" text="[王国谈判] {KINGDOM}预计会{RESULT}这份组合提案. 加权支持率为{SUPPORT}%." />
+    <string id="MP_NegotiationClanEvaluation" text="[王国谈判] {CLAN}对提案的评分为{SCORE}. 分项: {COMPONENTS}." />
+    <string id="MP_NegotiationAccept" text="接受" />
+    <string id="MP_NegotiationReject" text="拒绝" />
+    <string id="MP_NegotiationScoreGold" text="金钱" />
+    <string id="MP_NegotiationScoreSettlement" text="定居点" />
+    <string id="MP_NegotiationScoreTerritorialCession" text="割让{SETTLEMENT}" />
+    <string id="MP_NegotiationScoreTerritorialAcquisition" text="接受{SETTLEMENT}" />
+    <string id="MP_NegotiationScorePrisoner" text="俘虏" />
+    <string id="MP_NegotiationScorePeace" text="和平" />
+    <string id="MP_NegotiationScoreTrade" text="贸易" />
+    <string id="MP_NegotiationScoreAlliance" text="同盟" />
+    <string id="MP_NegotiationScoreSubject" text="宗藩地位" />
+    <string id="MP_KingdomNegotiationEvaluate" text="评估提案" />
+    <string id="MP_KingdomNegotiationEvaluationResult" text="预计议会支持率: {PLAYER_KINGDOM} {PLAYER_SUPPORT}%, {TARGET_KINGDOM} {TARGET_SUPPORT}%. 本次评估不会提交或执行提案." />
 </strings>
 </base>

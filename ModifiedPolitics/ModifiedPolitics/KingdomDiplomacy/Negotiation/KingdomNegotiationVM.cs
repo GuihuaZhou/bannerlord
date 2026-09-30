@@ -11,6 +11,8 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 {
@@ -81,7 +83,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         [DataSourceProperty] public string CancelLbl { get; private set; }
         [DataSourceProperty] public string ResetLbl { get; private set; }
         [DataSourceProperty] public string OfferLbl { get; private set; }
-        [DataSourceProperty] public bool IsOfferDisabled => true;
+        [DataSourceProperty]
+        public bool IsOfferDisabled => LeftOfferList.Count == 0
+            && RightOfferList.Count == 0;
         [DataSourceProperty] public int ResultBarOtherPercentage => 0;
         [DataSourceProperty] public int ResultBarOffererPercentage => 0;
         [DataSourceProperty] public HintViewModel AutoBalanceHint { get; }
@@ -124,7 +128,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             DiplomaticLbl = new TextObject("{=MP_KingdomNegotiationDiplomacyTitle}Diplomatic Treaties").ToString();
             CancelLbl = new TextObject("{=str_cancel}Cancel").ToString();
             ResetLbl = new TextObject("{=str_reset}Reset").ToString();
-            OfferLbl = new TextObject("{=MP_KingdomNegotiationSubmitLater}Submit (Later Batch)").ToString();
+            OfferLbl = new TextObject(
+                "{=MP_KingdomNegotiationEvaluate}Evaluate Proposal")
+                .ToString();
         }
 
         public override void OnFinalize()
@@ -144,12 +150,46 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
         public void ExecuteOffer()
         {
+            KingdomNegotiationDraft draft = CreateDraft();
+            if (!KingdomNegotiationDraftValidator.TryValidate(
+                    draft,
+                    out TextObject reason))
+            {
+                InformationManager.DisplayMessage(
+                    new InformationMessage(reason.ToString()));
+                return;
+            }
+
+            KingdomNegotiationEvaluation playerEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    draft,
+                    PlayerKingdom);
+            KingdomNegotiationEvaluation targetEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    draft,
+                    TargetKingdom);
+            KingdomNegotiationEvaluationService.Log(playerEvaluation);
+            KingdomNegotiationEvaluationService.Log(targetEvaluation);
+
+            TextObject result = new TextObject(
+                "{=MP_KingdomNegotiationEvaluationResult}Estimated council support: {PLAYER_KINGDOM} {PLAYER_SUPPORT}%, {TARGET_KINGDOM} {TARGET_SUPPORT}%. This evaluation does not submit or execute the proposal.");
+            result.SetTextVariable("PLAYER_KINGDOM", PlayerKingdom.Name);
+            result.SetTextVariable("TARGET_KINGDOM", TargetKingdom.Name);
+            result.SetTextVariable(
+                "PLAYER_SUPPORT",
+                (playerEvaluation.AcceptShare * 100f).ToString("F0"));
+            result.SetTextVariable(
+                "TARGET_SUPPORT",
+                (targetEvaluation.AcceptShare * 100f).ToString("F0"));
+            InformationManager.DisplayMessage(
+                new InformationMessage(result.ToString()));
         }
 
         public void ExecuteReset()
         {
             ResetList(LeftOfferList);
             ResetList(RightOfferList);
+            OnPropertyChanged(nameof(IsOfferDisabled));
         }
 
         public void ExecuteAutoBalance()
@@ -377,6 +417,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             {
                 offer.Remove(item);
                 item.IsOffered = false;
+                OnPropertyChanged(nameof(IsOfferDisabled));
                 return;
             }
 
@@ -402,6 +443,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             item.IsOffered = true;
             offer.Add(item);
+            OnPropertyChanged(nameof(IsOfferDisabled));
         }
 
         private static void RemoveSubjectTerms(
