@@ -18,6 +18,29 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
     public sealed class SettlementRecruitmentPoolBehavior :
         CampaignBehaviorBase
     {
+        private const float HighProfessionalProductionRate = 1f;
+        private const float MediumProfessionalProductionRate = 0.5f;
+        private const float LowProfessionalProductionRate = 0.25f;
+
+        private sealed class ProfessionalProductionRule
+        {
+            public ProfessionalProductionRule(
+                CultureObject culture,
+                float productionRate,
+                int maximumBarracksLevel)
+            {
+                Culture = culture;
+                ProductionRate = productionRate;
+                MaximumBarracksLevel = maximumBarracksLevel;
+            }
+
+            public CultureObject Culture { get; }
+
+            public float ProductionRate { get; }
+
+            public int MaximumBarracksLevel { get; }
+        }
+
         private Dictionary<Settlement, SettlementRecruitmentPoolData>
             _settlementPools =
                 new Dictionary<Settlement, SettlementRecruitmentPoolData>();
@@ -80,10 +103,21 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             Settlement settlement,
             RecruitmentPoolKind kind)
         {
+            ProfessionalProductionRule professionalRule = kind ==
+                RecruitmentPoolKind.Professional
+                    ? ResolveProfessionalProductionRule(settlement)
+                    : null;
+            if (kind == RecruitmentPoolKind.Professional &&
+                professionalRule == null)
+            {
+                return 0;
+            }
+
             IRecruitmentPoolTemplate template =
                 RecruitmentPoolTemplateRepository.Instance.Resolve(
                     settlement,
-                    kind);
+                    kind,
+                    professionalRule?.Culture ?? settlement?.Culture);
             return template?.GetCapacity() ?? 0;
         }
 
@@ -91,12 +125,32 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             Settlement settlement,
             RecruitmentPoolKind kind)
         {
+            int barracksLevel = GetBarracksLevel(settlement);
+            ProfessionalProductionRule professionalRule = kind ==
+                RecruitmentPoolKind.Professional
+                    ? ResolveProfessionalProductionRule(settlement)
+                    : null;
+            if (kind == RecruitmentPoolKind.Professional &&
+                professionalRule == null)
+            {
+                return 0f;
+            }
+
             IRecruitmentPoolTemplate template =
                 RecruitmentPoolTemplateRepository.Instance.Resolve(
                     settlement,
-                    kind);
+                    kind,
+                    professionalRule?.Culture ?? settlement?.Culture);
+            if (professionalRule != null)
+            {
+                barracksLevel = Math.Min(
+                    barracksLevel,
+                    professionalRule.MaximumBarracksLevel);
+            }
+
             return template?.GetDailyProduction(
-                GetBarracksLevel(settlement)) ?? 0f;
+                barracksLevel) *
+                (professionalRule?.ProductionRate ?? 1f) ?? 0f;
         }
 
         /// <summary>
@@ -183,20 +237,37 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             RecruitmentPoolKind kind,
             int barracksLevel)
         {
+            ProfessionalProductionRule professionalRule = kind ==
+                RecruitmentPoolKind.Professional
+                    ? ResolveProfessionalProductionRule(settlement)
+                    : null;
+            if (kind == RecruitmentPoolKind.Professional &&
+                professionalRule == null)
+            {
+                return;
+            }
+
             IRecruitmentPoolTemplate template =
                 RecruitmentPoolTemplateRepository.Instance.Resolve(
                     settlement,
-                    kind);
+                    kind,
+                    professionalRule?.Culture ?? settlement?.Culture);
             if (template == null)
             {
                 return;
             }
 
+            int effectiveBarracksLevel = professionalRule == null
+                ? barracksLevel
+                : Math.Min(
+                    barracksLevel,
+                    professionalRule.MaximumBarracksLevel);
+
             Dictionary<CharacterObject, int> troops = data.GetTroops(kind);
             List<RecruitmentPoolTroopEntry> eligible = template.PoolTroops
                 .Where(entry =>
                     entry?.Troop != null &&
-                    entry.RequiredBarracksLevel <= barracksLevel)
+                    entry.RequiredBarracksLevel <= effectiveBarracksLevel)
                 .ToList();
             int capacity = template.GetCapacity();
             int currentCount = troops.Values.Sum(value => Math.Max(0, value));
@@ -208,7 +279,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
             float progress = data.AddProductionProgress(
                 kind,
-                template.GetDailyProduction(barracksLevel));
+                template.GetDailyProduction(effectiveBarracksLevel) *
+                (professionalRule?.ProductionRate ?? 1f));
             int produced = Math.Min(
                 (int)Math.Floor(progress),
                 capacity - currentCount);
@@ -229,6 +301,77 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             data.ConsumeProductionProgress(kind, produced);
+        }
+
+        private static ProfessionalProductionRule
+            ResolveProfessionalProductionRule(Settlement settlement)
+        {
+            CultureObject settlementCulture = settlement?.Culture;
+            Clan ownerClan = settlement?.OwnerClan;
+            CultureObject clanCulture = ownerClan?.Culture;
+            if (settlementCulture == null || ownerClan == null ||
+                ownerClan.IsEliminated || clanCulture == null)
+            {
+                return null;
+            }
+
+            Kingdom kingdom = ownerClan.Kingdom;
+            if (kingdom == null || kingdom.IsEliminated ||
+                kingdom.Culture == null)
+            {
+                return null;
+            }
+
+            CultureObject kingdomCulture = kingdom.Culture;
+            bool settlementMatchesClan = CulturesMatch(
+                settlementCulture,
+                clanCulture);
+            bool settlementMatchesKingdom = CulturesMatch(
+                settlementCulture,
+                kingdomCulture);
+            bool clanMatchesKingdom = CulturesMatch(
+                clanCulture,
+                kingdomCulture);
+
+            if (settlementMatchesClan)
+            {
+                return new ProfessionalProductionRule(
+                    settlementCulture,
+                    HighProfessionalProductionRate,
+                    clanMatchesKingdom ? 3 : 2);
+            }
+
+            if (settlementMatchesKingdom)
+            {
+                return new ProfessionalProductionRule(
+                    settlementCulture,
+                    MediumProfessionalProductionRate,
+                    2);
+            }
+
+            if (clanMatchesKingdom)
+            {
+                return new ProfessionalProductionRule(
+                    clanCulture,
+                    MediumProfessionalProductionRate,
+                    2);
+            }
+
+            return new ProfessionalProductionRule(
+                kingdomCulture,
+                LowProfessionalProductionRate,
+                1);
+        }
+
+        private static bool CulturesMatch(
+            CultureObject first,
+            CultureObject second)
+        {
+            return first != null && second != null &&
+                string.Equals(
+                    first.StringId,
+                    second.StringId,
+                    StringComparison.OrdinalIgnoreCase);
         }
 
         /// <summary>

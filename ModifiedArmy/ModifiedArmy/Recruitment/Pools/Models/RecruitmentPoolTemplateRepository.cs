@@ -62,7 +62,15 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             Settlement settlement,
             RecruitmentPoolKind kind)
         {
-            if (settlement?.Culture == null)
+            return Resolve(settlement, kind, settlement?.Culture);
+        }
+
+        public IRecruitmentPoolTemplate Resolve(
+            Settlement settlement,
+            RecruitmentPoolKind kind,
+            CultureObject culture)
+        {
+            if (settlement == null || culture == null)
             {
                 return null;
             }
@@ -74,7 +82,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             string settlementType = settlement.IsCastle
                 ? "castle"
                 : settlement.HasPort ? "town_port" : "town";
-            string templateId = settlement.Culture.StringId + "_" +
+            string templateId = culture.StringId + "_" +
                 settlementType;
 
             if (templates.TryGetValue(templateId, out var template))
@@ -85,7 +93,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             if (settlement.HasPort)
             {
                 templates.TryGetValue(
-                    settlement.Culture.StringId + "_town",
+                    culture.StringId + "_town",
                     out template);
             }
 
