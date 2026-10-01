@@ -451,11 +451,11 @@ namespace ModifiedArmy.Models.Fief
                 GetRecruitmentLimitText(mainLimit));
             if (approvedCount > 0)
             {
-                ModLogger.Notice(message.ToString());
+                ModLogger.Info(message.ToString());
             }
             else
             {
-                ModLogger.Debug(message.ToString());
+                ModLogger.Info(message.ToString());
             }
         }
 

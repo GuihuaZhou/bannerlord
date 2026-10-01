@@ -404,7 +404,7 @@ namespace ModifiedArmy.Recruitment.Patches
 
             // Successful pool recruitment is presented as ordinary volunteer
             // recruitment. The manpower pool is an implementation detail and
-            // does not need to appear in the player-facing Notice message.
+            // routine recruitment remains an Info-level diagnostic.
             string textId = recruitedCount > 0
                 ? "str_modifiedarmy_ai_recruitment_volunteer_plan"
                 : "str_modifiedarmy_ai_recruitment_professional_plan";
@@ -419,11 +419,11 @@ namespace ModifiedArmy.Recruitment.Patches
 
             if (recruitedCount > 0)
             {
-                ModLogger.Notice(message.ToString());
+                ModLogger.Info(message.ToString());
             }
             else
             {
-                ModLogger.Debug(message.ToString());
+                ModLogger.Info(message.ToString());
             }
         }
 
@@ -553,11 +553,11 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("DAYS", evaluation.SustainableDays);
             if (evaluation.RecruitableCount > 0)
             {
-                ModLogger.Notice(message.ToString());
+                ModLogger.Info(message.ToString());
             }
             else
             {
-                ModLogger.Debug(message.ToString());
+                ModLogger.Info(message.ToString());
             }
         }
 

@@ -223,8 +223,8 @@ namespace ModifiedArmy.Models
                 }
             }
 
-            // Keep the Notice consistent with the former volunteer recruitment
-            // message. Failed attempts retain a detailed Info diagnostic, but
+            // Keep successful and failed recruitment at Info so routine
+            // garrison activity does not surface as a player-facing Notice, and
             // neither message exposes the underlying manpower-pool mechanism.
             string textId = recruitedCount > 0
                 ? "str_modifiedarmy_ai_recruitment_garrison_plan"
@@ -238,7 +238,7 @@ namespace ModifiedArmy.Models
 
             if (recruitedCount > 0)
             {
-                ModLogger.Notice(message.ToString());
+                ModLogger.Info(message.ToString());
             }
             else
             {
@@ -587,7 +587,7 @@ namespace ModifiedArmy.Models
                 message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                 message.SetTextVariable("RECRUITED", recruitedCount);
                 message.SetTextVariable("SOLD", soldCount);
-                ModLogger.Notice(message.ToString());
+                ModLogger.Info(message.ToString());
                 return;
             }
 
