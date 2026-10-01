@@ -1,3 +1,4 @@
+using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedDiplomacy.AI;
 using ModifiedDiplomacy.Clans;
@@ -19,12 +20,18 @@ namespace ModifiedDiplomacy
     /// </summary>
     public sealed class Main : MBSubModuleBase
     {
+        private UIExtender _uiExtender;
+
         protected override void OnSubModuleLoad()
         {
             base.OnSubModuleLoad();
 
             Assembly assembly = Assembly.GetExecutingAssembly();
             new Harmony("com.mod.ModifiedDiplomacy").PatchAll(assembly);
+
+            _uiExtender = new UIExtender("ModifiedDiplomacy");
+            _uiExtender.Register(assembly);
+            _uiExtender.Enable();
         }
 
         protected override void OnGameStart(

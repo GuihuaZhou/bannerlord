@@ -79,6 +79,18 @@ ModifiedPolitics  -> ModifiedArmy
 决议、同步服务和存档数据仍由 `ModifiedPolitics` 提供，因此本批只改变
 代码归属，不改变存档类型或外交计算结果。
 
+第三个无存档迁移批次：等待编译和游戏验证。
+
+- 王国外交页面的分类、关系图标和操作区 UIExtender 扩展。
+- Barter 风格组合谈判的 VM、ScreenService 和条目 VM。
+- 组合谈判的两个 Gauntlet Prefab。
+- 外交右侧可滚动面板及左侧外交分类 XML。
+
+`ModifiedDiplomacy` 现在拥有独立的 UIExtender 实例。`ModifiedPolitics`
+继续加载封地和家族页面扩展，但不再扫描或打包外交界面资源。迁移期间
+仍暂时保留原命名空间，以避免同时修改大量绑定和调用；确认稳定后再统一
+重命名为 `ModifiedDiplomacy` 命名空间。
+
 ### 第 1 批：统一外交领域模型
 
 - 建立 `DiplomacyActionType`、`DiplomacyTerm`、`DiplomacyProposal`。

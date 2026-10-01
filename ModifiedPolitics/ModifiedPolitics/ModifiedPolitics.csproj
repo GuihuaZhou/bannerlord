@@ -12,29 +12,11 @@
       Link preserves the required GUI/Prefabs package layout in build output.
       The complete output tree must be copied to the module root.
     -->
-    <Content Include="..\GUI\Prefabs\KingdomNegotiationScreen.xml"
-             Link="GUI\Prefabs\KingdomNegotiationScreen.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-
-    <Content Include="..\GUI\Prefabs\KingdomNegotiationItemTuple.xml"
-             Link="GUI\Prefabs\KingdomNegotiationItemTuple.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-
     <None Update="KingdomFief\UI\KingdomSettlementFinance.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
     <None Update="KingdomClan\UI\ClanScrollableDetails.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-
-    <None Update="KingdomDiplomacy\UI\KingdomDiplomacyScrollableDetails.xml">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-
-    <None Update="KingdomDiplomacy\UI\KingdomDiplomacyCategoryList.xml">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
