@@ -25,6 +25,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             "_modifiedPoliticsSubjectRelationData";
         private const string NegotiationExecutionSaveKey =
             "_modifiedPoliticsNegotiationExecutions";
+        private const string CounterOfferSaveKey =
+            "_modifiedPoliticsNegotiationCounterOffers";
 
         private List<KingdomPoliticalData> _kingdomData =
             new List<KingdomPoliticalData>();
@@ -35,6 +37,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
         private List<KingdomNegotiationExecutionRecord>
             _negotiationExecutions =
                 new List<KingdomNegotiationExecutionRecord>();
+        private List<KingdomNegotiationCounterOfferRecord> _counterOffers =
+            new List<KingdomNegotiationCounterOfferRecord>();
 
         public static KingdomDiplomacyManager Current { get; private set; }
 
@@ -61,12 +65,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             dataStore.SyncData(
                 NegotiationExecutionSaveKey,
                 ref _negotiationExecutions);
+            dataStore.SyncData(CounterOfferSaveKey, ref _counterOffers);
 
             _kingdomData = _kingdomData ?? new List<KingdomPoliticalData>();
             _relationData = _relationData ?? new List<KingdomRelationData>();
             _subjectData = _subjectData ?? new List<SubjectRelationData>();
             _negotiationExecutions = _negotiationExecutions
                 ?? new List<KingdomNegotiationExecutionRecord>();
+            _counterOffers = _counterOffers
+                ?? new List<KingdomNegotiationCounterOfferRecord>();
             RemoveInvalidRecords();
             Current = this;
         }
@@ -91,6 +98,49 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             _negotiationExecutions.Add(record);
             ResumeNegotiationExecution(record);
             return true;
+        }
+
+        public void StoreCounterOffer(
+            Kingdom playerKingdom,
+            Kingdom targetKingdom,
+            IEnumerable<KingdomNegotiationDraftTerm> terms)
+        {
+            if (!AreDistinctKingdoms(playerKingdom, targetKingdom))
+            {
+                return;
+            }
+
+            _counterOffers.RemoveAll(record =>
+                record?.PlayerKingdom == playerKingdom
+                && record.TargetKingdom == targetKingdom);
+            _counterOffers.Add(new KingdomNegotiationCounterOfferRecord(
+                playerKingdom,
+                targetKingdom,
+                terms));
+        }
+
+        public KingdomNegotiationDraft GetCounterOffer(
+            Kingdom playerKingdom,
+            Kingdom targetKingdom)
+        {
+            KingdomNegotiationCounterOfferRecord record = _counterOffers
+                .LastOrDefault(item => item?.PlayerKingdom == playerKingdom
+                    && item.TargetKingdom == targetKingdom);
+            if (record == null)
+            {
+                return null;
+            }
+
+            return record.CreateDraft();
+        }
+
+        public void RemoveCounterOffer(
+            Kingdom playerKingdom,
+            Kingdom targetKingdom)
+        {
+            _counterOffers.RemoveAll(record =>
+                record?.PlayerKingdom == playerKingdom
+                && record.TargetKingdom == targetKingdom);
         }
 
         public int GetKingdomRank(Kingdom kingdom)
@@ -336,6 +386,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
 
                 _negotiationExecutions.Remove(record);
             }
+            _counterOffers.RemoveAll(record =>
+                record?.PlayerKingdom == null
+                || record.TargetKingdom == null
+                || record.PlayerKingdom.IsEliminated
+                || record.TargetKingdom.IsEliminated);
         }
 
         private static bool ShouldDiscardExecution(

@@ -7,6 +7,7 @@ using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
+using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
@@ -23,6 +24,23 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
         // executed so a duplicate cannot be submitted in that gap.
         private static readonly HashSet<string> ActiveProposalKeys =
             new HashSet<string>();
+        public static KingdomNegotiationDraft GetCounterOffer(
+            Kingdom playerKingdom,
+            Kingdom targetKingdom)
+        {
+            return KingdomDiplomacyManager.Current?.GetCounterOffer(
+                playerKingdom,
+                targetKingdom);
+        }
+
+        public static void RemoveCounterOffer(
+            Kingdom playerKingdom,
+            Kingdom targetKingdom)
+        {
+            KingdomDiplomacyManager.Current?.RemoveCounterOffer(
+                playerKingdom,
+                targetKingdom);
+        }
 
         public static bool SubmitPlayerProposal(
             KingdomNegotiationDraft draft,
@@ -69,8 +87,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     draft.TargetKingdom);
             if (!foreignEvaluation.WouldAccept)
             {
-                reason = new TextObject(
-                    "{=MP_NegotiationNoChannel}The other kingdom is unwilling to open negotiations for this proposal.");
+                reason = BuildForeignRejectionReason(foreignEvaluation);
                 return false;
             }
 
@@ -181,8 +198,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                         receivingKingdom);
                 if (!foreignEvaluation.WouldAccept)
                 {
-                    reason = new TextObject(
-                        "{=MP_NegotiationNoChannel}The other kingdom is unwilling to open negotiations for this proposal.");
+                    reason = BuildForeignRejectionReason(
+                        foreignEvaluation);
                     return false;
                 }
             }
@@ -256,6 +273,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             LogCouncilResult(decision, approved);
             if (!approved)
             {
+                QueueCounterOffer(decision);
                 ReleaseProposal(decision);
                 return;
             }
@@ -319,6 +337,29 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 decision.OtherKingdom));
         }
 
+        private static void QueueCounterOffer(
+            KingdomNegotiationDecision decision)
+        {
+            if (decision?.IsReceivingCouncil != true
+                || decision.Kingdom != Clan.PlayerClan?.Kingdom)
+            {
+                return;
+            }
+
+            KingdomNegotiationDraft draft = decision.CreateDraft();
+            KingdomDiplomacyManager.Current?.StoreCounterOffer(
+                decision.Kingdom,
+                decision.OtherKingdom,
+                draft.Terms);
+            TextObject message = new TextObject(
+                "{=MP_NegotiationCounterOfferReady}[Kingdom negotiation] The rejected terms were saved. Open negotiations with {KINGDOM} to prepare a counteroffer.");
+            message.SetTextVariable(
+                "KINGDOM",
+                draft.PlayerKingdom?.Name ?? TextObject.GetEmpty());
+            InformationManager.DisplayMessage(
+                new InformationMessage(message.ToString()));
+        }
+
         private static string MakePairKey(
             Kingdom firstKingdom,
             Kingdom secondKingdom)
@@ -345,6 +386,37 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     kingdom,
                     decision,
                     notice));
+        }
+
+        private static TextObject BuildForeignRejectionReason(
+            KingdomNegotiationEvaluation evaluation)
+        {
+            KingdomNegotiationClanEvaluation mostOpposed = evaluation
+                ?.ClanEvaluations
+                .OrderBy(result => result.RawScore)
+                .FirstOrDefault();
+            string factors = mostOpposed == null
+                ? string.Empty
+                : string.Join(", ", mostOpposed.Components
+                    .Where(component => component.Score < 0f)
+                    .OrderBy(component => component.Score)
+                    .Take(3)
+                    .Select(component => string.Format(
+                        "{0} {1:F1}",
+                        component.Name,
+                        component.Score)));
+            TextObject reason = new TextObject(
+                "{=MP_NegotiationForeignRejectedDetailed}The other kingdom's council rejected the complete package. Strongest opposition: {CLAN}. Main negative terms: {FACTORS}.");
+            reason.SetTextVariable(
+                "CLAN",
+                mostOpposed?.Clan?.Name ?? TextObject.GetEmpty());
+            reason.SetTextVariable(
+                "FACTORS",
+                string.IsNullOrEmpty(factors)
+                    ? new TextObject(
+                        "{=MP_NegotiationNoNegativeBreakdown}overall diplomatic support is insufficient")
+                    : new TextObject("{=!}" + factors));
+            return reason;
         }
 
         private static void LogCouncilResult(

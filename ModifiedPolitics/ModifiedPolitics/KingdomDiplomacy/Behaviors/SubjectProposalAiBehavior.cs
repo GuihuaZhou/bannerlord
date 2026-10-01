@@ -2,6 +2,9 @@ using System;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Behaviors;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
 using ModifiedPolitics.Tool;
@@ -170,6 +173,21 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
                     .EvaluateDemand(overlord, subject, type);
             if (!foreignEvaluation.WouldAccept)
             {
+                KingdomNegotiationDraft compensated =
+                    KingdomNegotiationAiBehavior
+                        .BuildCompensatedSubjectDraft(
+                            proposerKingdom,
+                            target,
+                            type,
+                            isSubmissionOffer);
+                if (compensated != null)
+                {
+                    KingdomNegotiationProposalService.SubmitAiProposal(
+                        proposerClan,
+                        compensated,
+                        out _);
+                }
+
                 return null;
             }
 

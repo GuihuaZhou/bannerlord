@@ -200,7 +200,86 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions
 
         public TextObject GetPanelDescription()
         {
-            return GetSupportDescription();
+            TextObject description = new TextObject(
+                "{=MP_NegotiationDecisionTerms}{INTRO}{newline}{newline}Complete terms:{newline}{TERMS}");
+            description.SetTextVariable("INTRO", GetSupportDescription());
+            description.SetTextVariable(
+                "TERMS",
+                string.Join("\n", _terms.Select(FormatTerm)));
+            return description;
+        }
+
+        private static string FormatTerm(
+            KingdomNegotiationTermRecord term)
+        {
+            TextObject text;
+            switch (term.Type)
+            {
+                case KingdomNegotiationTermType.Gold:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermGold}• {KINGDOM} pays {AMOUNT} denars.");
+                    text.SetTextVariable("AMOUNT", term.Amount);
+                    break;
+                case KingdomNegotiationTermType.Settlement:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermSettlement}• {KINGDOM} cedes {ASSET}.");
+                    text.SetTextVariable(
+                        "ASSET",
+                        term.Settlement?.Name ?? TextObject.GetEmpty());
+                    break;
+                case KingdomNegotiationTermType.PrisonerHero:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermPrisoner}• {KINGDOM} releases {ASSET}.");
+                    text.SetTextVariable(
+                        "ASSET",
+                        term.Hero?.Name ?? TextObject.GetEmpty());
+                    break;
+                case KingdomNegotiationTermType.Peace:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermPeace}• The kingdoms make peace.");
+                    break;
+                case KingdomNegotiationTermType.TradeAgreement:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermTrade}• The kingdoms sign a trade agreement.");
+                    break;
+                case KingdomNegotiationTermType.Alliance:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermAlliance}• The kingdoms form an alliance.");
+                    break;
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermEndTrade}• The kingdoms terminate their trade agreement.");
+                    break;
+                case KingdomNegotiationTermType.EndAlliance:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermEndAlliance}• The kingdoms terminate their alliance.");
+                    break;
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermEndSubject}• The kingdoms terminate their subject agreement.");
+                    break;
+                case KingdomNegotiationTermType.JoinWar:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermJoinWar}• {KINGDOM} joins the war against {ASSET}.");
+                    text.SetTextVariable(
+                        "ASSET",
+                        term.Kingdom?.Name ?? TextObject.GetEmpty());
+                    break;
+                case KingdomNegotiationTermType.TargetBecomesVassal:
+                case KingdomNegotiationTermType.PlayerBecomesVassal:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermVassal}• {KINGDOM} becomes a vassal state.");
+                    break;
+                default:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermPuppet}• {KINGDOM} becomes a puppet state.");
+                    break;
+            }
+
+            text.SetTextVariable(
+                "KINGDOM",
+                term.ProviderKingdom?.Name ?? TextObject.GetEmpty());
+            return text.ToString();
         }
 
         public override void ApplySecondaryEffects(

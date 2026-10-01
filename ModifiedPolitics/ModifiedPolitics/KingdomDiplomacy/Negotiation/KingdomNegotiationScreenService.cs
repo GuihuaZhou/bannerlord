@@ -1,4 +1,5 @@
 using System;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Engine.GauntletUI;
@@ -42,10 +43,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             try
             {
                 _hostScreen = screen;
+                KingdomNegotiationDraft counterOffer =
+                    KingdomNegotiationProposalService.GetCounterOffer(
+                        playerKingdom,
+                        targetKingdom);
                 _dataSource = new KingdomNegotiationVM(
                     playerKingdom,
                     targetKingdom,
-                    Close);
+                    Close,
+                    counterOffer);
                 _layer = new GauntletLayer(
                     "ModifiedPoliticsKingdomNegotiationLayer",
                     300,
@@ -84,6 +90,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 _barterCategory = UIResourceManager.GetSpriteCategory(
                     "ui_barter");
                 _barterCategory?.Load();
+
+                // Consume a saved counteroffer only after the movie and its
+                // resources were created successfully. A failed screen open
+                // must not discard the player's draft.
+                KingdomNegotiationProposalService.RemoveCounterOffer(
+                    playerKingdom,
+                    targetKingdom);
 
                 ScreenManager.OnPopScreen += OnScreenPopped;
                 ScreenManager.TrySetFocus(_layer);

@@ -73,7 +73,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 .Skip(startIndex))
             {
                 if (!IsTermSatisfied(first, second, term)
-                    && !CanExecuteTerm(first, second, term))
+                    && !CanExecuteTerm(first, second, term, draft))
                 {
                     LogExecution(
                         first,
@@ -147,6 +147,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 KingdomNegotiationTermType.PlayerBecomesPuppet,
                 KingdomNegotiationTermType.TradeAgreement,
                 KingdomNegotiationTermType.Alliance,
+                KingdomNegotiationTermType.JoinWar,
+                KingdomNegotiationTermType.EndTradeAgreement,
+                KingdomNegotiationTermType.EndAlliance,
+                KingdomNegotiationTermType.EndSubjectRelation,
                 KingdomNegotiationTermType.PrisonerHero,
                 KingdomNegotiationTermType.Settlement,
                 KingdomNegotiationTermType.Gold
@@ -161,6 +165,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             return type == KingdomNegotiationTermType.Peace
                 || type == KingdomNegotiationTermType.TradeAgreement
                 || type == KingdomNegotiationTermType.Alliance
+                || KingdomNegotiationTermRules.IsTerminationTerm(type)
+                || type == KingdomNegotiationTermType.JoinWar
                 || type == KingdomNegotiationTermType.Gold
                 || type == KingdomNegotiationTermType.PrisonerHero
                 || KingdomNegotiationTermRules.IsSubjectTerm(type)
@@ -170,7 +176,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
         private static bool CanExecuteTerm(
             Kingdom first,
             Kingdom second,
-            KingdomNegotiationDraftTerm term)
+            KingdomNegotiationDraftTerm term,
+            KingdomNegotiationDraft draft)
         {
             switch (term.Type)
             {
@@ -196,6 +203,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                             IAllianceCampaignBehavior>();
                     return allianceBehavior != null
                         && !allianceBehavior.IsAllyWithKingdom(first, second);
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    return Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>()?
+                        .HasTradeAgreement(first, second, out _) == true;
+                case KingdomNegotiationTermType.EndAlliance:
+                    return Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>()?
+                        .IsAllyWithKingdom(first, second) == true;
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    return GetSubjectBetween(first, second) != null;
+                case KingdomNegotiationTermType.JoinWar:
+                    return CanJoinWar(first, second, term)
+                        || draft.Terms.Any(item => item.Type
+                            == KingdomNegotiationTermType.Alliance);
                 case KingdomNegotiationTermType.Gold:
                     return CanTransferGold(first, second, term);
                 case KingdomNegotiationTermType.PrisonerHero:
@@ -240,6 +261,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     return Campaign.Current.GetCampaignBehavior<
                             IAllianceCampaignBehavior>()?
                         .IsAllyWithKingdom(first, second) == true;
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    return Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>()?
+                        .HasTradeAgreement(first, second, out _) != true;
+                case KingdomNegotiationTermType.EndAlliance:
+                    return Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>()?
+                        .IsAllyWithKingdom(first, second) != true;
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    return GetSubjectBetween(first, second) == null;
+                case KingdomNegotiationTermType.JoinWar:
+                    return term.ProviderKingdom?.IsAtWarWith(
+                        term.Subject as Kingdom) == true;
                 case KingdomNegotiationTermType.PrisonerHero:
                     return (term.Subject as Hero)?.IsPrisoner == false;
                 case KingdomNegotiationTermType.Settlement:
@@ -287,6 +321,14 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     return ExecuteTrade(first, second);
                 case KingdomNegotiationTermType.Alliance:
                     return ExecuteAlliance(first, second);
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    return ExecuteEndTrade(first, second);
+                case KingdomNegotiationTermType.EndAlliance:
+                    return ExecuteEndAlliance(first, second);
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    return ExecuteEndSubject(first, second);
+                case KingdomNegotiationTermType.JoinWar:
+                    return ExecuteJoinWar(first, second, term);
                 case KingdomNegotiationTermType.Gold:
                     return ExecuteGoldTransfer(first, second, term);
                 case KingdomNegotiationTermType.PrisonerHero:
@@ -423,6 +465,98 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 
             behavior.StartAlliance(first, second);
             return behavior.IsAllyWithKingdom(first, second);
+        }
+
+        private static bool ExecuteEndTrade(Kingdom first, Kingdom second)
+        {
+            ITradeAgreementsCampaignBehavior behavior = Campaign.Current
+                .GetCampaignBehavior<ITradeAgreementsCampaignBehavior>();
+            if (behavior?.HasTradeAgreement(first, second, out _) != true)
+            {
+                return false;
+            }
+
+            behavior.EndTradeAgreement(first, second);
+            return !behavior.HasTradeAgreement(first, second, out _);
+        }
+
+        private static bool ExecuteEndAlliance(Kingdom first, Kingdom second)
+        {
+            IAllianceCampaignBehavior behavior = Campaign.Current
+                .GetCampaignBehavior<IAllianceCampaignBehavior>();
+            if (behavior?.IsAllyWithKingdom(first, second) != true)
+            {
+                return false;
+            }
+
+            behavior.EndAlliance(first, second);
+            return !behavior.IsAllyWithKingdom(first, second);
+        }
+
+        private static bool ExecuteEndSubject(Kingdom first, Kingdom second)
+        {
+            Kingdom subject = GetSubjectBetween(first, second);
+            return subject != null
+                && SubjectRelationAction.TryRelease(subject)
+                && GetSubjectBetween(first, second) == null;
+        }
+
+        private static Kingdom GetSubjectBetween(
+            Kingdom first,
+            Kingdom second)
+        {
+            KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
+            if (manager?.GetSubjectRelation(first)?.OverlordKingdom == second)
+            {
+                return first;
+            }
+
+            return manager?.GetSubjectRelation(second)?.OverlordKingdom
+                == first
+                    ? second
+                    : null;
+        }
+
+        private static bool CanJoinWar(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom joining = term.ProviderKingdom;
+            Kingdom caller = joining == first ? second : first;
+            Kingdom enemy = term.Subject as Kingdom;
+            IAllianceCampaignBehavior behavior = Campaign.Current
+                .GetCampaignBehavior<IAllianceCampaignBehavior>();
+            return joining != null
+                && caller != null
+                && enemy != null
+                && behavior?.IsAllyWithKingdom(caller, joining) == true
+                && caller.IsAtWarWith(enemy)
+                && !joining.IsAtWarWith(enemy);
+        }
+
+        private static bool ExecuteJoinWar(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            if (!CanJoinWar(first, second, term))
+            {
+                return false;
+            }
+
+            Kingdom joining = term.ProviderKingdom;
+            Kingdom caller = joining == first ? second : first;
+            Kingdom enemy = term.Subject as Kingdom;
+            IAllianceCampaignBehavior behavior = Campaign.Current
+                .GetCampaignBehavior<IAllianceCampaignBehavior>();
+            behavior.StartCallToWarAgreement(
+                caller,
+                joining,
+                enemy,
+                0,
+                false);
+            return joining.IsAtWarWith(enemy);
         }
 
         /// <summary>
@@ -634,6 +768,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.PrisonerHero:
                     return new TextObject(
                         "{=MP_NegotiationExecutedPrisoner}hero prisoner release");
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedEndTrade}termination of trade agreement");
+                case KingdomNegotiationTermType.EndAlliance:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedEndAlliance}termination of alliance");
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedEndSubject}termination of subject agreement");
+                case KingdomNegotiationTermType.JoinWar:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedJoinWar}call to war");
                 default:
                     return KingdomNegotiationTermRules.IsSubjectTerm(type)
                         ? new TextObject(

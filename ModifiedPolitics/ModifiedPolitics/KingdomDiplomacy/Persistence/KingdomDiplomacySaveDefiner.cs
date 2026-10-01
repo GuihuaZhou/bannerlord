@@ -50,6 +50,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             AddClassDefinition(
                 typeof(KingdomNegotiationExecutionRecord),
                 16);
+            AddClassDefinition(
+                typeof(KingdomNegotiationCounterOfferRecord),
+                17);
         }
 
         protected override void DefineEnumTypes()
@@ -68,6 +71,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
                 typeof(List<KingdomNegotiationTermRecord>));
             ConstructContainerDefinition(
                 typeof(List<KingdomNegotiationExecutionRecord>));
+            ConstructContainerDefinition(
+                typeof(List<KingdomNegotiationCounterOfferRecord>));
         }
     }
 }

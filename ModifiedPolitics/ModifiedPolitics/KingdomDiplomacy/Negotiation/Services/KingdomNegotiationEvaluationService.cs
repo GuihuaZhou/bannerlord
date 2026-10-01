@@ -121,6 +121,29 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Alliance:
                     return Component("{=MP_NegotiationScoreAlliance}alliance",
                         EvaluateAlliance(draft, evaluatingKingdom, clan));
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    return Component(
+                        "{=MP_NegotiationScoreEndTrade}end trade agreement",
+                        -EvaluateTrade(draft, evaluatingKingdom, clan));
+                case KingdomNegotiationTermType.EndAlliance:
+                    return Component(
+                        "{=MP_NegotiationScoreEndAlliance}end alliance",
+                        -EvaluateAlliance(draft, evaluatingKingdom, clan));
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    return Component(
+                        "{=MP_NegotiationScoreEndSubject}end subject agreement",
+                        EvaluateEndSubject(
+                            draft,
+                            evaluatingKingdom,
+                            clan));
+                case KingdomNegotiationTermType.JoinWar:
+                    return Component(
+                        "{=MP_NegotiationScoreJoinWar}join war",
+                        EvaluateJoinWar(
+                            draft,
+                            evaluatingKingdom,
+                            clan,
+                            term));
                 default:
                     return Component("{=MP_NegotiationScoreSubject}subject status",
                         EvaluateSubject(draft, evaluatingKingdom, clan, term));
@@ -277,6 +300,66 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             TextObject hint;
             return new StartAllianceDecision(clan, other)
                 .CalculateSupport(clan, out hint);
+        }
+
+        private static float EvaluateEndSubject(
+            KingdomNegotiationDraft draft,
+            Kingdom evaluatingKingdom,
+            Clan clan)
+        {
+            SubjectRelationData relation = KingdomDiplomacyManager.Current?
+                .GetSubjectRelation(draft.PlayerKingdom);
+            if (relation?.OverlordKingdom != draft.TargetKingdom)
+            {
+                relation = KingdomDiplomacyManager.Current?
+                    .GetSubjectRelation(draft.TargetKingdom);
+            }
+            if (relation == null)
+            {
+                return 0f;
+            }
+
+            bool isSubject = relation.SubjectKingdom == evaluatingKingdom;
+            float sovereignty = relation.Type == SubjectType.Puppet
+                ? 120f
+                : 80f;
+            float score = isSubject ? sovereignty : -sovereignty * 0.75f;
+            if (clan == evaluatingKingdom.RulingClan)
+            {
+                score *= 1.2f;
+            }
+
+            return score;
+        }
+
+        private static float EvaluateJoinWar(
+            KingdomNegotiationDraft draft,
+            Kingdom evaluatingKingdom,
+            Clan clan,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom joining = term.ProviderKingdom;
+            Kingdom caller = Other(draft, joining);
+            Kingdom enemy = term.Subject as Kingdom;
+            if (joining == null || caller == null || enemy == null)
+            {
+                return 0f;
+            }
+
+            TextObject reason;
+            return evaluatingKingdom == joining
+                ? Campaign.Current.Models.AllianceModel.GetScoreOfJoiningWar(
+                    caller,
+                    joining,
+                    enemy,
+                    clan,
+                    out reason)
+                : Campaign.Current.Models.AllianceModel.GetScoreOfCallingToWar(
+                    caller,
+                    joining,
+                    enemy,
+                    clan,
+                    out reason);
         }
 
         private static float EvaluateSubject(

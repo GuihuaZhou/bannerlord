@@ -27,17 +27,22 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Models
         [SaveableProperty(5)]
         public int Amount { get; private set; }
 
+        [SaveableProperty(6)]
+        public Kingdom Kingdom { get; private set; }
+
         public KingdomNegotiationTermRecord(
             KingdomNegotiationTermType type,
             Kingdom providerKingdom,
             Settlement settlement,
             Hero hero,
+            Kingdom kingdom,
             int amount)
         {
             Type = type;
             ProviderKingdom = providerKingdom;
             Settlement = settlement;
             Hero = hero;
+            Kingdom = kingdom;
             Amount = amount;
         }
 
@@ -49,6 +54,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Models
                 term.ProviderKingdom,
                 term.Subject as Settlement,
                 term.Subject as Hero,
+                term.Subject as Kingdom,
                 term.Amount);
         }
 
@@ -63,6 +69,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Models
                 case KingdomNegotiationTermType.PrisonerHero:
                 case KingdomNegotiationTermType.Gold:
                     subject = Hero;
+                    break;
+                case KingdomNegotiationTermType.JoinWar:
+                    subject = Kingdom;
                     break;
                 default:
                     subject = ProviderKingdom;

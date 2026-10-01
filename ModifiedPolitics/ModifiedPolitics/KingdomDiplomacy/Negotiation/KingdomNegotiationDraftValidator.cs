@@ -1,4 +1,5 @@
 using System.Linq;
+using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Election;
@@ -45,12 +46,38 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             if (draft.Terms
                 .Where(x => KingdomNegotiationTermRules
-                    .IsBilateralTreaty(x.Type))
+                    .IsBilateralTreaty(x.Type)
+                    || KingdomNegotiationTermRules
+                        .IsTerminationTerm(x.Type))
                 .GroupBy(x => x.Type)
                 .Any(x => x.Count() > 1))
             {
                 reason = new TextObject(
                     "{=MP_KingdomNegotiationDuplicateTreaty}The same bilateral treaty cannot appear more than once in a proposal.");
+                return false;
+            }
+
+            if ((Has(draft, KingdomNegotiationTermType.TradeAgreement)
+                    && Has(draft,
+                        KingdomNegotiationTermType.EndTradeAgreement))
+                || (Has(draft, KingdomNegotiationTermType.Alliance)
+                    && Has(draft, KingdomNegotiationTermType.EndAlliance))
+                || (draft.Terms.Any(x =>
+                        KingdomNegotiationTermRules.IsSubjectTerm(x.Type))
+                    && Has(draft,
+                        KingdomNegotiationTermType.EndSubjectRelation)))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationOppositeTerms}A proposal cannot create and end the same diplomatic relation.");
+                return false;
+            }
+
+            if (Has(draft, KingdomNegotiationTermType.EndAlliance)
+                && draft.Terms.Any(x =>
+                    x.Type == KingdomNegotiationTermType.JoinWar))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationJoinWarNeedsAlliance}A call to war requires the alliance to remain in force.");
                 return false;
             }
 
@@ -67,7 +94,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             if (draft.Terms
                     .Where(x => x.Type == KingdomNegotiationTermType.Settlement
-                        || x.Type == KingdomNegotiationTermType.PrisonerHero)
+                        || x.Type == KingdomNegotiationTermType.PrisonerHero
+                        || x.Type == KingdomNegotiationTermType.JoinWar)
                     .GroupBy(x => x.Subject)
                     .Any(x => x.Key == null || x.Count() > 1)
                 || draft.Terms
@@ -172,6 +200,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                         && prisoner.PartyBelongedToAsPrisoner?.MapFaction
                             == term.ProviderKingdom;
 
+                case KingdomNegotiationTermType.JoinWar:
+                    Kingdom enemy = term.Subject as Kingdom;
+                    return enemy != null
+                        && !enemy.IsEliminated
+                        && enemy != term.ProviderKingdom;
+
                 default:
                     return term.Subject == term.ProviderKingdom;
             }
@@ -267,6 +301,72 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
                     return true;
 
+                case KingdomNegotiationTermType.EndTradeAgreement:
+                    ITradeAgreementsCampaignBehavior existingTrade =
+                        Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>();
+                    if (existingTrade?.HasTradeAgreement(
+                            first,
+                            second,
+                            out _) != true)
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationNoTradeToEnd}The kingdoms have no trade agreement to end.");
+                        return false;
+                    }
+
+                    return true;
+
+                case KingdomNegotiationTermType.EndAlliance:
+                    if (Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>()?
+                        .IsAllyWithKingdom(first, second) != true)
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationNoAllianceToEnd}The kingdoms have no alliance to end.");
+                        return false;
+                    }
+
+                    return true;
+
+                case KingdomNegotiationTermType.EndSubjectRelation:
+                    bool related = KingdomDiplomacyManager.Current?
+                            .GetSubjectRelation(first)?.OverlordKingdom
+                            == second
+                        || KingdomDiplomacyManager.Current?
+                            .GetSubjectRelation(second)?.OverlordKingdom
+                            == first;
+                    if (!related)
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationNoSubjectToEnd}The kingdoms have no subject agreement to end.");
+                        return false;
+                    }
+
+                    return true;
+
+                case KingdomNegotiationTermType.JoinWar:
+                    Kingdom enemy = term.Subject as Kingdom;
+                    Kingdom caller = term.ProviderKingdom == first
+                        ? second
+                        : first;
+                    bool allianceExists = Campaign.Current
+                            .GetCampaignBehavior<IAllianceCampaignBehavior>()?
+                            .IsAllyWithKingdom(first, second) == true
+                        || Has(draft, KingdomNegotiationTermType.Alliance);
+                    if (enemy == null
+                        || enemy.IsEliminated
+                        || !caller.IsAtWarWith(enemy)
+                        || term.ProviderKingdom.IsAtWarWith(enemy)
+                        || !allianceExists)
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationJoinWarUnavailable}The requested call to war is no longer valid.");
+                        return false;
+                    }
+
+                    return true;
+
                 default:
                     return true;
             }
@@ -285,8 +385,20 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 return hero.Name;
             }
 
+            if (term.Subject is Kingdom kingdom)
+            {
+                return kingdom.Name;
+            }
+
             return new TextObject(
                 "{=MP_KingdomNegotiationUnknownTerm}This proposal term");
+        }
+
+        private static bool Has(
+            KingdomNegotiationDraft draft,
+            KingdomNegotiationTermType type)
+        {
+            return draft.Terms.Any(term => term.Type == type);
         }
     }
 }

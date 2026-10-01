@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
@@ -14,6 +15,8 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
+using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Persistence;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 {
@@ -34,7 +37,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         public KingdomNegotiationVM(
             Kingdom playerKingdom,
             Kingdom targetKingdom,
-            Action close)
+            Action close,
+            KingdomNegotiationDraft initialDraft = null)
         {
             PlayerKingdom = playerKingdom;
             TargetKingdom = targetKingdom;
@@ -65,6 +69,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             BuildSide(targetKingdom, false);
             BuildSide(playerKingdom, true);
+            LoadInitialDraft(initialDraft);
             RefreshValues();
         }
 
@@ -411,6 +416,56 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             AddDiplomacyItems(diplomacy, kingdom, isPlayerSide);
         }
 
+        private void LoadInitialDraft(KingdomNegotiationDraft draft)
+        {
+            if (draft == null)
+            {
+                return;
+            }
+
+            IEnumerable<KingdomNegotiationItemVM> available =
+                LeftGoldList.Concat(RightGoldList)
+                    .Concat(LeftFiefList)
+                    .Concat(RightFiefList)
+                    .Concat(LeftPrisonerList)
+                    .Concat(RightPrisonerList)
+                    .Concat(LeftDiplomaticList)
+                    .Concat(RightDiplomaticList);
+            _deferOfferRefresh = true;
+            try
+            {
+                foreach (KingdomNegotiationDraftTerm term in draft.Terms)
+                {
+                    bool playerOwned = term.ProviderKingdom
+                        == PlayerKingdom;
+                    KingdomNegotiationItemVM item = available.FirstOrDefault(
+                        candidate => candidate.Type == term.Type
+                            && candidate.IsPlayerOwned == playerOwned
+                            && (candidate.Subject == term.Subject
+                                || KingdomNegotiationTermRules
+                                    .IsBilateralTreaty(term.Type)
+                                || KingdomNegotiationTermRules
+                                    .IsSubjectTerm(term.Type)));
+                    if (item == null)
+                    {
+                        continue;
+                    }
+
+                    if (item.IsMultiple)
+                    {
+                        item.CurrentOfferedAmount = term.Amount;
+                    }
+
+                    TransferItem(item);
+                }
+            }
+            finally
+            {
+                _deferOfferRefresh = false;
+                RefreshOfferState();
+            }
+        }
+
         private void AddDiplomacyItems(
             MBBindingList<KingdomNegotiationItemVM> list,
             Kingdom kingdom,
@@ -419,6 +474,29 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             Kingdom otherKingdom = kingdom == PlayerKingdom
                 ? TargetKingdom
                 : PlayerKingdom;
+            SubjectRelationData subjectRelation = KingdomDiplomacyManager
+                    .Current?.GetSubjectRelation(kingdom);
+            if (subjectRelation?.OverlordKingdom != otherKingdom)
+            {
+                subjectRelation = KingdomDiplomacyManager.Current?
+                    .GetSubjectRelation(otherKingdom);
+            }
+
+            if (subjectRelation?.OverlordKingdom == kingdom
+                || subjectRelation?.OverlordKingdom == otherKingdom)
+            {
+                TextObject endSubject = new TextObject(
+                    subjectRelation.Type == SubjectType.Puppet
+                        ? "{=MP_NegotiationTermEndPuppet}End the puppet agreement with {KINGDOM}"
+                        : "{=MP_NegotiationTermEndVassal}End the vassal agreement with {KINGDOM}");
+                endSubject.SetTextVariable("KINGDOM", otherKingdom.Name);
+                AddDiplomacyItem(list, kingdom, isPlayerSide,
+                    KingdomNegotiationTermType.EndSubjectRelation,
+                    "end_subject",
+                    endSubject.ToString());
+                return;
+            }
+
             if (kingdom.IsAtWarWith(otherKingdom))
             {
                 AddDiplomacyItem(list, kingdom, isPlayerSide,
@@ -440,6 +518,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                         KingdomNegotiationTermType.TradeAgreement, "trade",
                         "{=MP_NegotiationTermTrade}Trade Agreement");
                 }
+                else
+                {
+                    AddDiplomacyItem(list, kingdom, isPlayerSide,
+                        KingdomNegotiationTermType.EndTradeAgreement,
+                        "end_trade",
+                        "{=MP_NegotiationTermEndTrade}End Trade Agreement");
+                }
 
                 IAllianceCampaignBehavior allianceBehavior =
                     Campaign.Current.GetCampaignBehavior<
@@ -453,7 +538,36 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                         KingdomNegotiationTermType.Alliance, "alliance",
                         "{=MP_NegotiationTermAlliance}Alliance");
                 }
+                else
+                {
+                    AddDiplomacyItem(list, kingdom, isPlayerSide,
+                        KingdomNegotiationTermType.EndAlliance,
+                        "end_alliance",
+                        "{=MP_NegotiationTermEndAlliance}End Alliance");
+                }
+
+                foreach (Kingdom enemy in Kingdom.All.Where(candidate =>
+                    candidate != null
+                    && candidate != kingdom
+                    && candidate != otherKingdom
+                    && !candidate.IsEliminated
+                    && otherKingdom.IsAtWarWith(candidate)
+                    && !kingdom.IsAtWarWith(candidate)))
+                {
+                    TextObject label = new TextObject(
+                        "{=MP_NegotiationTermJoinWar}Join the war against {KINGDOM}");
+                    label.SetTextVariable("KINGDOM", enemy.Name);
+                    AddDiplomacyItem(
+                        list,
+                        kingdom,
+                        isPlayerSide,
+                        KingdomNegotiationTermType.JoinWar,
+                        "join_war:" + enemy.StringId,
+                        label.ToString(),
+                        enemy);
+                }
             }
+
             AddDiplomacyItem(list, kingdom, isPlayerSide,
                 isPlayerSide
                     ? KingdomNegotiationTermType.PlayerBecomesVassal
@@ -478,12 +592,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             bool isPlayerSide,
             KingdomNegotiationTermType type,
             string key,
-            string label)
+            string label,
+            object subject = null)
         {
             list.Add(CreateItem(type,
                 kingdom.StringId + ":diplomacy:" + key,
                 new TextObject(label).ToString(),
-                kingdom,
+                subject ?? kingdom,
                 isPlayerSide,
                 false,
                 1,

@@ -211,6 +211,12 @@
     <string id="MP_NegotiationTermPeace" text="和平" />
     <string id="MP_NegotiationTermTrade" text="贸易协定" />
     <string id="MP_NegotiationTermAlliance" text="同盟" />
+    <string id="MP_NegotiationTermEndTrade" text="撕毁贸易协定" />
+    <string id="MP_NegotiationTermEndAlliance" text="撕毁同盟条约" />
+    <string id="MP_NegotiationTermEndSubject" text="解除宗藩协定" />
+    <string id="MP_NegotiationTermEndVassal" text="撕毁与{KINGDOM}的附庸协定" />
+    <string id="MP_NegotiationTermEndPuppet" text="撕毁与{KINGDOM}的傀儡协定" />
+    <string id="MP_NegotiationTermJoinWar" text="加入对{KINGDOM}的战争" />
     <string id="MP_NegotiationTermTargetVassal" text="要求对方成为附庸" />
     <string id="MP_NegotiationTermTargetPuppet" text="要求对方成为傀儡" />
     <string id="MP_NegotiationTermPlayerVassal" text="我国成为对方附庸" />
@@ -231,6 +237,12 @@
     <string id="MP_KingdomNegotiationEmptyDraft" text="请至少向提案中添加一项条款." />
     <string id="MP_KingdomNegotiationMultipleSubjectTerms" text="一份提案只能包含一项宗藩地位条款." />
     <string id="MP_KingdomNegotiationDuplicateTreaty" text="同一种双边条约不能在一份提案中重复出现." />
+    <string id="MP_KingdomNegotiationOppositeTerms" text="不能在同一份提案中同时建立和解除同一种外交关系." />
+    <string id="MP_KingdomNegotiationJoinWarNeedsAlliance" text="加入战争要求双方继续维持同盟关系." />
+    <string id="MP_KingdomNegotiationNoTradeToEnd" text="两国之间没有可以撕毁的贸易协定." />
+    <string id="MP_KingdomNegotiationNoAllianceToEnd" text="两国之间没有可以撕毁的同盟条约." />
+    <string id="MP_KingdomNegotiationNoSubjectToEnd" text="两国之间没有可以解除的宗藩协定." />
+    <string id="MP_KingdomNegotiationJoinWarUnavailable" text="这项参战要求已经失效." />
     <string id="MP_KingdomNegotiationStaleTerm" text="一项或多项提案条款已经失效." />
     <string id="MP_KingdomNegotiationInvalidProvider" text="某项提案条款不属于参与谈判的王国." />
     <string id="MP_KingdomNegotiationInvalidAmount" text="某项提案条款的数量无效." />
@@ -253,6 +265,10 @@
     <string id="MP_NegotiationScorePeace" text="和平" />
     <string id="MP_NegotiationScoreTrade" text="贸易" />
     <string id="MP_NegotiationScoreAlliance" text="同盟" />
+    <string id="MP_NegotiationScoreEndTrade" text="撕毁贸易协定" />
+    <string id="MP_NegotiationScoreEndAlliance" text="撕毁同盟条约" />
+    <string id="MP_NegotiationScoreEndSubject" text="解除宗藩协定" />
+    <string id="MP_NegotiationScoreJoinWar" text="加入战争" />
     <string id="MP_NegotiationScoreSubject" text="宗藩地位" />
     <string id="MP_KingdomNegotiationEvaluate" text="评估提案" />
     <string id="MP_KingdomNegotiationEvaluationResult" text="预计议会支持率: {PLAYER_KINGDOM} {PLAYER_SUPPORT}%, {TARGET_KINGDOM} {TARGET_SUPPORT}%. 本次评估不会提交或执行提案." />
@@ -261,8 +277,8 @@
     <string id="MP_NegotiationPlayerCannotPropose" text="只有王国正式成员家族才能提交王国提案." />
     <string id="MP_NegotiationAlreadyPending" text="当前已经存在一份与该王国有关的组合提案." />
     <string id="MP_NegotiationNoChannel" text="对方王国不愿就这份提案开启谈判." />
-    <string id="MP_NegotiationProposalDecisionTitle" text="向{KINGDOM}提交外交提案" />
-    <string id="MP_NegotiationResponseDecisionTitle" text="回应{KINGDOM}的外交提案" />
+    <string id="MP_NegotiationProposalDecisionTitle" text="[组合外交提案] 向{KINGDOM}提交方案" />
+    <string id="MP_NegotiationResponseDecisionTitle" text="[组合外交提案] 回应{KINGDOM}" />
     <string id="MP_NegotiationProposalVoteTitle" text="表决是否向{KINGDOM}提交整份组合提案." />
     <string id="MP_NegotiationResponseVoteTitle" text="表决是否接受{KINGDOM}的整份组合提案." />
     <string id="MP_NegotiationProposalVoteDescription" text="议会必须决定是否将整份提案提交给{KINGDOM}. 各项条款不可拆分表决." />
@@ -294,12 +310,32 @@
     <string id="MP_NegotiationAiCouncilUnwilling" text="提案国并不支持这份外交方案." />
     <string id="MP_NegotiationForeignCouncilNotice" text="{KINGDOM}向你的王国提交了一份组合外交提案." />
     <string id="MP_NegotiationDebugReceivingProposalCreated" text="已创建接收方玩家议会决议" />
-    <string id="MP_NegotiationAiPeaceProposal" text="[王国谈判] {PROPOSER}向{TARGET}提议和平, 并愿意支付{GOLD}第纳尔作为补偿." />
+    <string id="MP_NegotiationAiPeaceProposal" text="[王国谈判] {PROPOSER}向{TARGET}提交了包含{COUNT}项条款的组合提案, 其中包含{GOLD}第纳尔补偿." />
     <string id="MP_NegotiationAiProposalSkipped" text="[王国谈判] {PROPOSER}没有向{TARGET}开启谈判. {REASON}" />
+    <string id="MP_NegotiationDecisionTerms" text="{INTRO}{newline}{newline}完整条款:{newline}{TERMS}" />
+    <string id="MP_NegotiationDecisionTermGold" text="• {KINGDOM}支付{AMOUNT}第纳尔." />
+    <string id="MP_NegotiationDecisionTermSettlement" text="• {KINGDOM}割让{ASSET}." />
+    <string id="MP_NegotiationDecisionTermPrisoner" text="• {KINGDOM}释放{ASSET}." />
+    <string id="MP_NegotiationDecisionTermPeace" text="• 两国议和." />
+    <string id="MP_NegotiationDecisionTermTrade" text="• 两国签署贸易协定." />
+    <string id="MP_NegotiationDecisionTermAlliance" text="• 两国建立同盟." />
+    <string id="MP_NegotiationDecisionTermEndTrade" text="• 两国解除贸易协定." />
+    <string id="MP_NegotiationDecisionTermEndAlliance" text="• 两国解除同盟条约." />
+    <string id="MP_NegotiationDecisionTermEndSubject" text="• 两国解除宗藩协定." />
+    <string id="MP_NegotiationDecisionTermJoinWar" text="• {KINGDOM}加入对{ASSET}的战争." />
+    <string id="MP_NegotiationDecisionTermVassal" text="• {KINGDOM}成为附庸国." />
+    <string id="MP_NegotiationDecisionTermPuppet" text="• {KINGDOM}成为傀儡国." />
+    <string id="MP_NegotiationCounterOfferReady" text="[王国谈判] 被否决的条款已经保存. 再次与{KINGDOM}谈判即可拟定反提案." />
+    <string id="MP_NegotiationForeignRejectedDetailed" text="对方议会拒绝了整份方案. 反对最强的家族是{CLAN}. 主要负面条款: {FACTORS}." />
+    <string id="MP_NegotiationNoNegativeBreakdown" text="整体外交支持度不足" />
     <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
     <string id="MP_NegotiationExecutedPeace" text="和平条约" />
     <string id="MP_NegotiationExecutedTrade" text="贸易协定" />
     <string id="MP_NegotiationExecutedAlliance" text="同盟" />
+    <string id="MP_NegotiationExecutedEndTrade" text="贸易协定解除" />
+    <string id="MP_NegotiationExecutedEndAlliance" text="同盟解除" />
+    <string id="MP_NegotiationExecutedEndSubject" text="宗藩协定解除" />
+    <string id="MP_NegotiationExecutedJoinWar" text="参战协定" />
     <string id="MP_NegotiationExecutedSettlement" text="定居点转移" />
     <string id="MP_NegotiationDebugFlow" text="[王国谈判调试] {FIRST}与{SECOND}. {STAGE}. 条款数量: {COUNT}. 结果: {RESULT}." />
     <string id="MP_NegotiationDebugProposalCreated" text="已创建提案国议会决议" />

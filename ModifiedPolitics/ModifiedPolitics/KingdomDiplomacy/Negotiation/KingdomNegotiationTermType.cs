@@ -14,7 +14,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         TargetBecomesVassal,
         TargetBecomesPuppet,
         PlayerBecomesVassal,
-        PlayerBecomesPuppet
+        PlayerBecomesPuppet,
+        EndTradeAgreement,
+        EndAlliance,
+        EndSubjectRelation,
+        JoinWar
     }
 
     public static class KingdomNegotiationTermRules
@@ -33,7 +37,16 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         {
             return type == KingdomNegotiationTermType.Peace
                 || type == KingdomNegotiationTermType.TradeAgreement
-                || type == KingdomNegotiationTermType.Alliance;
+                || type == KingdomNegotiationTermType.Alliance
+                || IsTerminationTerm(type);
+        }
+
+        public static bool IsTerminationTerm(
+            KingdomNegotiationTermType type)
+        {
+            return type == KingdomNegotiationTermType.EndTradeAgreement
+                || type == KingdomNegotiationTermType.EndAlliance
+                || type == KingdomNegotiationTermType.EndSubjectRelation;
         }
     }
 }
