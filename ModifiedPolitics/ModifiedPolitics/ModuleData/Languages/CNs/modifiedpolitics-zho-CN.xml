@@ -280,6 +280,9 @@
     <string id="MP_NegotiationCouncilRejectedLog" text="[王国谈判] {KINGDOM}议会否决了组合提案." />
     <string id="MP_NegotiationBothCouncilsApproved" text="[王国谈判] 双方议会均已通过组合提案. 条款正在等待执行阶段." />
     <string id="MP_NegotiationSingleTreatyExecuted" text="[王国谈判] 提案已经通过, {TREATY}现已生效." />
+    <string id="MP_NegotiationExecutedGold" text="金钱支付" />
+    <string id="MP_NegotiationExecutedPrisoner" text="英雄俘虏移交" />
+    <string id="MP_KingdomNegotiationPrisonerTransferUnavailable" text="接收国没有能够接管该英雄俘虏的有效部队或据点." />
     <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
     <string id="MP_NegotiationExecutedPeace" text="和平条约" />
     <string id="MP_NegotiationExecutedTrade" text="贸易协定" />

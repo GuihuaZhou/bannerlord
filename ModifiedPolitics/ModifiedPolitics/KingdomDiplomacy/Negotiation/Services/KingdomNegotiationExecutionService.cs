@@ -4,6 +4,7 @@ using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 
@@ -68,7 +69,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     KingdomNegotiationTermType.Peace,
                     KingdomNegotiationTermType.TradeAgreement,
                     KingdomNegotiationTermType.Alliance,
-                    KingdomNegotiationTermType.Settlement
+                    KingdomNegotiationTermType.PrisonerHero,
+                    KingdomNegotiationTermType.Settlement,
+                    KingdomNegotiationTermType.Gold
                 };
                 foreach (KingdomNegotiationTermType type in order)
                 {
@@ -111,6 +114,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             return type == KingdomNegotiationTermType.Peace
                 || type == KingdomNegotiationTermType.TradeAgreement
                 || type == KingdomNegotiationTermType.Alliance
+                || type == KingdomNegotiationTermType.Gold
+                || type == KingdomNegotiationTermType.PrisonerHero
                 || type == KingdomNegotiationTermType.Settlement;
         }
 
@@ -138,6 +143,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                             IAllianceCampaignBehavior>();
                     return allianceBehavior != null
                         && !allianceBehavior.IsAllyWithKingdom(first, second);
+                case KingdomNegotiationTermType.Gold:
+                    return CanTransferGold(first, second, term);
+                case KingdomNegotiationTermType.PrisonerHero:
+                    return CanTransferPrisoner(first, second, term);
                 case KingdomNegotiationTermType.Settlement:
                     return CanTransferSettlement(first, second, term);
                 default:
@@ -158,6 +167,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     return ExecuteTrade(first, second);
                 case KingdomNegotiationTermType.Alliance:
                     return ExecuteAlliance(first, second);
+                case KingdomNegotiationTermType.Gold:
+                    return ExecuteGoldTransfer(first, second, term);
+                case KingdomNegotiationTermType.PrisonerHero:
+                    return ExecutePrisonerTransfer(first, second, term);
                 case KingdomNegotiationTermType.Settlement:
                     return ExecuteSettlementTransfer(first, second, term);
                 default:
@@ -219,6 +232,123 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 
             behavior.StartAlliance(first, second);
             return behavior.IsAllyWithKingdom(first, second);
+        }
+
+        /// <summary>
+        /// Transfers an approved payment between the two ruling clan leaders.
+        /// Gold clauses are defined against kingdom rulers in the negotiation
+        /// UI, matching the actors that actually own the displayed balances.
+        /// </summary>
+        private static bool ExecuteGoldTransfer(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            if (!CanTransferGold(first, second, term))
+            {
+                return false;
+            }
+
+            Hero payer = term.ProviderKingdom.Leader;
+            Kingdom receiverKingdom = term.ProviderKingdom == first
+                ? second
+                : first;
+            Hero receiver = receiverKingdom.Leader;
+            int payerGoldBefore = payer.Gold;
+            int receiverGoldBefore = receiver.Gold;
+
+            GiveGoldAction.ApplyBetweenCharacters(
+                payer,
+                receiver,
+                term.Amount,
+                true);
+            return payer.Gold == payerGoldBefore - term.Amount
+                && receiver.Gold == receiverGoldBefore + term.Amount;
+        }
+
+        private static bool CanTransferGold(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom provider = term.ProviderKingdom;
+            Kingdom receiver = provider == first ? second : first;
+            Hero payer = term.Subject as Hero;
+            return provider != null
+                && receiver != null
+                && (provider == first || provider == second)
+                && payer != null
+                && payer == provider.Leader
+                && payer.IsAlive
+                && receiver.Leader?.IsAlive == true
+                && term.Amount > 0
+                && payer.Gold >= term.Amount;
+        }
+
+        /// <summary>
+        /// Uses the same custody transfer action as Bannerlord's
+        /// TransferPrisonerBarterable. The receiving party must be hostile to
+        /// the prisoner's faction; this clause transfers custody and does not
+        /// silently release or ransom the hero.
+        /// </summary>
+        private static bool ExecutePrisonerTransfer(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            if (!CanTransferPrisoner(first, second, term))
+            {
+                return false;
+            }
+
+            Hero prisoner = term.Subject as Hero;
+            PartyBase originalParty = prisoner.PartyBelongedToAsPrisoner;
+            Kingdom receiverKingdom = term.ProviderKingdom == first
+                ? second
+                : first;
+            PartyBase receivingParty = FindReceivingParty(receiverKingdom);
+            TransferPrisonerAction.Apply(
+                prisoner.CharacterObject,
+                originalParty,
+                receivingParty);
+            return prisoner.PartyBelongedToAsPrisoner == receivingParty;
+        }
+
+        internal static bool CanTransferPrisoner(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom provider = term.ProviderKingdom;
+            Kingdom receiver = provider == first ? second : first;
+            Hero prisoner = term.Subject as Hero;
+            PartyBase originalParty = prisoner?.PartyBelongedToAsPrisoner;
+            PartyBase receivingParty = FindReceivingParty(receiver);
+            return provider != null
+                && receiver != null
+                && (provider == first || provider == second)
+                && prisoner?.IsPrisoner == true
+                && originalParty != null
+                && originalParty.MapFaction == provider
+                && receivingParty != null
+                && receivingParty != originalParty
+                && receivingParty.MapFaction == receiver
+                && prisoner.MapFaction != null
+                && receiver.IsAtWarWith(prisoner.MapFaction);
+        }
+
+        private static PartyBase FindReceivingParty(Kingdom kingdom)
+        {
+            PartyBase leaderParty = kingdom?.Leader?
+                .PartyBelongedTo?.Party;
+            if (leaderParty?.MapFaction == kingdom)
+            {
+                return leaderParty;
+            }
+
+            return kingdom?.RulingClan?.Fiefs
+                .Select(x => x.Settlement?.Party)
+                .FirstOrDefault(x => x?.MapFaction == kingdom);
         }
 
         /// <summary>
@@ -330,6 +460,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Settlement:
                     return new TextObject(
                         "{=MP_NegotiationExecutedSettlement}settlement transfer");
+                case KingdomNegotiationTermType.Gold:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedGold}gold payment");
+                case KingdomNegotiationTermType.PrisonerHero:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedPrisoner}prisoner transfer");
                 default:
                     return new TextObject(
                         "{=MP_NegotiationExecutedAlliance}alliance");

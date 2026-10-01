@@ -81,6 +81,18 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                     return false;
                 }
 
+                if (term.Type == KingdomNegotiationTermType.PrisonerHero
+                    && !Services.KingdomNegotiationExecutionService
+                        .CanTransferPrisoner(
+                            draft.PlayerKingdom,
+                            draft.TargetKingdom,
+                            term))
+                {
+                    reason = new TextObject(
+                        "{=MP_KingdomNegotiationPrisonerTransferUnavailable}The receiving kingdom has no eligible party that can take custody of this prisoner.");
+                    return false;
+                }
+
                 if (!TryValidateTreaty(draft, term, out reason))
                 {
                     return false;
