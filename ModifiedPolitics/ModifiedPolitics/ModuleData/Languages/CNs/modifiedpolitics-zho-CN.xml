@@ -281,8 +281,13 @@
     <string id="MP_NegotiationBothCouncilsApproved" text="[王国谈判] 双方议会均已通过组合提案. 条款正在等待执行阶段." />
     <string id="MP_NegotiationSingleTreatyExecuted" text="[王国谈判] 提案已经通过, {TREATY}现已生效." />
     <string id="MP_NegotiationExecutedGold" text="金钱支付" />
-    <string id="MP_NegotiationExecutedPrisoner" text="英雄俘虏移交" />
-    <string id="MP_KingdomNegotiationPrisonerTransferUnavailable" text="接收国没有能够接管该英雄俘虏的有效部队或据点." />
+    <string id="MP_NegotiationExecutedPrisoner" text="英雄俘虏释放" />
+    <string id="MP_KingdomNegotiationPrisonerTransferUnavailable" text="该提案只能释放属于谈判对方王国的英雄." />
+    <string id="MP_KingdomNegotiationSubjectAllianceConflict" text="宗藩地位条款不能与单独的和平或同盟条款同时存在." />
+    <string id="MP_KingdomNegotiationDuplicateAsset" text="同一资产或同一方向的金钱支付不能在提案中重复出现." />
+    <string id="MP_NegotiationExecutedSubject" text="宗藩关系" />
+    <string id="MP_KingdomNegotiationSubjectUnavailable" text="当前已经无法建立提案中的宗藩关系." />
+    <string id="MP_NegotiationProposalExecuted" text="[王国谈判] {FIRST}与{SECOND}的组合提案已经完整执行, 共{COUNT}项条款." />
     <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
     <string id="MP_NegotiationExecutedPeace" text="和平条约" />
     <string id="MP_NegotiationExecutedTrade" text="贸易协定" />

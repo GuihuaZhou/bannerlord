@@ -54,6 +54,32 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 return false;
             }
 
+            if (draft.Terms.Any(x =>
+                    KingdomNegotiationTermRules.IsSubjectTerm(x.Type))
+                && draft.Terms.Any(x =>
+                    x.Type == KingdomNegotiationTermType.Alliance
+                        || x.Type == KingdomNegotiationTermType.Peace))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationSubjectAllianceConflict}A subject-status term cannot be combined with a separate peace or alliance term.");
+                return false;
+            }
+
+            if (draft.Terms
+                    .Where(x => x.Type == KingdomNegotiationTermType.Settlement
+                        || x.Type == KingdomNegotiationTermType.PrisonerHero)
+                    .GroupBy(x => x.Subject)
+                    .Any(x => x.Key == null || x.Count() > 1)
+                || draft.Terms
+                    .Where(x => x.Type == KingdomNegotiationTermType.Gold)
+                    .GroupBy(x => x.ProviderKingdom)
+                    .Any(x => x.Key == null || x.Count() > 1))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationDuplicateAsset}The same asset or payment direction cannot appear more than once in a proposal.");
+                return false;
+            }
+
             foreach (KingdomNegotiationDraftTerm term in draft.Terms)
             {
                 if (!IsParticipant(draft, term.ProviderKingdom))
@@ -89,7 +115,19 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                             term))
                 {
                     reason = new TextObject(
-                        "{=MP_KingdomNegotiationPrisonerTransferUnavailable}The receiving kingdom has no eligible party that can take custody of this prisoner.");
+                        "{=MP_KingdomNegotiationPrisonerTransferUnavailable}Only a hero belonging to the other negotiating kingdom can be released through this proposal.");
+                    return false;
+                }
+
+                if (KingdomNegotiationTermRules.IsSubjectTerm(term.Type)
+                    && !Services.KingdomNegotiationExecutionService
+                        .CanEstablishSubjectRelation(
+                            draft.PlayerKingdom,
+                            draft.TargetKingdom,
+                            term))
+                {
+                    reason = new TextObject(
+                        "{=MP_KingdomNegotiationSubjectUnavailable}The proposed subject relation can no longer be established.");
                     return false;
                 }
 

@@ -1,10 +1,12 @@
 using System;
 using System.Linq;
+using ModifiedPolitics.KingdomDiplomacy.Actions;
+using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
 
@@ -67,6 +69,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 KingdomNegotiationTermType[] order =
                 {
                     KingdomNegotiationTermType.Peace,
+                    KingdomNegotiationTermType.TargetBecomesVassal,
+                    KingdomNegotiationTermType.TargetBecomesPuppet,
+                    KingdomNegotiationTermType.PlayerBecomesVassal,
+                    KingdomNegotiationTermType.PlayerBecomesPuppet,
                     KingdomNegotiationTermType.TradeAgreement,
                     KingdomNegotiationTermType.Alliance,
                     KingdomNegotiationTermType.PrisonerHero,
@@ -106,6 +112,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 return false;
             }
 
+            TextObject completed = new TextObject(
+                "{=MP_NegotiationProposalExecuted}[Kingdom negotiation] The compound proposal between {FIRST} and {SECOND} was fully executed with {COUNT} terms.");
+            completed.SetTextVariable("FIRST", first.Name);
+            completed.SetTextVariable("SECOND", second.Name);
+            completed.SetTextVariable("COUNT", draft.Terms.Count);
+            ModLogger.Notice(completed.ToString());
             return true;
         }
 
@@ -116,6 +128,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 || type == KingdomNegotiationTermType.Alliance
                 || type == KingdomNegotiationTermType.Gold
                 || type == KingdomNegotiationTermType.PrisonerHero
+                || KingdomNegotiationTermRules.IsSubjectTerm(type)
                 || type == KingdomNegotiationTermType.Settlement;
         }
 
@@ -150,7 +163,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Settlement:
                     return CanTransferSettlement(first, second, term);
                 default:
-                    return false;
+                    return KingdomNegotiationTermRules.IsSubjectTerm(
+                            term.Type)
+                        && CanEstablishSubjectRelation(first, second, term);
             }
         }
 
@@ -174,8 +189,79 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Settlement:
                     return ExecuteSettlementTransfer(first, second, term);
                 default:
-                    return false;
+                    return KingdomNegotiationTermRules.IsSubjectTerm(
+                            term.Type)
+                        && ExecuteSubjectRelation(first, second, term);
             }
+        }
+
+        private static bool ExecuteSubjectRelation(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            GetSubjectRelationParties(
+                first,
+                second,
+                term.Type,
+                out Kingdom overlord,
+                out Kingdom subject,
+                out SubjectType subjectType);
+            if (!CanEstablishSubjectRelation(first, second, term))
+            {
+                return false;
+            }
+
+            return SubjectRelationAction.TryEstablish(
+                    overlord,
+                    subject,
+                    subjectType)
+                && KingdomDiplomacyManager.Current?
+                    .GetSubjectRelation(subject)?.OverlordKingdom
+                    == overlord
+                && KingdomDiplomacyManager.Current
+                    .GetSubjectType(subject) == subjectType;
+        }
+
+        internal static bool CanEstablishSubjectRelation(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            GetSubjectRelationParties(
+                first,
+                second,
+                term.Type,
+                out Kingdom overlord,
+                out Kingdom subject,
+                out SubjectType subjectType);
+            return overlord != null
+                && subject != null
+                && term.ProviderKingdom == subject
+                && KingdomDiplomacyManager.Current?
+                    .CanEstablishSubjectRelation(
+                        overlord,
+                        subject,
+                        subjectType) == true;
+        }
+
+        private static void GetSubjectRelationParties(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationTermType type,
+            out Kingdom overlord,
+            out Kingdom subject,
+            out SubjectType subjectType)
+        {
+            bool playerBecomesSubject = type
+                    == KingdomNegotiationTermType.PlayerBecomesVassal
+                || type == KingdomNegotiationTermType.PlayerBecomesPuppet;
+            subject = playerBecomesSubject ? first : second;
+            overlord = playerBecomesSubject ? second : first;
+            subjectType = type == KingdomNegotiationTermType.PlayerBecomesPuppet
+                    || type == KingdomNegotiationTermType.TargetBecomesPuppet
+                ? SubjectType.Puppet
+                : SubjectType.Vassal;
         }
 
         private static bool ExecutePeace(Kingdom first, Kingdom second)
@@ -286,10 +372,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
         }
 
         /// <summary>
-        /// Uses the same custody transfer action as Bannerlord's
-        /// TransferPrisonerBarterable. The receiving party must be hostile to
-        /// the prisoner's faction; this clause transfers custody and does not
-        /// silently release or ransom the hero.
+        /// Uses the same ransom release action as Bannerlord's
+        /// SetPrisonerFreeBarterable. A bilateral kingdom negotiation may
+        /// release only a hero belonging to the other negotiating kingdom.
         /// </summary>
         private static bool ExecutePrisonerTransfer(
             Kingdom first,
@@ -302,16 +387,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             }
 
             Hero prisoner = term.Subject as Hero;
-            PartyBase originalParty = prisoner.PartyBelongedToAsPrisoner;
             Kingdom receiverKingdom = term.ProviderKingdom == first
                 ? second
                 : first;
-            PartyBase receivingParty = FindReceivingParty(receiverKingdom);
-            TransferPrisonerAction.Apply(
-                prisoner.CharacterObject,
-                originalParty,
-                receivingParty);
-            return prisoner.PartyBelongedToAsPrisoner == receivingParty;
+            EndCaptivityAction.ApplyByRansom(
+                prisoner,
+                receiverKingdom.Leader);
+            return !prisoner.IsPrisoner;
         }
 
         internal static bool CanTransferPrisoner(
@@ -322,33 +404,14 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             Kingdom provider = term.ProviderKingdom;
             Kingdom receiver = provider == first ? second : first;
             Hero prisoner = term.Subject as Hero;
-            PartyBase originalParty = prisoner?.PartyBelongedToAsPrisoner;
-            PartyBase receivingParty = FindReceivingParty(receiver);
             return provider != null
                 && receiver != null
                 && (provider == first || provider == second)
                 && prisoner?.IsPrisoner == true
-                && originalParty != null
-                && originalParty.MapFaction == provider
-                && receivingParty != null
-                && receivingParty != originalParty
-                && receivingParty.MapFaction == receiver
-                && prisoner.MapFaction != null
-                && receiver.IsAtWarWith(prisoner.MapFaction);
-        }
-
-        private static PartyBase FindReceivingParty(Kingdom kingdom)
-        {
-            PartyBase leaderParty = kingdom?.Leader?
-                .PartyBelongedTo?.Party;
-            if (leaderParty?.MapFaction == kingdom)
-            {
-                return leaderParty;
-            }
-
-            return kingdom?.RulingClan?.Fiefs
-                .Select(x => x.Settlement?.Party)
-                .FirstOrDefault(x => x?.MapFaction == kingdom);
+                && prisoner.PartyBelongedToAsPrisoner?.MapFaction
+                    == provider
+                && prisoner.MapFaction == receiver
+                && receiver.Leader != null;
         }
 
         /// <summary>
@@ -465,10 +528,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                         "{=MP_NegotiationExecutedGold}gold payment");
                 case KingdomNegotiationTermType.PrisonerHero:
                     return new TextObject(
-                        "{=MP_NegotiationExecutedPrisoner}prisoner transfer");
+                        "{=MP_NegotiationExecutedPrisoner}hero prisoner release");
                 default:
-                    return new TextObject(
-                        "{=MP_NegotiationExecutedAlliance}alliance");
+                    return KingdomNegotiationTermRules.IsSubjectTerm(type)
+                        ? new TextObject(
+                            "{=MP_NegotiationExecutedSubject}subject relation")
+                        : new TextObject(
+                            "{=MP_NegotiationExecutedAlliance}alliance");
             }
         }
     }

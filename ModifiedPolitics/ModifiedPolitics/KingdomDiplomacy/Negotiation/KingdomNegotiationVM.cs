@@ -384,7 +384,13 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
 
             foreach (Hero hero in Hero.AllAliveHeroes.Where(x =>
                 x.IsPrisoner
-                && x.PartyBelongedToAsPrisoner?.MapFaction == kingdom))
+                && x.PartyBelongedToAsPrisoner?.MapFaction == kingdom
+                // Kingdom negotiations may release the other side's heroes.
+                // Third-party prisoners are unrelated to this bilateral deal
+                // and must never be exposed as selectable terms.
+                && x.MapFaction == (isPlayerSide
+                    ? TargetKingdom
+                    : PlayerKingdom)))
             {
                 prisoners.Add(CreateItem(
                     KingdomNegotiationTermType.PrisonerHero,
@@ -394,7 +400,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                     isPlayerSide,
                     false,
                     1,
-                    "transfer_prisoner_barterable",
+                    "set_prisoner_free_barterable",
                     string.Empty,
                     new GenericImageIdentifierVM(
                         new CharacterImageIdentifier(
@@ -527,12 +533,34 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             {
                 RemoveSubjectTerms(LeftOfferList);
                 RemoveSubjectTerms(RightOfferList);
+                RemoveTermType(
+                    LeftOfferList,
+                    KingdomNegotiationTermType.Alliance);
+                RemoveTermType(
+                    RightOfferList,
+                    KingdomNegotiationTermType.Alliance);
+                RemoveTermType(
+                    LeftOfferList,
+                    KingdomNegotiationTermType.Peace);
+                RemoveTermType(
+                    RightOfferList,
+                    KingdomNegotiationTermType.Peace);
             }
             else if (KingdomNegotiationTermRules.IsBilateralTreaty(
                 item.Type))
             {
                 RemoveTermType(LeftOfferList, item.Type);
                 RemoveTermType(RightOfferList, item.Type);
+                if (item.Type == KingdomNegotiationTermType.Alliance)
+                {
+                    RemoveSubjectTerms(LeftOfferList);
+                    RemoveSubjectTerms(RightOfferList);
+                }
+                else if (item.Type == KingdomNegotiationTermType.Peace)
+                {
+                    RemoveSubjectTerms(LeftOfferList);
+                    RemoveSubjectTerms(RightOfferList);
+                }
             }
             else if (item.Type == KingdomNegotiationTermType.Gold)
             {
