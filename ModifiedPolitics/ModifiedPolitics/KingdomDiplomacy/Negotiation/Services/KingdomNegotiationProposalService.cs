@@ -109,6 +109,131 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             return true;
         }
 
+        /// <summary>
+        /// Submits a compound proposal initiated by an AI clan. AI-to-AI
+        /// diplomacy follows the same foreign pre-evaluation used by player
+        /// proposals. When the receiving kingdom belongs to the player, the
+        /// foreign pre-evaluation is replaced by a real player-council vote so
+        /// the AI can never accept a bilateral agreement on the player's
+        /// behalf.
+        /// </summary>
+        public static bool SubmitAiProposal(
+            Clan proposerClan,
+            KingdomNegotiationDraft draft,
+            out TextObject reason)
+        {
+            if (!KingdomNegotiationDraftValidator.TryValidate(
+                    draft,
+                    out reason)
+                || proposerClan?.Kingdom != draft.PlayerKingdom
+                || proposerClan.IsEliminated
+                || proposerClan.IsUnderMercenaryService)
+            {
+                if (reason == null || reason.IsEmpty())
+                {
+                    reason = new TextObject(
+                        "{=MP_NegotiationAiProposerInvalid}The proposing clan can no longer submit this diplomatic proposal.");
+                }
+
+                return false;
+            }
+
+            Kingdom proposingKingdom = draft.PlayerKingdom;
+            Kingdom receivingKingdom = draft.TargetKingdom;
+            string proposalKey = MakePairKey(
+                proposingKingdom,
+                receivingKingdom);
+            if (ActiveProposalKeys.Contains(proposalKey)
+                || HasPendingProposalBetween(
+                    proposingKingdom,
+                    receivingKingdom))
+            {
+                reason = new TextObject(
+                    "{=MP_NegotiationAlreadyPending}A compound proposal with this kingdom is already pending.");
+                return false;
+            }
+
+            KingdomNegotiationEvaluation proposingEvaluation =
+                KingdomNegotiationEvaluationService.Evaluate(
+                    draft,
+                    proposingKingdom);
+            KingdomNegotiationClanEvaluation sponsorEvaluation =
+                proposingEvaluation.ClanEvaluations.FirstOrDefault(x =>
+                    x.Clan == proposerClan);
+            int proposalCost = 150 + Math.Min(
+                150,
+                (draft.Terms.Count - 1) * 25);
+            if ((sponsorEvaluation?.RawScore ?? 0f) <= 0f
+                || proposerClan.Influence < proposalCost)
+            {
+                reason = new TextObject(
+                    "{=MP_NegotiationAiCouncilUnwilling}The proposing kingdom does not support this diplomatic package.");
+                return false;
+            }
+
+            bool playerReceives = receivingKingdom
+                == Clan.PlayerClan?.Kingdom;
+            if (!playerReceives)
+            {
+                KingdomNegotiationEvaluation foreignEvaluation =
+                    KingdomNegotiationEvaluationService.Evaluate(
+                        draft,
+                        receivingKingdom);
+                if (!foreignEvaluation.WouldAccept)
+                {
+                    reason = new TextObject(
+                        "{=MP_NegotiationNoChannel}The other kingdom is unwilling to open negotiations for this proposal.");
+                    return false;
+                }
+            }
+
+            Clan decisionSponsor = playerReceives
+                ? receivingKingdom.RulingClan
+                : proposerClan;
+            KingdomNegotiationDecision decision =
+                new KingdomNegotiationDecision(
+                    decisionSponsor,
+                    playerReceives
+                        ? proposingKingdom
+                        : receivingKingdom,
+                    draft.Terms.Select(
+                        KingdomNegotiationTermRecord.FromDraftTerm),
+                    playerReceives);
+            ActiveProposalKeys.Add(proposalKey);
+            try
+            {
+                (playerReceives
+                    ? receivingKingdom
+                    : proposingKingdom).AddDecision(
+                        decision,
+                        playerReceives);
+            }
+            catch
+            {
+                ActiveProposalKeys.Remove(proposalKey);
+                throw;
+            }
+
+            if (playerReceives)
+            {
+                AddPlayerNotice(
+                    receivingKingdom,
+                    decision,
+                    "{=MP_NegotiationForeignCouncilNotice}{KINGDOM} has sent your realm a compound diplomatic proposal.",
+                    proposingKingdom);
+            }
+
+            LogFlow(
+                proposingKingdom,
+                receivingKingdom,
+                playerReceives
+                    ? "{=MP_NegotiationDebugReceivingProposalCreated}The receiving player council decision was created"
+                    : "{=MP_NegotiationDebugProposalCreated}The proposing council decision was created",
+                draft.Terms.Count);
+            reason = TextObject.GetEmpty();
+            return true;
+        }
+
         public static void ResolveCouncilVote(
             KingdomNegotiationDecision decision,
             bool approved)

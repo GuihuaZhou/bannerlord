@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedPolitics.Diplomacy.Behaviors;
 using ModifiedPolitics.Diplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Behaviors;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Behaviors;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
@@ -66,6 +67,8 @@ namespace ModifiedPolitics
                     new SubjectProposalAiBehavior());
                 campaignStarter.AddBehavior(
                     new SubjectRelationAiBehavior());
+                campaignStarter.AddBehavior(
+                    new KingdomNegotiationAiBehavior());
             }
         }
     }
