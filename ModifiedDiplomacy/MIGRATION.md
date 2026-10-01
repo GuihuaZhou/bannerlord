@@ -67,6 +67,18 @@ ModifiedPolitics  -> ModifiedArmy
 这些类型已经从 `ModifiedPolitics` 删除，并只在
 `ModifiedDiplomacy` 注册。规则服务和宗藩存档仍由旧模块临时提供。
 
+第二个无存档迁移批次：等待编译和游戏验证。
+
+- 傀儡战争与和平同步行为。
+- 附庸战争义务同步行为。
+- AI 宗藩提案、解除关系和独立提案行为。
+- AI 组合外交提案行为。
+- 流亡家族投奔新王国的模型、行为和家族存续补丁。
+
+这些行为的注册入口已经转移到 `ModifiedDiplomacy.Main`。现有评分、
+决议、同步服务和存档数据仍由 `ModifiedPolitics` 提供，因此本批只改变
+代码归属，不改变存档类型或外交计算结果。
+
 ### 第 1 批：统一外交领域模型
 
 - 建立 `DiplomacyActionType`、`DiplomacyTerm`、`DiplomacyProposal`。

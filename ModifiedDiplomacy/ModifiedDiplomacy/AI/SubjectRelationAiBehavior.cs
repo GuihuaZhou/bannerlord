@@ -9,7 +9,7 @@ using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.AI
 {
     /// <summary>
     /// Lets AI clans submit release and independence motions through the

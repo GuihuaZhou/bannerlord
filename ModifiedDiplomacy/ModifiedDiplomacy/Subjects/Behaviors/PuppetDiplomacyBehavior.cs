@@ -5,11 +5,12 @@ using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.Subjects.Behaviors
 {
     /// <summary>
-    /// Observes completed native diplomacy actions and mirrors war/peace to
-    /// direct puppet kingdoms on both sides of the diplomatic change.
+    /// Mirrors completed war and peace actions to direct puppet kingdoms.
+    /// The relation store and synchronizer remain compatibility dependencies
+    /// until the persistence migration is performed.
     /// </summary>
     public sealed class PuppetDiplomacyBehavior : CampaignBehaviorBase
     {
@@ -32,8 +33,6 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
 
         private static void OnSessionLaunched(CampaignGameStarter starter)
         {
-            // A loaded game may have been saved while another mod was changing
-            // diplomacy. Restore every puppet before normal campaign play.
             foreach (Kingdom kingdom in Kingdom.All)
             {
                 PuppetDiplomacySynchronizer.SynchronizeAllWars(kingdom);

@@ -1,4 +1,6 @@
 using HarmonyLib;
+using ModifiedDiplomacy.AI;
+using ModifiedDiplomacy.Clans;
 using ModifiedDiplomacy.Subjects.Behaviors;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -34,6 +36,10 @@ namespace ModifiedDiplomacy
             if (game.GameType is Campaign
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
+                campaignStarter.AddModel(new ExiledClanDiplomacyModel());
+                campaignStarter.AddBehavior(
+                    new ExiledClanRealignmentBehavior());
+
                 // These stateless repair behaviors are the first live feature
                 // batch moved out of ModifiedPolitics. Their old registrations
                 // are removed in the same change to prevent duplicate events.
@@ -41,6 +47,16 @@ namespace ModifiedDiplomacy
                     new SubjectAllianceRestrictionBehavior());
                 campaignStarter.AddBehavior(
                     new SubjectTradeRestrictionBehavior());
+                campaignStarter.AddBehavior(
+                    new PuppetDiplomacyBehavior());
+                campaignStarter.AddBehavior(
+                    new VassalWarObligationBehavior());
+                campaignStarter.AddBehavior(
+                    new SubjectProposalAiBehavior());
+                campaignStarter.AddBehavior(
+                    new SubjectRelationAiBehavior());
+                campaignStarter.AddBehavior(
+                    new KingdomNegotiationAiBehavior());
             }
         }
     }

@@ -1,9 +1,5 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using ModifiedPolitics.Diplomacy.Behaviors;
-using ModifiedPolitics.Diplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Behaviors;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Behaviors;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
@@ -44,7 +40,6 @@ namespace ModifiedPolitics
             {
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
-                campaignStarter.AddModel(new ExiledClanDiplomacyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
@@ -52,19 +47,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
                 campaignStarter.AddBehavior(new SettlementWarEventBehavior());
                 campaignStarter.AddBehavior(new WeeklyWealthEventBehavior());
-                campaignStarter.AddBehavior(
-                    new ExiledClanRealignmentBehavior());
-
                 campaignStarter.AddBehavior(new KingdomDiplomacyManager());
-                campaignStarter.AddBehavior(new PuppetDiplomacyBehavior());
-                campaignStarter.AddBehavior(
-                    new VassalWarObligationBehavior());
-                campaignStarter.AddBehavior(
-                    new SubjectProposalAiBehavior());
-                campaignStarter.AddBehavior(
-                    new SubjectRelationAiBehavior());
-                campaignStarter.AddBehavior(
-                    new KingdomNegotiationAiBehavior());
             }
         }
     }

@@ -6,7 +6,7 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.Diplomacy.Patches
+namespace ModifiedDiplomacy.Clans
 {
     /// <summary>
     /// Prevents a normal noble clan from being deleted merely because it has

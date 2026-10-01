@@ -3,7 +3,6 @@ using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Behaviors;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.KingdomDiplomacy.Services;
@@ -14,7 +13,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.AI
 {
     /// <summary>
     /// Adds subject proposals to the native per-clan decision proposal cycle.

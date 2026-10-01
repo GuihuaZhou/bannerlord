@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.Tool;
@@ -11,7 +12,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Behaviors
+namespace ModifiedDiplomacy.AI
 {
     /// <summary>
     /// Lets AI rulers build conservative compound diplomatic offers. Native

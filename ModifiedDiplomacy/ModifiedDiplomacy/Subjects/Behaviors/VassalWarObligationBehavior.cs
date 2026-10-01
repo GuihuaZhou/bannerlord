@@ -4,11 +4,11 @@ using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.Subjects.Behaviors
 {
     /// <summary>
-    /// Observes native war and peace actions and applies the overlord's result
-    /// to every direct vassal. It also repairs required wars after loading.
+    /// Applies an overlord's war and peace results to every direct vassal and
+    /// repairs mandatory wars when a campaign session is loaded.
     /// </summary>
     public sealed class VassalWarObligationBehavior : CampaignBehaviorBase
     {
@@ -54,9 +54,6 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
         {
             SynchronizeOverlordSide(firstFaction, secondFaction);
             SynchronizeOverlordSide(secondFaction, firstFaction);
-
-            // A vassal cannot make a separate peace while its overlord remains
-            // at war. Reapplying the overlord state restores the required war.
             RestoreVassalObligation(firstFaction, secondFaction);
             RestoreVassalObligation(secondFaction, firstFaction);
         }

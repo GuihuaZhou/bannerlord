@@ -8,7 +8,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.Diplomacy.Behaviors
+namespace ModifiedDiplomacy.Clans
 {
     /// <summary>
     /// Gives exiled noble clans a daily opportunity to seek a new liege. The

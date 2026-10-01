@@ -8,7 +8,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.Diplomacy.Models
+namespace ModifiedDiplomacy.Clans
 {
     /// <summary>
     /// Replaces only the joining desire of landless independent noble clans.
