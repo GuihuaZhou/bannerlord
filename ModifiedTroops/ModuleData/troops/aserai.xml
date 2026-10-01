@@ -968,9 +968,6 @@
 					slot="Item2"
 					id="Item.southern_spear_4_t3" />
 				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
 					slot="Head"
 					id="Item.pointed_skullcap_with_mail" />
 				<equipment
@@ -997,9 +994,6 @@
 					slot="Item2"
 					id="Item.southern_spear_4_t3" />
 				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
 					slot="Head"
 					id="Item.pointed_skullcap_with_mail" />
 				<equipment
@@ -1025,9 +1019,6 @@
 				<equipment
 					slot="Item2"
 					id="Item.southern_spear_3_t3" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
 				<equipment
 					slot="Head"
 					id="Item.pointed_skullcap_with_mail" />
@@ -1100,9 +1091,6 @@
 					slot="Item2"
 					id="Item.eastern_spear_4_t4" />
 				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
 					slot="Head"
 					id="Item.emirs_helmet" />
 				<equipment
@@ -1129,9 +1117,6 @@
 					slot="Item2"
 					id="Item.eastern_spear_4_t4" />
 				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
-				<equipment
 					slot="Head"
 					id="Item.desert_mail_coif" />
 				<equipment
@@ -1157,9 +1142,6 @@
 				<equipment
 					slot="Item2"
 					id="Item.eastern_spear_4_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.eastern_javelin_2_t3" />
 				<equipment
 					slot="Head"
 					id="Item.desert_helmet_with_mail" />

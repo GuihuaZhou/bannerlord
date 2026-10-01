@@ -5,13 +5,13 @@
  </tags>
  <strings>
 
-  <string id="hire_steppe_guard" text="（雇佣）东方卫士"/>
-  <string id="hire_veteran_steppe_guard" text="（雇佣）东方酋长卫士"/>
-  <string id="hire_elite_steppe_guard" text="（雇佣）东方可汗卫士"/>
-  <string id="hire_steppe_lancer" text="（雇佣）枪骑兵"/>
-  <string id="hire_veteran_steppe_lancer" text="（雇佣）重装枪骑兵"/>
-  <string id="hire_steppe_horse_archer" text="（雇佣）骑射手"/>
-  <string id="hire_veteran_steppe_horse_archer" text="（雇佣）重装骑射手"/>
+  <string id="hire_steppe_guard" text="（雇佣）草原卫士"/>
+  <string id="hire_veteran_steppe_guard" text="（雇佣）草原伯克卫士"/>
+  <string id="hire_elite_steppe_guard" text="（雇佣）草原可汗卫士"/>
+  <string id="hire_steppe_lancer" text="（雇佣）草原枪骑兵"/>
+  <string id="hire_veteran_steppe_lancer" text="（雇佣）草原重装枪骑兵"/>
+  <string id="hire_steppe_horse_archer" text="（雇佣）草原骑射手"/>
+  <string id="hire_veteran_steppe_horse_archer" text="（雇佣）草原重装骑射手"/>
 
   <string id="hired_ghulam" text="（雇佣）古拉姆"/>
   <string id="hired_veteran_ghulam" text="（雇佣）资深古拉姆"/>
@@ -21,20 +21,20 @@
   <string id="UBHngTIf" text="（雇佣）剑士"/>
   <string id="uPypJHlm" text="（雇佣）资深剑士"/>
   
-  <string id="J4k9mg65" text="（雇佣）轻装弩兵"/>
-  <string id="QfVe3IVw" text="（雇佣）弩兵"/>
-  <string id="DxtSIxyZ" text="（雇佣）资深弩兵"/>
+  <string id="J4k9mg65" text="（雇佣）西方轻装弩兵"/>
+  <string id="QfVe3IVw" text="（雇佣）西方弩兵"/>
+  <string id="DxtSIxyZ" text="（雇佣）西方资深弩兵"/>
 
   <string id="hire_squire" text="（雇佣）骑士侍从"/>
   <string id="hire_knight" text="（雇佣）骑士"/>
-  <string id="hire_veteran_knight" text="（雇佣）资深骑士"/>
-  <string id="hire_elite_knight" text="（雇佣）精英骑士"/>
+  <string id="hire_veteran_knight" text="（雇佣）冠军骑士"/>
+  <string id="hire_elite_knight" text="（雇佣）方旗骑士"/>
   
   <string id="hire_northern_light_infantry" text="（雇佣）北方轻步兵"/>
-  <string id="hire_northern_axeman" text="（雇佣）斧兵"/>
-  <string id="hire_northern_greatsman" text="（雇佣）巨斧兵"/>
-  <string id="hire_veteran_northern_axeman" text="（雇佣）资深斧兵"/>
-  <string id="hire_veteran_northern_greatsman" text="（雇佣）资深巨斧兵"/>
+  <string id="hire_northern_axeman" text="（雇佣）北方斧兵"/>
+  <string id="hire_northern_greatsman" text="（雇佣）北方长斧兵"/>
+  <string id="hire_veteran_northern_axeman" text="（雇佣）北方资深斧兵"/>
+  <string id="hire_veteran_northern_greatsman" text="（雇佣）北方资深长斧兵"/>
 
 
   <string id="highland_archer" text="（雇佣）高地勇士"/>
@@ -49,9 +49,9 @@
   <string id="hire_southern_master_archer" text="（雇佣）南方射手大师"/>
   <string id="hire_southern_axeman" text="（雇佣）南方斧兵"/>
   <string id="hire_veteran_southern_axeman" text="（雇佣）南方资深斧兵"/>
-  <string id="desert_light_ranger" text="（雇佣）部落民"/>
-  <string id="desert_ranger" text="（雇佣）标枪骑兵"/>
-  <string id="desert_veteran_ranger" text="（雇佣）游击骑兵"/>
+  <string id="desert_light_ranger" text="（雇佣）沙漠部落民"/>
+  <string id="desert_ranger" text="（雇佣）沙漠标枪骑兵"/>
+  <string id="desert_veteran_ranger" text="（雇佣）沙漠游击骑兵"/>
 
   <string id="6eRjuDu6" text="巴丹尼亚水兵"/>
   <string id="wZePzBYm" text="巴丹尼亚资深水兵"/>

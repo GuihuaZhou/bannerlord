@@ -444,9 +444,6 @@
 					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -473,9 +470,6 @@
 					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -500,9 +494,6 @@
 					id="Item.viking_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -570,7 +561,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.leather_round_shield" />
@@ -596,7 +587,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.leather_round_shield" />
@@ -622,7 +613,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.leather_round_shield" />
@@ -702,9 +693,6 @@
 					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -731,9 +719,6 @@
 					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item3"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -758,9 +743,6 @@
 					id="Item.viking_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item3"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -832,7 +814,7 @@
 					id="Item.heavy_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
@@ -858,7 +840,7 @@
 					id="Item.heavy_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
 					id="Item.lendman_helmet_over_mail" />
@@ -884,7 +866,7 @@
 					id="Item.heavy_round_shield" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Cape"
 					id="Item.brass_lamellar_shoulder_white" />

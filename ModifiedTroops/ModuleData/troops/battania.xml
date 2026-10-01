@@ -855,7 +855,7 @@
 					id="Item.battania_2hsword_6" />
 				<equipment
 					slot="Body"
-					id="Item.rough_fur_over_chain" />
+					id="Item.scale_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
@@ -1122,7 +1122,7 @@
 					id="Item.woodland_throwing_axe_1_t1" />
 				<equipment
 					slot="Body"
-					id="Item.ranger_mail" />
+					id="Item.scale_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.battania_warlord_boots" />

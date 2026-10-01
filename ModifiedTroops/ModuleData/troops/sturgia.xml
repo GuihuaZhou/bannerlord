@@ -1367,7 +1367,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.reinforced_horsemans_kite_shield" />
@@ -1393,7 +1393,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.reinforced_horsemans_kite_shield" />
@@ -1419,7 +1419,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.reinforced_horsemans_kite_shield" />
@@ -1490,7 +1490,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.sturgia_infantry_shield_b" />
@@ -1516,7 +1516,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.sturgia_infantry_shield_b" />
@@ -1542,7 +1542,7 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Item2"
 					id="Item.sturgia_infantry_shield_b" />
@@ -1869,7 +1869,7 @@
 					id="Item.sturgia_infantry_shield_b" />
 				<equipment
 					slot="Item2"
-					id="Item.western_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
@@ -1895,7 +1895,7 @@
 					id="Item.sturgia_infantry_shield_b" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
 					id="Item.lendman_helmet_over_mail" />
@@ -1921,7 +1921,7 @@
 					id="Item.sturgia_infantry_shield_a" />
 				<equipment
 					slot="Item2"
-					id="Item.northern_javelin_3_t4" />
+					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Cape"
 					id="Item.brass_lamellar_shoulder_white" />
