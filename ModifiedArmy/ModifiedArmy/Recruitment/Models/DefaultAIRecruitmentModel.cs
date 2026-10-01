@@ -15,6 +15,8 @@ namespace ModifiedArmy.Recruitment.Models
     /// </summary>
     public sealed class DefaultAIRecruitmentModel : AIRecruitmentModel
     {
+        private const int RecruitmentFillPercentage = 95;
+
         private readonly RecruitmentTemplateRepository _templates;
 
         public DefaultAIRecruitmentModel(
@@ -113,6 +115,19 @@ namespace ModifiedArmy.Recruitment.Models
             if (troop == null || troop.IsHero || availableCount <= 0)
             {
                 result.PrimaryLimit = RecruitmentLimitReason.InvalidTroop;
+                return result;
+            }
+
+            // Recruitment is intentionally conservative near full strength.
+            // A party already above 95% of its current establishment may not
+            // add troops from any source routed through the unified model.
+            if (state.PartySizeLimit <= 0 ||
+                (long)state.ProjectedMemberCount * 100L >
+                    (long)state.PartySizeLimit *
+                        RecruitmentFillPercentage)
+            {
+                result.AllowedByPartySize = 0;
+                result.PrimaryLimit = RecruitmentLimitReason.PartySize;
                 return result;
             }
 

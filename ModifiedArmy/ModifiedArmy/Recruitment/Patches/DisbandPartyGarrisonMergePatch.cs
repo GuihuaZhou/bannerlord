@@ -1,4 +1,5 @@
 using HarmonyLib;
+using ModifiedArmy.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -56,6 +57,8 @@ namespace ModifiedArmy.Recruitment.Patches
                         disbandParty,
                         relatedSettlement,
                         garrison);
+                    GarrisonRecruitFromPrisonersBehavior
+                        .NormalizeGarrisonNow(relatedSettlement.Town);
                 }
             }
 
@@ -307,14 +310,7 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("ACCEPTED", acceptedCount);
             message.SetTextVariable("DISMISSED", dismissedCount);
 
-            if (dismissedCount > 0)
-            {
-                ModLogger.Notice(message.ToString());
-            }
-            else
-            {
-                ModLogger.Info(message.ToString());
-            }
+            ModLogger.Notice(message.ToString());
         }
     }
 }

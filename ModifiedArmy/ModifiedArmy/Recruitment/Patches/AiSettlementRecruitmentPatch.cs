@@ -63,7 +63,9 @@ namespace ModifiedArmy.Recruitment.Patches
                 (float)mobileParty.PartyTradeGold > HeroHelper.StartRecruitingMoneyLimit(mobileParty.LeaderHero) &&
                 (mobileParty.LeaderHero == mobileParty.LeaderHero.Clan.Leader ||
                     (float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero)) &&
-                ((float)mobileParty.Party.NumberOfAllMembers + 0.5f) / (float)mobileParty.Party.PartySizeLimit <= 1f;
+                mobileParty.Party.PartySizeLimit > 0 &&
+                (long)mobileParty.Party.NumberOfAllMembers * 100L <=
+                    (long)mobileParty.Party.PartySizeLimit * 95L;
 
             if (!isLordEligible)
                 return false; // 不满足领主条件，跳过原版

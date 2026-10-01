@@ -259,9 +259,20 @@ namespace ModifiedArmy.Models
                     continue;
                 }
 
-                int dismissed = NormalizeGarrison(town.GarrisonParty);
-                LogWeeklyAdjustment(town, dismissed);
+                NormalizeGarrisonNow(town);
             }
+        }
+
+        public static int NormalizeGarrisonNow(Town town)
+        {
+            if (town?.GarrisonParty == null)
+            {
+                return 0;
+            }
+
+            int dismissed = NormalizeGarrison(town.GarrisonParty);
+            LogWeeklyAdjustment(town, dismissed);
+            return dismissed;
         }
 
         /// <summary>

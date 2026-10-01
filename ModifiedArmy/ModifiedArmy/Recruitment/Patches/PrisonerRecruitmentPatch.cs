@@ -1,5 +1,7 @@
 ﻿using HarmonyLib;
 using ModifiedArmy.Models;
+using ModifiedArmy.Recruitment.Finance;
+using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -50,12 +52,71 @@ namespace ModifiedArmy.Recruitment.Patches
                 && (troop.Occupation == Occupation.Mercenary
                 || troop.Occupation == Occupation.Soldier))
             {
-                mobileParty.PrisonRoster.GetElementNumber(troop);
-                mobileParty.PrisonRoster.GetElementXp(troop);
-                mobileParty.PrisonRoster.AddToCounts(troop, -num, false, 0, -conformityCost * num, true, -1);
-                mobileParty.MemberRoster.AddToCounts(troop, num, false, 0, 0, true, -1);
-                CampaignEventDispatcher.Instance.OnTroopRecruited(mobileParty.LeaderHero, null, null, troop, num);
-                ApplyPrisonerRecruitmentEffects(mobileParty, troop, num);
+                RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                    mobileParty,
+                    new List<RecruitmentCandidate>
+                    {
+                        new RecruitmentCandidate(
+                            troop,
+                            num,
+                            RecruitmentSource.Prisoner)
+                    });
+                RecruitmentEvaluationResult evaluation =
+                    plan.Evaluations.Count > 0
+                        ? plan.Evaluations[0]
+                        : null;
+                int available = mobileParty.PrisonRoster
+                    .GetTroopCount(troop);
+                int approved = Math.Min(
+                    evaluation?.RecruitableCount ?? 0,
+                    available);
+
+                if (approved <= 0)
+                {
+                    return false;
+                }
+
+                mobileParty.PrisonRoster.AddToCounts(
+                    troop,
+                    -approved,
+                    false,
+                    0,
+                    -conformityCost * approved,
+                    true,
+                    -1);
+                mobileParty.MemberRoster.AddToCounts(
+                    troop,
+                    approved,
+                    false,
+                    0,
+                    0,
+                    true,
+                    -1);
+                int totalCost = evaluation.UnitRecruitmentCost * approved;
+                if (totalCost > 0 && mobileParty.LeaderHero != null)
+                {
+                    GiveGoldAction.ApplyBetweenCharacters(
+                        mobileParty.LeaderHero,
+                        null,
+                        totalCost,
+                        false);
+                }
+
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    mobileParty,
+                    approved,
+                    evaluation.UnitRecruitmentCost,
+                    evaluation.UnitDailyWage);
+                CampaignEventDispatcher.Instance.OnTroopRecruited(
+                    mobileParty.LeaderHero,
+                    null,
+                    null,
+                    troop,
+                    approved);
+                ApplyPrisonerRecruitmentEffects(
+                    mobileParty,
+                    troop,
+                    approved);
             }
 
             return false;
