@@ -2,7 +2,6 @@ using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -44,21 +43,6 @@ namespace ModifiedArmy.Mercenary.Patches
             if (MBRandom.RandomFloat < spawnChance)
             {
                 CharacterObject selectedTroop = template?.SelectWeightedTroop();
-
-                // Older configurations without a MercenaryTroops child keep
-                // their previous native culture pool until the XML is filled.
-                if (selectedTroop == null &&
-                    (template == null || !template.HasConfiguredTroopPool))
-                {
-                    List<CharacterObject> basicMercenaries =
-                        town.Culture.BasicMercenaryTroops;
-                    if (basicMercenaries != null &&
-                        basicMercenaries.Count > 0)
-                    {
-                        selectedTroop = basicMercenaries[
-                            MBRandom.RandomInt(basicMercenaries.Count)];
-                    }
-                }
 
                 if (selectedTroop != null)
                 {
