@@ -2,7 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
+using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.KingdomDiplomacy.Persistence
 {
@@ -18,6 +23,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             "_modifiedPoliticsKingdomRelationData";
         private const string SubjectDataSaveKey =
             "_modifiedPoliticsSubjectRelationData";
+        private const string NegotiationExecutionSaveKey =
+            "_modifiedPoliticsNegotiationExecutions";
 
         private List<KingdomPoliticalData> _kingdomData =
             new List<KingdomPoliticalData>();
@@ -25,6 +32,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             new List<KingdomRelationData>();
         private List<SubjectRelationData> _subjectData =
             new List<SubjectRelationData>();
+        private List<KingdomNegotiationExecutionRecord>
+            _negotiationExecutions =
+                new List<KingdomNegotiationExecutionRecord>();
 
         public static KingdomDiplomacyManager Current { get; private set; }
 
@@ -40,7 +50,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
                 OnSessionLaunched);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(
                 this,
-                RemoveInvalidRecords);
+                OnDailyTick);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -48,12 +58,39 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             dataStore.SyncData(KingdomDataSaveKey, ref _kingdomData);
             dataStore.SyncData(RelationDataSaveKey, ref _relationData);
             dataStore.SyncData(SubjectDataSaveKey, ref _subjectData);
+            dataStore.SyncData(
+                NegotiationExecutionSaveKey,
+                ref _negotiationExecutions);
 
             _kingdomData = _kingdomData ?? new List<KingdomPoliticalData>();
             _relationData = _relationData ?? new List<KingdomRelationData>();
             _subjectData = _subjectData ?? new List<SubjectRelationData>();
+            _negotiationExecutions = _negotiationExecutions
+                ?? new List<KingdomNegotiationExecutionRecord>();
             RemoveInvalidRecords();
             Current = this;
+        }
+
+        /// <summary>
+        /// Persists an approved proposal before invoking any native campaign
+        /// action. A failed partial execution remains queued and resumes from
+        /// its next unfinished clause on a later daily tick or after loading.
+        /// </summary>
+        public bool BeginNegotiationExecution(
+            KingdomNegotiationDraft draft)
+        {
+            if (!KingdomNegotiationDraftValidator.TryValidate(
+                    draft,
+                    out _))
+            {
+                return false;
+            }
+
+            KingdomNegotiationExecutionRecord record =
+                new KingdomNegotiationExecutionRecord(draft);
+            _negotiationExecutions.Add(record);
+            ResumeNegotiationExecution(record);
+            return true;
         }
 
         public int GetKingdomRank(Kingdom kingdom)
@@ -225,6 +262,50 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
             {
                 GetOrCreateKingdomData(kingdom);
             }
+
+            RetryNegotiationExecutions();
+        }
+
+        private void OnDailyTick()
+        {
+            RemoveInvalidRecords();
+            RetryNegotiationExecutions();
+        }
+
+        private void RetryNegotiationExecutions()
+        {
+            foreach (KingdomNegotiationExecutionRecord record
+                in _negotiationExecutions.ToList())
+            {
+                ResumeNegotiationExecution(record);
+            }
+        }
+
+        private void ResumeNegotiationExecution(
+            KingdomNegotiationExecutionRecord record)
+        {
+            if (record == null)
+            {
+                return;
+            }
+
+            bool completed = KingdomNegotiationExecutionService
+                .TryExecuteSupportedProposal(
+                    record.CreateDraft(),
+                    record.NextTermIndex,
+                    nextIndex => record.NextTermIndex = nextIndex);
+            if (completed)
+            {
+                _negotiationExecutions.Remove(record);
+                return;
+            }
+
+            record.RetryCount++;
+            TextObject message = new TextObject(
+                "{=MP_NegotiationExecutionQueued}[Kingdom negotiation] Proposal {ID} remains queued at term {INDEX} and will be retried later.");
+            message.SetTextVariable("ID", record.ProposalId);
+            message.SetTextVariable("INDEX", record.NextTermIndex + 1);
+            ModLogger.Info(message.ToString());
         }
 
         private void RemoveInvalidRecords()
@@ -241,6 +322,31 @@ namespace ModifiedPolitics.KingdomDiplomacy.Persistence
                 || data.SubjectKingdom.IsEliminated
                 || data.OverlordKingdom.IsEliminated
                 || data.Type == SubjectType.None);
+            foreach (KingdomNegotiationExecutionRecord record
+                in _negotiationExecutions.Where(ShouldDiscardExecution)
+                    .ToList())
+            {
+                if (record != null)
+                {
+                    TextObject message = new TextObject(
+                        "{=MP_NegotiationExecutionAbandoned}[Kingdom negotiation] Proposal {ID} was abandoned after its execution state became invalid.");
+                    message.SetTextVariable("ID", record.ProposalId);
+                    ModLogger.Warn(message.ToString());
+                }
+
+                _negotiationExecutions.Remove(record);
+            }
+        }
+
+        private static bool ShouldDiscardExecution(
+            KingdomNegotiationExecutionRecord record)
+        {
+            return record == null
+                || record.PlayerKingdom == null
+                || record.TargetKingdom == null
+                || record.PlayerKingdom.IsEliminated
+                || record.TargetKingdom.IsEliminated
+                || record.RetryCount >= 7;
         }
     }
 }

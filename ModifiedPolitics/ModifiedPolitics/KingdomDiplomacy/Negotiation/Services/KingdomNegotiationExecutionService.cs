@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Actions;
 using ModifiedPolitics.KingdomDiplomacy.Models;
@@ -20,24 +21,44 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
     public static class KingdomNegotiationExecutionService
     {
         public static bool TryExecuteSupportedProposal(
-            KingdomNegotiationDraft draft)
+            KingdomNegotiationDraft draft,
+            int startIndex = 0,
+            Action<int> onTermCompleted = null)
         {
             TextObject validationReason = null;
             if (draft == null
-                || draft.Terms.Count == 0
-                || !KingdomNegotiationDraftValidator.TryValidate(
-                    draft,
-                    out validationReason))
+                || draft.Terms.Count == 0)
             {
                 LogProposalFailure(
-                    validationReason
-                        ?? new TextObject(
-                            "{=MP_NegotiationDebugInvalidDraft}proposal validation failed"));
+                    new TextObject(
+                        "{=MP_NegotiationDebugInvalidDraft}proposal validation failed"));
                 return false;
             }
 
             Kingdom first = draft.PlayerKingdom;
             Kingdom second = draft.TargetKingdom;
+            List<KingdomNegotiationDraftTerm> orderedTerms =
+                GetOrderedTerms(draft);
+            startIndex = Math.Max(0, Math.Min(startIndex, orderedTerms.Count));
+            if (startIndex == 0
+                && !KingdomNegotiationDraftValidator.TryValidate(
+                    draft,
+                    out validationReason))
+            {
+                LogProposalFailure(validationReason);
+                return false;
+            }
+
+            if (first == null
+                || second == null
+                || first.IsEliminated
+                || second.IsEliminated)
+            {
+                LogProposalFailure(new TextObject(
+                    "{=MP_NegotiationDebugInvalidDraft}proposal validation failed"));
+                return false;
+            }
+
             if (draft.Terms.Any(term => !IsSupported(term.Type)))
             {
                 LogProposalFailure(new TextObject(
@@ -48,9 +69,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             // Validate every term before changing campaign state. Native
             // diplomacy actions are not generally reversible, so no term may
             // execute until the complete supported package passes preflight.
-            foreach (KingdomNegotiationDraftTerm term in draft.Terms)
+            foreach (KingdomNegotiationDraftTerm term in orderedTerms
+                .Skip(startIndex))
             {
-                if (!CanExecuteTerm(first, second, term))
+                if (!IsTermSatisfied(first, second, term)
+                    && !CanExecuteTerm(first, second, term))
                 {
                     LogExecution(
                         first,
@@ -66,23 +89,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 // Peace changes the validity of other diplomacy actions, and
                 // settlement transfers are the most expensive world-state
                 // mutation. Keep a stable, explicit execution order.
-                KingdomNegotiationTermType[] order =
+                for (int index = startIndex;
+                    index < orderedTerms.Count;
+                    index++)
                 {
-                    KingdomNegotiationTermType.Peace,
-                    KingdomNegotiationTermType.TargetBecomesVassal,
-                    KingdomNegotiationTermType.TargetBecomesPuppet,
-                    KingdomNegotiationTermType.PlayerBecomesVassal,
-                    KingdomNegotiationTermType.PlayerBecomesPuppet,
-                    KingdomNegotiationTermType.TradeAgreement,
-                    KingdomNegotiationTermType.Alliance,
-                    KingdomNegotiationTermType.PrisonerHero,
-                    KingdomNegotiationTermType.Settlement,
-                    KingdomNegotiationTermType.Gold
-                };
-                foreach (KingdomNegotiationTermType type in order)
-                {
-                    foreach (KingdomNegotiationDraftTerm term in draft.Terms
-                        .Where(x => x.Type == type))
+                    KingdomNegotiationDraftTerm term = orderedTerms[index];
+                    if (!IsTermSatisfied(first, second, term))
                     {
                         LogExecution(
                             first,
@@ -101,6 +113,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 
                         LogTermExecuted(term.Type);
                     }
+
+                    onTermCompleted?.Invoke(index + 1);
                 }
             }
             catch (Exception exception)
@@ -119,6 +133,27 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             completed.SetTextVariable("COUNT", draft.Terms.Count);
             ModLogger.Notice(completed.ToString());
             return true;
+        }
+
+        private static List<KingdomNegotiationDraftTerm> GetOrderedTerms(
+            KingdomNegotiationDraft draft)
+        {
+            KingdomNegotiationTermType[] order =
+            {
+                KingdomNegotiationTermType.Peace,
+                KingdomNegotiationTermType.TargetBecomesVassal,
+                KingdomNegotiationTermType.TargetBecomesPuppet,
+                KingdomNegotiationTermType.PlayerBecomesVassal,
+                KingdomNegotiationTermType.PlayerBecomesPuppet,
+                KingdomNegotiationTermType.TradeAgreement,
+                KingdomNegotiationTermType.Alliance,
+                KingdomNegotiationTermType.PrisonerHero,
+                KingdomNegotiationTermType.Settlement,
+                KingdomNegotiationTermType.Gold
+            };
+            return order.SelectMany(type => draft.Terms
+                    .Where(term => term.Type == type))
+                .ToList();
         }
 
         private static bool IsSupported(KingdomNegotiationTermType type)
@@ -142,6 +177,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Peace:
                     return first?.IsAtWarWith(second) == true;
                 case KingdomNegotiationTermType.TradeAgreement:
+                    if (Campaign.Current == null)
+                    {
+                        return false;
+                    }
+
                     ITradeAgreementsCampaignBehavior tradeBehavior =
                         Campaign.Current.GetCampaignBehavior<
                             ITradeAgreementsCampaignBehavior>();
@@ -166,6 +206,71 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                     return KingdomNegotiationTermRules.IsSubjectTerm(
                             term.Type)
                         && CanEstablishSubjectRelation(first, second, term);
+            }
+        }
+
+        /// <summary>
+        /// Recognizes clauses that reached their requested world state before
+        /// execution progress was saved. This makes retries idempotent for all
+        /// non-monetary native actions.
+        /// </summary>
+        private static bool IsTermSatisfied(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            switch (term.Type)
+            {
+                case KingdomNegotiationTermType.Peace:
+                    return first?.IsAtWarWith(second) == false;
+                case KingdomNegotiationTermType.TradeAgreement:
+                    ITradeAgreementsCampaignBehavior tradeBehavior =
+                        Campaign.Current.GetCampaignBehavior<
+                            ITradeAgreementsCampaignBehavior>();
+                    return tradeBehavior?.HasTradeAgreement(
+                        first,
+                        second,
+                        out _) == true;
+                case KingdomNegotiationTermType.Alliance:
+                    if (Campaign.Current == null)
+                    {
+                        return false;
+                    }
+
+                    return Campaign.Current.GetCampaignBehavior<
+                            IAllianceCampaignBehavior>()?
+                        .IsAllyWithKingdom(first, second) == true;
+                case KingdomNegotiationTermType.PrisonerHero:
+                    return (term.Subject as Hero)?.IsPrisoner == false;
+                case KingdomNegotiationTermType.Settlement:
+                    Settlement settlement = term.Subject as Settlement;
+                    Kingdom settlementReceiver = term.ProviderKingdom == first
+                        ? second
+                        : first;
+                    return settlement?.OwnerClan?.Kingdom
+                        == settlementReceiver;
+                case KingdomNegotiationTermType.Gold:
+                    // Gold has no unique transaction marker. Its progress is
+                    // advanced immediately after GiveGoldAction returns.
+                    return false;
+                default:
+                    if (!KingdomNegotiationTermRules.IsSubjectTerm(term.Type))
+                    {
+                        return false;
+                    }
+
+                    GetSubjectRelationParties(
+                        first,
+                        second,
+                        term.Type,
+                        out Kingdom overlord,
+                        out Kingdom subject,
+                        out SubjectType subjectType);
+                    return KingdomDiplomacyManager.Current?
+                            .GetSubjectRelation(subject)?.OverlordKingdom
+                            == overlord
+                        && KingdomDiplomacyManager.Current
+                            .GetSubjectType(subject) == subjectType;
             }
         }
 

@@ -288,6 +288,8 @@
     <string id="MP_NegotiationExecutedSubject" text="宗藩关系" />
     <string id="MP_KingdomNegotiationSubjectUnavailable" text="当前已经无法建立提案中的宗藩关系." />
     <string id="MP_NegotiationProposalExecuted" text="[王国谈判] {FIRST}与{SECOND}的组合提案已经完整执行, 共{COUNT}项条款." />
+    <string id="MP_NegotiationExecutionQueued" text="[王国谈判] 提案{ID}停留在第{INDEX}项条款, 稍后将继续尝试执行." />
+    <string id="MP_NegotiationExecutionAbandoned" text="[王国谈判] 提案{ID}的执行状态已经失效, 后续执行已终止." />
     <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
     <string id="MP_NegotiationExecutedPeace" text="和平条约" />
     <string id="MP_NegotiationExecutedTrade" text="贸易协定" />

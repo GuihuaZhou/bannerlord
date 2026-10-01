@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions;
 using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
+using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.MapNotificationTypes;
@@ -139,8 +140,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 decision.OtherKingdom,
                 "{=MP_NegotiationDebugExecutionEntered}The final execution stage was entered",
                 decision.Terms.Count);
-            if (KingdomNegotiationExecutionService
-                .TryExecuteSupportedProposal(decision.CreateDraft()))
+            if (KingdomDiplomacyManager.Current?
+                    .BeginNegotiationExecution(decision.CreateDraft())
+                == true)
             {
                 ReleaseProposal(decision);
                 return;
