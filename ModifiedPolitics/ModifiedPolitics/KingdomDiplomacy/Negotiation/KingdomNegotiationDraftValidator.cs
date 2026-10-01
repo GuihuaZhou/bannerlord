@@ -72,6 +72,25 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 return false;
             }
 
+            if (Has(draft, KingdomNegotiationTermType.Peace)
+                && Has(draft, KingdomNegotiationTermType.DeclareWar))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationPeaceWarConflict}A proposal cannot make peace and declare war at the same time.");
+                return false;
+            }
+
+            if (Has(draft, KingdomNegotiationTermType.DeclareWar)
+                && (Has(draft, KingdomNegotiationTermType.TradeAgreement)
+                    || Has(draft, KingdomNegotiationTermType.Alliance)
+                    || draft.Terms.Any(x =>
+                        KingdomNegotiationTermRules.IsSubjectTerm(x.Type))))
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationWarTreatyConflict}A declaration of war cannot be combined with a new treaty or subject relation between the same kingdoms.");
+                return false;
+            }
+
             if (Has(draft, KingdomNegotiationTermType.EndAlliance)
                 && draft.Terms.Any(x =>
                     x.Type == KingdomNegotiationTermType.JoinWar))
@@ -85,10 +104,11 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                     KingdomNegotiationTermRules.IsSubjectTerm(x.Type))
                 && draft.Terms.Any(x =>
                     x.Type == KingdomNegotiationTermType.Alliance
-                        || x.Type == KingdomNegotiationTermType.Peace))
+                        || x.Type == KingdomNegotiationTermType.Peace
+                        || x.Type == KingdomNegotiationTermType.DeclareWar))
             {
                 reason = new TextObject(
-                    "{=MP_KingdomNegotiationSubjectAllianceConflict}A subject-status term cannot be combined with a separate peace or alliance term.");
+                    "{=MP_KingdomNegotiationSubjectAllianceConflict}A subject-status term cannot be combined with a separate peace, war or alliance term.");
                 return false;
             }
 
@@ -240,6 +260,30 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                     }
 
                     return true;
+
+                case KingdomNegotiationTermType.DeclareWar:
+                    if (first.IsAtWarWith(second))
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationAlreadyAtWar}The two kingdoms are already at war.");
+                        return false;
+                    }
+
+                    Kingdom declaringKingdom = term.ProviderKingdom;
+                    Kingdom defendingKingdom = declaringKingdom == first
+                        ? second
+                        : first;
+                    bool canDeclareWar = new DeclareWarDecision(
+                            declaringKingdom.RulingClan,
+                            defendingKingdom)
+                        .IsAllowed();
+                    if (!canDeclareWar)
+                    {
+                        reason = new TextObject(
+                            "{=MP_KingdomNegotiationDeclareWarUnavailable}The proposed declaration of war is not currently permitted.");
+                    }
+
+                    return canDeclareWar;
 
                 case KingdomNegotiationTermType.TradeAgreement:
                     ITradeAgreementsCampaignBehavior tradeBehavior =

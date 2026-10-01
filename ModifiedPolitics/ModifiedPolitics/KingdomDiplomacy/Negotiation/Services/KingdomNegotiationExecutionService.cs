@@ -141,6 +141,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             KingdomNegotiationTermType[] order =
             {
                 KingdomNegotiationTermType.Peace,
+                KingdomNegotiationTermType.DeclareWar,
                 KingdomNegotiationTermType.TargetBecomesVassal,
                 KingdomNegotiationTermType.TargetBecomesPuppet,
                 KingdomNegotiationTermType.PlayerBecomesVassal,
@@ -163,6 +164,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
         private static bool IsSupported(KingdomNegotiationTermType type)
         {
             return type == KingdomNegotiationTermType.Peace
+                || type == KingdomNegotiationTermType.DeclareWar
                 || type == KingdomNegotiationTermType.TradeAgreement
                 || type == KingdomNegotiationTermType.Alliance
                 || KingdomNegotiationTermRules.IsTerminationTerm(type)
@@ -183,6 +185,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             {
                 case KingdomNegotiationTermType.Peace:
                     return first?.IsAtWarWith(second) == true;
+                case KingdomNegotiationTermType.DeclareWar:
+                    return first?.IsAtWarWith(second) == false;
                 case KingdomNegotiationTermType.TradeAgreement:
                     if (Campaign.Current == null)
                     {
@@ -244,6 +248,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             {
                 case KingdomNegotiationTermType.Peace:
                     return first?.IsAtWarWith(second) == false;
+                case KingdomNegotiationTermType.DeclareWar:
+                    return first?.IsAtWarWith(second) == true;
                 case KingdomNegotiationTermType.TradeAgreement:
                     ITradeAgreementsCampaignBehavior tradeBehavior =
                         Campaign.Current.GetCampaignBehavior<
@@ -317,6 +323,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             {
                 case KingdomNegotiationTermType.Peace:
                     return ExecutePeace(first, second);
+                case KingdomNegotiationTermType.DeclareWar:
+                    return ExecuteDeclareWar(first, second, term);
                 case KingdomNegotiationTermType.TradeAgreement:
                     return ExecuteTrade(first, second);
                 case KingdomNegotiationTermType.Alliance:
@@ -420,6 +428,24 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
 
             MakePeaceAction.ApplyByKingdomDecision(first, second, 0, 0);
             return !first.IsAtWarWith(second);
+        }
+
+        private static bool ExecuteDeclareWar(
+            Kingdom first,
+            Kingdom second,
+            KingdomNegotiationDraftTerm term)
+        {
+            Kingdom aggressor = term.ProviderKingdom;
+            Kingdom defender = aggressor == first ? second : first;
+            if (aggressor == null
+                || defender == null
+                || aggressor.IsAtWarWith(defender))
+            {
+                return false;
+            }
+
+            DeclareWarAction.ApplyByKingdomDecision(aggressor, defender);
+            return aggressor.IsAtWarWith(defender);
         }
 
         private static bool ExecuteTrade(Kingdom first, Kingdom second)
@@ -756,6 +782,9 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Peace:
                     return new TextObject(
                         "{=MP_NegotiationExecutedPeace}peace treaty");
+                case KingdomNegotiationTermType.DeclareWar:
+                    return new TextObject(
+                        "{=MP_NegotiationExecutedDeclareWar}declaration of war");
                 case KingdomNegotiationTermType.TradeAgreement:
                     return new TextObject(
                         "{=MP_NegotiationExecutedTrade}trade agreement");

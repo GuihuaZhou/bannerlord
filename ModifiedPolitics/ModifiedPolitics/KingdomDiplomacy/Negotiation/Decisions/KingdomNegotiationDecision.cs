@@ -209,7 +209,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions
             return description;
         }
 
-        private static string FormatTerm(
+        private string FormatTerm(
             KingdomNegotiationTermRecord term)
         {
             TextObject text;
@@ -237,6 +237,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions
                 case KingdomNegotiationTermType.Peace:
                     text = new TextObject(
                         "{=MP_NegotiationDecisionTermPeace}• The kingdoms make peace.");
+                    break;
+                case KingdomNegotiationTermType.DeclareWar:
+                    text = new TextObject(
+                        "{=MP_NegotiationDecisionTermDeclareWar}• {KINGDOM} declares war on {ASSET}.");
+                    text.SetTextVariable(
+                        "ASSET",
+                        term.ProviderKingdom == Kingdom
+                            ? OtherKingdom?.Name ?? TextObject.GetEmpty()
+                            : Kingdom?.Name ?? TextObject.GetEmpty());
                     break;
                 case KingdomNegotiationTermType.TradeAgreement:
                     text = new TextObject(

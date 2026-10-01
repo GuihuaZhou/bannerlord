@@ -505,6 +505,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             }
             else
             {
+                AddDiplomacyItem(list, kingdom, isPlayerSide,
+                    KingdomNegotiationTermType.DeclareWar, "declare_war",
+                    "{=MP_NegotiationTermDeclareWar}Declare War");
+
                 ITradeAgreementsCampaignBehavior tradeBehavior =
                     Campaign.Current.GetCampaignBehavior<
                         ITradeAgreementsCampaignBehavior>();
@@ -660,6 +664,12 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 RemoveTermType(
                     RightOfferList,
                     KingdomNegotiationTermType.Peace);
+                RemoveTermType(
+                    LeftOfferList,
+                    KingdomNegotiationTermType.DeclareWar);
+                RemoveTermType(
+                    RightOfferList,
+                    KingdomNegotiationTermType.DeclareWar);
             }
             else if (KingdomNegotiationTermRules.IsBilateralTreaty(
                 item.Type))
@@ -670,11 +680,44 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
                 {
                     RemoveSubjectTerms(LeftOfferList);
                     RemoveSubjectTerms(RightOfferList);
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
+                }
+                else if (item.Type
+                    == KingdomNegotiationTermType.TradeAgreement)
+                {
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
                 }
                 else if (item.Type == KingdomNegotiationTermType.Peace)
                 {
                     RemoveSubjectTerms(LeftOfferList);
                     RemoveSubjectTerms(RightOfferList);
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.DeclareWar);
+                }
+                else if (item.Type == KingdomNegotiationTermType.DeclareWar)
+                {
+                    RemoveSubjectTerms(LeftOfferList);
+                    RemoveSubjectTerms(RightOfferList);
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.Peace);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.Peace);
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.TradeAgreement);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.TradeAgreement);
+                    RemoveTermType(LeftOfferList,
+                        KingdomNegotiationTermType.Alliance);
+                    RemoveTermType(RightOfferList,
+                        KingdomNegotiationTermType.Alliance);
                 }
             }
             else if (item.Type == KingdomNegotiationTermType.Gold)

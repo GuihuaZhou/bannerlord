@@ -115,6 +115,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
                 case KingdomNegotiationTermType.Peace:
                     return Component("{=MP_NegotiationScorePeace}peace",
                         EvaluatePeace(draft, evaluatingKingdom, clan));
+                case KingdomNegotiationTermType.DeclareWar:
+                    return Component(
+                        "{=MP_NegotiationScoreDeclareWar}declare war",
+                        EvaluateDeclareWar(draft, evaluatingKingdom, clan));
                 case KingdomNegotiationTermType.TradeAgreement:
                     return Component("{=MP_NegotiationScoreTrade}trade",
                         EvaluateTrade(draft, evaluatingKingdom, clan));
@@ -284,6 +288,33 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation.Services
             TextObject hint;
             return new TradeAgreementDecision(clan, other)
                 .CalculateSupport(clan, out hint);
+        }
+
+        private static float EvaluateDeclareWar(
+            KingdomNegotiationDraft draft,
+            Kingdom kingdom,
+            Clan clan)
+        {
+            Kingdom other = Other(draft, kingdom);
+            if (other == null)
+            {
+                return 0f;
+            }
+
+            DeclareWarDecision decision = new DeclareWarDecision(clan, other);
+            float warSupport = decision.DetermineSupport(
+                clan,
+                new DeclareWarDecision.DeclareWarDecisionOutcome(
+                    true,
+                    kingdom,
+                    other));
+            float peaceSupport = decision.DetermineSupport(
+                clan,
+                new DeclareWarDecision.DeclareWarDecisionOutcome(
+                    false,
+                    kingdom,
+                    other));
+            return warSupport - peaceSupport;
         }
 
         private static float EvaluateAlliance(

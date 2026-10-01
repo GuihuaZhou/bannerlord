@@ -209,6 +209,7 @@
     <string id="MP_KingdomNegotiationClose" text="关闭" />
     <string id="MP_KingdomNegotiationSubmitLater" text="提交 (后续批次)" />
     <string id="MP_NegotiationTermPeace" text="和平" />
+    <string id="MP_NegotiationTermDeclareWar" text="宣战" />
     <string id="MP_NegotiationTermTrade" text="贸易协定" />
     <string id="MP_NegotiationTermAlliance" text="同盟" />
     <string id="MP_NegotiationTermEndTrade" text="撕毁贸易协定" />
@@ -248,6 +249,10 @@
     <string id="MP_KingdomNegotiationInvalidAmount" text="某项提案条款的数量无效." />
     <string id="MP_KingdomNegotiationAssetUnavailable" text="{TERM} 已不再由提出该条款的王国支配." />
     <string id="MP_KingdomNegotiationAlreadyAtPeace" text="双方已经处于和平状态." />
+    <string id="MP_KingdomNegotiationAlreadyAtWar" text="双方已经处于战争状态." />
+    <string id="MP_KingdomNegotiationPeaceWarConflict" text="同一份提案不能同时包含和平与宣战." />
+    <string id="MP_KingdomNegotiationWarTreatyConflict" text="宣战不能与双方新签条约或建立宗藩关系同时提出." />
+    <string id="MP_KingdomNegotiationDeclareWarUnavailable" text="当前不允许执行这项宣战提案." />
     <string id="MP_KingdomNegotiationTradeAtWar" text="交战状态下无法签订贸易协定." />
     <string id="MP_KingdomNegotiationTradeExists" text="双方已经签订了贸易协定." />
     <string id="MP_KingdomNegotiationAllianceAtWar" text="交战状态下无法建立同盟." />
@@ -263,6 +268,7 @@
     <string id="MP_NegotiationScoreTerritorialAcquisition" text="接受{SETTLEMENT}" />
     <string id="MP_NegotiationScorePrisoner" text="俘虏" />
     <string id="MP_NegotiationScorePeace" text="和平" />
+    <string id="MP_NegotiationScoreDeclareWar" text="宣战" />
     <string id="MP_NegotiationScoreTrade" text="贸易" />
     <string id="MP_NegotiationScoreAlliance" text="同盟" />
     <string id="MP_NegotiationScoreEndTrade" text="撕毁贸易协定" />
@@ -299,7 +305,7 @@
     <string id="MP_NegotiationExecutedGold" text="金钱支付" />
     <string id="MP_NegotiationExecutedPrisoner" text="英雄俘虏释放" />
     <string id="MP_KingdomNegotiationPrisonerTransferUnavailable" text="该提案只能释放属于谈判对方王国的英雄." />
-    <string id="MP_KingdomNegotiationSubjectAllianceConflict" text="宗藩地位条款不能与单独的和平或同盟条款同时存在." />
+    <string id="MP_KingdomNegotiationSubjectAllianceConflict" text="宗藩地位条款不能与单独的和平、宣战或同盟条款同时存在." />
     <string id="MP_KingdomNegotiationDuplicateAsset" text="同一资产或同一方向的金钱支付不能在提案中重复出现." />
     <string id="MP_NegotiationExecutedSubject" text="宗藩关系" />
     <string id="MP_KingdomNegotiationSubjectUnavailable" text="当前已经无法建立提案中的宗藩关系." />
@@ -317,6 +323,7 @@
     <string id="MP_NegotiationDecisionTermSettlement" text="• {KINGDOM}割让{ASSET}." />
     <string id="MP_NegotiationDecisionTermPrisoner" text="• {KINGDOM}释放{ASSET}." />
     <string id="MP_NegotiationDecisionTermPeace" text="• 两国议和." />
+    <string id="MP_NegotiationDecisionTermDeclareWar" text="• {KINGDOM}向{ASSET}宣战." />
     <string id="MP_NegotiationDecisionTermTrade" text="• 两国签署贸易协定." />
     <string id="MP_NegotiationDecisionTermAlliance" text="• 两国建立同盟." />
     <string id="MP_NegotiationDecisionTermEndTrade" text="• 两国解除贸易协定." />
@@ -330,6 +337,7 @@
     <string id="MP_NegotiationNoNegativeBreakdown" text="整体外交支持度不足" />
     <string id="MP_NegotiationExecutionUnavailable" text="[王国谈判] 已通过的提案包含尚未支持执行的条款, 因此没有生效." />
     <string id="MP_NegotiationExecutedPeace" text="和平条约" />
+    <string id="MP_NegotiationExecutedDeclareWar" text="宣战" />
     <string id="MP_NegotiationExecutedTrade" text="贸易协定" />
     <string id="MP_NegotiationExecutedAlliance" text="同盟" />
     <string id="MP_NegotiationExecutedEndTrade" text="贸易协定解除" />

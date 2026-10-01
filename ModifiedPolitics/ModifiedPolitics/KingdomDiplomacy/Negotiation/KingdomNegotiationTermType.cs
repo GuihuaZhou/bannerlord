@@ -18,7 +18,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
         EndTradeAgreement,
         EndAlliance,
         EndSubjectRelation,
-        JoinWar
+        JoinWar,
+        DeclareWar
     }
 
     public static class KingdomNegotiationTermRules
@@ -36,6 +37,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
             KingdomNegotiationTermType type)
         {
             return type == KingdomNegotiationTermType.Peace
+                || type == KingdomNegotiationTermType.DeclareWar
                 || type == KingdomNegotiationTermType.TradeAgreement
                 || type == KingdomNegotiationTermType.Alliance
                 || IsTerminationTerm(type);
