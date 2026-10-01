@@ -1,5 +1,5 @@
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 

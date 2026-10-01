@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 
-namespace ModifiedPolitics.KingdomDiplomacy.UI
+namespace ModifiedDiplomacy.KingdomDiplomacy.UI
 {
     /// <summary>
     /// Extends the native diplomacy list with direct subject-relation groups.

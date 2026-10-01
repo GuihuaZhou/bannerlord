@@ -4,7 +4,7 @@ using System.IO;
 using System.Reflection;
 using System.Xml;
 
-namespace ModifiedPolitics.KingdomDiplomacy.UI
+namespace ModifiedDiplomacy.KingdomDiplomacy.UI
 {
     /// <summary>
     /// Replaces the complete diplomacy detail region with a scrollable page.

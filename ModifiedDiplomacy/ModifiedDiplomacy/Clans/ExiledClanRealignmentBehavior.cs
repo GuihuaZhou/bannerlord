@@ -1,4 +1,3 @@
-using ModifiedPolitics.Diplomacy.Policies;
 using ModifiedPolitics.Tool;
 using System.Collections.Generic;
 using System.Linq;

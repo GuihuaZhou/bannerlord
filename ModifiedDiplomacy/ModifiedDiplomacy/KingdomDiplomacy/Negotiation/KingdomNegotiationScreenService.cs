@@ -1,5 +1,5 @@
 using System;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Engine.GauntletUI;
@@ -9,7 +9,7 @@ using TaleWorlds.Localization;
 using TaleWorlds.ScreenSystem;
 using TaleWorlds.TwoDimension;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
+namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
 {
     /// <summary>
     /// Hosts the independent kingdom negotiation VM in a modal Gauntlet layer.

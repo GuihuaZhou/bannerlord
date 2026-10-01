@@ -1,7 +1,7 @@
-using ModifiedPolitics.KingdomDiplomacy.Actions;
-using ModifiedPolitics.KingdomDiplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Persistence;
-using ModifiedPolitics.KingdomDiplomacy.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Actions;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Persistence;
+using ModifiedDiplomacy.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 

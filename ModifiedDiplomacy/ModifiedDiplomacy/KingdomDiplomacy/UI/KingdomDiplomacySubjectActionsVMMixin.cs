@@ -3,11 +3,11 @@ using System.Linq;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Decisions;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation;
-using ModifiedPolitics.KingdomDiplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Persistence;
-using ModifiedPolitics.KingdomDiplomacy.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Decisions;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Persistence;
+using ModifiedDiplomacy.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
@@ -15,7 +15,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.UI
+namespace ModifiedDiplomacy.KingdomDiplomacy.UI
 {
     /// <summary>
     /// Provides a separate action collection for subject diplomacy. The

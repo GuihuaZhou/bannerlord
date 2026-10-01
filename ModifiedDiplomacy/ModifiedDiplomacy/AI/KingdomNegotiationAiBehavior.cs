@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ModifiedPolitics.KingdomDiplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Services;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;

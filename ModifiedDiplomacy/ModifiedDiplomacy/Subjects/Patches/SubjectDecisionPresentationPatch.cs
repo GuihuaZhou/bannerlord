@@ -1,6 +1,6 @@
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Decisions;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Decisions;
+using ModifiedDiplomacy.KingdomDiplomacy.Decisions;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Decisions;
 using TaleWorlds.CampaignSystem.Election;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Decisions.ItemTypes;
 

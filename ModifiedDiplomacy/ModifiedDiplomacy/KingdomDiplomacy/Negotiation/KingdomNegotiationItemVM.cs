@@ -2,7 +2,7 @@ using System;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.Library;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
+namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
 {
     /// <summary>
     /// Represents one transferable kingdom negotiation clause. The public

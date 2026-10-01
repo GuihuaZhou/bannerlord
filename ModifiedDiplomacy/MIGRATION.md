@@ -79,7 +79,7 @@ ModifiedPolitics  -> ModifiedArmy
 决议、同步服务和存档数据仍由 `ModifiedPolitics` 提供，因此本批只改变
 代码归属，不改变存档类型或外交计算结果。
 
-第三个无存档迁移批次：等待编译和游戏验证。
+第三个无存档迁移批次：已完成并提交。
 
 - 王国外交页面的分类、关系图标和操作区 UIExtender 扩展。
 - Barter 风格组合谈判的 VM、ScreenService 和条目 VM。
@@ -90,6 +90,18 @@ ModifiedPolitics  -> ModifiedArmy
 继续加载封地和家族页面扩展，但不再扫描或打包外交界面资源。迁移期间
 仍暂时保留原命名空间，以避免同时修改大量绑定和调用；确认稳定后再统一
 重命名为 `ModifiedDiplomacy` 命名空间。
+
+第四批：等待编译和新档验证。
+
+- 宗藩关系数据、王国外交管理器和 SaveDefiner。
+- 建立、解除宗藩关系和独立动作。
+- 宗藩提案、回应、解除及独立决议。
+- 宗藩贡赋计算、战争同步和外交权限服务。
+- 组合外交草案、校验、评分、决议、执行与记录。
+
+本批已将原 `ModifiedPolitics/KingdomDiplomacy` 剩余代码整体迁入
+`ModifiedDiplomacy`，并由 `ModifiedDiplomacy.Main` 注册管理器。按照当前
+开发策略只验证新游戏，不再维护旧存档中原程序集类型的兼容加载。
 
 ### 第 1 批：统一外交领域模型
 

@@ -13,12 +13,12 @@ using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Models;
-using ModifiedPolitics.KingdomDiplomacy.Negotiation.Services;
-using ModifiedPolitics.KingdomDiplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Persistence;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Services;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Persistence;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Negotiation
+namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
 {
     /// <summary>
     /// Owns a complete kingdom-to-kingdom negotiation session. It mirrors the

@@ -1,5 +1,5 @@
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Finance;
+using ModifiedDiplomacy.KingdomDiplomacy.Finance;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Library;

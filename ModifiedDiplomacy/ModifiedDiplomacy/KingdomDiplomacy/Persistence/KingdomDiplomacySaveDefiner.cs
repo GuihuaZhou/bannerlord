@@ -1,0 +1,78 @@
+using System.Collections.Generic;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Decisions;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Decisions;
+using ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Models;
+using TaleWorlds.SaveSystem;
+
+namespace ModifiedDiplomacy.KingdomDiplomacy.Persistence
+{
+    /// <summary>
+    /// Registers the persistent records used by the kingdom diplomacy system.
+    /// </summary>
+    public sealed class KingdomDiplomacySaveDefiner : SaveableTypeDefiner
+    {
+        public KingdomDiplomacySaveDefiner()
+            : base(2026092601)
+        {
+        }
+
+        protected override void DefineClassTypes()
+        {
+            AddClassDefinition(typeof(KingdomPoliticalData), 1);
+            AddClassDefinition(typeof(KingdomRelationData), 2);
+            AddClassDefinition(typeof(SubjectRelationData), 3);
+            AddClassDefinition(typeof(SubjectProposalKingdomDecision), 5);
+            AddClassDefinition(
+                typeof(SubjectProposalKingdomDecision
+                    .SubjectProposalDecisionOutcome),
+                6);
+            AddClassDefinition(typeof(SubjectReleaseKingdomDecision), 7);
+            AddClassDefinition(
+                typeof(SubjectReleaseKingdomDecision
+                    .SubjectReleaseDecisionOutcome),
+                8);
+            AddClassDefinition(
+                typeof(SubjectIndependenceKingdomDecision),
+                9);
+            AddClassDefinition(typeof(SubjectResponseKingdomDecision), 10);
+            AddClassDefinition(
+                typeof(SubjectResponseKingdomDecision
+                    .SubjectResponseDecisionOutcome),
+                11);
+            AddClassDefinition(typeof(KingdomNegotiationTermRecord), 12);
+            AddClassDefinition(typeof(KingdomNegotiationDecision), 14);
+            AddClassDefinition(
+                typeof(KingdomNegotiationDecision
+                    .KingdomNegotiationDecisionOutcome),
+                15);
+            AddClassDefinition(
+                typeof(KingdomNegotiationExecutionRecord),
+                16);
+            AddClassDefinition(
+                typeof(KingdomNegotiationCounterOfferRecord),
+                17);
+        }
+
+        protected override void DefineEnumTypes()
+        {
+            // Class and enum definitions share the same local ID space.
+            AddEnumDefinition(typeof(SubjectType), 4, null);
+            AddEnumDefinition(typeof(KingdomNegotiationTermType), 13, null);
+        }
+
+        protected override void DefineContainerDefinitions()
+        {
+            ConstructContainerDefinition(typeof(List<KingdomPoliticalData>));
+            ConstructContainerDefinition(typeof(List<KingdomRelationData>));
+            ConstructContainerDefinition(typeof(List<SubjectRelationData>));
+            ConstructContainerDefinition(
+                typeof(List<KingdomNegotiationTermRecord>));
+            ConstructContainerDefinition(
+                typeof(List<KingdomNegotiationExecutionRecord>));
+            ConstructContainerDefinition(
+                typeof(List<KingdomNegotiationCounterOfferRecord>));
+        }
+    }
+}

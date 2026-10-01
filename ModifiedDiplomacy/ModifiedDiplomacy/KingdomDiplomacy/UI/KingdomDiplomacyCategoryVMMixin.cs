@@ -1,14 +1,14 @@
 using System.Collections.Generic;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
-using ModifiedPolitics.KingdomDiplomacy.Models;
-using ModifiedPolitics.KingdomDiplomacy.Persistence;
+using ModifiedDiplomacy.KingdomDiplomacy.Models;
+using ModifiedDiplomacy.KingdomDiplomacy.Persistence;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement.Diplomacy;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.UI
+namespace ModifiedDiplomacy.KingdomDiplomacy.UI
 {
     /// <summary>
     /// Splits Bannerlord's native peace entries into ordinary kingdoms and

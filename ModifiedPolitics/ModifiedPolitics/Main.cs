@@ -1,6 +1,5 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using ModifiedPolitics.KingdomDiplomacy.Persistence;
 using ModifiedPolitics.Models;
 using ModifiedPolitics.Models.WarDisposition;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Battle;
@@ -47,7 +46,6 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
                 campaignStarter.AddBehavior(new SettlementWarEventBehavior());
                 campaignStarter.AddBehavior(new WeeklyWealthEventBehavior());
-                campaignStarter.AddBehavior(new KingdomDiplomacyManager());
             }
         }
     }

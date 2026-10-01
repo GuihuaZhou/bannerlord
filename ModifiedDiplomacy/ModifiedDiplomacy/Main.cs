@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedDiplomacy.AI;
 using ModifiedDiplomacy.Clans;
 using ModifiedDiplomacy.Subjects.Behaviors;
+using ModifiedDiplomacy.KingdomDiplomacy.Persistence;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -43,6 +44,9 @@ namespace ModifiedDiplomacy
             if (game.GameType is Campaign
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
+                // The diplomacy manager owns all subject, treaty, proposal and
+                // execution state. New campaigns now create it in this module.
+                campaignStarter.AddBehavior(new KingdomDiplomacyManager());
                 campaignStarter.AddModel(new ExiledClanDiplomacyModel());
                 campaignStarter.AddBehavior(
                     new ExiledClanRealignmentBehavior());
