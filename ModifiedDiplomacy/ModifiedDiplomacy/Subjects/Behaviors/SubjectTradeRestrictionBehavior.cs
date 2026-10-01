@@ -2,13 +2,14 @@ using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.Subjects.Behaviors
 {
     /// <summary>
-    /// Cleans alliances left in older saves, invalidated by a newly created
-    /// subject relation, or invalidated when an overlord enters a new war.
+    /// Repairs trade agreements that became illegal because an overlord went
+    /// to war. This behavior owns no save data and is therefore safe to move
+    /// before the subject-relation persistence layer.
     /// </summary>
-    public sealed class SubjectAllianceRestrictionBehavior
+    public sealed class SubjectTradeRestrictionBehavior
         : CampaignBehaviorBase
     {
         public override void RegisterEvents()
@@ -27,7 +28,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
 
         private static void OnSessionLaunched(CampaignGameStarter starter)
         {
-            RemoveAllInvalidSubjectAlliances();
+            RemoveAllInvalidSubjectTradeAgreements();
         }
 
         private static void OnWarDeclared(
@@ -35,18 +36,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
             IFaction secondFaction,
             DeclareWarAction.DeclareWarDetail detail)
         {
-            // A vassal alliance may become illegal when its overlord declares
-            // war on that ally. Rechecking all subjects also covers the same
-            // situation when the other kingdom initiated the war.
-            RemoveAllInvalidSubjectAlliances();
+            RemoveAllInvalidSubjectTradeAgreements();
         }
 
-        private static void RemoveAllInvalidSubjectAlliances()
+        private static void RemoveAllInvalidSubjectTradeAgreements()
         {
             foreach (Kingdom kingdom in Kingdom.All)
             {
-                SubjectAllianceRestrictionService
-                    .RemoveExistingAlliances(kingdom);
+                SubjectTradeRestrictionService
+                    .RemoveInvalidTradeAgreements(kingdom);
             }
         }
     }

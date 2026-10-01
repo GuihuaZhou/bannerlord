@@ -5,11 +5,11 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Patches
+namespace ModifiedDiplomacy.Subjects.Patches
 {
     /// <summary>
-    /// Applies subject trade restrictions both during native eligibility
-    /// evaluation and at the final mutation entry point.
+    /// Applies subject trade restrictions both to eligibility queries and the
+    /// final native mutation entry point.
     /// </summary>
     [HarmonyPatch]
     public static class SubjectTradeRestrictionPatch
@@ -29,11 +29,10 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
                 return;
             }
 
-            TextObject restrictionReason;
             if (!SubjectTradeRestrictionService.CanFormTradeAgreement(
                 querierKingdom,
                 queriedKingdom,
-                out restrictionReason))
+                out TextObject restrictionReason))
             {
                 __result = false;
                 reason = restrictionReason;

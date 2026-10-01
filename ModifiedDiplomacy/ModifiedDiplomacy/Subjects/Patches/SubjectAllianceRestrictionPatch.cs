@@ -3,11 +3,11 @@ using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Patches
+namespace ModifiedDiplomacy.Subjects.Patches
 {
     /// <summary>
-    /// Guards the native mutation entry point so direct calls from Bannerlord
-    /// or another mod must obey puppet and vassal alliance rules.
+    /// Guards the native alliance mutation point. Keeping this patch in the
+    /// diplomacy module ensures every caller follows the same subject rules.
     /// </summary>
     [HarmonyPatch(
         typeof(AllianceCampaignBehavior),

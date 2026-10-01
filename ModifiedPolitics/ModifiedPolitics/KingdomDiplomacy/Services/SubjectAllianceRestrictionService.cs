@@ -7,9 +7,9 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 namespace ModifiedPolitics.KingdomDiplomacy.Services
 {
     /// <summary>
-    /// Applies alliance rules to both sides of a proposed alliance. Puppets
-    /// cannot form alliances. Vassals remain free to form alliances unless
-    /// the prospective ally is currently at war with their overlord.
+    /// Temporary compatibility service retained in ModifiedPolitics while the
+    /// subject-relation store is migrated. Both vassals and puppets are
+    /// subject kingdoms and therefore cannot form bilateral alliances.
     /// </summary>
     public static class SubjectAllianceRestrictionService
     {
@@ -40,10 +40,8 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
                 return SubjectType.Puppet;
             }
 
-            return !CanSubjectFormAlliance(first, second)
-                    && firstType == SubjectType.Vassal
-                || !CanSubjectFormAlliance(second, first)
-                    && secondType == SubjectType.Vassal
+            return firstType == SubjectType.Vassal
+                    || secondType == SubjectType.Vassal
                 ? SubjectType.Vassal
                 : SubjectType.None;
         }
@@ -85,21 +83,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Services
             KingdomDiplomacyManager manager = KingdomDiplomacyManager.Current;
             SubjectType type = manager?.GetSubjectType(possibleSubject)
                 ?? SubjectType.None;
-            if (type == SubjectType.None)
-            {
-                return true;
-            }
-
-            if (type == SubjectType.Puppet)
-            {
-                return false;
-            }
-
-            Kingdom overlord = manager.GetOverlord(possibleSubject);
-            return overlord == null
-                || !FactionManager.IsAtWarAgainstFaction(
-                    overlord,
-                    prospectiveAlly);
+            return type == SubjectType.None;
         }
     }
 }

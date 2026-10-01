@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Module>
+  <Name value="ModifiedDiplomacy" />
+  <Id value="ModifiedDiplomacy" />
+  <Version value="v1.0.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community" />
+
+  <DependedModules>
+    <!--
+      Temporary migration dependency. It keeps the proven ModifiedPolitics
+      implementation loaded while diplomacy features are moved one by one.
+      Remove this dependency after the final diplomacy registration is moved.
+    -->
+    <DependedModule Id="ModifiedPolitics" DependentVersion="v1.0.0" Optional="false" />
+  </DependedModules>
+
+  <SubModules>
+    <SubModule>
+      <Name value="ModifiedDiplomacy" />
+      <DLLName value="ModifiedDiplomacy.dll" />
+      <SubModuleClassType value="ModifiedDiplomacy.Main" />
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+</Module>

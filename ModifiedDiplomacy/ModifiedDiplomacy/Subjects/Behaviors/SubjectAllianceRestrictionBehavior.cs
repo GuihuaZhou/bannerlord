@@ -2,13 +2,14 @@ using ModifiedPolitics.KingdomDiplomacy.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
+namespace ModifiedDiplomacy.Subjects.Behaviors
 {
     /// <summary>
-    /// Repairs invalid trade agreements after loading and whenever a new war
-    /// turns a subject's existing trade partner into an overlord enemy.
+    /// Repairs alliances left in older saves or invalidated by a change in
+    /// subject status. The relation store remains in ModifiedPolitics during
+    /// the migration, so this behavior temporarily calls its rule service.
     /// </summary>
-    public sealed class SubjectTradeRestrictionBehavior
+    public sealed class SubjectAllianceRestrictionBehavior
         : CampaignBehaviorBase
     {
         public override void RegisterEvents()
@@ -27,7 +28,7 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
 
         private static void OnSessionLaunched(CampaignGameStarter starter)
         {
-            RemoveAllInvalidSubjectTradeAgreements();
+            RemoveAllInvalidSubjectAlliances();
         }
 
         private static void OnWarDeclared(
@@ -35,15 +36,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Behaviors
             IFaction secondFaction,
             DeclareWarAction.DeclareWarDetail detail)
         {
-            RemoveAllInvalidSubjectTradeAgreements();
+            RemoveAllInvalidSubjectAlliances();
         }
 
-        private static void RemoveAllInvalidSubjectTradeAgreements()
+        private static void RemoveAllInvalidSubjectAlliances()
         {
             foreach (Kingdom kingdom in Kingdom.All)
             {
-                SubjectTradeRestrictionService
-                    .RemoveInvalidTradeAgreements(kingdom);
+                SubjectAllianceRestrictionService
+                    .RemoveExistingAlliances(kingdom);
             }
         }
     }

@@ -5,12 +5,12 @@ using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.KingdomDiplomacy.Patches
+namespace ModifiedDiplomacy.Subjects.Patches
 {
     /// <summary>
-    /// Adds subject tribute to the native clan finance calculations. Patching
-    /// the finance model keeps daily settlement, finance tooltips, war potential
-    /// and recruitment budgets consistent with the same income and expense.
+    /// Adds subject tribute to native clan finance calculations. The
+    /// calculator remains in ModifiedPolitics until subject persistence moves;
+    /// this final integration point is now owned by the diplomacy module.
     /// </summary>
     [HarmonyPatch]
     public static class SubjectTributeFinancePatch
@@ -59,16 +59,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             }
 
             int income = SubjectTributeCalculator.GetIncomeForClan(clan);
-            if (income <= 0)
+            if (income > 0)
             {
-                return;
+                result.Add(
+                    income,
+                    new TextObject(
+                        "{=ModifiedPolitics_SubjectTributeIncome}" +
+                        "Subject tribute"),
+                    null);
             }
-
-            result.Add(
-                income,
-                new TextObject(
-                    "{=ModifiedPolitics_SubjectTributeIncome}Subject tribute"),
-                null);
         }
 
         private static void AddExpense(
@@ -81,16 +80,15 @@ namespace ModifiedPolitics.KingdomDiplomacy.Patches
             }
 
             int expense = SubjectTributeCalculator.GetExpenseForClan(clan);
-            if (expense <= 0)
+            if (expense > 0)
             {
-                return;
+                result.Add(
+                    -expense,
+                    new TextObject(
+                        "{=ModifiedPolitics_SubjectTributeExpense}" +
+                        "Subject tribute payment"),
+                    null);
             }
-
-            result.Add(
-                -expense,
-                new TextObject(
-                    "{=ModifiedPolitics_SubjectTributeExpense}Subject tribute payment"),
-                null);
         }
     }
 }
