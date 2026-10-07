@@ -11,6 +11,19 @@
     <DependedModule Id="ModifiedArmy" DependentVersion="v1.0.0" Optional="false" />
   </DependedModules>
 
+  <!-- Register the centralized governor policies for campaign game modes. -->
+  <Xmls>
+    <XmlNode>
+      <XmlName id="CultureGovernorPolicies" path="culture_governor_policies" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+        <GameType value="CustomGame" />
+        <GameType value="EditorGame" />
+      </IncludedGameTypes>
+    </XmlNode>
+  </Xmls>
+
   <SubModules>
     <SubModule>
       <Name value="ModifiedPolitics" />

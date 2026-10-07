@@ -6,10 +6,13 @@ using ModifiedPolitics.Models.WarDisposition.Listeners.Battle;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Economy;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Hero;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Territory;
+using ModifiedPolitics.Governor.Behaviors;
+using ModifiedPolitics.Governor.Config;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
+using TaleWorlds.ObjectSystem;
 
 namespace ModifiedPolitics
 {
@@ -37,10 +40,22 @@ namespace ModifiedPolitics
             if (game.GameType is Campaign
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
+                // Register and load policy objects through Bannerlord's standard XML object pipeline.
+                GovernorPolicyManager.Instance.Clear();
+                game.ObjectManager.RegisterType<CultureGovernorPolicy>(
+                    "CultureGovernorPolicy",
+                    "CultureGovernorPolicies",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML("CultureGovernorPolicies", true);
+
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
+                // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
+                campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());

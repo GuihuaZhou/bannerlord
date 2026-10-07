@@ -13,6 +13,9 @@
     <string id="MP_FileMinLogLevel_Desc" text="等级不低于此设置的日志会写入内政优化日志文件. Disabled 表示关闭文件日志." />
     <string id="MP_EnableFileLogging" text="将日志写入文件" />
     <string id="MP_EnableFileLogging_Desc" text="启用后, 内政优化会将诊断信息写入文档目录中的日志文件." />
+    <string id="MP_GovernorBorrowedRemoved" text="[总督调配] {HERO}已被解除{SETTLEMENT}总督职务, 因为该借调总督已不属于领地所在王国." />
+    <string id="MP_GovernorNoCandidate" text="[总督调配] {KINGDOM}没有可任命至{SETTLEMENT}的合格总督候选人." />
+    <string id="MP_GovernorAssigned" text="[总督调配] {KINGDOM}任命{CLAN}家族的{HERO}担任{SETTLEMENT}总督." />
     <string id="ModifiedPolitics_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_SubjectTypeVassal" text="附庸国" />

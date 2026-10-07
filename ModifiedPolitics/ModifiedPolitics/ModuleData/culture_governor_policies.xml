@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<CultureGovernorPolicies>
+  <CultureGovernorPolicy
+      id="empire"
+      culture="Culture.empire"
+      centralizedGovernorAssignment="true" />
+  <CultureGovernorPolicy
+      id="aserai"
+      culture="Culture.aserai"
+      centralizedGovernorAssignment="true" />
+</CultureGovernorPolicies>
