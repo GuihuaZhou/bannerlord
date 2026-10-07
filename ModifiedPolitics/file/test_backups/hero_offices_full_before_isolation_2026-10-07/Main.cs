@@ -8,6 +8,7 @@ using ModifiedPolitics.Models.WarDisposition.Listeners.Hero;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Territory;
 using ModifiedPolitics.Governor.Behaviors;
 using ModifiedPolitics.Governor.Config;
+using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.Tool;
 using System;
@@ -53,27 +54,14 @@ namespace ModifiedPolitics
                     false);
                 MBObjectManager.Instance.LoadXML("CultureGovernorPolicies", true);
 
-                // Isolation test 1: load only the XML-backed office configuration.
-                OfficeConfigManager.Instance.Clear();
-                try
-                {
-                    ModLogger.Info("[Hero Offices XML Test] Starting hero_offices.xml registration and load.");
-                    game.ObjectManager.RegisterType<OfficeCultureConfig>(
-                        "HeroOfficeCultureConfig",
-                        "HeroOfficeCultureConfigs",
-                        100U,
-                        true,
-                        false);
-                    MBObjectManager.Instance.LoadXML("HeroOfficeCultureConfigs", true);
-                    ModLogger.Info("[Hero Offices XML Test] hero_offices.xml loaded successfully.");
-                }
-                catch (Exception exception)
-                {
-                    OfficeConfigManager.Instance.Clear();
-                    ModLogger.Error(
-                        "[Hero Offices XML Test] hero_offices.xml failed to load. " +
-                        exception);
-                }
+                // Office availability and seat rules are driven only by the kingdom culture.
+                game.ObjectManager.RegisterType<OfficeCultureConfig>(
+                    "HeroOfficeCultureConfig",
+                    "HeroOfficeCultureConfigs",
+                    100U,
+                    true,
+                    false);
+                MBObjectManager.Instance.LoadXML("HeroOfficeCultureConfigs", true);
 
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
@@ -81,6 +69,9 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
+                campaignStarter.AddBehavior(new HeroOfficeBehavior());
+                campaignStarter.AddBehavior(new LocalOfficeAiBehavior());
+                campaignStarter.AddBehavior(new MarshalOfficeAiBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());

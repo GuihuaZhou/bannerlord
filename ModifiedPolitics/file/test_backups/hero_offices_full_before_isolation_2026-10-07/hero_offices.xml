@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<HeroOfficeCultureConfigs>
+  <HeroOfficeCultureConfig
+      id="empire"
+      culture="Culture.empire"
+      enabledOffices="Marshal,ChiefMinister,CourtSteward,TaxOfficer,AgricultureOfficer,MilitaryOfficer,SecurityOfficer"
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="Abstain"
+      marshalDismissalVote="Abstain" />
+  <HeroOfficeCultureConfig
+      id="aserai"
+      culture="Culture.aserai"
+      enabledOffices="Marshal,ChiefMinister,CourtSteward,TaxOfficer,AgricultureOfficer,MilitaryOfficer,SecurityOfficer"
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="Abstain"
+      marshalDismissalVote="Abstain" />
+  <HeroOfficeCultureConfig
+      id="vlandia"
+      culture="Culture.vlandia"
+      enabledOffices="Marshal,CourtSteward,TaxOfficer,MilitaryOfficer,SecurityOfficer"
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="NormalVote"
+      marshalDismissalVote="NormalVote" />
+  <HeroOfficeCultureConfig
+      id="sturgia"
+      culture="Culture.sturgia"
+      enabledOffices="Marshal,CourtSteward,TaxOfficer,MilitaryOfficer,SecurityOfficer"
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="NormalVote"
+      marshalDismissalVote="NormalVote" />
+  <HeroOfficeCultureConfig
+      id="khuzait"
+      culture="Culture.khuzait"
+      enabledOffices="Marshal,MilitaryOfficer"
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="Abstain"
+      marshalDismissalVote="Abstain" />
+  <HeroOfficeCultureConfig
+      id="battania"
+      culture="Culture.battania"
+      enabledOffices=""
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="Abstain"
+      marshalDismissalVote="Abstain" />
+  <HeroOfficeCultureConfig
+      id="nord"
+      culture="Culture.nord"
+      enabledOffices=""
+      baseLimit="0"
+      maxLimit="3"
+      settlementsPerSlot="3"
+      marshalAppointmentVote="Abstain"
+      marshalDismissalVote="Abstain" />
+</HeroOfficeCultureConfigs>
