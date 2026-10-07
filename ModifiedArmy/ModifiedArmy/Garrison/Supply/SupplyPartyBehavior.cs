@@ -24,7 +24,13 @@ namespace ModifiedArmy.Garrison.Supply
 
         public const int MaximumRequestedFood = 500;
 
-        public const int SourceCastleReserveDays = 30;
+        private const float MaximumSourceDistance = 150f;
+
+        private const int VillagePurchaseBatchSize = 100;
+
+        private const int TownPurchaseBatchSize = 75;
+
+        private const int MinimumTownMarketFoodReserve = 100;
 
         private const int EmergencySupplyDays = 15;
 
@@ -93,7 +99,10 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
-            TryCreateSupplyParty(settlement, source);
+            TryCreateSupplyParty(
+                settlement,
+                source,
+                Math.Min(status.FoodDeficit, MaximumRequestedFood));
         }
 
         private void OnHourlyPartyTick(MobileParty party)
@@ -128,9 +137,7 @@ namespace ModifiedArmy.Garrison.Supply
                         return;
                     }
 
-                    component.ChangeSource(
-                        replacement.Settlement,
-                        replacement.RequestedFood);
+                    component.ChangeSource(replacement.Settlement);
                 }
 
                 EnsureMovingTo(
@@ -164,8 +171,9 @@ namespace ModifiedArmy.Garrison.Supply
             {
                 SupplyAcquisitionResult acquisition =
                     AcquireFoodAtSource(party, component, settlement);
-                component.BeginReturnJourney();
-                MoveToSettlement(party, component.HomeSettlement);
+                component.RecordSourceVisit(
+                    settlement,
+                    acquisition.FoodAcquired);
 
                 if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
                 {
@@ -187,6 +195,28 @@ namespace ModifiedArmy.Garrison.Supply
                         "CARGO_FOOD",
                         party.ItemRoster.TotalFood);
                     ModLogger.Info(message.ToString());
+                }
+
+                Hero payer = component.HomeSettlement.OwnerClan?.Leader;
+                bool canContinue = component.RequestedFood > 0
+                    && party.TotalWeightCarried < party.InventoryCapacity
+                    && payer?.Gold > 0;
+                SourceSelection nextSource = canContinue
+                    ? FindBestSource(
+                        component.HomeSettlement,
+                        component.RequestedFood,
+                        party)
+                    : null;
+
+                if (nextSource != null)
+                {
+                    component.ChangeSource(nextSource.Settlement);
+                    MoveToSettlement(party, nextSource.Settlement);
+                }
+                else
+                {
+                    component.BeginReturnJourney();
+                    MoveToSettlement(party, component.HomeSettlement);
                 }
 
                 return;
@@ -271,9 +301,7 @@ namespace ModifiedArmy.Garrison.Supply
 
                         if (replacement != null)
                         {
-                            component.ChangeSource(
-                                replacement.Settlement,
-                                replacement.RequestedFood);
+                            component.ChangeSource(replacement.Settlement);
                             MoveToSettlement(
                                 party,
                                 replacement.Settlement);
@@ -321,7 +349,8 @@ namespace ModifiedArmy.Garrison.Supply
 
         private bool TryCreateSupplyParty(
             Settlement home,
-            SourceSelection source)
+            SourceSelection source,
+            int requestedFood)
         {
             MobileParty garrison = home.Town.GarrisonParty;
             TroopRoster escortRoster = ExtractEscortRoster(garrison);
@@ -343,7 +372,7 @@ namespace ModifiedArmy.Garrison.Supply
                 supplyParty = SupplyPartyComponent.CreateSupplyParty(
                     home,
                     source.Settlement,
-                    source.RequestedFood,
+                    requestedFood,
                     escortRoster);
 
                 EnterSettlementAction.ApplyForParty(supplyParty, home);
@@ -407,7 +436,7 @@ namespace ModifiedArmy.Garrison.Supply
                 message.SetTextVariable(
                     "MOUNTS_FROM_GRANARY",
                     ridingMountsFromGranary);
-                message.SetTextVariable("REQUESTED", source.RequestedFood);
+                message.SetTextVariable("REQUESTED", requestedFood);
                 ModLogger.Notice(message.ToString());
             }
 
@@ -590,7 +619,11 @@ namespace ModifiedArmy.Garrison.Supply
 
             foreach (Settlement candidate in Settlement.All)
             {
-                if (!IsValidSource(home, candidate))
+                SupplyPartyComponent requestingComponent =
+                    GetComponent(requestingParty);
+
+                if (!IsValidSource(home, candidate)
+                    || requestingComponent?.HasVisited(candidate) == true)
                 {
                     continue;
                 }
@@ -616,19 +649,30 @@ namespace ModifiedArmy.Garrison.Supply
                     continue;
                 }
 
-                int request = Math.Min(
-                    Math.Min(availableFood, requestedFood),
-                    MaximumRequestedFood);
-                float clanPriority = candidate.OwnerClan == home.OwnerClan
-                    ? 1.5f
-                    : 1f;
-                float score = request * clanPriority / distance;
+                if (distance > MaximumSourceDistance)
+                {
+                    continue;
+                }
 
-                if (best == null || score > best.Score)
+                int batchSize = candidate.IsVillage
+                    ? VillagePurchaseBatchSize
+                    : TownPurchaseBatchSize;
+                int request = Math.Min(
+                    Math.Min(
+                        Math.Min(availableFood, requestedFood),
+                        MaximumRequestedFood),
+                    batchSize);
+                int priority = candidate.IsVillage ? 2 : 1;
+                float score = request / distance;
+
+                if (best == null
+                    || priority > best.Priority
+                    || priority == best.Priority && score > best.Score)
                 {
                     best = new SourceSelection(
                         candidate,
                         request,
+                        priority,
                         score);
                 }
             }
@@ -643,9 +687,10 @@ namespace ModifiedArmy.Garrison.Supply
             if (home == null
                 || candidate == null
                 || candidate == home
-                || !candidate.IsFortification
+                || (!candidate.IsTown
+                    && !IsFoodProducingVillage(candidate))
                 || candidate.IsUnderSiege
-                || candidate.OwnerClan == null
+                || GetSourceOwnerClan(candidate) == null
                 || home.OwnerClan == null
                 || home.MapFaction == null
                 || candidate.MapFaction == null
@@ -656,30 +701,38 @@ namespace ModifiedArmy.Garrison.Supply
                 return false;
             }
 
-            if (candidate.OwnerClan == home.OwnerClan)
-            {
-                return true;
-            }
-
-            return candidate.IsTown
-                && home.OwnerClan.Kingdom != null
-                && candidate.OwnerClan.Kingdom
-                    == home.OwnerClan.Kingdom;
+            return true;
         }
 
         private static int CalculateAvailableFood(Settlement source)
         {
             if (source.IsTown)
             {
+                return Math.Max(
+                    0,
+                    (source.ItemRoster?.TotalFood ?? 0)
+                        - MinimumTownMarketFoodReserve);
+            }
+
+            if (IsFoodProducingVillage(source))
+            {
                 return source.ItemRoster?.TotalFood ?? 0;
             }
 
-            GarrisonLogisticsStatus status =
-                GarrisonLogisticsModel.Calculate(source.Town);
-            int reserve = (int)Math.Ceiling(
-                status.DailyConsumption * SourceCastleReserveDays);
+            return 0;
+        }
 
-            return Math.Max(0, status.CurrentFood - reserve);
+        private static bool IsFoodProducingVillage(Settlement settlement)
+        {
+            return settlement?.IsVillage == true
+                && settlement.Village?.VillageType?.PrimaryProduction?.IsFood
+                    == true;
+        }
+
+        private static Clan GetSourceOwnerClan(Settlement settlement)
+        {
+            return settlement?.OwnerClan
+                ?? settlement?.Village?.Bound?.OwnerClan;
         }
 
         private static int CalculateReservedFood(
@@ -701,7 +754,9 @@ namespace ModifiedArmy.Garrison.Supply
                         == SupplyPartyMissionState.TravelingToSource
                     && component.SourceSettlement == source)
                 {
-                    reserved += component.RequestedFood;
+                    reserved += Math.Min(
+                        component.RequestedFood,
+                        CalculateAvailableFood(source));
                 }
             }
 
@@ -835,16 +890,20 @@ namespace ModifiedArmy.Garrison.Supply
             public SourceSelection(
                 Settlement settlement,
                 int requestedFood,
+                int priority,
                 float score)
             {
                 Settlement = settlement;
                 RequestedFood = requestedFood;
+                Priority = priority;
                 Score = score;
             }
 
             public Settlement Settlement { get; }
 
             public int RequestedFood { get; }
+
+            public int Priority { get; }
 
             public float Score { get; }
         }

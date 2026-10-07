@@ -48,20 +48,84 @@ namespace ModifiedArmy.Garrison.Supply
                     requestedFood);
             }
 
-            if (source.IsCastle
-                && source.OwnerClan
-                    == component.HomeSettlement.OwnerClan)
+            if (IsFoodProducingVillage(source))
             {
-                int transferred = TransferFoodWithinCapacity(
-                    source.Town.GarrisonParty.ItemRoster,
-                    party.ItemRoster,
+                return PurchaseFoodFromVillage(
                     party,
+                    component,
+                    source,
                     requestedFood);
-
-                return new SupplyAcquisitionResult(transferred, 0);
             }
 
             return new SupplyAcquisitionResult();
+        }
+
+        private static SupplyAcquisitionResult PurchaseFoodFromVillage(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement source,
+            int requestedFood)
+        {
+            Hero payer = component.HomeSettlement.OwnerClan?.Leader;
+
+            if (payer == null || payer.Gold <= 0)
+            {
+                return new SupplyAcquisitionResult();
+            }
+
+            int remainingFood = requestedFood;
+            int remainingGold = payer.Gold;
+            int acquiredFood = 0;
+            int totalCost = 0;
+
+            for (int index = source.ItemRoster.Count - 1;
+                index >= 0 && remainingFood > 0 && remainingGold > 0;
+                index--)
+            {
+                ItemRosterElement element = source.ItemRoster[index];
+                ItemObject item = element.EquipmentElement.Item;
+
+                if (item?.IsFood != true || element.Amount <= 0)
+                {
+                    continue;
+                }
+
+                int unitPrice = Math.Max(1, item.Value);
+                int amount = Math.Min(
+                    Math.Min(
+                        Math.Min(element.Amount, remainingFood),
+                        remainingGold / unitPrice),
+                    CalculateCapacityForItem(party, item));
+
+                if (amount <= 0)
+                {
+                    continue;
+                }
+
+                source.ItemRoster.AddToCounts(
+                    element.EquipmentElement,
+                    -amount);
+                party.ItemRoster.AddToCounts(
+                    element.EquipmentElement,
+                    amount);
+
+                int cost = amount * unitPrice;
+                remainingFood -= amount;
+                remainingGold -= cost;
+                acquiredFood += amount;
+                totalCost += cost;
+            }
+
+            if (totalCost > 0)
+            {
+                GiveGoldAction.ApplyForCharacterToSettlement(
+                    payer,
+                    source,
+                    totalCost,
+                    true);
+            }
+
+            return new SupplyAcquisitionResult(acquiredFood, totalCost);
         }
 
         private static SupplyAcquisitionResult PurchaseFoodFromTown(
@@ -281,48 +345,6 @@ namespace ModifiedArmy.Garrison.Supply
             }
 
             return requested - remaining;
-        }
-
-        private static int TransferFoodWithinCapacity(
-            ItemRoster source,
-            ItemRoster destination,
-            MobileParty carrier,
-            int requestedFood)
-        {
-            int remainingFood = requestedFood;
-
-            for (int index = source.Count - 1;
-                index >= 0 && remainingFood > 0;
-                index--)
-            {
-                ItemRosterElement element = source[index];
-                ItemObject item = element.EquipmentElement.Item;
-
-                if (item?.IsFood != true || element.Amount <= 0)
-                {
-                    continue;
-                }
-
-                int capacityAmount = CalculateCapacityForItem(
-                    carrier,
-                    item);
-                int amount = Math.Min(
-                    Math.Min(element.Amount, remainingFood),
-                    capacityAmount);
-
-                if (amount <= 0)
-                {
-                    continue;
-                }
-
-                source.AddToCounts(element.EquipmentElement, -amount);
-                destination.AddToCounts(
-                    element.EquipmentElement,
-                    amount);
-                remainingFood -= amount;
-            }
-
-            return requestedFood - remainingFood;
         }
 
         private static int CalculateCapacityForItem(

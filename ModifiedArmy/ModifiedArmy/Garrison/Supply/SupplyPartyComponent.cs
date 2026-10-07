@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -29,6 +30,10 @@ namespace ModifiedArmy.Garrison.Supply
 
         [SaveableProperty(4)]
         public int RequestedFood { get; private set; }
+
+        [SaveableProperty(5)]
+        public List<Settlement> VisitedSettlements { get; private set; }
+            = new List<Settlement>();
 
         [CachedData]
         private TextObject _cachedName;
@@ -72,6 +77,7 @@ namespace ModifiedArmy.Garrison.Supply
             SupplyHomeSettlement = homeSettlement;
             SourceSettlement = sourceSettlement;
             RequestedFood = requestedFood;
+            VisitedSettlements = new List<Settlement>();
             MissionStateValue =
                 (int)SupplyPartyMissionState.TravelingToSource;
             _initializationArgs = initializationArgs;
@@ -111,14 +117,29 @@ namespace ModifiedArmy.Garrison.Supply
                 (int)SupplyPartyMissionState.Completed;
         }
 
-        public void ChangeSource(
-            Settlement sourceSettlement,
-            int requestedFood)
+        public void ChangeSource(Settlement sourceSettlement)
         {
             SourceSettlement = sourceSettlement;
-            RequestedFood = requestedFood;
             MissionStateValue =
                 (int)SupplyPartyMissionState.TravelingToSource;
+        }
+
+        public void RecordSourceVisit(Settlement settlement, int acquiredFood)
+        {
+            VisitedSettlements ??= new List<Settlement>();
+
+            if (settlement != null && !VisitedSettlements.Contains(settlement))
+            {
+                VisitedSettlements.Add(settlement);
+            }
+
+            RequestedFood = Math.Max(0, RequestedFood - acquiredFood);
+        }
+
+        public bool HasVisited(Settlement settlement)
+        {
+            VisitedSettlements ??= new List<Settlement>();
+            return settlement != null && VisitedSettlements.Contains(settlement);
         }
 
         /// <summary>
@@ -239,6 +260,7 @@ namespace ModifiedArmy.Garrison.Supply
         {
             ConstructContainerDefinition(
                 typeof(Dictionary<Settlement, CampaignTime>));
+            ConstructContainerDefinition(typeof(List<Settlement>));
         }
     }
 }
