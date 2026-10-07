@@ -8,6 +8,7 @@ using ModifiedPolitics.Models.WarDisposition.Listeners.Hero;
 using ModifiedPolitics.Models.WarDisposition.Listeners.Territory;
 using ModifiedPolitics.Governor.Behaviors;
 using ModifiedPolitics.Governor.Config;
+using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.Tool;
 using System;
@@ -81,6 +82,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
+                campaignStarter.AddBehavior(new HeroOfficeBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
