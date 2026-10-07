@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using ModifiedPolitics.HeroOffices.Decisions;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
@@ -18,6 +19,8 @@ namespace ModifiedPolitics.HeroOffices.Persistence
         protected override void DefineClassTypes()
         {
             AddClassDefinition(typeof(OfficeAssignment), 1);
+            AddClassDefinition(typeof(MarshalOfficeDecision), 2);
+            AddClassDefinition(typeof(MarshalOfficeDecision.MarshalOfficeOutcome), 3);
         }
 
         protected override void DefineEnumTypes()

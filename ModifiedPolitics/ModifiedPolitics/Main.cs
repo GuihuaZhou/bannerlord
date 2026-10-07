@@ -84,6 +84,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new HeroOfficeBehavior());
                 campaignStarter.AddBehavior(new LocalOfficeAiBehavior());
+                campaignStarter.AddBehavior(new MarshalOfficeAiBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
