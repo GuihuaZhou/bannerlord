@@ -4,6 +4,7 @@ using HarmonyLib;
 using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.CampaignSystem.Election;
+using TaleWorlds.CampaignSystem.GameComponents;
 
 namespace ModifiedPolitics.HeroOffices.Patches
 {
@@ -29,6 +30,47 @@ namespace ModifiedPolitics.HeroOffices.Patches
 
             // Keep 75% of the loss and round away from zero as specified by the design.
             __result = -(int)Math.Ceiling(Math.Abs(__result) * 0.75f);
+        }
+    }
+
+    /// <summary>
+    /// Reduces the relation cost returned specifically while an expulsion outcome is applied.
+    /// </summary>
+    [HarmonyPatch]
+    internal static class CourtStewardExpulsionRelationPatch
+    {
+        [ThreadStatic]
+        private static bool _isApplyingProtectedExpulsion;
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(ExpelClanFromKingdomDecision), "ApplyChosenOutcome")]
+        private static void BeginExpulsion(
+            ExpelClanFromKingdomDecision __instance,
+            DecisionOutcome chosenOutcome)
+        {
+            _isApplyingProtectedExpulsion =
+                chosenOutcome is ExpelClanFromKingdomDecision.ExpelClanDecisionOutcome outcome
+                && outcome.ShouldBeExpelled
+                && __instance?.Kingdom != null
+                && HeroOfficeBehavior.Current?
+                    .GetAssignments(__instance.Kingdom, OfficeType.CourtSteward)
+                    .Any() == true;
+        }
+
+        [HarmonyFinalizer]
+        [HarmonyPatch(typeof(ExpelClanFromKingdomDecision), "ApplyChosenOutcome")]
+        private static Exception EndExpulsion(Exception __exception)
+        {
+            _isApplyingProtectedExpulsion = false;
+            return __exception;
+        }
+
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(DefaultDiplomacyModel), "GetRelationCostOfExpellingClanFromKingdom")]
+        private static void ReduceExpulsionRelationLoss(ref int __result)
+        {
+            if (_isApplyingProtectedExpulsion && __result < 0)
+                __result = -(int)Math.Ceiling(Math.Abs(__result) * 0.75f);
         }
     }
 }
