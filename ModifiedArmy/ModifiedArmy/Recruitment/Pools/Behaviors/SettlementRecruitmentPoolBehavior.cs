@@ -352,13 +352,13 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             if (clanMatchesKingdom)
             {
                 return new ProfessionalProductionRule(
-                    clanCulture,
+                    settlementCulture,
                     MediumProfessionalProductionRate,
-                    2);
+                    1);
             }
 
             return new ProfessionalProductionRule(
-                kingdomCulture,
+                settlementCulture,
                 LowProfessionalProductionRate,
                 1);
         }
