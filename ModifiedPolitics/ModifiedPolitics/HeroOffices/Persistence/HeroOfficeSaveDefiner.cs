@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using ModifiedPolitics.HeroOffices.Domain;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedPolitics.HeroOffices.Persistence
@@ -27,6 +28,7 @@ namespace ModifiedPolitics.HeroOffices.Persistence
         protected override void DefineContainerDefinitions()
         {
             ConstructContainerDefinition(typeof(List<OfficeAssignment>));
+            ConstructContainerDefinition(typeof(Dictionary<Kingdom, CampaignTime>));
         }
     }
 }

@@ -83,6 +83,7 @@ namespace ModifiedPolitics
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new HeroOfficeBehavior());
+                campaignStarter.AddBehavior(new LocalOfficeAiBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
