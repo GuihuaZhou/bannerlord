@@ -87,9 +87,12 @@
   <string id="eba8yK7l" text="阿塞莱水兵"/>
   <string id="ZkBvgzhD" text="阿塞莱资深水兵"/>
 
-  <string id="jaK1A7CI" text="青年法里斯"/>
-  <string id="6oc7CXbI" text="法里斯"/>
-  <string id="AoFZUbun" text="资深法里斯"/>
+  <string id="jaK1A7CI" text="阿塞莱法里斯"/>
+  <string id="6oc7CXbI" text="阿塞莱重装法里斯"/>
+  <string id="AoFZUbun" text="阿塞莱资深法里斯"/>
+  <string id="bKBvFcVf" text="阿塞莱斧兵"/>
+  <string id="tIDOJvId" text="阿塞莱持斧卫士"/>
+  <string id="wrYJBc4g" text="阿塞莱宫殿卫士"/>
   
 
 
@@ -131,10 +134,6 @@
   <string id="RRbpc6fr" text="诺德资深侍卫"/>
   <string id="5LvI1bsQ" text="诺德射手"/>
   <string id="mI7igoBF" text="诺德神射手"/>
-
-  <string id="hire_nord_ulfhednar" text="（雇佣）狼皮狂战士"/>
-  <string id="hire_nord_berserkr" text="（雇佣）熊皮狂战士"/>
-  
   
  </strings>
 </base>
