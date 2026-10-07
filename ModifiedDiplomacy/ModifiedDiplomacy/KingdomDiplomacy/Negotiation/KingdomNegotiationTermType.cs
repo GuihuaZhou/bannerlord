@@ -24,6 +24,31 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
 
     public static class KingdomNegotiationTermRules
     {
+        /// <summary>
+        /// A declaration issued by the proposing kingdom is unilateral. It
+        /// requires that kingdom's council approval, never the defender's
+        /// consent.
+        /// </summary>
+        public static bool IsUnilateralDeclaration(
+            KingdomNegotiationDraft draft)
+        {
+            if (draft?.PlayerKingdom == null)
+            {
+                return false;
+            }
+
+            foreach (KingdomNegotiationDraftTerm term in draft.Terms)
+            {
+                if (term.Type == KingdomNegotiationTermType.DeclareWar
+                    && term.ProviderKingdom == draft.PlayerKingdom)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
         public static bool IsSubjectTerm(
             KingdomNegotiationTermType type)
         {

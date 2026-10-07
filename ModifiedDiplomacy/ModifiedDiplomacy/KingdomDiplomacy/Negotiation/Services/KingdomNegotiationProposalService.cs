@@ -77,18 +77,22 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Services
                 return false;
             }
 
-            // Native bilateral proposals simulate the queried kingdom's
-            // election before enabling the proposing kingdom's decision. A
-            // compound proposal follows the same rule: the foreign council as
-            // a whole must be expected to accept, not merely one foreign clan.
-            KingdomNegotiationEvaluation foreignEvaluation =
-                KingdomNegotiationEvaluationService.Evaluate(
-                    draft,
-                    draft.TargetKingdom);
-            if (!foreignEvaluation.WouldAccept)
+            // Bilateral agreements require foreign consent. A declaration of
+            // war issued by the proposing kingdom is unilateral, so the
+            // defender's council cannot veto it.
+            if (!KingdomNegotiationTermRules
+                    .IsUnilateralDeclaration(draft))
             {
-                reason = BuildForeignRejectionReason(foreignEvaluation);
-                return false;
+                KingdomNegotiationEvaluation foreignEvaluation =
+                    KingdomNegotiationEvaluationService.Evaluate(
+                        draft,
+                        draft.TargetKingdom);
+                if (!foreignEvaluation.WouldAccept)
+                {
+                    reason = BuildForeignRejectionReason(
+                        foreignEvaluation);
+                    return false;
+                }
             }
 
             KingdomNegotiationDecision decision =
@@ -188,9 +192,11 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation.Services
                 return false;
             }
 
-            bool playerReceives = receivingKingdom
-                == Clan.PlayerClan?.Kingdom;
-            if (!playerReceives)
+            bool unilateralDeclaration = KingdomNegotiationTermRules
+                .IsUnilateralDeclaration(draft);
+            bool playerReceives = !unilateralDeclaration
+                && receivingKingdom == Clan.PlayerClan?.Kingdom;
+            if (!playerReceives && !unilateralDeclaration)
             {
                 KingdomNegotiationEvaluation foreignEvaluation =
                     KingdomNegotiationEvaluationService.Evaluate(

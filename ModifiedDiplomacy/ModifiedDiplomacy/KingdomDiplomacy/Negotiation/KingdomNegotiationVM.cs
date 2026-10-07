@@ -823,11 +823,15 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
                     draft,
                     PlayerKingdom);
 
-            ResultBarOtherPercentage = ToPercentage(
-                targetEvaluation.AcceptShare);
+            bool unilateralDeclaration = KingdomNegotiationTermRules
+                .IsUnilateralDeclaration(draft);
+            ResultBarOtherPercentage = unilateralDeclaration
+                ? 100
+                : ToPercentage(targetEvaluation.AcceptShare);
             ResultBarOffererPercentage = ToPercentage(
                 playerEvaluation.AcceptShare);
-            IsTargetSupportInsufficient = !targetEvaluation.WouldAccept;
+            IsTargetSupportInsufficient = !unilateralDeclaration
+                && !targetEvaluation.WouldAccept;
             IsPlayerSupportInsufficient = !playerEvaluation.WouldAccept;
         }
 
