@@ -1,0 +1,109 @@
+<ButtonWidget
+    Id="OwnerButton"
+    DoNotPassEventsToChildren="true"
+    WidthSizePolicy="Fixed"
+    HeightSizePolicy="Fixed"
+    SuggestedWidth="115"
+    SuggestedHeight="85"
+    HorizontalAlignment="Center"
+    MarginLeft="100"
+    Command.Click="ExecuteManageGovernor"
+    UpdateChildrenStates="true"
+    GamepadNavigationIndex="0">
+
+  <Children>
+
+    <TextWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="CoverChildren"
+        SuggestedWidth="180"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        PositionYOffset="-40"
+        Brush="Clan.RightPanel.Name.Text"
+        Brush.FontSize="28"
+        Brush.TextHorizontalAlignment="Center"
+        Text="@GovernorText"
+        ClipContents="false" />
+
+    <BrushWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Brush="SPClan.RoleSelectionButton.GoldFrame" />
+
+    <BrushWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Brush="TownManagement.GovernorPopup.Governor.Background" />
+
+    <Widget
+        DataSource="{GovernorVisual}"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        IsDisabled="true">
+
+      <Children>
+
+        <ImageIdentifierWidget
+            DataSource="{ImageIdentifier}"
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="StretchToParent"
+            MarginLeft="3"
+            MarginRight="3"
+            MarginTop="3"
+            MarginBottom="3"
+            HorizontalAlignment="Center"
+            VerticalAlignment="Center"
+            AdditionalArgs="@AdditionalArgs"
+            ImageId="@Id"
+            TextureProviderName="@TextureProviderName"
+            HideWhenNull="true"
+            IsDisabled="true" />
+
+      </Children>
+
+    </Widget>
+
+    <TextWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="CoverChildren"
+        SuggestedWidth="180"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        PositionYOffset="95"
+        Brush="Clan.Tuple.Name.Text"
+        Brush.TextHorizontalAlignment="Center"
+        Text="@GovernorName"
+        ClipContents="false" />
+
+    <BrushWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Brush="SPClan.RoleSelectionButton.ReplaceBackground" />
+
+    <BrushWidget
+        DoNotAcceptEvents="true"
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="Fixed"
+        SuggestedWidth="45"
+        SuggestedHeight="46"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        Brush="SPClan.RoleSelectionButton.ReplaceIcon" />
+
+    <HintWidget
+        DataSource="{GovernorHint}"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="StretchToParent"
+        Command.HoverBegin="ExecuteBeginHint"
+        Command.HoverEnd="ExecuteEndHint"
+        IsDisabled="true" />
+
+  </Children>
+
+</ButtonWidget>

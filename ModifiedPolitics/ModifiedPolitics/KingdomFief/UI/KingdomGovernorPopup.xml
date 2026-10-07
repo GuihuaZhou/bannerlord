@@ -1,0 +1,3 @@
+<ClanCardSelectionPopup
+    DataSource="{CurrentSelectedSettlement\GovernorSelectionPopup}"
+    RenderLate="true" />

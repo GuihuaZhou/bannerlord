@@ -16,6 +16,18 @@
     <string id="MP_GovernorBorrowedRemoved" text="[总督调配] {HERO}已被解除{SETTLEMENT}总督职务, 因为该借调总督已不属于领地所在王国." />
     <string id="MP_GovernorNoCandidate" text="[总督调配] {KINGDOM}没有可任命至{SETTLEMENT}的合格总督候选人." />
     <string id="MP_GovernorAssigned" text="[总督调配] {KINGDOM}任命{CLAN}家族的{HERO}担任{SETTLEMENT}总督." />
+    <string id="MP_NoGovernor" text="无总督" />
+    <string id="MP_AssignGovernor" text="任命总督" />
+    <string id="MP_RemoveGovernorResult" text="撤销当前总督任命." />
+    <string id="MP_GovernorSelectionResult" text="{HERO}将担任{SETTLEMENT}总督." />
+    <string id="MP_GovernorEffects" text="总督效果" />
+    <string id="MP_GovernorPlayerAssigned" text="[总督调配] {KINGDOM}的统治者任命{CLAN}家族的{HERO}担任{SETTLEMENT}总督." />
+    <string id="MP_GovernorPlayerRemoved" text="[总督调配] {KINGDOM}的统治者解除了{HERO}的{SETTLEMENT}总督职务." />
+    <string id="MP_GovernorManageWrongKingdom" text="只能管理玩家当前所在王国的总督." />
+    <string id="MP_GovernorManageRulerOnly" text="只有王国统治者可以在这个页面任命总督." />
+    <string id="MP_GovernorManagePolicyDisabled" text="当前王国未启用王国范围的总督调配制度." />
+    <string id="MP_GovernorManageTraveling" text="{GOVERNOR}正在前往{SETTLEMENT}上任, 暂时不能更改任命." />
+    <string id="MP_GovernorManageUnavailable" text="当前无法进行总督任命." />
     <string id="ModifiedPolitics_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_SubjectTypeVassal" text="附庸国" />
