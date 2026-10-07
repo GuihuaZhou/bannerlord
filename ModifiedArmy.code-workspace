@@ -1,0 +1,25 @@
+{
+	"folders": [
+		{
+			"name": "ModifiedArmy",
+			"path": "ModifiedArmy"
+		},
+		{
+			"name": "ModifiedPolitics",
+			"path": "ModifiedPolitics"
+		},
+		{
+			"name": "ModifiedTroops",
+			"path": "ModifiedTroops"
+		},
+		{
+			"name": "ModifiedDiplomacy",
+			"path": "ModifiedDiplomacy"
+		},
+		{
+			"name": "file",
+			"path": "file"
+		}
+	],
+	"settings": {}
+}
