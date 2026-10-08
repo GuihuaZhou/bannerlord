@@ -224,6 +224,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                 GetOfficeDescription(officeType).ToString(),
                 GetOfficeEffects(officeType).ToString(),
                 CreateHolderItems(assignments),
+                Math.Max(0, limit - assignments.Count),
                 CanAppoint(officeType, assignments.Count, limit),
                 SelectOffice,
                 BeginAppointment);

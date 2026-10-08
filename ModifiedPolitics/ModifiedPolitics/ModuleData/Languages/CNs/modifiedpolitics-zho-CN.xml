@@ -452,5 +452,7 @@
     <string id="MP_OfficeCompensationMedium" text="中额补偿" />
     <string id="MP_OfficeCompensationHigh" text="高额补偿" />
     <string id="MP_OfficeActionFailed" text="官职条件已经变化，本次操作未能完成。" />
+    <string id="MP_OfficeVacantSeats" text="空缺席位：{COUNT}" />
+    <string id="MP_OfficeNoVacantSeats" text="当前无空缺席位" />
 </strings>
 </base>

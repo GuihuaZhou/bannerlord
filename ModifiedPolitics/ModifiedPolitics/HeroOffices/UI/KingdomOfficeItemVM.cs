@@ -21,6 +21,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             string description,
             string effectsText,
             MBBindingList<KingdomOfficeHolderVM> holders,
+            int vacantCount,
             bool canAppoint,
             Action<KingdomOfficeItemVM> onSelect,
             Action<KingdomOfficeItemVM> onAppoint)
@@ -33,11 +34,17 @@ namespace ModifiedPolitics.HeroOffices.UI
             Holders = holders;
             HasHolders = holders.Count > 0;
             HasNoHolders = !HasHolders;
+            HasVacancy = vacantCount > 0;
             CanAppoint = canAppoint;
             HoldersTitle = new TextObject("{=MP_OfficeHoldersTitle}Office Holders").ToString();
             NoHoldersText = new TextObject(
                 "{=MP_OfficeNoHolders}There are currently no office holders.").ToString();
             AppointText = new TextObject("{=MP_OfficeAppointButton}Appoint").ToString();
+            TextObject vacancyText = HasVacancy
+                ? new TextObject("{=MP_OfficeVacantSeats}Vacant seats: {COUNT}")
+                : new TextObject("{=MP_OfficeNoVacantSeats}There are currently no vacant seats.");
+            vacancyText.SetTextVariable("COUNT", vacantCount);
+            VacancyText = vacancyText.ToString();
             _onSelect = onSelect;
             _onAppoint = onAppoint;
         }
@@ -66,6 +73,9 @@ namespace ModifiedPolitics.HeroOffices.UI
         public bool HasNoHolders { get; }
 
         [DataSourceProperty]
+        public bool HasVacancy { get; }
+
+        [DataSourceProperty]
         public bool CanAppoint { get; }
 
         [DataSourceProperty]
@@ -76,6 +86,9 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         [DataSourceProperty]
         public string AppointText { get; }
+
+        [DataSourceProperty]
+        public string VacancyText { get; }
 
         [DataSourceProperty]
         public bool IsSelected

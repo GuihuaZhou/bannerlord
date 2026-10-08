@@ -45,10 +45,9 @@
               <Children>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Kingdom.TitleMedium.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@Description" />
-                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="45" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
-                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" Brush="Kingdom.TitleSmall.Text" Brush.TextHorizontalAlignment="Center" Text="@SeatText" />
-                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" MarginLeft="100" MarginRight="100" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Left" Text="@EffectsText" />
                 <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="35" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
+                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="25" MarginLeft="100" MarginRight="100" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Left" Text="@EffectsText" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="30" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="20" Brush="Kingdom.TitleSmall.Text" Brush.TextHorizontalAlignment="Center" Text="@HoldersTitle" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="20" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@NoHoldersText" IsVisible="@HasNoHolders" />
                 <ListPanel DataSource="{Holders}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="15" StackLayout.LayoutMethod="VerticalTopToBottom">
@@ -61,6 +60,7 @@
                             <ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" HideWhenNull="true" />
                           </Children>
                         </Widget>
+                        <MaskedTextureWidget DataSource="{HeroVisual\ClanBanner_9}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="46" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="72" PositionYOffset="-2" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
                         <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="115" MarginRight="155" VerticalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom">
                           <Children>
                             <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Clan.RightPanel.Name.Text" Brush.TextHorizontalAlignment="Left" Text="@Name" />
@@ -77,7 +77,8 @@
                     </Widget>
                   </ItemTemplate>
                 </ListPanel>
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="25" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint">
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="15" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@VacancyText" />
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" IsVisible="@HasVacancy">
                   <Children>
                     <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
                   </Children>
