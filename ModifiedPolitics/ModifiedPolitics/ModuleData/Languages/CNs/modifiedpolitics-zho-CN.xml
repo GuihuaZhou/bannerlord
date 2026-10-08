@@ -445,7 +445,7 @@
     <string id="MP_OfficeDismissDescription" text="选择直接支付给被撤职 Hero 的经济补偿。" />
     <string id="MP_OfficeConfirm" text="确认" />
     <string id="MP_OfficeCancel" text="取消" />
-    <string id="MP_OfficeCompensationOption" text="{LEVEL}：{AMOUNT}{GOLD_ICON}" />
+    <string id="MP_OfficeCompensationOption" text="{LEVEL}：{AMOUNT}{GOLD_ICON}，关系 {RELATION}" />
     <string id="MP_OfficeCompensationNone" text="不补偿" />
     <string id="MP_OfficeCompensationLow" text="低额补偿" />
     <string id="MP_OfficeCompensationMedium" text="中额补偿" />

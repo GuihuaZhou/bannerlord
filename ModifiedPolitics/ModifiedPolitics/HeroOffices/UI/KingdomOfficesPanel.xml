@@ -80,7 +80,7 @@
                             <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Left" Text="@AssignmentText" IsVisible="@HasAssignmentText" />
                           </Children>
                         </ListPanel>
-                        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="135" SuggestedHeight="45" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="ButtonBrush2" Command.Click="ExecuteDismiss" IsEnabled="@CanDismiss" IsVisible="@HasHolder">
+                        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="135" SuggestedHeight="45" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="ButtonBrush2" Command.Click="ExecuteDismiss" IsEnabled="@CanDismiss" IsVisible="@CanDismiss">
                           <Children>
                             <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@DismissText" />
                           </Children>

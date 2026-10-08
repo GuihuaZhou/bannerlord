@@ -121,8 +121,7 @@ namespace ModifiedPolitics.HeroOffices.Services
             if (compensationAmount > 0)
                 GiveGoldAction.ApplyBetweenCharacters(appointer, officer, compensationAmount, true);
 
-            int baseLoss = OfficeRules.IsLocal(assignment.OfficeType) ? 5 : 10;
-            int relationLoss = -(int)Math.Ceiling(baseLoss * (1f - GetCompensationReduction(compensation)));
+            int relationLoss = GetDismissalRelationLoss(assignment.OfficeType, compensation);
             ApplyClanRelationChange(kingdom.Leader, officer, relationLoss);
             behavior.RemoveAssignment(assignment, false);
             return true;
@@ -141,6 +140,15 @@ namespace ModifiedPolitics.HeroOffices.Services
                 default:
                     return 0;
             }
+        }
+
+        public static int GetDismissalRelationLoss(
+            OfficeType officeType,
+            OfficeCompensation compensation)
+        {
+            int baseLoss = OfficeRules.IsLocal(officeType) ? 5 : 10;
+            return -(int)Math.Ceiling(
+                baseLoss * (1f - GetCompensationReduction(compensation)));
         }
 
         private static float GetCompensationReduction(OfficeCompensation compensation)

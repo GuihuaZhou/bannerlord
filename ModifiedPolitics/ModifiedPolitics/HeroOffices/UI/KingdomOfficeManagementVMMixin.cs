@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.CompilerServices;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
@@ -390,7 +391,10 @@ namespace ModifiedPolitics.HeroOffices.UI
                 .Cast<OfficeCompensation>()
                 .Select(compensation => new InquiryElement(
                     compensation,
-                    GetCompensationText(compensation).ToString(),
+                    GetCompensationText(
+                        assignment.OfficeType,
+                        compensation,
+                        officer.Clan == Hero.MainHero.Clan).ToString(),
                     null,
                     compensation == OfficeCompensation.None
                     || Hero.MainHero.Gold >= OfficeAppointmentService.GetCompensationAmount(compensation),
@@ -444,11 +448,20 @@ namespace ModifiedPolitics.HeroOffices.UI
                 .OrderBy(hero => hero.Name.ToString());
         }
 
-        private static TextObject GetCompensationText(OfficeCompensation compensation)
+        private static TextObject GetCompensationText(
+            OfficeType officeType,
+            OfficeCompensation compensation,
+            bool sameClan)
         {
-            TextObject text = new TextObject("{=MP_OfficeCompensationOption}{LEVEL}: {AMOUNT}{GOLD_ICON}");
+            TextObject text = new TextObject(
+                "{=MP_OfficeCompensationOption}{LEVEL}: {AMOUNT}{GOLD_ICON}, relation {RELATION}");
             text.SetTextVariable("LEVEL", GetCompensationLevelText(compensation));
             text.SetTextVariable("AMOUNT", OfficeAppointmentService.GetCompensationAmount(compensation));
+            text.SetTextVariable(
+                "RELATION",
+                sameClan
+                    ? 0
+                    : OfficeAppointmentService.GetDismissalRelationLoss(officeType, compensation));
             return text;
         }
 
@@ -561,6 +574,9 @@ namespace ModifiedPolitics.HeroOffices.UI
     [HarmonyPatch]
     internal static class KingdomOfficeCategoryNavigationPatch
     {
+        private static readonly MethodInfo SetSelectedCategoryMethod =
+            AccessTools.Method(typeof(KingdomManagementVM), "SetSelectedCategory");
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(KingdomManagementVM), nameof(KingdomManagementVM.SelectNextCategory))]
         private static bool SelectNextCategory(KingdomManagementVM __instance)
@@ -571,9 +587,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (!KingdomOfficeManagementVMMixin.IsOfficePageVisible(__instance))
                 return true;
 
-            AccessTools.Method(typeof(KingdomManagementVM), "SetSelectedCategory")
-                .Invoke(__instance, new object[] { 4 });
-            return false;
+            return !TrySelectNativeCategory(__instance, 4);
         }
 
         [HarmonyPrefix]
@@ -586,9 +600,16 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (!KingdomOfficeManagementVMMixin.IsOfficePageVisible(__instance))
                 return true;
 
-            AccessTools.Method(typeof(KingdomManagementVM), "SetSelectedCategory")
-                .Invoke(__instance, new object[] { 3 });
-            return false;
+            return !TrySelectNativeCategory(__instance, 3);
+        }
+
+        private static bool TrySelectNativeCategory(KingdomManagementVM vm, int index)
+        {
+            if (vm == null || SetSelectedCategoryMethod == null)
+                return false;
+
+            SetSelectedCategoryMethod.Invoke(vm, new object[] { index });
+            return true;
         }
     }
 }
