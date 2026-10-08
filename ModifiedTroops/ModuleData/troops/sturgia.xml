@@ -1369,9 +1369,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.reinforced_horsemans_kite_shield" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -1395,9 +1392,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.reinforced_horsemans_kite_shield" />
-				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
@@ -1420,9 +1414,6 @@
 				<equipment
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.reinforced_horsemans_kite_shield" />
 				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
@@ -1492,9 +1483,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
 				<equipment
@@ -1518,9 +1506,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
 				<equipment
@@ -1543,9 +1528,6 @@
 				<equipment
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.sturgia_infantry_shield_b" />
 				<equipment
 					slot="Head"
 					id="Item.sturgian_lord_helmet_b" />

@@ -439,9 +439,6 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -465,9 +462,6 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -491,9 +485,6 @@
 					id="Item.sturgia_2haxe_1_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.viking_round_shield" />
-				<equipment
-					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -563,9 +554,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
-				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
 				<equipment
@@ -589,9 +577,6 @@
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
-				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />
 				<equipment
@@ -614,9 +599,6 @@
 				<equipment
 					slot="Item1"
 					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Item2"
-					id="Item.leather_round_shield" />
 				<equipment
 					slot="Head"
 					id="Item.northern_goggled_helmet" />

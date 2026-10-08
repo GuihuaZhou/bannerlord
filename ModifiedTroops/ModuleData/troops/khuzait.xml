@@ -2716,10 +2716,10 @@
 				value="40" />
 		</skills>
 		<upgrade_targets>
-			<upgrade_target
+			<!-- <upgrade_target
 				id="NPCCharacter.khuzait_lancer" />
 			<upgrade_target
-				id="NPCCharacter.khuzait_horse_archer" />
+				id="NPCCharacter.khuzait_horse_archer" /> -->
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
