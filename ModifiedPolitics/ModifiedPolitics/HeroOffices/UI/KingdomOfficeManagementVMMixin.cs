@@ -8,6 +8,7 @@ using HarmonyLib;
 using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Domain;
+using ModifiedPolitics.HeroOffices.Decisions;
 using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.HeroOffices.Services;
 using TaleWorlds.CampaignSystem;
@@ -33,7 +34,6 @@ namespace ModifiedPolitics.HeroOffices.UI
         private readonly KingdomManagementVM _vm;
         private string _officesText;
         private string _officePageTitle;
-        private string _officePageTestText;
         private bool _officePageVisible;
         private MBBindingList<KingdomOfficeItemVM> _offices;
         private KingdomOfficeItemVM _currentOffice;
@@ -72,19 +72,6 @@ namespace ModifiedPolitics.HeroOffices.UI
                     return;
                 _officePageTitle = value;
                 _vm.OnPropertyChangedWithValue(value, nameof(OfficePageTitle));
-            }
-        }
-
-        [DataSourceProperty]
-        public string OfficePageTestText
-        {
-            get => _officePageTestText;
-            private set
-            {
-                if (value == _officePageTestText)
-                    return;
-                _officePageTestText = value;
-                _vm.OnPropertyChangedWithValue(value, nameof(OfficePageTestText));
             }
         }
 
@@ -169,8 +156,6 @@ namespace ModifiedPolitics.HeroOffices.UI
         {
             OfficesText = new TextObject("{=MP_KingdomOfficesTab}Offices").ToString();
             OfficePageTitle = new TextObject("{=MP_KingdomOfficesTitle}Kingdom Offices").ToString();
-            OfficePageTestText = new TextObject(
-                "{=MP_KingdomOfficesPageTest}The kingdom offices page is ready.").ToString();
         }
 
         private void RefreshOfficeList()
@@ -216,6 +201,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             TextObject seatText = new TextObject("{=MP_OfficeSeatCount}{USED}/{TOTAL}");
             seatText.SetTextVariable("USED", assignments.Count);
             seatText.SetTextVariable("TOTAL", limit);
+            bool canAppoint = CanAppoint(officeType, assignments.Count, limit);
 
             return new KingdomOfficeItemVM(
                 officeType,
@@ -223,9 +209,10 @@ namespace ModifiedPolitics.HeroOffices.UI
                 seatText.ToString(),
                 GetOfficeDescription(officeType).ToString(),
                 GetOfficeEffects(officeType).ToString(),
-                CreateHolderItems(assignments),
+                CreateHolderItems(assignments, officeType, limit, canAppoint),
                 Math.Max(0, limit - assignments.Count),
-                CanAppoint(officeType, assignments.Count, limit),
+                canAppoint,
+                GetAppointmentUnavailableText(officeType, canAppoint),
                 SelectOffice,
                 BeginAppointment);
         }
@@ -240,7 +227,10 @@ namespace ModifiedPolitics.HeroOffices.UI
         }
 
         private MBBindingList<KingdomOfficeHolderVM> CreateHolderItems(
-            IEnumerable<OfficeAssignment> assignments)
+            IEnumerable<OfficeAssignment> assignments,
+            OfficeType officeType,
+            int limit,
+            bool canAppoint)
         {
             var holders = new MBBindingList<KingdomOfficeHolderVM>();
             bool canDismiss = Clan.PlayerClan?.Kingdom?.Leader == Hero.MainHero;
@@ -255,6 +245,18 @@ namespace ModifiedPolitics.HeroOffices.UI
                     BeginDismissal));
             }
 
+            // Render every configured seat so vacancies are visible as empty portrait cards.
+            while (holders.Count < limit)
+            {
+                holders.Add(new KingdomOfficeHolderVM(
+                    null,
+                    string.Empty,
+                    false,
+                    null,
+                    canAppoint,
+                    () => BeginAppointment(officeType)));
+            }
+
             return holders;
         }
 
@@ -266,17 +268,51 @@ namespace ModifiedPolitics.HeroOffices.UI
                    && kingdom.Leader == Hero.MainHero
                    && occupied < limit
                    && HeroOfficeBehavior.Current != null
+                   && (officeType != OfficeType.Marshal
+                       || !kingdom.UnresolvedDecisions.Any(
+                           decision => decision is MarshalOfficeDecision))
                    && GetEligibleCandidates(kingdom, officeType).Any();
+        }
+
+        private static string GetAppointmentUnavailableText(
+            OfficeType officeType,
+            bool canAppoint)
+        {
+            if (canAppoint)
+                return string.Empty;
+
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (kingdom?.Leader != Hero.MainHero)
+            {
+                return new TextObject(
+                    "{=MP_OfficeRulerOnly}Only the kingdom ruler may appoint officers.").ToString();
+            }
+
+            if (officeType == OfficeType.Marshal
+                && kingdom.UnresolvedDecisions.Any(decision => decision is MarshalOfficeDecision))
+            {
+                return new TextObject(
+                    "{=MP_OfficeDecisionPending}An office decision is already in progress.").ToString();
+            }
+
+            return new TextObject(
+                "{=MP_OfficeNoEligibleCandidates}There are currently no eligible candidates.").ToString();
         }
 
         private void BeginAppointment(KingdomOfficeItemVM office)
         {
+            if (office != null)
+                BeginAppointment(office.OfficeType);
+        }
+
+        private void BeginAppointment(OfficeType officeType)
+        {
             Kingdom kingdom = Clan.PlayerClan?.Kingdom;
-            if (kingdom == null || kingdom.Leader != Hero.MainHero || office == null)
+            if (kingdom == null || kingdom.Leader != Hero.MainHero)
                 return;
 
             // Vlandian marshal elections generate their candidates inside the decision.
-            if (office.OfficeType == OfficeType.Marshal
+            if (officeType == OfficeType.Marshal
                 && string.Equals(kingdom.Culture?.StringId, "vlandia", StringComparison.OrdinalIgnoreCase))
             {
                 MarshalDecisionService.TryProposeAppointment(kingdom);
@@ -284,7 +320,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                 return;
             }
 
-            List<InquiryElement> candidates = GetEligibleCandidates(kingdom, office.OfficeType)
+            List<InquiryElement> candidates = GetEligibleCandidates(kingdom, officeType)
                 .Select(hero => new InquiryElement(
                     hero,
                     hero.Name.ToString(),
@@ -305,7 +341,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                     1,
                     new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
                     new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
-                    selected => CompleteAppointment(office.OfficeType, selected),
+                    selected => CompleteAppointment(officeType, selected),
                     null,
                     string.Empty,
                     false),
@@ -488,6 +524,22 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (vm != null && Instances.TryGetValue(vm, out KingdomOfficeManagementVMMixin mixin))
                 mixin.OfficePageVisible = false;
         }
+
+        internal static bool TryShowOfficePage(KingdomManagementVM vm)
+        {
+            if (vm == null || !Instances.TryGetValue(vm, out KingdomOfficeManagementVMMixin mixin))
+                return false;
+
+            mixin.ExecuteShowOffices();
+            return mixin.OfficePageVisible;
+        }
+
+        internal static bool IsOfficePageVisible(KingdomManagementVM vm)
+        {
+            return vm != null
+                   && Instances.TryGetValue(vm, out KingdomOfficeManagementVMMixin mixin)
+                   && mixin.OfficePageVisible;
+        }
     }
 
     /// <summary>
@@ -500,6 +552,43 @@ namespace ModifiedPolitics.HeroOffices.UI
         private static void HideOfficePage(KingdomManagementVM __instance)
         {
             KingdomOfficeManagementVMMixin.HideOfficePage(__instance);
+        }
+    }
+
+    /// <summary>
+    /// Inserts the office page between Army and Diplomacy for keyboard and gamepad navigation.
+    /// </summary>
+    [HarmonyPatch]
+    internal static class KingdomOfficeCategoryNavigationPatch
+    {
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(KingdomManagementVM), nameof(KingdomManagementVM.SelectNextCategory))]
+        private static bool SelectNextCategory(KingdomManagementVM __instance)
+        {
+            if (__instance.Army.Show)
+                return !KingdomOfficeManagementVMMixin.TryShowOfficePage(__instance);
+
+            if (!KingdomOfficeManagementVMMixin.IsOfficePageVisible(__instance))
+                return true;
+
+            AccessTools.Method(typeof(KingdomManagementVM), "SetSelectedCategory")
+                .Invoke(__instance, new object[] { 4 });
+            return false;
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(KingdomManagementVM), nameof(KingdomManagementVM.SelectPreviousCategory))]
+        private static bool SelectPreviousCategory(KingdomManagementVM __instance)
+        {
+            if (__instance.Diplomacy.Show)
+                return !KingdomOfficeManagementVMMixin.TryShowOfficePage(__instance);
+
+            if (!KingdomOfficeManagementVMMixin.IsOfficePageVisible(__instance))
+                return true;
+
+            AccessTools.Method(typeof(KingdomManagementVM), "SetSelectedCategory")
+                .Invoke(__instance, new object[] { 3 });
+            return false;
         }
     }
 }

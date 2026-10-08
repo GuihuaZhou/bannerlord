@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -23,6 +24,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             MBBindingList<KingdomOfficeHolderVM> holders,
             int vacantCount,
             bool canAppoint,
+            string appointmentUnavailableText,
             Action<KingdomOfficeItemVM> onSelect,
             Action<KingdomOfficeItemVM> onAppoint)
         {
@@ -32,19 +34,17 @@ namespace ModifiedPolitics.HeroOffices.UI
             Description = description;
             EffectsText = effectsText;
             Holders = holders;
-            HasHolders = holders.Count > 0;
+            HasHolders = holders.Any(holder => holder.HasHolder);
             HasNoHolders = !HasHolders;
             HasVacancy = vacantCount > 0;
             CanAppoint = canAppoint;
+            ShowAppointmentUnavailable = HasVacancy && !CanAppoint;
+            AppointmentUnavailableText = appointmentUnavailableText ?? string.Empty;
+            BenefitsTitle = new TextObject("{=MP_OfficeBenefitsTitle}Office Benefits").ToString();
             HoldersTitle = new TextObject("{=MP_OfficeHoldersTitle}Office Holders").ToString();
             NoHoldersText = new TextObject(
                 "{=MP_OfficeNoHolders}There are currently no office holders.").ToString();
             AppointText = new TextObject("{=MP_OfficeAppointButton}Appoint").ToString();
-            TextObject vacancyText = HasVacancy
-                ? new TextObject("{=MP_OfficeVacantSeats}Vacant seats: {COUNT}")
-                : new TextObject("{=MP_OfficeNoVacantSeats}There are currently no vacant seats.");
-            vacancyText.SetTextVariable("COUNT", vacantCount);
-            VacancyText = vacancyText.ToString();
             _onSelect = onSelect;
             _onAppoint = onAppoint;
         }
@@ -79,6 +79,15 @@ namespace ModifiedPolitics.HeroOffices.UI
         public bool CanAppoint { get; }
 
         [DataSourceProperty]
+        public bool ShowAppointmentUnavailable { get; }
+
+        [DataSourceProperty]
+        public string AppointmentUnavailableText { get; }
+
+        [DataSourceProperty]
+        public string BenefitsTitle { get; }
+
+        [DataSourceProperty]
         public string HoldersTitle { get; }
 
         [DataSourceProperty]
@@ -86,9 +95,6 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         [DataSourceProperty]
         public string AppointText { get; }
-
-        [DataSourceProperty]
-        public string VacancyText { get; }
 
         [DataSourceProperty]
         public bool IsSelected

@@ -12,25 +12,39 @@ namespace ModifiedPolitics.HeroOffices.UI
     public sealed class KingdomOfficeHolderVM : ViewModel
     {
         private readonly Action<Hero> _onDismiss;
+        private readonly Action _onAppoint;
 
         public KingdomOfficeHolderVM(
             Hero hero,
             string assignmentText,
             bool canDismiss,
-            Action<Hero> onDismiss)
+            Action<Hero> onDismiss,
+            bool canAppoint = false,
+            Action onAppoint = null)
         {
             Hero = hero;
             HeroVisual = new HeroVM(hero, true);
-            Name = hero?.Name?.ToString() ?? string.Empty;
+            IsVacant = hero == null;
+            HasHolder = !IsVacant;
+            Name = hero?.Name?.ToString()
+                   ?? new TextObject("{=MP_OfficeVacantSlot}Vacant").ToString();
             ClanName = hero?.Clan?.Name?.ToString() ?? string.Empty;
             AssignmentText = assignmentText ?? string.Empty;
             HasAssignmentText = !string.IsNullOrWhiteSpace(AssignmentText);
             CanDismiss = canDismiss;
+            CanAppoint = canAppoint;
             DismissText = new TextObject("{=MP_OfficeDismissButton}Dismiss").ToString();
             _onDismiss = onDismiss;
+            _onAppoint = onAppoint;
         }
 
         public Hero Hero { get; }
+
+        [DataSourceProperty]
+        public bool IsVacant { get; }
+
+        [DataSourceProperty]
+        public bool HasHolder { get; }
 
         [DataSourceProperty]
         public HeroVM HeroVisual { get; }
@@ -51,12 +65,21 @@ namespace ModifiedPolitics.HeroOffices.UI
         public bool CanDismiss { get; }
 
         [DataSourceProperty]
+        public bool CanAppoint { get; }
+
+        [DataSourceProperty]
         public string DismissText { get; }
 
         public void ExecuteDismiss()
         {
             if (CanDismiss && Hero != null)
                 _onDismiss?.Invoke(Hero);
+        }
+
+        public void ExecuteAppoint()
+        {
+            if (IsVacant && CanAppoint)
+                _onAppoint?.Invoke();
         }
     }
 }
