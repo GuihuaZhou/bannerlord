@@ -1,0 +1,31 @@
+<ButtonWidget
+    Id="OfficesTabButton"
+    DoNotPassEventsToChildren="true"
+    WidthSizePolicy="Fixed"
+    HeightSizePolicy="Fixed"
+    SuggestedWidth="230"
+    SuggestedHeight="!Header.Tab.Right.Height.Scaled"
+    HorizontalAlignment="Right"
+    VerticalAlignment="Center"
+    Brush="Header.Tab.Center"
+    Command.Click="ExecuteShowOffices"
+    IsEnabled="@PlayerHasKingdom"
+    IsSelected="@OfficePageVisible"
+    UpdateChildrenStates="true">
+
+  <Children>
+
+    <TextWidget
+        WidthSizePolicy="CoverChildren"
+        HeightSizePolicy="CoverChildren"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        PositionXOffset="-10"
+        MarginTop="3"
+        Brush="Clan.TabControl.Text"
+        IsEnabled="@PlayerHasKingdom"
+        Text="@OfficesText" />
+
+  </Children>
+
+</ButtonWidget>

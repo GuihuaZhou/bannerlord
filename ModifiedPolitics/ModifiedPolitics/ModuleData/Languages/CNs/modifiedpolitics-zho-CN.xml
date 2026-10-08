@@ -418,5 +418,8 @@
     <string id="MP_NegotiationDebugTradeAlreadyExists" text="贸易协定已经存在" />
     <string id="MP_NegotiationDebugAllianceBehaviorMissing" text="无法获取同盟行为" />
     <string id="MP_NegotiationDebugAllianceAlreadyExists" text="同盟已经存在" />
+    <string id="MP_KingdomOfficesTab" text="官职" />
+    <string id="MP_KingdomOfficesTitle" text="王国官职" />
+    <string id="MP_KingdomOfficesPageTest" text="王国官职页面已就绪。" />
 </strings>
 </base>

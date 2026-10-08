@@ -1,0 +1,32 @@
+<Widget
+    Id="OfficesPanel"
+    WidthSizePolicy="StretchToParent"
+    HeightSizePolicy="StretchToParent"
+    MarginTop="188"
+    MarginBottom="75"
+    IsVisible="@OfficePageVisible">
+  <Children>
+    <ListPanel
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="CoverChildren"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        StackLayout.LayoutMethod="VerticalBottomToTop">
+      <Children>
+        <TextWidget
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="CoverChildren"
+            Brush="Kingdom.NameTitle.Text"
+            Brush.TextHorizontalAlignment="Center"
+            Text="@OfficePageTitle" />
+        <TextWidget
+            WidthSizePolicy="StretchToParent"
+            HeightSizePolicy="CoverChildren"
+            MarginTop="25"
+            Brush="Clan.Tuple.Name.Text"
+            Brush.TextHorizontalAlignment="Center"
+            Text="@OfficePageTestText" />
+      </Children>
+    </ListPanel>
+  </Children>
+</Widget>
