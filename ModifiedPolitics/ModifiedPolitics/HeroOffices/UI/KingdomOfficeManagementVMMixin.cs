@@ -9,8 +9,11 @@ using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Domain;
 using ModifiedPolitics.HeroOffices.Models;
+using ModifiedPolitics.HeroOffices.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement;
+using TaleWorlds.Core;
+using TaleWorlds.Core.ImageIdentifiers;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 
@@ -220,8 +223,10 @@ namespace ModifiedPolitics.HeroOffices.UI
                 seatText.ToString(),
                 GetOfficeDescription(officeType).ToString(),
                 GetOfficeEffects(officeType).ToString(),
-                FormatHolders(assignments),
-                SelectOffice);
+                CreateHolderItems(assignments),
+                CanAppoint(officeType, assignments.Count, limit),
+                SelectOffice,
+                BeginAppointment);
         }
 
         private void SelectOffice(KingdomOfficeItemVM office)
@@ -233,22 +238,202 @@ namespace ModifiedPolitics.HeroOffices.UI
             HasOfficeSelection = office != null;
         }
 
-        private static string FormatHolders(IEnumerable<OfficeAssignment> assignments)
+        private MBBindingList<KingdomOfficeHolderVM> CreateHolderItems(
+            IEnumerable<OfficeAssignment> assignments)
         {
-            List<string> holders = assignments.Select(assignment =>
+            var holders = new MBBindingList<KingdomOfficeHolderVM>();
+            bool canDismiss = Clan.PlayerClan?.Kingdom?.Leader == Hero.MainHero;
+            foreach (OfficeAssignment assignment in assignments)
             {
-                string clanName = assignment.Hero.Clan?.Name?.ToString() ?? string.Empty;
-                if (!OfficeRules.IsLocal(assignment.OfficeType))
-                    return assignment.Hero.Name + "  ·  " + clanName;
-
                 string settlementName = assignment.Hero.GovernorOf?.Settlement?.Name?.ToString()
                                         ?? string.Empty;
-                return assignment.Hero.Name + "  ·  " + clanName + "  ·  " + settlementName;
-            }).ToList();
+                holders.Add(new KingdomOfficeHolderVM(
+                    assignment.Hero,
+                    OfficeRules.IsLocal(assignment.OfficeType) ? settlementName : string.Empty,
+                    canDismiss,
+                    BeginDismissal));
+            }
 
-            return holders.Count == 0
-                ? new TextObject("{=MP_OfficeNoHolders}There are currently no office holders.").ToString()
-                : string.Join("\n", holders);
+            return holders;
+        }
+
+        private static bool CanAppoint(OfficeType officeType, int occupied, int limit)
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            return kingdom != null
+                   && !kingdom.IsEliminated
+                   && kingdom.Leader == Hero.MainHero
+                   && occupied < limit
+                   && HeroOfficeBehavior.Current != null
+                   && GetEligibleCandidates(kingdom, officeType).Any();
+        }
+
+        private void BeginAppointment(KingdomOfficeItemVM office)
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (kingdom == null || kingdom.Leader != Hero.MainHero || office == null)
+                return;
+
+            // Vlandian marshal elections generate their candidates inside the decision.
+            if (office.OfficeType == OfficeType.Marshal
+                && string.Equals(kingdom.Culture?.StringId, "vlandia", StringComparison.OrdinalIgnoreCase))
+            {
+                MarshalDecisionService.TryProposeAppointment(kingdom);
+                RefreshOfficeList();
+                return;
+            }
+
+            List<InquiryElement> candidates = GetEligibleCandidates(kingdom, office.OfficeType)
+                .Select(hero => new InquiryElement(
+                    hero,
+                    hero.Name.ToString(),
+                    new CharacterImageIdentifier(CharacterCode.CreateFrom(hero.CharacterObject)),
+                    true,
+                    hero.Clan?.Name?.ToString() ?? string.Empty))
+                .ToList();
+            if (candidates.Count == 0)
+                return;
+
+            MBInformationManager.ShowMultiSelectionInquiry(
+                new MultiSelectionInquiryData(
+                    new TextObject("{=MP_OfficeAppointTitle}Appoint Officer").ToString(),
+                    new TextObject("{=MP_OfficeAppointDescription}Select a hero to fill this office.").ToString(),
+                    candidates,
+                    true,
+                    1,
+                    1,
+                    new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
+                    new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
+                    selected => CompleteAppointment(office.OfficeType, selected),
+                    null,
+                    string.Empty,
+                    false),
+                false,
+                false);
+        }
+
+        private void CompleteAppointment(OfficeType officeType, List<InquiryElement> selected)
+        {
+            Hero candidate = selected?.FirstOrDefault()?.Identifier as Hero;
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (candidate == null || kingdom == null)
+                return;
+
+            bool succeeded = officeType == OfficeType.Marshal
+                ? MarshalDecisionService.TryProposeAppointment(kingdom, candidate)
+                : OfficeAppointmentService.TryAppoint(
+                    kingdom,
+                    Hero.MainHero,
+                    candidate,
+                    officeType,
+                    out _);
+            if (!succeeded)
+                ShowActionFailed();
+
+            RefreshOfficeList();
+        }
+
+        private void BeginDismissal(Hero officer)
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            OfficeAssignment assignment = HeroOfficeBehavior.Current?.GetAssignment(officer);
+            if (kingdom == null || kingdom.Leader != Hero.MainHero
+                || assignment == null || assignment.Kingdom != kingdom)
+                return;
+
+            if (assignment.OfficeType == OfficeType.Marshal)
+            {
+                if (!MarshalDecisionService.TryProposeDismissal(kingdom))
+                    ShowActionFailed();
+                RefreshOfficeList();
+                return;
+            }
+
+            List<InquiryElement> compensationOptions = Enum.GetValues(typeof(OfficeCompensation))
+                .Cast<OfficeCompensation>()
+                .Select(compensation => new InquiryElement(
+                    compensation,
+                    GetCompensationText(compensation).ToString(),
+                    null,
+                    compensation == OfficeCompensation.None
+                    || Hero.MainHero.Gold >= OfficeAppointmentService.GetCompensationAmount(compensation),
+                    string.Empty))
+                .ToList();
+            MBInformationManager.ShowMultiSelectionInquiry(
+                new MultiSelectionInquiryData(
+                    new TextObject("{=MP_OfficeDismissTitle}Dismiss Officer").ToString(),
+                    new TextObject("{=MP_OfficeDismissDescription}Choose the compensation paid directly to the dismissed hero.").ToString(),
+                    compensationOptions,
+                    true,
+                    1,
+                    1,
+                    new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
+                    new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
+                    selected => CompleteDismissal(officer, selected),
+                    null,
+                    string.Empty,
+                    false),
+                false,
+                false);
+        }
+
+        private void CompleteDismissal(Hero officer, List<InquiryElement> selected)
+        {
+            if (!(selected?.FirstOrDefault()?.Identifier is OfficeCompensation compensation))
+                return;
+
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (!OfficeAppointmentService.TryDismiss(
+                    kingdom,
+                    Hero.MainHero,
+                    officer,
+                    compensation,
+                    out _))
+                ShowActionFailed();
+
+            RefreshOfficeList();
+        }
+
+        private static IEnumerable<Hero> GetEligibleCandidates(Kingdom kingdom, OfficeType officeType)
+        {
+            if (kingdom == null || HeroOfficeBehavior.Current == null)
+                return Enumerable.Empty<Hero>();
+
+            return kingdom.Clans
+                .Where(clan => clan != null && !clan.IsEliminated && !clan.IsClanTypeMercenary)
+                .SelectMany(clan => clan.Heroes)
+                .Where(hero => HeroOfficeBehavior.Current.GetAssignment(hero) == null
+                               && OfficeRules.IsEligible(hero, kingdom, officeType))
+                .OrderBy(hero => hero.Name.ToString());
+        }
+
+        private static TextObject GetCompensationText(OfficeCompensation compensation)
+        {
+            TextObject text = new TextObject("{=MP_OfficeCompensationOption}{LEVEL}: {AMOUNT}{GOLD_ICON}");
+            text.SetTextVariable("LEVEL", GetCompensationLevelText(compensation));
+            text.SetTextVariable("AMOUNT", OfficeAppointmentService.GetCompensationAmount(compensation));
+            return text;
+        }
+
+        private static TextObject GetCompensationLevelText(OfficeCompensation compensation)
+        {
+            switch (compensation)
+            {
+                case OfficeCompensation.Low:
+                    return new TextObject("{=MP_OfficeCompensationLow}Low compensation");
+                case OfficeCompensation.Medium:
+                    return new TextObject("{=MP_OfficeCompensationMedium}Medium compensation");
+                case OfficeCompensation.High:
+                    return new TextObject("{=MP_OfficeCompensationHigh}High compensation");
+                default:
+                    return new TextObject("{=MP_OfficeCompensationNone}No compensation");
+            }
+        }
+
+        private static void ShowActionFailed()
+        {
+            InformationManager.DisplayMessage(new InformationMessage(
+                new TextObject("{=MP_OfficeActionFailed}The office action could not be completed because its conditions changed.").ToString()));
         }
 
         private static TextObject GetOfficeDescription(OfficeType officeType)

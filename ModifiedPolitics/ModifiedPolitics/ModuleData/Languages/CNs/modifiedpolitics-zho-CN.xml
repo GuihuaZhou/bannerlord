@@ -437,5 +437,20 @@
     <string id="MP_OfficeAgricultureOfficerEffects" text="• 治理定居点粮食生产 +20%&#xA;• 任职者所属家族每日影响力 +1" />
     <string id="MP_OfficeMilitaryOfficerEffects" text="• 正规兵员生成速度 +25%&#xA;• 驻军招募速度 +50%&#xA;• 任职者所属家族每日影响力 +1" />
     <string id="MP_OfficeSecurityOfficerEffects" text="• 治理定居点忠诚度每日 +2&#xA;• 任职者所属家族每日影响力 +1" />
+    <string id="MP_OfficeHoldersTitle" text="任职情况" />
+    <string id="MP_OfficeAppointButton" text="任命" />
+    <string id="MP_OfficeDismissButton" text="撤职" />
+    <string id="MP_OfficeAppointTitle" text="任命官员" />
+    <string id="MP_OfficeAppointDescription" text="选择一名 Hero 担任该官职。" />
+    <string id="MP_OfficeDismissTitle" text="撤销官职" />
+    <string id="MP_OfficeDismissDescription" text="选择直接支付给被撤职 Hero 的经济补偿。" />
+    <string id="MP_OfficeConfirm" text="确认" />
+    <string id="MP_OfficeCancel" text="取消" />
+    <string id="MP_OfficeCompensationOption" text="{LEVEL}：{AMOUNT}{GOLD_ICON}" />
+    <string id="MP_OfficeCompensationNone" text="不补偿" />
+    <string id="MP_OfficeCompensationLow" text="低额补偿" />
+    <string id="MP_OfficeCompensationMedium" text="中额补偿" />
+    <string id="MP_OfficeCompensationHigh" text="高额补偿" />
+    <string id="MP_OfficeActionFailed" text="官职条件已经变化，本次操作未能完成。" />
 </strings>
 </base>

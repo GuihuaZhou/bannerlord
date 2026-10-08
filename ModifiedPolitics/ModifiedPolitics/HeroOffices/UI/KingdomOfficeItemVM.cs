@@ -1,6 +1,7 @@
 using System;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.HeroOffices.UI
 {
@@ -10,6 +11,7 @@ namespace ModifiedPolitics.HeroOffices.UI
     public sealed class KingdomOfficeItemVM : ViewModel
     {
         private readonly Action<KingdomOfficeItemVM> _onSelect;
+        private readonly Action<KingdomOfficeItemVM> _onAppoint;
         private bool _isSelected;
 
         public KingdomOfficeItemVM(
@@ -18,16 +20,26 @@ namespace ModifiedPolitics.HeroOffices.UI
             string seatText,
             string description,
             string effectsText,
-            string holdersText,
-            Action<KingdomOfficeItemVM> onSelect)
+            MBBindingList<KingdomOfficeHolderVM> holders,
+            bool canAppoint,
+            Action<KingdomOfficeItemVM> onSelect,
+            Action<KingdomOfficeItemVM> onAppoint)
         {
             OfficeType = officeType;
             Name = name;
             SeatText = seatText;
             Description = description;
             EffectsText = effectsText;
-            HoldersText = holdersText;
+            Holders = holders;
+            HasHolders = holders.Count > 0;
+            HasNoHolders = !HasHolders;
+            CanAppoint = canAppoint;
+            HoldersTitle = new TextObject("{=MP_OfficeHoldersTitle}Office Holders").ToString();
+            NoHoldersText = new TextObject(
+                "{=MP_OfficeNoHolders}There are currently no office holders.").ToString();
+            AppointText = new TextObject("{=MP_OfficeAppointButton}Appoint").ToString();
             _onSelect = onSelect;
+            _onAppoint = onAppoint;
         }
 
         public OfficeType OfficeType { get; }
@@ -45,7 +57,25 @@ namespace ModifiedPolitics.HeroOffices.UI
         public string EffectsText { get; }
 
         [DataSourceProperty]
-        public string HoldersText { get; }
+        public MBBindingList<KingdomOfficeHolderVM> Holders { get; }
+
+        [DataSourceProperty]
+        public bool HasHolders { get; }
+
+        [DataSourceProperty]
+        public bool HasNoHolders { get; }
+
+        [DataSourceProperty]
+        public bool CanAppoint { get; }
+
+        [DataSourceProperty]
+        public string HoldersTitle { get; }
+
+        [DataSourceProperty]
+        public string NoHoldersText { get; }
+
+        [DataSourceProperty]
+        public string AppointText { get; }
 
         [DataSourceProperty]
         public bool IsSelected
@@ -64,6 +94,12 @@ namespace ModifiedPolitics.HeroOffices.UI
         public void ExecuteSelect()
         {
             _onSelect?.Invoke(this);
+        }
+
+        public void ExecuteAppoint()
+        {
+            if (CanAppoint)
+                _onAppoint?.Invoke(this);
         }
     }
 }
