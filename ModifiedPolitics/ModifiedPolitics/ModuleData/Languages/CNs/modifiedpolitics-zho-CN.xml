@@ -421,5 +421,21 @@
     <string id="MP_KingdomOfficesTab" text="官职" />
     <string id="MP_KingdomOfficesTitle" text="王国官职" />
     <string id="MP_KingdomOfficesPageTest" text="王国官职页面已就绪。" />
+    <string id="MP_OfficeSeatCount" text="{USED}/{TOTAL}" />
+    <string id="MP_OfficeNoHolders" text="当前暂无任职者" />
+    <string id="MP_OfficeMarshalDescription" text="王国最高军事官职，负责统领并召集军团。" />
+    <string id="MP_OfficeChiefMinisterDescription" text="统筹王国地方行政的最高文官。" />
+    <string id="MP_OfficeCourtStewardDescription" text="负责缓和王国内部政治争端的宫廷官职。" />
+    <string id="MP_OfficeTaxOfficerDescription" text="由城镇总督担任，负责管理当地税务。" />
+    <string id="MP_OfficeAgricultureOfficerDescription" text="由城镇总督担任，负责管理当地粮食生产。" />
+    <string id="MP_OfficeMilitaryOfficerDescription" text="由城堡总督担任，负责组织正规兵员与驻军招募。" />
+    <string id="MP_OfficeSecurityOfficerDescription" text="由城镇总督担任，负责维持忠诚与地方秩序。" />
+    <string id="MP_OfficeMarshalEffects" text="• 召集军团的影响力消耗 -25%&#xA;• 军团影响力维持消耗 -20%&#xA;• 任职者所属家族每日影响力 +5" />
+    <string id="MP_OfficeChiefMinisterEffects" text="• 全国所有地方官职效果 +10%&#xA;• 任职者所属家族每日影响力 +5" />
+    <string id="MP_OfficeCourtStewardEffects" text="• 王国投票产生的负面家族关系变化 -25%&#xA;• 任职者所属家族每日影响力 +5" />
+    <string id="MP_OfficeTaxOfficerEffects" text="• 治理定居点税收 +20%&#xA;• 任职者所属家族每日影响力 +1" />
+    <string id="MP_OfficeAgricultureOfficerEffects" text="• 治理定居点粮食生产 +20%&#xA;• 任职者所属家族每日影响力 +1" />
+    <string id="MP_OfficeMilitaryOfficerEffects" text="• 正规兵员生成速度 +25%&#xA;• 驻军招募速度 +50%&#xA;• 任职者所属家族每日影响力 +1" />
+    <string id="MP_OfficeSecurityOfficerEffects" text="• 治理定居点忠诚度每日 +2&#xA;• 任职者所属家族每日影响力 +1" />
 </strings>
 </base>

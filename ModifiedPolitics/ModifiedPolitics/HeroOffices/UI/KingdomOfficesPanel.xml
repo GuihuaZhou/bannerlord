@@ -1,31 +1,59 @@
-<Widget
-    Id="OfficesPanel"
-    WidthSizePolicy="StretchToParent"
-    HeightSizePolicy="StretchToParent"
-    MarginTop="188"
-    MarginBottom="75"
-    IsVisible="@OfficePageVisible">
+<Widget Id="OfficesPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="188" MarginBottom="75" IsVisible="@OfficePageVisible">
   <Children>
-    <ListPanel
-        WidthSizePolicy="StretchToParent"
-        HeightSizePolicy="CoverChildren"
-        HorizontalAlignment="Center"
-        VerticalAlignment="Center"
-        StackLayout.LayoutMethod="VerticalBottomToTop">
+    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
       <Children>
-        <TextWidget
-            WidthSizePolicy="StretchToParent"
-            HeightSizePolicy="CoverChildren"
-            Brush="Kingdom.NameTitle.Text"
-            Brush.TextHorizontalAlignment="Center"
-            Text="@OfficePageTitle" />
-        <TextWidget
-            WidthSizePolicy="StretchToParent"
-            HeightSizePolicy="CoverChildren"
-            MarginTop="25"
-            Brush="Clan.Tuple.Name.Text"
-            Brush.TextHorizontalAlignment="Center"
-            Text="@OfficePageTestText" />
+        <!-- The office list follows the policy page's framed left column. -->
+        <BrushListPanel WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="625" MarginTop="6" MarginBottom="9" Brush="Frame1Brush" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="64" Sprite="SPKingdom\header_policies" ExtendTop="21" ExtendRight="13" ExtendBottom="20" RenderLate="true">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.PoliciesCollapserTitle.Text" IsDisabled="true" Text="@OfficePageTitle" />
+              </Children>
+            </Widget>
+            <!-- Keep the list and its scrollbar in one horizontal row. Otherwise the
+                 vertical parent allocates half of the remaining height to the scrollbar. -->
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginBottom="3" AutoHideScrollBars="true" ClipRect="OfficeListClipRect" InnerPanel="OfficeListClipRect\OfficeList" VerticalScrollbar="..\OfficeListScrollbar\Scrollbar">
+                  <Children>
+                    <Widget Id="OfficeListClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+                        <NavigatableListPanel Id="OfficeList" DataSource="{Offices}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <ItemTemplate>
+                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="88" Brush="Kingdom.Policy.Active.Tuple" Command.Click="ExecuteSelect" IsSelected="@IsSelected" UpdateChildrenStates="true">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="35" MarginRight="125" Brush="Kingdom.PoliciesItem.Text" Brush.TextHorizontalAlignment="Left" Text="@Name" />
+                                <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="95" HorizontalAlignment="Right" MarginRight="25" Brush="Kingdom.PoliciesItem.Text" Brush.TextHorizontalAlignment="Right" Text="@SeatText" />
+                              </Children>
+                            </ButtonWidget>
+                          </ItemTemplate>
+                        </NavigatableListPanel>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+                <Standard.VerticalScrollbar Id="OfficeListScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" MarginRight="2" MarginLeft="2" MarginBottom="3" />
+              </Children>
+            </ListPanel>
+          </Children>
+        </BrushListPanel>
+
+        <!-- The selected office uses the policy page's centered detail composition. -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@HasOfficeSelection">
+          <Children>
+            <ListPanel DataSource="{CurrentOffice}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" MarginLeft="80" MarginRight="80" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Kingdom.TitleMedium.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@Description" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="45" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" Brush="Kingdom.TitleSmall.Text" Brush.TextHorizontalAlignment="Center" Text="@SeatText" />
+                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" MarginLeft="100" MarginRight="100" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Left" Text="@EffectsText" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="45" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" Brush="Kingdom.TitleSmall.Text" Brush.TextHorizontalAlignment="Center" Text="@HoldersText" />
+              </Children>
+            </ListPanel>
+          </Children>
+        </Widget>
       </Children>
     </ListPanel>
   </Children>
