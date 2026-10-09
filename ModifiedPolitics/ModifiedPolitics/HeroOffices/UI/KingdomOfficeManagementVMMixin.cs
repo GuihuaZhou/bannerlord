@@ -22,8 +22,7 @@ using TaleWorlds.Localization;
 namespace ModifiedPolitics.HeroOffices.UI
 {
     /// <summary>
-    /// Provides only navigation and localized text for the offices page.
-    /// Office assignments are intentionally not connected in this test stage.
+    /// Provides navigation, presentation and ruler actions for the offices page.
     /// </summary>
     [ViewModelMixin("RefreshValues", true)]
     public sealed class KingdomOfficeManagementVMMixin
@@ -33,6 +32,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             Instances = new ConditionalWeakTable<KingdomManagementVM, KingdomOfficeManagementVMMixin>();
 
         private readonly KingdomManagementVM _vm;
+        private HeroOfficeBehavior _officeBehavior;
         private string _officesText;
         private string _officePageTitle;
         private bool _officePageVisible;
@@ -47,6 +47,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             Instances.Remove(vm);
             Instances.Add(vm, this);
             _offices = new MBBindingList<KingdomOfficeItemVM>();
+            AttachOfficeBehavior();
             RefreshText();
         }
 
@@ -133,8 +134,18 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         public override void OnRefresh()
         {
+            AttachOfficeBehavior();
             RefreshText();
             RefreshOfficeList();
+        }
+
+        public override void OnFinalize()
+        {
+            if (_officeBehavior != null)
+                _officeBehavior.AssignmentsChanged -= OnAssignmentsChanged;
+
+            Instances.Remove(_vm);
+            base.OnFinalize();
         }
 
         [DataSourceMethod]
@@ -157,6 +168,26 @@ namespace ModifiedPolitics.HeroOffices.UI
         {
             OfficesText = new TextObject("{=MP_KingdomOfficesTab}Offices").ToString();
             OfficePageTitle = new TextObject("{=MP_KingdomOfficesTitle}Kingdom Offices").ToString();
+        }
+
+        private void AttachOfficeBehavior()
+        {
+            HeroOfficeBehavior current = HeroOfficeBehavior.Current;
+            if (_officeBehavior == current)
+                return;
+
+            if (_officeBehavior != null)
+                _officeBehavior.AssignmentsChanged -= OnAssignmentsChanged;
+
+            _officeBehavior = current;
+            if (_officeBehavior != null)
+                _officeBehavior.AssignmentsChanged += OnAssignmentsChanged;
+        }
+
+        private void OnAssignmentsChanged()
+        {
+            if (OfficePageVisible)
+                RefreshOfficeList();
         }
 
         private void RefreshOfficeList()

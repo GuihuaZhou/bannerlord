@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.HeroOffices.Domain;
@@ -24,6 +25,11 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
         private List<OfficeAssignment> _assignments = new List<OfficeAssignment>();
 
         public static HeroOfficeBehavior Current { get; private set; }
+
+        /// <summary>
+        /// Notifies open views after persisted office membership changes.
+        /// </summary>
+        public event Action AssignmentsChanged;
 
         public override void RegisterEvents()
         {
@@ -60,6 +66,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
 
             _assignments.Add(new OfficeAssignment(kingdom, hero, officeType));
             LogAssignment(kingdom, hero, officeType, "MP_OfficeAppointed", "appointed");
+            AssignmentsChanged?.Invoke();
         }
 
         internal void RemoveAssignment(OfficeAssignment assignment, bool automatic)
@@ -76,6 +83,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 assignment.OfficeType,
                 automatic ? "MP_OfficeInvalidated" : "MP_OfficeDismissed",
                 automatic ? "automatically removed" : "dismissed");
+            AssignmentsChanged?.Invoke();
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
@@ -89,6 +97,9 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             RemoveExcessLocalAssignments();
             ApplyDailyInfluence();
             LogPlayerKingdomSnapshot();
+
+            // Territory changes can alter local seat limits without adding or removing an assignment.
+            AssignmentsChanged?.Invoke();
         }
 
         private void OnHeroPrisonerTaken(PartyBase capturer, Hero prisoner)

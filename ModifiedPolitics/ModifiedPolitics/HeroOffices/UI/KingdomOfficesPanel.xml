@@ -41,8 +41,12 @@
         <!-- The selected office uses the policy page's centered detail composition. -->
         <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@HasOfficeSelection">
           <Children>
-            <ListPanel DataSource="{CurrentOffice}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" MarginLeft="80" MarginRight="80" StackLayout.LayoutMethod="VerticalTopToBottom">
+            <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" AutoHideScrollBars="true" ClipRect="OfficeDetailsClipRect" InnerPanel="OfficeDetailsClipRect\OfficeDetails" VerticalScrollbar="..\OfficeDetailsScrollbar\Scrollbar">
               <Children>
+                <Widget Id="OfficeDetailsClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                  <Children>
+                    <ListPanel Id="OfficeDetails" DataSource="{CurrentOffice}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" MarginLeft="80" MarginRight="80" MarginBottom="25" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Kingdom.TitleMedium.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@Description" />
                 <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="35" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
@@ -95,8 +99,13 @@
                     <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
                   </Children>
                 </ButtonWidget>
+                      </Children>
+                    </ListPanel>
+                  </Children>
+                </Widget>
               </Children>
-            </ListPanel>
+            </ScrollablePanel>
+            <Standard.VerticalScrollbar Id="OfficeDetailsScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" MarginRight="12" MarginTop="20" MarginBottom="20" />
           </Children>
         </Widget>
       </Children>
