@@ -114,10 +114,21 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             ApplicationCandidate application)
         {
             TextObject description = new TextObject(
-                "{=MP_OfficeAiApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.");
+                OfficeRules.IsLocal(application.OfficeType)
+                    ? "{=MP_OfficeAiLocalApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}"
+                    : "{=MP_OfficeAiApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nCandidate score: {SCORE}");
             description.SetTextVariable("HERO", application.Hero.Name);
             description.SetTextVariable("CLAN", application.Hero.Clan?.Name ?? TextObject.GetEmpty());
             description.SetTextVariable("OFFICE", OfficeText.GetName(application.OfficeType));
+            description.SetTextVariable(
+                "SCORE",
+                (int)OfficeRules.GetCandidateScore(application.Hero, application.OfficeType));
+            if (OfficeRules.IsLocal(application.OfficeType))
+            {
+                description.SetTextVariable(
+                    "SETTLEMENT",
+                    application.Hero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
+            }
 
             InformationManager.ShowInquiry(
                 new InquiryData(
@@ -128,7 +139,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     new TextObject("{=MP_OfficeApplicationApprove}Approve").ToString(),
                     new TextObject("{=MP_OfficeApplicationReject}Reject").ToString(),
                     () => ApproveApplication(kingdom, application),
-                    null,
+                    () => RejectApplication(kingdom, application),
                     string.Empty,
                     0f,
                     null,
@@ -136,6 +147,16 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     null),
                 false,
                 false);
+        }
+
+        private static void RejectApplication(
+            Kingdom kingdom,
+            ApplicationCandidate application)
+        {
+            OfficeApplicationService.RecordRejection(
+                kingdom,
+                application.Hero,
+                application.OfficeType);
         }
 
         private static void ApproveApplication(

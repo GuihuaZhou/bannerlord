@@ -149,6 +149,14 @@ namespace ModifiedPolitics.HeroOffices.Services
             return true;
         }
 
+        internal static void RecordRejection(
+            Kingdom kingdom,
+            Hero applicant,
+            OfficeType officeType)
+        {
+            LogResult(kingdom, applicant, officeType, false);
+        }
+
         private static bool ShouldRulerAccept(Kingdom kingdom, Hero applicant, OfficeType officeType)
         {
             Hero ruler = kingdom?.Leader;

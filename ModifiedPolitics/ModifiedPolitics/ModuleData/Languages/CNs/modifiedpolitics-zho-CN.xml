@@ -479,7 +479,8 @@
     <string id="MP_OfficeApplicationAcceptedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已接受。" />
     <string id="MP_OfficeApplicationRejectedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已拒绝。" />
     <string id="MP_OfficeAiApplicationTitle" text="官职申请" />
-    <string id="MP_OfficeAiApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。" />
+    <string id="MP_OfficeAiApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeAiLocalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />
     <string id="MP_OfficeApplicationApprove" text="同意" />
     <string id="MP_OfficeApplicationReject" text="拒绝" />
 </strings>
