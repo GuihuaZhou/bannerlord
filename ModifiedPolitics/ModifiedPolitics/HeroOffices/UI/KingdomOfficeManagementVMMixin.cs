@@ -403,8 +403,33 @@ namespace ModifiedPolitics.HeroOffices.UI
                 return;
             }
 
-            TextObject description = new TextObject(
-                "{=MP_OfficeApplyDescription}Ask the ruler to appoint you as {OFFICE}.");
+            TextObject description;
+            if (OfficeRules.IsLocal(office.OfficeType))
+            {
+                description = new TextObject(
+                    "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}");
+                description.SetTextVariable(
+                    "SETTLEMENT",
+                    Hero.MainHero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
+                description.SetTextVariable(
+                    "SCORE",
+                    (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
+            }
+            else if (office.OfficeType == OfficeType.Marshal)
+            {
+                description = new TextObject(
+                    "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nCandidate score: {SCORE}");
+                description.SetTextVariable(
+                    "SCORE",
+                    (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
+            }
+            else
+            {
+                description = new TextObject(
+                    "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.");
+            }
+
+            description.SetTextVariable("RULER", kingdom.Leader.Name);
             description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
             InformationManager.ShowInquiry(
                 new InquiryData(

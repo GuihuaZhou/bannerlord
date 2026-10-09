@@ -469,7 +469,9 @@
     <string id="MP_OfficeFailureDecisionUnavailable" text="当前无法发起该王国决议。" />
     <string id="MP_OfficeApplyButton" text="申请任职" />
     <string id="MP_OfficeApplyTitle" text="申请官职" />
-    <string id="MP_OfficeApplyDescription" text="向统治者申请担任{OFFICE}。" />
+    <string id="MP_OfficeApplyDescription" text="向{RULER}申请担任{OFFICE}。" />
+    <string id="MP_OfficeApplyLocalDescription" text="向{RULER}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeApplyMarshalDescription" text="请求{RULER}提名你担任{OFFICE}。&#xA;候选评分：{SCORE}" />
     <string id="MP_OfficeApplicationInvalidKingdom" text="王国或统治者当前无效，无法申请官职。" />
     <string id="MP_OfficeApplicationRulerCannotApply" text="王国统治者不需要申请官职。" />
     <string id="MP_OfficeApplicationIneligible" text="你不符合该官职的任职条件。" />

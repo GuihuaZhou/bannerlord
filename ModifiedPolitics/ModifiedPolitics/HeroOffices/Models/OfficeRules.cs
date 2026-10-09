@@ -55,7 +55,17 @@ namespace ModifiedPolitics.HeroOffices.Models
                 return false;
 
             if (IsLocal(officeType))
-                return hero.GovernorOf?.Settlement?.OwnerClan?.Kingdom == kingdom;
+            {
+                Town governedTown = hero.GovernorOf;
+                if (governedTown?.Settlement?.OwnerClan?.Kingdom != kingdom)
+                    return false;
+
+                // Military officers organize castle recruitment; the other local offices
+                // administer town taxation, food production and public order.
+                return officeType == OfficeType.MilitaryOfficer
+                    ? governedTown.IsCastle
+                    : governedTown.IsTown;
+            }
 
             if (officeType == OfficeType.Marshal)
                 return hero != kingdom.Leader && hero.CanLeadParty();
