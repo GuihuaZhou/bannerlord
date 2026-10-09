@@ -13,6 +13,7 @@ namespace ModifiedPolitics.HeroOffices.UI
     {
         private readonly Action<KingdomOfficeItemVM> _onSelect;
         private readonly Action<KingdomOfficeItemVM> _onAppoint;
+        private readonly Action<KingdomOfficeItemVM> _onApply;
         private bool _isSelected;
 
         public KingdomOfficeItemVM(
@@ -27,8 +28,11 @@ namespace ModifiedPolitics.HeroOffices.UI
             bool canManageOffices,
             bool canAppoint,
             string appointmentUnavailableText,
+            bool canApply,
+            string applicationUnavailableText,
             Action<KingdomOfficeItemVM> onSelect,
-            Action<KingdomOfficeItemVM> onAppoint)
+            Action<KingdomOfficeItemVM> onAppoint,
+            Action<KingdomOfficeItemVM> onApply)
         {
             OfficeType = officeType;
             IconSprite = iconSprite;
@@ -45,13 +49,19 @@ namespace ModifiedPolitics.HeroOffices.UI
             ShowAppointButton = HasVacancy && CanManageOffices;
             ShowAppointmentUnavailable = ShowAppointButton && !CanAppoint;
             AppointmentUnavailableText = appointmentUnavailableText ?? string.Empty;
+            CanApply = canApply;
+            ShowApplyButton = HasVacancy && !CanManageOffices;
+            ShowApplicationUnavailable = ShowApplyButton && !CanApply;
+            ApplicationUnavailableText = applicationUnavailableText ?? string.Empty;
             BenefitsTitle = new TextObject("{=MP_OfficeBenefitsTitle}Office Benefits").ToString();
             HoldersTitle = new TextObject("{=MP_OfficeHoldersTitle}Office Holders").ToString();
             NoHoldersText = new TextObject(
                 "{=MP_OfficeNoHolders}There are currently no office holders.").ToString();
             AppointText = new TextObject("{=MP_OfficeAppointButton}Appoint").ToString();
+            ApplyText = new TextObject("{=MP_OfficeApplyButton}Apply").ToString();
             _onSelect = onSelect;
             _onAppoint = onAppoint;
+            _onApply = onApply;
         }
 
         public OfficeType OfficeType { get; }
@@ -99,6 +109,18 @@ namespace ModifiedPolitics.HeroOffices.UI
         public string AppointmentUnavailableText { get; }
 
         [DataSourceProperty]
+        public bool CanApply { get; }
+
+        [DataSourceProperty]
+        public bool ShowApplyButton { get; }
+
+        [DataSourceProperty]
+        public bool ShowApplicationUnavailable { get; }
+
+        [DataSourceProperty]
+        public string ApplicationUnavailableText { get; }
+
+        [DataSourceProperty]
         public string BenefitsTitle { get; }
 
         [DataSourceProperty]
@@ -109,6 +131,9 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         [DataSourceProperty]
         public string AppointText { get; }
+
+        [DataSourceProperty]
+        public string ApplyText { get; }
 
         [DataSourceProperty]
         public bool IsSelected
@@ -133,6 +158,12 @@ namespace ModifiedPolitics.HeroOffices.UI
         {
             if (CanAppoint)
                 _onAppoint?.Invoke(this);
+        }
+
+        public void ExecuteApply()
+        {
+            if (CanApply)
+                _onApply?.Invoke(this);
         }
     }
 }

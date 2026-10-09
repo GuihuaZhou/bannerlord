@@ -53,7 +53,17 @@
                   <Children>
                     <ListPanel Id="OfficeDetails" DataSource="{CurrentOffice}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="35" MarginLeft="80" MarginRight="80" MarginBottom="25" StackLayout.LayoutMethod="VerticalTopToBottom">
                       <Children>
-                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Kingdom.TitleMedium.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="58">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="52" HorizontalAlignment="Center" VerticalAlignment="Center" PositionXOffset="-175">
+                      <Children>
+                        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.GoldFrame" />
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="41" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="@IconSprite" />
+                      </Children>
+                    </Widget>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="70" MarginRight="70" Brush="Kingdom.TitleMedium.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" />
+                  </Children>
+                </Widget>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@Description" />
                 <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" MarginTop="35" MarginLeft="120" MarginRight="120" Sprite="GradientDivider_9" AlphaFactor="0.4" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="20" Brush="Kingdom.TitleSmall.Text" Brush.TextHorizontalAlignment="Center" Text="@BenefitsTitle" />
@@ -103,6 +113,12 @@
                 <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" IsVisible="@ShowAppointButton">
                   <Children>
                     <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
+                  </Children>
+                </ButtonWidget>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@ApplicationUnavailableText" IsVisible="@ShowApplicationUnavailable" />
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteApply" IsEnabled="@CanApply" IsVisible="@ShowApplyButton">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@ApplyText" />
                   </Children>
                 </ButtonWidget>
                       </Children>

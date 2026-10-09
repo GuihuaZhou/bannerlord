@@ -10,7 +10,7 @@ using TaleWorlds.SaveSystem;
 namespace ModifiedPolitics.HeroOffices.Behaviors
 {
     /// <summary>
-    /// Immediately fills local vacancies and reviews occupied local offices every 28 days.
+    /// Reviews occupied local offices every 28 days; vacancies are filled through applications.
     /// </summary>
     public sealed class LocalOfficeAiBehavior : CampaignBehaviorBase
     {
@@ -47,8 +47,6 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
 
             foreach (Kingdom kingdom in Kingdom.All.Where(IsAiKingdom).ToList())
             {
-                FillVacancies(behavior, kingdom);
-
                 bool reviewDue = !_lastReviewTimes.TryGetValue(kingdom, out CampaignTime lastReview)
                                  || lastReview == CampaignTime.Zero
                                  || lastReview.ElapsedDaysUntilNow >= 28f;
@@ -73,32 +71,6 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                    && !kingdom.IsEliminated
                    && kingdom.Leader != null
                    && kingdom.Leader != Hero.MainHero;
-        }
-
-        private static void FillVacancies(HeroOfficeBehavior behavior, Kingdom kingdom)
-        {
-            foreach (OfficeType officeType in LocalOffices)
-            {
-                int vacancies = OfficeRules.GetOfficeLimit(kingdom, officeType)
-                                - behavior.GetAssignments(kingdom, officeType).Count();
-                while (vacancies > 0)
-                {
-                    Hero candidate = GetAvailableCandidates(behavior, kingdom, officeType)
-                        .OrderByDescending(hero => OfficeRules.GetCandidateScore(hero, officeType))
-                        .ThenBy(hero => hero.StringId)
-                        .FirstOrDefault();
-                    if (candidate == null
-                        || !OfficeAppointmentService.TryAppoint(
-                            kingdom,
-                            kingdom.Leader,
-                            candidate,
-                            officeType,
-                            out _))
-                        break;
-
-                    vacancies--;
-                }
-            }
         }
 
         private static void ReviewOccupiedOffices(HeroOfficeBehavior behavior, Kingdom kingdom)

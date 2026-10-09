@@ -467,5 +467,20 @@
     <string id="MP_OfficeFailureMarshalDismissalDecision" text="大元帅撤职必须通过王国决议。" />
     <string id="MP_OfficeFailureCannotAfford" text="统治者无法支付所选补偿。" />
     <string id="MP_OfficeFailureDecisionUnavailable" text="当前无法发起该王国决议。" />
+    <string id="MP_OfficeApplyButton" text="申请任职" />
+    <string id="MP_OfficeApplyTitle" text="申请官职" />
+    <string id="MP_OfficeApplyDescription" text="向统治者申请担任{OFFICE}。" />
+    <string id="MP_OfficeApplicationInvalidKingdom" text="王国或统治者当前无效，无法申请官职。" />
+    <string id="MP_OfficeApplicationRulerCannotApply" text="王国统治者不需要申请官职。" />
+    <string id="MP_OfficeApplicationIneligible" text="你不符合该官职的任职条件。" />
+    <string id="MP_OfficeApplicationRejected" text="统治者拒绝了这次官职申请。" />
+    <string id="MP_OfficeApplicationAccepted" text="统治者接受了这次官职申请。" />
+    <string id="MP_OfficeApplicationDecisionStarted" text="统治者接受了申请，并发起了大元帅任命决议。" />
+    <string id="MP_OfficeApplicationAcceptedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已接受。" />
+    <string id="MP_OfficeApplicationRejectedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已拒绝。" />
+    <string id="MP_OfficeAiApplicationTitle" text="官职申请" />
+    <string id="MP_OfficeAiApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。" />
+    <string id="MP_OfficeApplicationApprove" text="同意" />
+    <string id="MP_OfficeApplicationReject" text="拒绝" />
 </strings>
 </base>

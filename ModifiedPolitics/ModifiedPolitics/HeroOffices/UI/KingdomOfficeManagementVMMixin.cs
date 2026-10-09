@@ -235,6 +235,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             seatText.SetTextVariable("TOTAL", limit);
             bool canManageOffices = CanManageOffices();
             bool canAppoint = CanAppoint(officeType, assignments.Count, limit);
+            bool canApply = CanApply(officeType, out string applicationUnavailableText);
 
             return new KingdomOfficeItemVM(
                 officeType,
@@ -248,8 +249,11 @@ namespace ModifiedPolitics.HeroOffices.UI
                 canManageOffices,
                 canAppoint,
                 GetAppointmentUnavailableText(officeType, canAppoint),
+                canApply,
+                applicationUnavailableText,
                 SelectOffice,
-                BeginAppointment);
+                BeginAppointment,
+                BeginApplication);
         }
 
         // Use stable game sprites here so the office list does not depend on a custom TPAC package.
@@ -341,6 +345,22 @@ namespace ModifiedPolitics.HeroOffices.UI
                    && kingdom.Leader == Hero.MainHero;
         }
 
+        private static bool CanApply(OfficeType officeType, out string failureReason)
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (kingdom?.Leader == Hero.MainHero)
+            {
+                failureReason = string.Empty;
+                return false;
+            }
+
+            return OfficeApplicationService.CanApply(
+                kingdom,
+                Hero.MainHero,
+                officeType,
+                out failureReason);
+        }
+
         private static string GetAppointmentUnavailableText(
             OfficeType officeType,
             bool canAppoint)
@@ -364,6 +384,62 @@ namespace ModifiedPolitics.HeroOffices.UI
         {
             if (office != null)
                 BeginAppointment(office.OfficeType);
+        }
+
+        private void BeginApplication(KingdomOfficeItemVM office)
+        {
+            if (office == null)
+                return;
+
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            if (!OfficeApplicationService.CanApply(
+                    kingdom,
+                    Hero.MainHero,
+                    office.OfficeType,
+                    out string failureReason))
+            {
+                ShowActionFailed(failureReason);
+                RefreshOfficeList();
+                return;
+            }
+
+            TextObject description = new TextObject(
+                "{=MP_OfficeApplyDescription}Ask the ruler to appoint you as {OFFICE}.");
+            description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
+            InformationManager.ShowInquiry(
+                new InquiryData(
+                    new TextObject("{=MP_OfficeApplyTitle}Apply for Office").ToString(),
+                    description.ToString(),
+                    true,
+                    true,
+                    new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
+                    new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
+                    () => CompleteApplication(office.OfficeType),
+                    null,
+                    string.Empty,
+                    0f,
+                    null,
+                    null,
+                    null),
+                false,
+                false);
+        }
+
+        private void CompleteApplication(OfficeType officeType)
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            OfficeApplicationService.TrySubmit(
+                kingdom,
+                Hero.MainHero,
+                officeType,
+                out _,
+                out string message);
+
+            InformationManager.DisplayMessage(new InformationMessage(
+                string.IsNullOrWhiteSpace(message)
+                    ? new TextObject("{=MP_OfficeActionFailed}The office action could not be completed because its conditions changed.").ToString()
+                    : message));
+            RefreshOfficeList();
         }
 
         private void BeginAppointment(OfficeType officeType)

@@ -32,6 +32,7 @@ namespace ModifiedPolitics.HeroOffices.Persistence
         {
             ConstructContainerDefinition(typeof(List<OfficeAssignment>));
             ConstructContainerDefinition(typeof(Dictionary<Kingdom, CampaignTime>));
+            ConstructContainerDefinition(typeof(Dictionary<Hero, CampaignTime>));
         }
     }
 }

@@ -10,7 +10,7 @@ using TaleWorlds.SaveSystem;
 namespace ModifiedPolitics.HeroOffices.Behaviors
 {
     /// <summary>
-    /// Opens an appointment decision immediately for an AI kingdom with a marshal vacancy.
+    /// Reviews occupied marshal offices; vacancies are initiated through applications.
     /// </summary>
     public sealed class MarshalOfficeAiBehavior : CampaignBehaviorBase
     {
@@ -49,10 +49,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     .GetAssignments(kingdom, OfficeType.Marshal)
                     .SingleOrDefault();
                 if (marshal == null)
-                {
-                    MarshalDecisionService.TryProposeAppointment(kingdom);
                     continue;
-                }
 
                 bool reviewDue = !_lastReviewTimes.TryGetValue(kingdom, out CampaignTime lastReview)
                                  || lastReview == CampaignTime.Zero
