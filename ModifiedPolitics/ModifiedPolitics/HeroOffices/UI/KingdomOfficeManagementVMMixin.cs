@@ -238,6 +238,7 @@ namespace ModifiedPolitics.HeroOffices.UI
 
             return new KingdomOfficeItemVM(
                 officeType,
+                GetOfficeIconSprite(officeType),
                 OfficeText.GetName(officeType).ToString(),
                 seatText.ToString(),
                 GetOfficeDescription(officeType).ToString(),
@@ -249,6 +250,30 @@ namespace ModifiedPolitics.HeroOffices.UI
                 GetAppointmentUnavailableText(officeType, canAppoint),
                 SelectOffice,
                 BeginAppointment);
+        }
+
+        // Use stable game sprites here so the office list does not depend on a custom TPAC package.
+        private static string GetOfficeIconSprite(OfficeType officeType)
+        {
+            switch (officeType)
+            {
+                case OfficeType.Marshal:
+                    return "SPPerks\\StewardMasterOfWarcraft";
+                case OfficeType.ChiefMinister:
+                    return "SPPerks\\StewardSupremeAuthority";
+                case OfficeType.CourtSteward:
+                    return "SPPerks\\StewardRuler";
+                case OfficeType.TaxOfficer:
+                    return "SPPerks\\StewardTaxCollector";
+                case OfficeType.AgricultureOfficer:
+                    return "SPPerks\\StewardAgriculture";
+                case OfficeType.MilitaryOfficer:
+                    return "SPPerks\\EngineeringMilitaryPlanner";
+                case OfficeType.SecurityOfficer:
+                    return "SPPerks\\OneHandedShieldWall";
+                default:
+                    return "SPPerks\\StewardRuler";
+            }
         }
 
         private void SelectOffice(KingdomOfficeItemVM office)

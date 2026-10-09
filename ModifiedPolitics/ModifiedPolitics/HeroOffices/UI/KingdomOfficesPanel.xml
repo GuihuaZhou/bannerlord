@@ -22,7 +22,13 @@
                           <ItemTemplate>
                             <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="88" Brush="Kingdom.Policy.Active.Tuple" Command.Click="ExecuteSelect" IsSelected="@IsSelected" UpdateChildrenStates="true">
                               <Children>
-                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="35" MarginRight="125" Brush="Kingdom.PoliciesItem.Text" Brush.TextHorizontalAlignment="Left" Text="@Name" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="48" HorizontalAlignment="Left" VerticalAlignment="Center" MarginLeft="20">
+                                  <Children>
+                                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.GoldFrame" />
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="@IconSprite" />
+                                  </Children>
+                                </Widget>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="85" MarginRight="125" Brush="Kingdom.PoliciesItem.Text" Brush.TextHorizontalAlignment="Left" Text="@Name" />
                                 <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="95" HorizontalAlignment="Right" MarginRight="25" Brush="Kingdom.PoliciesItem.Text" Brush.TextHorizontalAlignment="Right" Text="@SeatText" />
                               </Children>
                             </ButtonWidget>

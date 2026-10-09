@@ -17,6 +17,7 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         public KingdomOfficeItemVM(
             OfficeType officeType,
+            string iconSprite,
             string name,
             string seatText,
             string description,
@@ -30,6 +31,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             Action<KingdomOfficeItemVM> onAppoint)
         {
             OfficeType = officeType;
+            IconSprite = iconSprite;
             Name = name;
             SeatText = seatText;
             Description = description;
@@ -53,6 +55,9 @@ namespace ModifiedPolitics.HeroOffices.UI
         }
 
         public OfficeType OfficeType { get; }
+
+        [DataSourceProperty]
+        public string IconSprite { get; }
 
         [DataSourceProperty]
         public string Name { get; }
