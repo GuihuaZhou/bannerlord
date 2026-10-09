@@ -358,7 +358,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                     hero.Name.ToString(),
                     new CharacterImageIdentifier(CharacterCode.CreateFrom(hero.CharacterObject)),
                     true,
-                    hero.Clan?.Name?.ToString() ?? string.Empty))
+                    GetCandidateDescription(hero, officeType)))
                 .ToList();
             if (candidates.Count == 0)
                 return;
@@ -388,16 +388,29 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (candidate == null || kingdom == null)
                 return;
 
-            bool succeeded = officeType == OfficeType.Marshal
-                ? MarshalDecisionService.TryProposeAppointment(kingdom, candidate)
-                : OfficeAppointmentService.TryAppoint(
+            string failureReason = null;
+            bool succeeded;
+            if (officeType == OfficeType.Marshal)
+            {
+                succeeded = MarshalDecisionService.TryProposeAppointment(kingdom, candidate);
+                if (!succeeded)
+                {
+                    failureReason = new TextObject(
+                        "{=MP_OfficeFailureDecisionUnavailable}The kingdom decision cannot be started right now.").ToString();
+                }
+            }
+            else
+            {
+                succeeded = OfficeAppointmentService.TryAppoint(
                     kingdom,
                     Hero.MainHero,
                     candidate,
                     officeType,
-                    out _);
+                    out failureReason);
+            }
+
             if (!succeeded)
-                ShowActionFailed();
+                ShowActionFailed(failureReason);
 
             RefreshOfficeList();
         }
@@ -413,7 +426,10 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (assignment.OfficeType == OfficeType.Marshal)
             {
                 if (!MarshalDecisionService.TryProposeDismissal(kingdom))
-                    ShowActionFailed();
+                {
+                    ShowActionFailed(new TextObject(
+                        "{=MP_OfficeFailureDecisionUnavailable}The kingdom decision cannot be started right now.").ToString());
+                }
                 RefreshOfficeList();
                 return;
             }
@@ -460,8 +476,8 @@ namespace ModifiedPolitics.HeroOffices.UI
                     Hero.MainHero,
                     officer,
                     compensation,
-                    out _))
-                ShowActionFailed();
+                    out string failureReason))
+                ShowActionFailed(failureReason);
 
             RefreshOfficeList();
         }
@@ -477,6 +493,40 @@ namespace ModifiedPolitics.HeroOffices.UI
                 .Where(hero => HeroOfficeBehavior.Current.GetAssignment(hero) == null
                                && OfficeRules.IsEligible(hero, kingdom, officeType))
                 .OrderBy(hero => hero.Name.ToString());
+        }
+
+        private static string GetCandidateDescription(Hero hero, OfficeType officeType)
+        {
+            if (hero == null)
+                return string.Empty;
+
+            TextObject description;
+            if (OfficeRules.IsLocal(officeType))
+            {
+                description = new TextObject(
+                    "{=MP_OfficeLocalCandidateDescription}{CLAN}\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}");
+                description.SetTextVariable(
+                    "SETTLEMENT",
+                    hero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
+                description.SetTextVariable(
+                    "SCORE",
+                    (int)OfficeRules.GetCandidateScore(hero, officeType));
+            }
+            else if (officeType == OfficeType.Marshal)
+            {
+                description = new TextObject(
+                    "{=MP_OfficeMarshalCandidateDescription}{CLAN}\nCandidate score: {SCORE}");
+                description.SetTextVariable(
+                    "SCORE",
+                    (int)OfficeRules.GetCandidateScore(hero, officeType));
+            }
+            else
+            {
+                description = new TextObject("{=MP_OfficeCentralCandidateDescription}{CLAN}");
+            }
+
+            description.SetTextVariable("CLAN", hero.Clan?.Name ?? TextObject.GetEmpty());
+            return description.ToString();
         }
 
         private static TextObject GetCompensationText(
@@ -511,10 +561,12 @@ namespace ModifiedPolitics.HeroOffices.UI
             }
         }
 
-        private static void ShowActionFailed()
+        private static void ShowActionFailed(string failureReason)
         {
             InformationManager.DisplayMessage(new InformationMessage(
-                new TextObject("{=MP_OfficeActionFailed}The office action could not be completed because its conditions changed.").ToString()));
+                string.IsNullOrWhiteSpace(failureReason)
+                    ? new TextObject("{=MP_OfficeActionFailed}The office action could not be completed because its conditions changed.").ToString()
+                    : failureReason));
         }
 
         private static TextObject GetOfficeDescription(OfficeType officeType)

@@ -456,5 +456,17 @@
     <string id="MP_OfficeRulerOnly" text="仅王国统治者可以任命官员。" />
     <string id="MP_OfficeDecisionPending" text="当前已有官职决议正在进行。" />
     <string id="MP_OfficeNoEligibleCandidates" text="当前没有符合条件的候选人。" />
+    <string id="MP_OfficeLocalCandidateDescription" text="{CLAN}&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeMarshalCandidateDescription" text="{CLAN}&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeCentralCandidateDescription" text="{CLAN}" />
+    <string id="MP_OfficeFailureRulerOnly" text="仅王国统治者可以任命普通官员。" />
+    <string id="MP_OfficeFailureMarshalDecision" text="大元帅任命必须通过王国决议。" />
+    <string id="MP_OfficeFailureIneligible" text="所选 Hero 已不再符合该官职的任职条件。" />
+    <string id="MP_OfficeFailureAlreadyHoldsOffice" text="一个 Hero 同时只能担任一个官职。" />
+    <string id="MP_OfficeFailureNoVacancy" text="该官职已没有空缺席位。" />
+    <string id="MP_OfficeFailureInvalidDismissal" text="官职或统治者状态已经变化，无法执行撤职。" />
+    <string id="MP_OfficeFailureMarshalDismissalDecision" text="大元帅撤职必须通过王国决议。" />
+    <string id="MP_OfficeFailureCannotAfford" text="统治者无法支付所选补偿。" />
+    <string id="MP_OfficeFailureDecisionUnavailable" text="当前无法发起该王国决议。" />
 </strings>
 </base>

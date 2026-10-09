@@ -5,6 +5,7 @@ using ModifiedPolitics.HeroOffices.Domain;
 using ModifiedPolitics.HeroOffices.Models;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.Localization;
 
 namespace ModifiedPolitics.HeroOffices.Services
 {
@@ -28,32 +29,37 @@ namespace ModifiedPolitics.HeroOffices.Services
             HeroOfficeBehavior behavior = HeroOfficeBehavior.Current;
             if (behavior == null || kingdom == null || appointer != kingdom.Leader)
             {
-                failureReason = "Only the kingdom ruler may appoint ordinary officers.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureRulerOnly}Only the kingdom ruler may appoint ordinary officers.").ToString();
                 return false;
             }
 
             if (officeType == OfficeType.Marshal)
             {
-                failureReason = "Marshal appointments must use the kingdom decision system.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureMarshalDecision}Marshal appointments must use the kingdom decision system.").ToString();
                 return false;
             }
 
             if (!OfficeRules.IsEligible(candidate, kingdom, officeType))
             {
-                failureReason = "The selected hero is no longer eligible for this office.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureIneligible}The selected hero is no longer eligible for this office.").ToString();
                 return false;
             }
 
             if (behavior.GetAssignment(candidate) != null)
             {
-                failureReason = "A hero may hold only one office at a time.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureAlreadyHoldsOffice}A hero may hold only one office at a time.").ToString();
                 return false;
             }
 
             int limit = OfficeRules.GetOfficeLimit(kingdom, officeType);
             if (limit <= behavior.GetAssignments(kingdom, officeType).Count())
             {
-                failureReason = "No vacant seat remains for this office.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureNoVacancy}No vacant seat remains for this office.").ToString();
                 return false;
             }
 
@@ -101,20 +107,23 @@ namespace ModifiedPolitics.HeroOffices.Services
             OfficeAssignment assignment = behavior?.GetAssignment(officer);
             if (assignment == null || assignment.Kingdom != kingdom || appointer != kingdom?.Leader)
             {
-                failureReason = "The office or ruler is no longer valid.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureInvalidDismissal}The office or ruler is no longer valid.").ToString();
                 return false;
             }
 
             if (assignment.OfficeType == OfficeType.Marshal)
             {
-                failureReason = "Marshal dismissal must use the kingdom decision system.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureMarshalDismissalDecision}Marshal dismissal must use the kingdom decision system.").ToString();
                 return false;
             }
 
             int compensationAmount = GetCompensationAmount(compensation);
             if (compensationAmount > 0 && appointer.Gold < compensationAmount)
             {
-                failureReason = "The ruler cannot afford the selected compensation.";
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureCannotAfford}The ruler cannot afford the selected compensation.").ToString();
                 return false;
             }
 
