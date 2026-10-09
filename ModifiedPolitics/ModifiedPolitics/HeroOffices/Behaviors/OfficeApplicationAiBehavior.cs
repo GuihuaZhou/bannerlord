@@ -19,11 +19,17 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
     public sealed class OfficeApplicationAiBehavior : CampaignBehaviorBase
     {
         private const string SaveKey = "_modifiedPoliticsOfficeApplicationTimes";
+        private const string KingdomSaveKey = "_modifiedPoliticsKingdomApplicationTimes";
         private const float ApplicationCooldownDays = 28f;
+        private const float KingdomApplicationCooldownDays = 7f;
 
         [SaveableField(1)]
         private Dictionary<Hero, CampaignTime> _lastApplicationTimes =
             new Dictionary<Hero, CampaignTime>();
+
+        [SaveableField(2)]
+        private Dictionary<Kingdom, CampaignTime> _lastKingdomApplicationTimes =
+            new Dictionary<Kingdom, CampaignTime>();
 
         public override void RegisterEvents()
         {
@@ -33,8 +39,11 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData(SaveKey, ref _lastApplicationTimes);
+            dataStore.SyncData(KingdomSaveKey, ref _lastKingdomApplicationTimes);
             if (_lastApplicationTimes == null)
                 _lastApplicationTimes = new Dictionary<Hero, CampaignTime>();
+            if (_lastKingdomApplicationTimes == null)
+                _lastKingdomApplicationTimes = new Dictionary<Kingdom, CampaignTime>();
         }
 
         private void OnDailyTick()
@@ -49,6 +58,9 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
 
         private void TryCreateApplication(Kingdom kingdom)
         {
+            if (!IsKingdomCooldownComplete(kingdom))
+                return;
+
             if (!OfficeConfigManager.Instance.TryGet(kingdom, out OfficeCultureConfig config))
                 return;
 
@@ -60,6 +72,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 return;
 
             _lastApplicationTimes[application.Hero] = CampaignTime.Now;
+            _lastKingdomApplicationTimes[kingdom] = CampaignTime.Now;
             if (kingdom.Leader == Hero.MainHero)
             {
                 ShowApplicationToPlayerRuler(kingdom, application);
@@ -120,6 +133,10 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             description.SetTextVariable("HERO", application.Hero.Name);
             description.SetTextVariable("CLAN", application.Hero.Clan?.Name ?? TextObject.GetEmpty());
             description.SetTextVariable("OFFICE", OfficeText.GetName(application.OfficeType));
+            Hero applicantClanLeader = application.Hero.Clan?.Leader;
+            description.SetTextVariable(
+                "RELATION",
+                applicantClanLeader == null ? 0 : kingdom.Leader.GetRelation(applicantClanLeader));
             description.SetTextVariable(
                 "SCORE",
                 (int)OfficeRules.GetCandidateScore(application.Hero, application.OfficeType));
@@ -181,6 +198,13 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                    || lastApplication.ElapsedDaysUntilNow >= ApplicationCooldownDays;
         }
 
+        private bool IsKingdomCooldownComplete(Kingdom kingdom)
+        {
+            return !_lastKingdomApplicationTimes.TryGetValue(kingdom, out CampaignTime lastApplication)
+                   || lastApplication == CampaignTime.Zero
+                   || lastApplication.ElapsedDaysUntilNow >= KingdomApplicationCooldownDays;
+        }
+
         private void CleanupCooldowns()
         {
             foreach (Hero hero in _lastApplicationTimes.Keys
@@ -192,6 +216,13 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                          .ToList())
             {
                 _lastApplicationTimes.Remove(hero);
+            }
+
+            foreach (Kingdom kingdom in _lastKingdomApplicationTimes.Keys
+                         .Where(kingdom => kingdom == null || kingdom.IsEliminated)
+                         .ToList())
+            {
+                _lastKingdomApplicationTimes.Remove(kingdom);
             }
         }
 

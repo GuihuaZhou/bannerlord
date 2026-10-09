@@ -469,20 +469,25 @@
     <string id="MP_OfficeFailureDecisionUnavailable" text="当前无法发起该王国决议。" />
     <string id="MP_OfficeApplyButton" text="申请任职" />
     <string id="MP_OfficeApplyTitle" text="申请官职" />
-    <string id="MP_OfficeApplyDescription" text="向{RULER}申请担任{OFFICE}。" />
-    <string id="MP_OfficeApplyLocalDescription" text="向{RULER}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />
-    <string id="MP_OfficeApplyMarshalDescription" text="请求{RULER}提名你担任{OFFICE}。&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeApplyDescription" text="向{RULER}申请担任{OFFICE}。&#xA;与统治者关系：{RELATION}" />
+    <string id="MP_OfficeApplyLocalDescription" text="向{RULER}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
+    <string id="MP_OfficeApplyMarshalDescription" text="请求{RULER}提名你担任{OFFICE}。&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplicationInvalidKingdom" text="王国或统治者当前无效，无法申请官职。" />
     <string id="MP_OfficeApplicationRulerCannotApply" text="王国统治者不需要申请官职。" />
     <string id="MP_OfficeApplicationIneligible" text="你不符合该官职的任职条件。" />
+    <string id="MP_OfficeApplicationHeroUnavailable" text="申请者已经死亡、失效或被俘，无法申请官职。" />
+    <string id="MP_OfficeApplicationNotKingdomMember" text="只有本王国符合条件的正式成员才能申请官职。" />
+    <string id="MP_OfficeApplicationGovernorRequired" text="申请地方官职需要先担任定居点总督。" />
+    <string id="MP_OfficeApplicationCastleGovernorRequired" text="军事长官必须由城堡总督担任。" />
+    <string id="MP_OfficeApplicationTownGovernorRequired" text="该官职必须由城镇总督担任。" />
     <string id="MP_OfficeApplicationRejected" text="统治者拒绝了这次官职申请。" />
     <string id="MP_OfficeApplicationAccepted" text="统治者接受了这次官职申请。" />
     <string id="MP_OfficeApplicationDecisionStarted" text="统治者接受了申请，并发起了大元帅任命决议。" />
     <string id="MP_OfficeApplicationAcceptedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已接受。" />
     <string id="MP_OfficeApplicationRejectedLog" text="[王国官职] {HERO}申请担任{OFFICE}，统治者已拒绝。" />
     <string id="MP_OfficeAiApplicationTitle" text="官职申请" />
-    <string id="MP_OfficeAiApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;候选评分：{SCORE}" />
-    <string id="MP_OfficeAiLocalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />
+    <string id="MP_OfficeAiApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
+    <string id="MP_OfficeAiLocalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplicationApprove" text="同意" />
     <string id="MP_OfficeApplicationReject" text="拒绝" />
 </strings>

@@ -407,7 +407,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (OfficeRules.IsLocal(office.OfficeType))
             {
                 description = new TextObject(
-                    "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}");
+                    "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
                 description.SetTextVariable(
                     "SETTLEMENT",
                     Hero.MainHero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
@@ -418,7 +418,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             else if (office.OfficeType == OfficeType.Marshal)
             {
                 description = new TextObject(
-                    "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nCandidate score: {SCORE}");
+                    "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
                 description.SetTextVariable(
                     "SCORE",
                     (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
@@ -426,11 +426,15 @@ namespace ModifiedPolitics.HeroOffices.UI
             else
             {
                 description = new TextObject(
-                    "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.");
+                    "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.\nRelation with ruler: {RELATION}");
             }
 
             description.SetTextVariable("RULER", kingdom.Leader.Name);
             description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
+            Hero playerClanLeader = Hero.MainHero.Clan?.Leader;
+            description.SetTextVariable(
+                "RELATION",
+                playerClanLeader == null ? 0 : kingdom.Leader.GetRelation(playerClanLeader));
             InformationManager.ShowInquiry(
                 new InquiryData(
                     new TextObject("{=MP_OfficeApplyTitle}Apply for Office").ToString(),

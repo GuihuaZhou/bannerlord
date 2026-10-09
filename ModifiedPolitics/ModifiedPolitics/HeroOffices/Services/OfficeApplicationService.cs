@@ -45,11 +45,50 @@ namespace ModifiedPolitics.HeroOffices.Services
                 return false;
             }
 
+            if (!applicant.IsAlive || !applicant.IsActive || applicant.IsPrisoner)
+            {
+                failureReason = new TextObject(
+                    "{=MP_OfficeApplicationHeroUnavailable}The applicant is dead, inactive or imprisoned.").ToString();
+                return false;
+            }
+
+            if (applicant.Clan == null || applicant.Clan.Kingdom != kingdom
+                || applicant.Clan.IsEliminated || applicant.Clan.IsClanTypeMercenary)
+            {
+                failureReason = new TextObject(
+                    "{=MP_OfficeApplicationNotKingdomMember}Only an eligible member of this kingdom may apply.").ToString();
+                return false;
+            }
+
             if (behavior.GetAssignment(applicant) != null)
             {
                 failureReason = new TextObject(
                     "{=MP_OfficeFailureAlreadyHoldsOffice}A hero may hold only one office at a time.").ToString();
                 return false;
+            }
+
+            if (OfficeRules.IsLocal(officeType))
+            {
+                if (applicant.GovernorOf == null)
+                {
+                    failureReason = new TextObject(
+                        "{=MP_OfficeApplicationGovernorRequired}A local office requires the applicant to be a governor.").ToString();
+                    return false;
+                }
+
+                if (officeType == OfficeType.MilitaryOfficer && !applicant.GovernorOf.IsCastle)
+                {
+                    failureReason = new TextObject(
+                        "{=MP_OfficeApplicationCastleGovernorRequired}The military officer must govern a castle.").ToString();
+                    return false;
+                }
+
+                if (officeType != OfficeType.MilitaryOfficer && !applicant.GovernorOf.IsTown)
+                {
+                    failureReason = new TextObject(
+                        "{=MP_OfficeApplicationTownGovernorRequired}This office must be held by a town governor.").ToString();
+                    return false;
+                }
             }
 
             if (!OfficeRules.IsEligible(applicant, kingdom, officeType))
@@ -183,7 +222,10 @@ namespace ModifiedPolitics.HeroOffices.Services
             Hero candidate,
             OfficeType officeType)
         {
-            float relation = ruler?.GetRelation(candidate?.Clan?.Leader) ?? 0;
+            Hero candidateClanLeader = candidate?.Clan?.Leader;
+            float relation = ruler == null || candidateClanLeader == null
+                ? 0f
+                : ruler.GetRelation(candidateClanLeader);
             return OfficeRules.GetCandidateScore(candidate, officeType) + relation * 2f;
         }
 
@@ -196,7 +238,7 @@ namespace ModifiedPolitics.HeroOffices.Services
             return kingdom.Clans
                 .Where(clan => clan != null && !clan.IsEliminated && !clan.IsClanTypeMercenary)
                 .SelectMany(clan => clan.Heroes)
-                .Where(hero => behavior.GetAssignment(hero) == null)
+                .Where(hero => hero != kingdom.Leader && behavior.GetAssignment(hero) == null)
                 .Where(hero => OfficeRules.IsEligible(hero, kingdom, officeType));
         }
 
