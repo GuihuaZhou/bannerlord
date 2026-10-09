@@ -60,12 +60,12 @@
                       <Children>
                         <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="110" SuggestedHeight="88" HorizontalAlignment="Left" VerticalAlignment="Center" IsVisible="@HasHolder">
                           <Children>
-                            <Widget DataSource="{HeroVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="92" SuggestedHeight="82" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <ButtonWidget DataSource="{HeroVisual}" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="92" SuggestedHeight="82" HorizontalAlignment="Left" VerticalAlignment="Center" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint">
                               <Children>
                                 <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.GoldFrame" />
                                 <ImageIdentifierWidget DataSource="{ImageIdentifier}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="3" MarginRight="3" MarginTop="3" MarginBottom="3" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" HideWhenNull="true" />
                               </Children>
-                            </Widget>
+                            </ButtonWidget>
                             <MaskedTextureWidget DataSource="{HeroVisual\ClanBanner_9}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="46" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="72" PositionYOffset="-2" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
                           </Children>
                         </Widget>
@@ -94,7 +94,7 @@
                   </ItemTemplate>
                 </ListPanel>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@AppointmentUnavailableText" IsVisible="@ShowAppointmentUnavailable" />
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" IsVisible="@HasVacancy">
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" IsVisible="@ShowAppointButton">
                   <Children>
                     <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
                   </Children>

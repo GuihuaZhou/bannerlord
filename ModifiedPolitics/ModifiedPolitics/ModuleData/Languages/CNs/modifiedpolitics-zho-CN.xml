@@ -453,7 +453,6 @@
     <string id="MP_OfficeActionFailed" text="官职条件已经变化，本次操作未能完成。" />
     <string id="MP_OfficeVacantSlot" text="空缺" />
     <string id="MP_OfficeBenefitsTitle" text="官职收益" />
-    <string id="MP_OfficeRulerOnly" text="仅王国统治者可以任命官员。" />
     <string id="MP_OfficeDecisionPending" text="当前已有官职决议正在进行。" />
     <string id="MP_OfficeNoEligibleCandidates" text="当前没有符合条件的候选人。" />
     <string id="MP_OfficeLocalCandidateDescription" text="{CLAN}&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}" />

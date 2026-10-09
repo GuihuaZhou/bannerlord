@@ -23,6 +23,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             string effectsText,
             MBBindingList<KingdomOfficeHolderVM> holders,
             int vacantCount,
+            bool canManageOffices,
             bool canAppoint,
             string appointmentUnavailableText,
             Action<KingdomOfficeItemVM> onSelect,
@@ -37,8 +38,10 @@ namespace ModifiedPolitics.HeroOffices.UI
             HasHolders = holders.Any(holder => holder.HasHolder);
             HasNoHolders = !HasHolders;
             HasVacancy = vacantCount > 0;
+            CanManageOffices = canManageOffices;
             CanAppoint = canAppoint;
-            ShowAppointmentUnavailable = HasVacancy && !CanAppoint;
+            ShowAppointButton = HasVacancy && CanManageOffices;
+            ShowAppointmentUnavailable = ShowAppointButton && !CanAppoint;
             AppointmentUnavailableText = appointmentUnavailableText ?? string.Empty;
             BenefitsTitle = new TextObject("{=MP_OfficeBenefitsTitle}Office Benefits").ToString();
             HoldersTitle = new TextObject("{=MP_OfficeHoldersTitle}Office Holders").ToString();
@@ -77,6 +80,12 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         [DataSourceProperty]
         public bool CanAppoint { get; }
+
+        [DataSourceProperty]
+        public bool CanManageOffices { get; }
+
+        [DataSourceProperty]
+        public bool ShowAppointButton { get; }
 
         [DataSourceProperty]
         public bool ShowAppointmentUnavailable { get; }

@@ -233,6 +233,7 @@ namespace ModifiedPolitics.HeroOffices.UI
             TextObject seatText = new TextObject("{=MP_OfficeSeatCount}{USED}/{TOTAL}");
             seatText.SetTextVariable("USED", assignments.Count);
             seatText.SetTextVariable("TOTAL", limit);
+            bool canManageOffices = CanManageOffices();
             bool canAppoint = CanAppoint(officeType, assignments.Count, limit);
 
             return new KingdomOfficeItemVM(
@@ -243,6 +244,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                 GetOfficeEffects(officeType).ToString(),
                 CreateHolderItems(assignments, officeType, limit, canAppoint),
                 Math.Max(0, limit - assignments.Count),
+                canManageOffices,
                 canAppoint,
                 GetAppointmentUnavailableText(officeType, canAppoint),
                 SelectOffice,
@@ -306,6 +308,14 @@ namespace ModifiedPolitics.HeroOffices.UI
                    && GetEligibleCandidates(kingdom, officeType).Any();
         }
 
+        private static bool CanManageOffices()
+        {
+            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+            return kingdom != null
+                   && !kingdom.IsEliminated
+                   && kingdom.Leader == Hero.MainHero;
+        }
+
         private static string GetAppointmentUnavailableText(
             OfficeType officeType,
             bool canAppoint)
@@ -314,12 +324,6 @@ namespace ModifiedPolitics.HeroOffices.UI
                 return string.Empty;
 
             Kingdom kingdom = Clan.PlayerClan?.Kingdom;
-            if (kingdom?.Leader != Hero.MainHero)
-            {
-                return new TextObject(
-                    "{=MP_OfficeRulerOnly}Only the kingdom ruler may appoint officers.").ToString();
-            }
-
             if (officeType == OfficeType.Marshal
                 && kingdom.UnresolvedDecisions.Any(decision => decision is MarshalOfficeDecision))
             {
