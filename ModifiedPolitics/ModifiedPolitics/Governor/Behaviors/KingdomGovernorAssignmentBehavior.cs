@@ -1,7 +1,7 @@
-using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.Governor.Config;
 using ModifiedPolitics.Governor.Models;
+using ModifiedPolitics.Governor.Services;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -11,10 +11,18 @@ using TaleWorlds.Localization;
 namespace ModifiedPolitics.Governor.Behaviors
 {
     /// <summary>
-    /// Fills governor vacancies by kingdom each week without replacing existing governors.
+    /// Replans centralized kingdom governors weekly after the initial seven-day grace period.
     /// </summary>
     public sealed class KingdomGovernorAssignmentBehavior : CampaignBehaviorBase
     {
+        private const string FirstEligibleTimeKey = "_modifiedPoliticsGovernorFirstEligibleTime";
+
+        private CampaignTime _firstEligibleTime = CampaignTime.Zero;
+        private readonly GovernorAssignmentPlanner _planner = new GovernorAssignmentPlanner();
+        private readonly GovernorAssignmentExecutor _executor = new GovernorAssignmentExecutor();
+        private readonly GovernorRelationService _relationService = new GovernorRelationService();
+        private readonly GovernorNotificationService _notificationService = new GovernorNotificationService();
+
         public override void RegisterEvents()
         {
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, AssignGovernorsForAllKingdoms);
@@ -23,25 +31,49 @@ namespace ModifiedPolitics.Governor.Behaviors
 
         public override void SyncData(IDataStore dataStore)
         {
+            dataStore.SyncData(FirstEligibleTimeKey, ref _firstEligibleTime);
         }
 
         private void OnNewGameCreated(CampaignGameStarter campaignGameStarter)
         {
-            // A new campaign receives its first assignment pass without waiting for a weekly tick.
-            AssignGovernorsForAllKingdoms();
+            _firstEligibleTime = CampaignTime.DaysFromNow(7f);
         }
 
         private void AssignGovernorsForAllKingdoms()
         {
+            if (_firstEligibleTime != CampaignTime.Zero && CampaignTime.Now < _firstEligibleTime)
+                return;
+
             foreach (Kingdom kingdom in Kingdom.All.ToList())
             {
                 if (!IsEligibleKingdom(kingdom))
                     continue;
 
-                // Release invalid borrowed governors before filling vacancies in the same pass.
                 RemoveInvalidBorrowedGovernors(kingdom);
-                AssignVacancies(kingdom);
+                ExecutePlan(kingdom);
             }
+        }
+
+        private void ExecutePlan(Kingdom kingdom)
+        {
+            GovernorAssignmentPlan plan = _planner.Build(kingdom);
+            int candidateCount = kingdom.Clans
+                .Where(clan => clan != null && !clan.IsEliminated && !clan.IsClanTypeMercenary)
+                .SelectMany(clan => clan.Heroes)
+                .Count(hero => GovernorCandidateSelector.IsGovernorCandidate(hero, kingdom));
+            LogStart(kingdom, plan.Targets.Count, candidateCount);
+
+            GovernorAssignmentResult result = _executor.Execute(plan);
+            if (result.FailedTowns.Count == 0)
+            {
+                _relationService.Apply(plan, result);
+                _notificationService.Publish(plan, result);
+                LogChanges(kingdom, plan, result);
+            }
+            else
+                LogExecutionFailure(kingdom, result.FailedTowns.Count);
+
+            LogSummary(kingdom, plan, result);
         }
 
         private static bool IsEligibleKingdom(Kingdom kingdom)
@@ -58,118 +90,118 @@ namespace ModifiedPolitics.Governor.Behaviors
             {
                 Hero governor = town?.Governor;
                 Clan ownerClan = town?.OwnerClan;
-                if (governor == null || ownerClan == null || ownerClan.Kingdom != kingdom)
+                if (governor == null || ownerClan?.Kingdom != kingdom)
                     continue;
 
-                // Vanilla remains responsible for same-clan cases; this only cleans borrowed governors.
                 if (governor.Clan != ownerClan && governor.Clan?.Kingdom != ownerClan.Kingdom)
                 {
                     ChangeGovernorAction.RemoveGovernorOf(governor);
-
                     if (ShouldLogForKingdom(kingdom))
                     {
                         TextObject message = new TextObject(
                             "{=MP_GovernorBorrowedRemoved}[Governor Assignment] Removed {HERO} from {SETTLEMENT} because the borrowed governor no longer belongs to the owning kingdom.");
                         message.SetTextVariable("HERO", governor.Name);
                         message.SetTextVariable("SETTLEMENT", town.Settlement.Name);
-                        ModLogger.Notice(message.ToString());
+                        ModLogger.Info(message.ToString());
                     }
                 }
             }
         }
 
-        private static void AssignVacancies(Kingdom kingdom)
+        private static void LogStart(Kingdom kingdom, int settlementCount, int candidateCount)
         {
-            // Higher-value fiefs are handled first; StringId makes ties deterministic.
-            List<Town> vacancies = Town.AllTowns
-                .Concat(Town.AllCastles)
-                .Where(town => town?.OwnerClan?.Kingdom == kingdom)
-                .Where(town => town.Governor == null && !HasIncomingGovernor(town))
-                .OrderByDescending(GovernorAssignmentModel.GetSettlementPriority)
-                .ThenBy(town => town.Settlement.StringId)
-                .ToList();
+            if (!ShouldLogForKingdom(kingdom))
+                return;
 
-            // The kingdom-wide pool allows a hero from Clan A to govern a fief owned by Clan B.
-            List<Hero> candidates = kingdom.Clans
-                .Where(IsEligibleClan)
-                .SelectMany(clan => clan.Heroes)
-                .Where(hero => IsEligibleHero(hero, kingdom))
-                .ToList();
+            TextObject message = new TextObject(
+                "{=MP_GovernorPlanStarted}[Governor Assignment] Planning governors for {KINGDOM}: {SETTLEMENTS} settlements and {CANDIDATES} available heroes.");
+            message.SetTextVariable("KINGDOM", kingdom.Name);
+            message.SetTextVariable("SETTLEMENTS", settlementCount);
+            message.SetTextVariable("CANDIDATES", candidateCount);
+            ModLogger.Info(message.ToString());
+        }
 
-            foreach (Town vacancy in vacancies)
+        private static void LogSummary(Kingdom kingdom, GovernorAssignmentPlan plan, GovernorAssignmentResult result)
+        {
+            if (!ShouldLogForKingdom(kingdom))
+                return;
+
+            int appointed = 0;
+            int moved = 0;
+            int removed = 0;
+            int retained = 0;
+            int vacant = 0;
+            foreach (Town town in plan.Targets.Keys)
             {
-                // Recalculate cultural fit per fief and use StringId to break score ties.
-                Hero best = candidates
-                    .OrderByDescending(hero => GovernorAssignmentModel.GetCandidateScore(hero, vacancy))
-                    .ThenBy(hero => hero.StringId)
-                    .FirstOrDefault();
-
-                if (best == null)
-                {
-                    if (ShouldLogForKingdom(kingdom))
-                    {
-                        TextObject message = new TextObject(
-                            "{=MP_GovernorNoCandidate}[Governor Assignment] No eligible governor is available for {SETTLEMENT} in {KINGDOM}.");
-                        message.SetTextVariable("SETTLEMENT", vacancy.Settlement.Name);
-                        message.SetTextVariable("KINGDOM", kingdom.Name);
-                        ModLogger.Debug(message.ToString());
-                    }
-                    break;
-                }
-
-                ChangeGovernorAction.Apply(vacancy, best);
-
-                if (ShouldLogForKingdom(kingdom))
-                {
-                    TextObject assignedMessage = new TextObject(
-                        "{=MP_GovernorAssigned}[Governor Assignment] Appointed {HERO} of {CLAN} as governor of {SETTLEMENT} for {KINGDOM}.");
-                    assignedMessage.SetTextVariable("HERO", best.Name);
-                    assignedMessage.SetTextVariable("CLAN", best.Clan.Name);
-                    assignedMessage.SetTextVariable("SETTLEMENT", vacancy.Settlement.Name);
-                    assignedMessage.SetTextVariable("KINGDOM", kingdom.Name);
-                    ModLogger.Notice(assignedMessage.ToString());
-                }
-
-                // Greedy assignment removes the selected hero so one hero cannot fill two vacancies.
-                candidates.Remove(best);
+                Hero before = result.Before[town];
+                Hero after = result.After[town];
+                if (before == after && after != null) retained++;
+                else if (before == null && after != null) appointed++;
+                else if (before != null && after == null) removed++;
+                else if (before != after) moved++;
+                if (after == null) vacant++;
             }
+
+            TextObject message = new TextObject(
+                "{=MP_GovernorPlanFinished}[Governor Assignment] Finished {KINGDOM}: appointed {APPOINTED}, moved {MOVED}, removed {REMOVED}, retained {RETAINED}, vacant {VACANT}, failed {FAILED}.");
+            message.SetTextVariable("KINGDOM", kingdom.Name);
+            message.SetTextVariable("APPOINTED", appointed);
+            message.SetTextVariable("MOVED", moved);
+            message.SetTextVariable("REMOVED", removed);
+            message.SetTextVariable("RETAINED", retained);
+            message.SetTextVariable("VACANT", vacant);
+            message.SetTextVariable("FAILED", result.FailedTowns.Count);
+            ModLogger.Info(message.ToString());
         }
 
-        private static bool IsEligibleClan(Clan clan)
+        private static void LogExecutionFailure(Kingdom kingdom, int failedCount)
         {
-            // Automatic AI assignment borrows neither player-clan nor mercenary-clan heroes.
-            return clan != null
-                   && !clan.IsEliminated
-                   && clan != Clan.PlayerClan
-                   && !clan.IsClanTypeMercenary;
+            if (!ShouldLogForKingdom(kingdom))
+                return;
+
+            TextObject message = new TextObject(
+                "{=MP_GovernorPlanFailed}[Governor Assignment] {KINGDOM} had {COUNT} governor changes rejected by the game; real state is retained for the next weekly pass.");
+            message.SetTextVariable("KINGDOM", kingdom.Name);
+            message.SetTextVariable("COUNT", failedCount);
+            ModLogger.Warn(message.ToString());
         }
 
-        private static bool IsEligibleHero(Hero hero, Kingdom kingdom)
+        private static void LogChanges(
+            Kingdom kingdom,
+            GovernorAssignmentPlan plan,
+            GovernorAssignmentResult result)
         {
-            // Party leaders, prisoners, existing governors, and traveling heroes are unavailable.
-            return hero != null
-                   && hero.IsAlive
-                   && hero.IsActive
-                   && hero.Clan != null
-                   && hero.Clan.Kingdom == kingdom
-                   && hero.GovernorOf == null
-                   && hero.PartyBelongedTo == null
-                   && !hero.IsPrisoner
-                   && !hero.IsTraveling
-                   && Campaign.Current.Models.ClanPoliticsModel.CanHeroBeGovernor(hero);
-        }
+            if (!ShouldLogForKingdom(kingdom))
+                return;
 
-        private static bool HasIncomingGovernor(Town town)
-        {
-            // Vanilla may establish GovernorOf before travel finishes; do not fill that post twice.
-            return Hero.AllAliveHeroes.Any(hero => hero != null
-                                                   && hero.IsTraveling
-                                                   && hero.GovernorOf == town);
+            foreach (Town town in plan.Targets.Keys)
+            {
+                Hero before = result.Before[town];
+                Hero after = result.After[town];
+                if (before == after)
+                    continue;
+
+                TextObject message = new TextObject(
+                    "{=MP_GovernorAssignmentChanged}[Governor Assignment] {SETTLEMENT}: {OLD_GOVERNOR} -> {NEW_GOVERNOR}.");
+                message.SetTextVariable("SETTLEMENT", town.Settlement.Name);
+                message.SetTextVariable("OLD_GOVERNOR", before?.Name ?? new TextObject("{=MP_NoGovernor}No Governor"));
+                message.SetTextVariable("NEW_GOVERNOR", after?.Name ?? new TextObject("{=MP_NoGovernor}No Governor"));
+                ModLogger.Info(message.ToString());
+            }
+
+            foreach (GovernorSettlementContext context in plan.Contexts.Values
+                         .Where(context => result.After[context.Town] == null))
+            {
+                TextObject message = new TextObject(
+                    "{=MP_GovernorNoQualifiedCandidate}[Governor Assignment] No qualified hero for {SETTLEMENT}; required ability is {ABILITY}.");
+                message.SetTextVariable("SETTLEMENT", context.Town.Settlement.Name);
+                message.SetTextVariable("ABILITY", (int)context.RequiredAbility);
+                ModLogger.Debug(message.ToString());
+            }
         }
 
         private static bool ShouldLogForKingdom(Kingdom kingdom)
         {
-            // Governor diagnostics are relevant only to the kingdom containing the player clan.
             return kingdom != null && Clan.PlayerClan?.Kingdom == kingdom;
         }
     }

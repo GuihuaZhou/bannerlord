@@ -4,6 +4,8 @@ using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using Helpers;
 using ModifiedPolitics.Governor.Config;
+using ModifiedPolitics.Governor.Models;
+using ModifiedPolitics.Governor.Services;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -35,6 +37,8 @@ namespace ModifiedPolitics.KingdomFief.UI
         private string _governorName;
         private bool _hasGovernor;
         private bool _canManageGovernor;
+        private readonly GovernorManualAssignmentService _manualAssignmentService =
+            new GovernorManualAssignmentService();
 
         public KingdomSettlementGovernorVMMixin(KingdomSettlementItemVM vm)
             : base(vm)
@@ -321,7 +325,7 @@ namespace ModifiedPolitics.KingdomFief.UI
                    && !clan.IsClanTypeMercenary;
         }
 
-        private static bool IsEligibleCandidate(
+        private bool IsEligibleCandidate(
             Hero hero,
             Kingdom kingdom,
             Hero currentGovernor)
@@ -333,10 +337,12 @@ namespace ModifiedPolitics.KingdomFief.UI
                    && hero.IsAlive
                    && hero.IsActive
                    && hero.Clan?.Kingdom == kingdom
-                   && hero.GovernorOf == null
                    && hero.PartyBelongedTo == null
                    && !hero.IsPrisoner
                    && !hero.IsTraveling
+                   && GovernorCandidateSelector.IsOfficeCompatible(
+                       hero,
+                       GovernorAssignmentModel.BuildContext(kingdom, _vm.Settlement.Town))
                    && Campaign.Current.Models.ClanPoliticsModel.CanHeroBeGovernor(hero);
         }
 
@@ -368,16 +374,17 @@ namespace ModifiedPolitics.KingdomFief.UI
                 return;
             }
 
-            if (selectedGovernor == null)
-            {
-                ChangeGovernorAction.RemoveGovernorOfIfExists(_vm.Settlement.Town);
+            bool applied = _manualAssignmentService.TryApply(
+                kingdom,
+                _vm.Settlement.Town,
+                selectedGovernor);
+            if (applied && selectedGovernor == null)
                 LogGovernorRemoved(kingdom, currentGovernor);
-            }
-            else
-            {
-                ChangeGovernorAction.Apply(_vm.Settlement.Town, selectedGovernor);
+            else if (applied)
                 LogGovernorAssigned(kingdom, selectedGovernor);
-            }
+            else
+                InformationManager.DisplayMessage(new InformationMessage(
+                    new TextObject("{=MP_GovernorManualChangeFailed}The governor change could not be applied because it would invalidate an office or campaign state changed.").ToString()));
 
             closePopup?.Invoke();
             RefreshGovernor();

@@ -58,6 +58,13 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             return hero == null ? null : _assignments.FirstOrDefault(item => item?.Hero == hero);
         }
 
+        public int GetOfficeCount(Clan clan)
+        {
+            return clan == null
+                ? 0
+                : _assignments.Count(item => item?.Hero?.Clan == clan);
+        }
+
         internal void AddAssignment(Kingdom kingdom, Hero hero, OfficeType officeType)
         {
             // Services validate first; this final guard protects save integrity from other callers.

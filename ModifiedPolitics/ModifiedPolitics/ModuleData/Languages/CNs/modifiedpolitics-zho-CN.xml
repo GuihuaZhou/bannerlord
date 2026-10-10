@@ -504,5 +504,16 @@
     <string id="MP_MarshalArmyAiConditions" text="[王国官职] {KINGDOM}的大元帅尚未满足本体的影响力、粮食、距离或部队召集条件。" />
     <string id="MP_MarshalArmyAiNoMembers" text="[王国官职] {KINGDOM}当前没有可召集加入军团的部队。" />
     <string id="MP_MarshalArmyAiEvaluating" text="[王国官职] {KINGDOM}的大元帅已进入本体军团目标评估。" />
+    <string id="MP_GovernorPlanStarted" text="[总督分配] 开始规划{KINGDOM}：{SETTLEMENTS}座定居点，{CANDIDATES}名可用英雄。" />
+    <string id="MP_GovernorPlanFinished" text="[总督分配] {KINGDOM}规划完成：任命{APPOINTED}，调任{MOVED}，撤职{REMOVED}，留任{RETAINED}，空缺{VACANT}，失败{FAILED}。" />
+    <string id="MP_GovernorPlanFailed" text="[总督分配] {KINGDOM}有{COUNT}项总督变更被游戏拒绝；保留实际状态，等待下次每周规划处理。" />
+    <string id="MP_GovernorRelationChanged" text="[总督分配] 总督任免后，{RULING_CLAN}与{CLAN}的关系变化{DELTA}。" />
+    <string id="MP_GovernorAssignmentChanged" text="[总督分配] {SETTLEMENT}：{OLD_GOVERNOR} → {NEW_GOVERNOR}。" />
+    <string id="MP_GovernorNoQualifiedCandidate" text="[总督分配] {SETTLEMENT}没有达到能力门槛的候选人；要求能力为{ABILITY}。" />
+    <string id="MP_GovernorNoticeAppointmentTitle" text="总督任命：{SETTLEMENT}" />
+    <string id="MP_GovernorNoticeTransferTitle" text="总督调任：{SETTLEMENT}" />
+    <string id="MP_GovernorNoticeAppointed" text="你的家族成员{HERO}已被任命为{NEW_SETTLEMENT}总督。" />
+    <string id="MP_GovernorNoticeMoved" text="你的家族成员{HERO}已从{OLD_SETTLEMENT}调任至{NEW_SETTLEMENT}。" />
+    <string id="MP_GovernorManualChangeFailed" text="无法执行总督变更：该操作会使地方官职失效，或当前战役状态已经变化。" />
 </strings>
 </base>

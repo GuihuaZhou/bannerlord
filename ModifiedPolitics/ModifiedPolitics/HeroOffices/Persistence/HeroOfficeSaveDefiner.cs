@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using ModifiedPolitics.HeroOffices.Decisions;
 using ModifiedPolitics.HeroOffices.Domain;
+using ModifiedPolitics.Governor.Notifications;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 
@@ -21,6 +22,7 @@ namespace ModifiedPolitics.HeroOffices.Persistence
             AddClassDefinition(typeof(OfficeAssignment), 1);
             AddClassDefinition(typeof(MarshalOfficeDecision), 2);
             AddClassDefinition(typeof(MarshalOfficeDecision.MarshalOfficeOutcome), 3);
+            AddClassDefinition(typeof(GovernorAppointmentMapNotification), 5);
         }
 
         protected override void DefineEnumTypes()
