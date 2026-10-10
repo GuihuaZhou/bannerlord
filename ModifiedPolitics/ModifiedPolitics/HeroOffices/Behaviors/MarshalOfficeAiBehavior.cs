@@ -51,6 +51,14 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 if (marshal == null)
                     continue;
 
+                // Losing the commanded war party invalidates marshal eligibility, but dismissal
+                // still goes through the existing kingdom decision instead of silent removal.
+                if (!OfficeRules.IsEligible(marshal.Hero, kingdom, OfficeType.Marshal))
+                {
+                    MarshalDecisionService.TryProposeDismissal(kingdom);
+                    continue;
+                }
+
                 bool reviewDue = !_lastReviewTimes.TryGetValue(kingdom, out CampaignTime lastReview)
                                  || lastReview == CampaignTime.Zero
                                  || lastReview.ElapsedDaysUntilNow >= 28f;

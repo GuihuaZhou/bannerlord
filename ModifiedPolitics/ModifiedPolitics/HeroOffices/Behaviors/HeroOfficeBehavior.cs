@@ -153,6 +153,9 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 || assignment.Hero.Clan?.Kingdom != assignment.Kingdom)
                 return false;
 
+            if (assignment.OfficeType == OfficeType.Marshal)
+                return OfficeRules.IsMarshalAssignmentValid(assignment.Hero, assignment.Kingdom);
+
             return OfficeRules.IsEligible(assignment.Hero, assignment.Kingdom, assignment.OfficeType);
         }
 

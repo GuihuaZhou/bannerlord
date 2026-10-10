@@ -4,6 +4,7 @@ using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
@@ -44,10 +45,7 @@ namespace ModifiedPolitics.HeroOffices.Models
 
         public static bool IsEligible(Hero hero, Kingdom kingdom, OfficeType officeType)
         {
-            if (hero == null || kingdom == null || kingdom.IsEliminated
-                || !hero.IsAlive || !hero.IsActive || hero.IsPrisoner
-                || hero.Clan == null || hero.Clan.Kingdom != kingdom
-                || hero.Clan.IsEliminated || hero.Clan.IsClanTypeMercenary)
+            if (!IsBaseEligible(hero, kingdom))
                 return false;
 
             if (!OfficeConfigManager.Instance.TryGet(kingdom, out OfficeCultureConfig config)
@@ -68,9 +66,38 @@ namespace ModifiedPolitics.HeroOffices.Models
             }
 
             if (officeType == OfficeType.Marshal)
-                return hero != kingdom.Leader && hero.CanLeadParty();
+            {
+                MobileParty party = hero.PartyBelongedTo;
+                return hero != kingdom.Leader
+                       && hero.GovernorOf == null
+                       && hero.CanLeadParty()
+                       && party != null
+                       && party.IsActive
+                       && party.IsLordParty
+                       && party.LeaderHero == hero;
+            }
 
             return true;
+        }
+
+        /// <summary>
+        /// Checks persistent marshal membership without requiring a current party.
+        /// A lost party is handled through the marshal dismissal decision instead of silent cleanup.
+        /// </summary>
+        public static bool IsMarshalAssignmentValid(Hero hero, Kingdom kingdom)
+        {
+            return IsBaseEligible(hero, kingdom)
+                   && hero != kingdom.Leader
+                   && OfficeConfigManager.Instance.TryGet(kingdom, out OfficeCultureConfig config)
+                   && config.IsEnabled(OfficeType.Marshal);
+        }
+
+        private static bool IsBaseEligible(Hero hero, Kingdom kingdom)
+        {
+            return hero != null && kingdom != null && !kingdom.IsEliminated
+                   && hero.IsAlive && hero.IsActive && !hero.IsPrisoner
+                   && hero.Clan != null && hero.Clan.Kingdom == kingdom
+                   && !hero.Clan.IsEliminated && !hero.Clan.IsClanTypeMercenary;
         }
 
         public static float GetCandidateScore(Hero hero, OfficeType officeType)

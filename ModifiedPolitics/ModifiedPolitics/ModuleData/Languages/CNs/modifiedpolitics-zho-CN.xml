@@ -490,5 +490,19 @@
     <string id="MP_OfficeAiLocalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplicationApprove" text="同意" />
     <string id="MP_OfficeApplicationReject" text="拒绝" />
+    <string id="MP_MarshalArmyAiPlayer" text="[王国官职] {KINGDOM}的大元帅是玩家，保持手动控制军团。" />
+    <string id="MP_MarshalArmyAiIneligible" text="[王国官职] {KINGDOM}的大元帅不再领导符合条件的领主部队。" />
+    <string id="MP_MarshalArmyAiArmyActive" text="[王国官职] {KINGDOM}的大元帅已经成功领导军团。" />
+    <string id="MP_MarshalArmyAiAttached" text="[王国官职] {KINGDOM}的大元帅当前加入了其他军团，暂停主动组建军团。" />
+    <string id="MP_MarshalArmyAiVanilla" text="[王国官职] {KINGDOM}的大元帅符合原版军团创建路径，由本体军事 AI 处理。" />
+    <string id="MP_MarshalArmyAiMissingBehavior" text="[王国官职] {KINGDOM}无法取得本体军事 AI, 暂停大元帅组建军团。" />
+    <string id="MP_MarshalArmyAiBusy" text="[王国官职] {KINGDOM}的大元帅部队正在海上、战斗或围城，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiLowStrength" text="[王国官职] {KINGDOM}的大元帅部队人数比例不足60%，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiNoTarget" text="[王国官职] {KINGDOM}当前没有拥有封地的敌对势力，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiInfluence" text="[王国官职] {KINGDOM}的大元帅家族影响力不足，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiFood" text="[王国官职] {KINGDOM}的大元帅部队粮食不足，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiConditions" text="[王国官职] {KINGDOM}的大元帅尚未满足本体的影响力、粮食、距离或部队召集条件。" />
+    <string id="MP_MarshalArmyAiNoMembers" text="[王国官职] {KINGDOM}当前没有可召集加入军团的部队。" />
+    <string id="MP_MarshalArmyAiEvaluating" text="[王国官职] {KINGDOM}的大元帅已进入本体军团目标评估。" />
 </strings>
 </base>
