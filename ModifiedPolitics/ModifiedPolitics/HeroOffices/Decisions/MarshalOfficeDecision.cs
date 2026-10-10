@@ -60,7 +60,9 @@ namespace ModifiedPolitics.HeroOffices.Decisions
             if (HeroOfficeBehavior.Current?.GetAssignments(kingdom, OfficeType.Marshal).Any() == true)
                 return false;
 
-            return _nominatedHero == null || OfficeRules.IsEligible(_nominatedHero, kingdom, OfficeType.Marshal);
+            return _nominatedHero == null
+                   || (HeroOfficeBehavior.Current?.GetAssignment(_nominatedHero) == null
+                       && OfficeRules.IsEligible(_nominatedHero, kingdom, OfficeType.Marshal));
         }
 
         public override int GetProposalInfluenceCost() => 0;
@@ -105,12 +107,18 @@ namespace ModifiedPolitics.HeroOffices.Decisions
         public override float DetermineSupport(Clan clan, DecisionOutcome possibleOutcome)
         {
             MarshalOfficeOutcome outcome = (MarshalOfficeOutcome)possibleOutcome;
+            if (clan?.Leader == null || outcome == null)
+                return 0f;
+
             bool normalVote = IsNormalVote();
             if (!normalVote && clan != Kingdom.RulingClan)
                 return 0f;
 
             if (_isDismissal)
             {
+                if (_marshalToDismiss == null)
+                    return 0f;
+
                 int relation = clan.Leader.GetRelation(_marshalToDismiss);
                 if (clan == Kingdom.RulingClan)
                     return outcome.RemoveMarshal ? 100f : 0f;
@@ -119,6 +127,9 @@ namespace ModifiedPolitics.HeroOffices.Decisions
 
             if (_nominatedHero != null && clan == Kingdom.RulingClan)
                 return outcome.Hero == _nominatedHero ? 100f : 0f;
+
+            if (outcome.Hero == null)
+                return 0f;
 
             float militaryMerit = OfficeRules.GetCandidateScore(outcome.Hero, OfficeType.Marshal) / 20f;
             return militaryMerit + clan.Leader.GetRelation(outcome.Hero) * 0.5f;
@@ -137,7 +148,10 @@ namespace ModifiedPolitics.HeroOffices.Decisions
 
         public override void ApplyChosenOutcome(DecisionOutcome chosenOutcome)
         {
-            MarshalOfficeOutcome outcome = (MarshalOfficeOutcome)chosenOutcome;
+            MarshalOfficeOutcome outcome = chosenOutcome as MarshalOfficeOutcome;
+            if (outcome == null)
+                return;
+
             if (_isDismissal)
             {
                 if (outcome.RemoveMarshal)
@@ -145,7 +159,8 @@ namespace ModifiedPolitics.HeroOffices.Decisions
                 return;
             }
 
-            OfficeAppointmentService.TryApplyMarshalDecision(Kingdom, outcome.Hero);
+            if (outcome.Hero != null)
+                OfficeAppointmentService.TryApplyMarshalDecision(Kingdom, outcome.Hero);
         }
 
         public override TextObject GetSecondaryEffects() => TextObject.GetEmpty();
@@ -210,6 +225,9 @@ namespace ModifiedPolitics.HeroOffices.Decisions
 
         private float GetAppointmentScore(Hero hero)
         {
+            if (hero == null || Kingdom?.Leader == null)
+                return 0f;
+
             return OfficeRules.GetCandidateScore(hero, OfficeType.Marshal)
                    + hero.GetRelation(Kingdom.Leader) * 2f;
         }
