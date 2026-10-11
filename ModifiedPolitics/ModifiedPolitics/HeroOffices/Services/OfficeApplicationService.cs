@@ -235,9 +235,13 @@ namespace ModifiedPolitics.HeroOffices.Services
                 ? 0f
                 : ruler.GetRelation(candidateClanLeader);
             float officeScore = officeType == OfficeType.Marshal
-                ? OfficeRules.GetMarshalAppointmentScore(candidate)
+                ? OfficeRules.GetMarshalAppointmentScore(
+                    candidate,
+                    ruler?.Clan?.Kingdom)
                 : OfficeRules.GetCandidateScore(candidate, officeType);
-            return officeScore + relation * 2f;
+            return officeType == OfficeType.Marshal
+                ? officeScore
+                : officeScore + relation * 2f;
         }
 
         private static IEnumerable<Hero> GetEligibleCandidates(Kingdom kingdom, OfficeType officeType)

@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.HeroOffices.Models;
@@ -84,30 +83,27 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             IReadOnlyCollection<OfficeAssignment> marshals)
         {
             OfficeAssignment marshal = marshals
-                .OrderBy(item => OfficeRules.GetCandidateScore(item.Hero, OfficeType.Marshal))
+                .OrderBy(item => OfficeRules.GetMarshalAppointmentScore(
+                    item.Hero,
+                    kingdom))
                 .First();
-            float currentScore = Math.Max(
-                0f,
-                OfficeRules.GetCandidateScore(marshal.Hero, OfficeType.Marshal));
             Hero bestCandidate = kingdom.Clans
                 .Where(clan => clan != null && !clan.IsEliminated && !clan.IsClanTypeMercenary)
                 .SelectMany(clan => clan.Heroes)
                 .Where(hero => behavior.GetAssignment(hero) == null)
                 .Where(hero => OfficeRules.IsEligible(hero, kingdom, OfficeType.Marshal))
                 .Where(hero => OfficeRules.IsMarshalClanAvailable(hero, kingdom))
-                .OrderByDescending(hero => OfficeRules.GetCandidateScore(hero, OfficeType.Marshal))
+                .OrderByDescending(hero =>
+                    OfficeRules.GetMarshalAppointmentScore(hero, kingdom))
                 .ThenBy(hero => hero.StringId)
                 .FirstOrDefault();
             if (bestCandidate == null)
                 return;
 
-            float bestScore = Math.Max(
-                0f,
-                OfficeRules.GetCandidateScore(bestCandidate, OfficeType.Marshal));
-            bool clearsThreshold = currentScore > 0f
-                ? bestScore >= currentScore * 1.25f
-                : bestScore > 0f;
-            if (clearsThreshold)
+            if (MarshalAppointmentScoreModel.ShouldReplace(
+                    marshal.Hero,
+                    bestCandidate,
+                    kingdom))
                 MarshalDecisionService.TryProposeDismissal(kingdom, marshal.Hero);
         }
     }

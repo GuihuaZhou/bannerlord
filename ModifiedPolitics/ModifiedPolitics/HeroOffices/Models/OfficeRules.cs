@@ -31,7 +31,9 @@ namespace ModifiedPolitics.HeroOffices.Models
                 return 0;
 
             if (!IsLocal(officeType))
-                return officeType == OfficeType.Marshal ? 3 : 1;
+                return officeType == OfficeType.Marshal
+                    ? config.MarshalScore.OfficeLimit
+                    : 1;
 
             int settlementCount = officeType == OfficeType.MilitaryOfficer
                 ? Town.AllCastles.Count(town => town?.OwnerClan?.Kingdom == kingdom)
@@ -118,13 +120,7 @@ namespace ModifiedPolitics.HeroOffices.Models
             switch (officeType)
             {
                 case OfficeType.Marshal:
-                    float influence = Math.Min(hero.Clan?.Influence ?? 0f, 900f) * 0.5f;
-                    float commanderBonus = hero.GetTraitLevel(DefaultTraits.Commander) > 0 ? 300f : 0f;
-                    return hero.GetSkillValue(DefaultSkills.Tactics) * 3f
-                           + hero.GetSkillValue(DefaultSkills.Leadership) * 2f
-                           + hero.GetSkillValue(DefaultSkills.Steward)
-                           + influence
-                           + commanderBonus;
+                    return MarshalAppointmentScoreModel.GetAbilityScore(hero);
                 case OfficeType.TaxOfficer:
                     return hero.GetSkillValue(DefaultSkills.Steward) + hero.GetSkillValue(DefaultSkills.Trade);
                 case OfficeType.AgricultureOfficer:
@@ -139,10 +135,13 @@ namespace ModifiedPolitics.HeroOffices.Models
             }
         }
 
-        public static float GetMarshalAppointmentScore(Hero hero)
+        public static float GetMarshalAppointmentScore(
+            Hero hero,
+            Kingdom kingdom = null)
         {
-            float score = GetCandidateScore(hero, OfficeType.Marshal);
-            return hero == Hero.MainHero ? score * 10f : score;
+            return MarshalAppointmentScoreModel.GetScore(
+                hero,
+                kingdom ?? hero?.Clan?.Kingdom);
         }
     }
 }

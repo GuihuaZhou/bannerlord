@@ -8,7 +8,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="Abstain"
-      marshalDismissalVote="Abstain" />
+      marshalDismissalVote="Abstain">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="aserai"
       culture="Culture.aserai"
@@ -17,7 +19,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="Abstain"
-      marshalDismissalVote="Abstain" />
+      marshalDismissalVote="Abstain">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="vlandia"
       culture="Culture.vlandia"
@@ -26,7 +30,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="NormalVote"
-      marshalDismissalVote="NormalVote" />
+      marshalDismissalVote="NormalVote">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="sturgia"
       culture="Culture.sturgia"
@@ -35,7 +41,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="NormalVote"
-      marshalDismissalVote="NormalVote" />
+      marshalDismissalVote="NormalVote">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="khuzait"
       culture="Culture.khuzait"
@@ -44,7 +52,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="Abstain"
-      marshalDismissalVote="Abstain" />
+      marshalDismissalVote="Abstain">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="battania"
       culture="Culture.battania"
@@ -53,7 +63,9 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="Abstain"
-      marshalDismissalVote="Abstain" />
+      marshalDismissalVote="Abstain">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
   <HeroOfficeCultureConfig
       id="nord"
       culture="Culture.nord"
@@ -62,5 +74,7 @@
       maxLimit="3"
       settlementsPerSlot="3"
       marshalAppointmentVote="Abstain"
-      marshalDismissalVote="Abstain" />
+      marshalDismissalVote="Abstain">
+    <MarshalScore officeLimit="3" influenceTarget="1000" politicalPriorityBand="1000000" relationBand="1000" armyReadyBonus="500" lowInfluenceBonus="400" clanTierWeight="10" officeDistributionBonus="50" competenceTieBreakerMax="9.9" competenceDivisor="500" tacticsWeight="3" leadershipWeight="3" scoutingWeight="2" stewardWeight="2" engineeringWeight="2" charmWeight="1" tradeWeight="1" calculatingWeight="50" valorWeight="40" honorWeight="30" />
+  </HeroOfficeCultureConfig>
 </HeroOfficeCultureConfigs>

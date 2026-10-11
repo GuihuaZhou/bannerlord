@@ -110,17 +110,25 @@
                   </ItemTemplate>
                 </ListPanel>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@AppointmentUnavailableText" IsVisible="@ShowAppointmentUnavailable" />
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" IsVisible="@ShowAppointButton">
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="227" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" IsVisible="@ShowAppointButton">
                   <Children>
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
+                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonBrush2" Command.Click="ExecuteAppoint" IsEnabled="@CanAppoint" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@AppointText" />
+                      </Children>
+                    </ButtonWidget>
                   </Children>
-                </ButtonWidget>
+                </Widget>
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" Brush="Kingdom.CurrentArmyValues.Text" Brush.TextHorizontalAlignment="Center" Text="@ApplicationUnavailableText" IsVisible="@ShowApplicationUnavailable" />
-                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteApply" IsEnabled="@CanApply" IsVisible="@ShowApplyButton">
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="227" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="15" IsVisible="@ShowApplyButton">
                   <Children>
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@ApplyText" />
+                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonBrush2" Command.Click="ExecuteApply" IsEnabled="@CanApply" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.GeneralButtons.Text" Text="@ApplyText" />
+                      </Children>
+                    </ButtonWidget>
                   </Children>
-                </ButtonWidget>
+                </Widget>
                       </Children>
                     </ListPanel>
                   </Children>

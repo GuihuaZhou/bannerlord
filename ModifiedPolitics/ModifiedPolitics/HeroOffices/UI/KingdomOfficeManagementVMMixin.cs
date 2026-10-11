@@ -12,6 +12,7 @@ using ModifiedPolitics.HeroOffices.Domain;
 using ModifiedPolitics.HeroOffices.Decisions;
 using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.HeroOffices.Services;
+using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.ViewModelCollection.KingdomManagement;
 using TaleWorlds.Core;
@@ -391,67 +392,78 @@ namespace ModifiedPolitics.HeroOffices.UI
             if (office == null)
                 return;
 
-            Kingdom kingdom = Clan.PlayerClan?.Kingdom;
-            if (!OfficeApplicationService.CanApply(
-                    kingdom,
-                    Hero.MainHero,
-                    office.OfficeType,
-                    out string failureReason))
+            try
             {
-                ShowActionFailed(failureReason);
-                RefreshOfficeList();
-                return;
-            }
+                Kingdom kingdom = Clan.PlayerClan?.Kingdom;
+                if (!OfficeApplicationService.CanApply(
+                        kingdom,
+                        Hero.MainHero,
+                        office.OfficeType,
+                        out string failureReason))
+                {
+                    ShowActionFailed(failureReason);
+                    RefreshOfficeList();
+                    return;
+                }
 
-            TextObject description;
-            if (OfficeRules.IsLocal(office.OfficeType))
-            {
-                description = new TextObject(
-                    "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
-                description.SetTextVariable(
-                    "SETTLEMENT",
-                    Hero.MainHero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
-                description.SetTextVariable(
-                    "SCORE",
-                    (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
-            }
-            else if (office.OfficeType == OfficeType.Marshal)
-            {
-                description = new TextObject(
-                    "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
-                description.SetTextVariable(
-                    "SCORE",
-                    (int)OfficeRules.GetMarshalAppointmentScore(Hero.MainHero));
-            }
-            else
-            {
-                description = new TextObject(
-                    "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.\nRelation with ruler: {RELATION}");
-            }
+                TextObject description;
+                if (OfficeRules.IsLocal(office.OfficeType))
+                {
+                    description = new TextObject(
+                        "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
+                    description.SetTextVariable(
+                        "SETTLEMENT",
+                        Hero.MainHero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
+                    description.SetTextVariable(
+                        "SCORE",
+                        (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
+                }
+                else if (office.OfficeType == OfficeType.Marshal)
+                {
+                    description = new TextObject(
+                        "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nPolitical priority: {PRIORITY}\nRuler relation: {MARSHAL_RELATION}\nInfluence: {INFLUENCE}/{REQUIRED_INFLUENCE}\nAbility: {ABILITY}\nTraits: {TRAITS}\nTotal score: {SCORE}");
+                    SetMarshalScoreVariables(
+                        description,
+                        Hero.MainHero,
+                        kingdom);
+                }
+                else
+                {
+                    description = new TextObject(
+                        "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.\nRelation with ruler: {RELATION}");
+                }
 
-            description.SetTextVariable("RULER", kingdom.Leader.Name);
-            description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
-            Hero playerClanLeader = Hero.MainHero.Clan?.Leader;
-            description.SetTextVariable(
-                "RELATION",
-                playerClanLeader == null ? 0 : kingdom.Leader.GetRelation(playerClanLeader));
-            InformationManager.ShowInquiry(
-                new InquiryData(
-                    new TextObject("{=MP_OfficeApplyTitle}Apply for Office").ToString(),
-                    description.ToString(),
-                    true,
-                    true,
-                    new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
-                    new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
-                    () => CompleteApplication(office.OfficeType),
-                    null,
-                    string.Empty,
-                    0f,
-                    null,
-                    null,
-                    null),
-                false,
-                false);
+                description.SetTextVariable("RULER", kingdom.Leader.Name);
+                description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
+                Hero playerClanLeader = Hero.MainHero.Clan?.Leader;
+                description.SetTextVariable(
+                    "RELATION",
+                    playerClanLeader == null ? 0 : kingdom.Leader.GetRelation(playerClanLeader));
+                InformationManager.ShowInquiry(
+                    new InquiryData(
+                        new TextObject("{=MP_OfficeApplyTitle}Apply for Office").ToString(),
+                        description.ToString(),
+                        true,
+                        true,
+                        new TextObject("{=MP_OfficeConfirm}Confirm").ToString(),
+                        new TextObject("{=MP_OfficeCancel}Cancel").ToString(),
+                        () => CompleteApplication(office.OfficeType),
+                        null,
+                        string.Empty,
+                        0f,
+                        null,
+                        null,
+                        null),
+                    false,
+                    false);
+            }
+            catch (System.Exception exception)
+            {
+                ModLogger.Error(
+                    $"[Hero Offices] Failed to open office application UI: {exception}");
+                ShowActionFailed(new TextObject(
+                    "{=MP_OfficeApplicationUiFailure}The application window could not be opened; see the mod log for details.").ToString());
+            }
         }
 
         private void CompleteApplication(OfficeType officeType)
@@ -651,10 +663,11 @@ namespace ModifiedPolitics.HeroOffices.UI
             else if (officeType == OfficeType.Marshal)
             {
                 description = new TextObject(
-                    "{=MP_OfficeMarshalCandidateDescription}{CLAN}\nCandidate score: {SCORE}");
-                description.SetTextVariable(
-                    "SCORE",
-                    (int)OfficeRules.GetMarshalAppointmentScore(hero));
+                    "{=MP_OfficeMarshalCandidateDescription}{CLAN}\nPolitical priority: {PRIORITY}\nRuler relation: {MARSHAL_RELATION}\nInfluence: {INFLUENCE}/{REQUIRED_INFLUENCE}\nAbility: {ABILITY}\nTraits: {TRAITS}\nTotal score: {SCORE}");
+                SetMarshalScoreVariables(
+                    description,
+                    hero,
+                    hero.Clan?.Kingdom);
             }
             else
             {
@@ -663,6 +676,24 @@ namespace ModifiedPolitics.HeroOffices.UI
 
             description.SetTextVariable("CLAN", hero.Clan?.Name ?? TextObject.GetEmpty());
             return description.ToString();
+        }
+
+        private static void SetMarshalScoreVariables(
+            TextObject text,
+            Hero hero,
+            Kingdom kingdom)
+        {
+            MarshalAppointmentScore score = MarshalAppointmentScoreModel
+                .Evaluate(hero, kingdom);
+            text.SetTextVariable("PRIORITY", score.PoliticalPriority);
+            text.SetTextVariable("MARSHAL_RELATION", score.RulerRelation);
+            text.SetTextVariable("INFLUENCE", (int)score.ClanInfluence);
+            text.SetTextVariable(
+                "REQUIRED_INFLUENCE",
+                (int)score.RequiredInfluence);
+            text.SetTextVariable("ABILITY", (int)score.AbilityScore);
+            text.SetTextVariable("TRAITS", (int)score.TraitScore);
+            text.SetTextVariable("SCORE", (int)score.FinalScore);
         }
 
         private static TextObject GetCompensationText(

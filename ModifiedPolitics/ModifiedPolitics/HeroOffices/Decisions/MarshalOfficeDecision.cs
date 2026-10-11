@@ -105,7 +105,7 @@ namespace ModifiedPolitics.HeroOffices.Decisions
             MarshalOfficeOutcome outcome = (MarshalOfficeOutcome)candidateOutcome;
             if (_isDismissal)
                 return outcome.RemoveMarshal ? 100f : 50f;
-            return OfficeRules.GetMarshalAppointmentScore(outcome.Hero);
+            return OfficeRules.GetMarshalAppointmentScore(outcome.Hero, Kingdom);
         }
 
         public override Clan DetermineChooser() => Kingdom.RulingClan;
@@ -137,7 +137,9 @@ namespace ModifiedPolitics.HeroOffices.Decisions
             if (outcome.Hero == null)
                 return 0f;
 
-            float militaryMerit = OfficeRules.GetMarshalAppointmentScore(outcome.Hero) / 20f;
+            float militaryMerit = OfficeRules.GetMarshalAppointmentScore(
+                outcome.Hero,
+                Kingdom) / 20f;
             return militaryMerit + clan.Leader.GetRelation(outcome.Hero) * 0.5f;
         }
 
@@ -214,10 +216,12 @@ namespace ModifiedPolitics.HeroOffices.Decisions
                 return eligible
                     .GroupBy(hero => hero.Clan)
                     .Select(group => group
-                        .OrderByDescending(OfficeRules.GetMarshalAppointmentScore)
+                        .OrderByDescending(hero =>
+                            OfficeRules.GetMarshalAppointmentScore(hero, Kingdom))
                         .ThenBy(hero => hero.StringId)
                         .First())
-                    .OrderByDescending(OfficeRules.GetMarshalAppointmentScore)
+                    .OrderByDescending(hero =>
+                        OfficeRules.GetMarshalAppointmentScore(hero, Kingdom))
                     .ThenBy(hero => hero.StringId)
                     .Take(3)
                     .ToList();
@@ -235,8 +239,7 @@ namespace ModifiedPolitics.HeroOffices.Decisions
             if (hero == null || Kingdom?.Leader == null)
                 return 0f;
 
-            return OfficeRules.GetMarshalAppointmentScore(hero)
-                   + hero.GetRelation(Kingdom.Leader) * 2f;
+            return OfficeRules.GetMarshalAppointmentScore(hero, Kingdom);
         }
 
         private void LogCandidateScores(IEnumerable<Hero> candidates)
@@ -247,11 +250,23 @@ namespace ModifiedPolitics.HeroOffices.Decisions
             _candidateScoresLogged = true;
             string scores = string.Join(
                 "; ",
-                candidates.Where(hero => hero != null).Select(hero => string.Format(
-                    "{0}={1:0}->{2:0}",
-                    hero.Name,
-                    OfficeRules.GetCandidateScore(hero, OfficeType.Marshal),
-                    OfficeRules.GetMarshalAppointmentScore(hero))));
+                candidates.Where(hero => hero != null).Select(hero =>
+                {
+                    MarshalAppointmentScore score =
+                        MarshalAppointmentScoreModel.Evaluate(hero, Kingdom);
+                    return string.Format(
+                        "{0}=total:{1:0}, priority:{2}, relation:{3}, influence:{4:0}/{5:0}, army-ready:{6}, offices:{7}, ability:{8:0}, traits:{9:0}",
+                        hero.Name,
+                        score.FinalScore,
+                        score.PoliticalPriority,
+                        score.RulerRelation,
+                        score.ClanInfluence,
+                        score.RequiredInfluence,
+                        score.CanFundArmy ? 1 : 0,
+                        score.ClanOfficeCount,
+                        score.AbilityScore,
+                        score.TraitScore);
+                }));
             TextObject message = new TextObject(
                 "{=MP_MarshalCandidateScores}[Hero Offices] {KINGDOM} marshal appointment scores: {SCORES}.");
             message.SetTextVariable("KINGDOM", Kingdom.Name);

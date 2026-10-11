@@ -1,4 +1,5 @@
 using System;
+using ModifiedPolitics.Tool;
 using System.Linq;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.Library;
@@ -162,6 +163,8 @@ namespace ModifiedPolitics.HeroOffices.UI
 
         public void ExecuteApply()
         {
+            ModLogger.Info(
+                $"[Hero Offices] Office application button clicked: {OfficeType}; enabled={CanApply}.");
             if (CanApply)
                 _onApply?.Invoke(this);
         }

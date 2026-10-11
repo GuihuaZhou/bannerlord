@@ -126,10 +126,22 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             Kingdom kingdom,
             ApplicationCandidate application)
         {
-            TextObject description = new TextObject(
-                OfficeRules.IsLocal(application.OfficeType)
-                    ? "{=MP_OfficeAiLocalApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}"
-                    : "{=MP_OfficeAiApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nCandidate score: {SCORE}");
+            TextObject description;
+            if (OfficeRules.IsLocal(application.OfficeType))
+            {
+                description = new TextObject(
+                    "{=MP_OfficeAiLocalApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}");
+            }
+            else if (application.OfficeType == OfficeType.Marshal)
+            {
+                description = new TextObject(
+                    "{=MP_OfficeAiMarshalApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nPolitical priority: {PRIORITY}\nRuler relation: {MARSHAL_RELATION}\nInfluence: {INFLUENCE}/{REQUIRED_INFLUENCE}\nAbility: {ABILITY}\nTraits: {TRAITS}\nTotal score: {SCORE}");
+            }
+            else
+            {
+                description = new TextObject(
+                    "{=MP_OfficeAiApplicationDescription}{HERO} of {CLAN} requests appointment as {OFFICE}.\nCandidate score: {SCORE}");
+            }
             description.SetTextVariable("HERO", application.Hero.Name);
             description.SetTextVariable("CLAN", application.Hero.Clan?.Name ?? TextObject.GetEmpty());
             description.SetTextVariable("OFFICE", OfficeText.GetName(application.OfficeType));
@@ -139,7 +151,26 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 applicantClanLeader == null ? 0 : kingdom.Leader.GetRelation(applicantClanLeader));
             description.SetTextVariable(
                 "SCORE",
-                (int)OfficeRules.GetCandidateScore(application.Hero, application.OfficeType));
+                (int)(application.OfficeType == OfficeType.Marshal
+                    ? OfficeRules.GetMarshalAppointmentScore(
+                        application.Hero,
+                        kingdom)
+                    : OfficeRules.GetCandidateScore(
+                        application.Hero,
+                        application.OfficeType)));
+            if (application.OfficeType == OfficeType.Marshal)
+            {
+                MarshalAppointmentScore score = MarshalAppointmentScoreModel
+                    .Evaluate(application.Hero, kingdom);
+                description.SetTextVariable("PRIORITY", score.PoliticalPriority);
+                description.SetTextVariable("MARSHAL_RELATION", score.RulerRelation);
+                description.SetTextVariable("INFLUENCE", (int)score.ClanInfluence);
+                description.SetTextVariable(
+                    "REQUIRED_INFLUENCE",
+                    (int)score.RequiredInfluence);
+                description.SetTextVariable("ABILITY", (int)score.AbilityScore);
+                description.SetTextVariable("TRAITS", (int)score.TraitScore);
+            }
             if (OfficeRules.IsLocal(application.OfficeType))
             {
                 description.SetTextVariable(
