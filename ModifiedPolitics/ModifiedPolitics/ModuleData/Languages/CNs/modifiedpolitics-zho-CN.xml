@@ -57,6 +57,7 @@
     <string id="MP_OfficeDailySummary" text="[官职系统] {KINGDOM}: {OFFICE} {USED}/{LIMIT}; 任职: {HOLDERS}; 每名任职者每日影响力 +{INFLUENCE}." />
     <string id="MP_MarshalDismissDecisionStarted" text="[官职系统] {KINGDOM}已发起解除大元帅{HERO}职务的王国决议." />
     <string id="MP_MarshalAppointmentDecisionStarted" text="[官职系统] {KINGDOM}已发起大元帅任命决议; 统治者提名: {HERO}." />
+    <string id="MP_MarshalCandidateScores" text="[官职系统] {KINGDOM}大元帅任命评分：{SCORES}。" />
     <string id="MP_MarshalSystemCandidates" text="系统生成候选人" />
     <string id="ModifiedPolitics_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
     <string id="ModifiedPolitics_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
@@ -465,6 +466,7 @@
     <string id="MP_OfficeFailureNoVacancy" text="该官职已没有空缺席位。" />
     <string id="MP_OfficeFailureInvalidDismissal" text="官职或统治者状态已经变化，无法执行撤职。" />
     <string id="MP_OfficeFailureMarshalDismissalDecision" text="大元帅撤职必须通过王国决议。" />
+    <string id="MP_OfficeFailureMarshalClanOccupied" text="每个家族最多只能占有一个大元帅席位。" />
     <string id="MP_OfficeFailureCannotAfford" text="统治者无法支付所选补偿。" />
     <string id="MP_OfficeFailureDecisionUnavailable" text="当前无法发起该王国决议。" />
     <string id="MP_OfficeApplyButton" text="申请任职" />
@@ -490,20 +492,25 @@
     <string id="MP_OfficeAiLocalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplicationApprove" text="同意" />
     <string id="MP_OfficeApplicationReject" text="拒绝" />
-    <string id="MP_MarshalArmyAiPlayer" text="[王国官职] {KINGDOM}的大元帅是玩家，保持手动控制军团。" />
-    <string id="MP_MarshalArmyAiIneligible" text="[王国官职] {KINGDOM}的大元帅不再领导符合条件的领主部队。" />
-    <string id="MP_MarshalArmyAiArmyActive" text="[王国官职] {KINGDOM}的大元帅已经成功领导军团。" />
-    <string id="MP_MarshalArmyAiAttached" text="[王国官职] {KINGDOM}的大元帅当前加入了其他军团，暂停主动组建军团。" />
+    <string id="MP_MarshalArmyAiPlayer" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}是玩家，保持手动控制军团。" />
+    <string id="MP_MarshalArmyAiIneligible" text="[王国官职] {KINGDOM}的大元帅{MARSHAL}不再领导符合条件的领主部队。" />
+    <string id="MP_MarshalArmyAiArmyActive" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}已经成功领导军团。" />
+    <string id="MP_MarshalArmyAiAttached" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}当前加入了其他军团，暂停主动组建军团。" />
     <string id="MP_MarshalArmyAiVanilla" text="[王国官职] {KINGDOM}的大元帅符合原版军团创建路径，由本体军事 AI 处理。" />
-    <string id="MP_MarshalArmyAiMissingBehavior" text="[王国官职] {KINGDOM}无法取得本体军事 AI, 暂停大元帅组建军团。" />
-    <string id="MP_MarshalArmyAiBusy" text="[王国官职] {KINGDOM}的大元帅部队正在海上、战斗或围城，暂不组建军团。" />
-    <string id="MP_MarshalArmyAiLowStrength" text="[王国官职] {KINGDOM}的大元帅部队人数比例不足60%，暂不组建军团。" />
-    <string id="MP_MarshalArmyAiNoTarget" text="[王国官职] {KINGDOM}当前没有拥有封地的敌对势力，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiMissingBehavior" text="[王国官职] {KINGDOM}无法取得本体军事 AI，军团统帅{MARSHAL}暂停组建军团。" />
+    <string id="MP_MarshalArmyAiBusy" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}正在海上、战斗或围城，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiLowStrength" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}部队人数比例不足60%，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiNoTarget" text="[王国官职] {KINGDOM}当前没有拥有封地的敌对势力，军团统帅{MARSHAL}暂不组建军团。" />
     <string id="MP_MarshalArmyAiInfluence" text="[王国官职] {KINGDOM}的大元帅家族影响力不足，暂不组建军团。" />
     <string id="MP_MarshalArmyAiFood" text="[王国官职] {KINGDOM}的大元帅部队粮食不足，暂不组建军团。" />
     <string id="MP_MarshalArmyAiConditions" text="[王国官职] {KINGDOM}的大元帅尚未满足本体的影响力、粮食、距离或部队召集条件。" />
-    <string id="MP_MarshalArmyAiNoMembers" text="[王国官职] {KINGDOM}当前没有可召集加入军团的部队。" />
+    <string id="MP_MarshalArmyAiNoMembers" text="[王国官职] {KINGDOM}的军团统帅{MARSHAL}当前没有可召集加入军团的部队。" />
     <string id="MP_MarshalArmyAiEvaluating" text="[王国官职] {KINGDOM}的大元帅已进入本体军团目标评估。" />
+    <string id="MP_MarshalArmyAiVanillaReady" text="[王国官职] {KINGDOM}的大元帅走原版军团路径且当前满足创建条件。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；可召集部队：{CANDIDATES}；身份补丁替换数：{PATCH_COUNT}。" />
+    <string id="MP_MarshalArmyAiVanillaBlocked" text="[王国官职] {KINGDOM}的大元帅走原版军团路径，但本体当前拒绝创建。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；候选数：{CANDIDATES}；身份补丁替换数：{PATCH_COUNT}。" />
+    <string id="MP_MarshalArmyAiConditionsDetailed" text="[王国官职] {KINGDOM}的大元帅未通过本体军团条件。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；候选数：{CANDIDATES}；身份补丁替换数：{PATCH_COUNT}。" />
+    <string id="MP_MarshalArmyAiNoScoredTarget" text="[王国官职] {KINGDOM}的大元帅通过创建条件，但本体没有产生可用军团目标。大元帅：{MARSHAL}；可召集部队：{CANDIDATES}；军团目标分数条目：{ADDED_SCORES}；身份补丁替换数：{PATCH_COUNT}。" />
+    <string id="MP_MarshalArmyAiEvaluatingDetailed" text="[王国官职] {KINGDOM}的大元帅已生成军团目标。大元帅：{MARSHAL}；可召集部队：{CANDIDATES}；新增目标数：{ADDED_SCORES}；正分目标数：{POSITIVE_SCORES}；集结兵力：{GATHERING_STRENGTH}；平均粮食：{AVERAGE_FOOD}天；最低粮食：{MINIMUM_FOOD}天；围城粮食阈值：{FOOD_THRESHOLD}天；军团权重：{ARMY_MULTIPLIER}；最佳军团分数：{BEST_ARMY_SCORE}；原有最佳分数：{BEST_EXISTING_SCORE}；当前最佳总分：{BEST_OVERALL_SCORE}；身份补丁替换数：{PATCH_COUNT}。" />
     <string id="MP_GovernorPlanStarted" text="[总督分配] 开始规划{KINGDOM}：{SETTLEMENTS}座定居点，{CANDIDATES}名可用英雄。" />
     <string id="MP_GovernorPlanFinished" text="[总督分配] {KINGDOM}规划完成：任命{APPOINTED}，调任{MOVED}，撤职{REMOVED}，留任{RETAINED}，空缺{VACANT}，失败{FAILED}。" />
     <string id="MP_GovernorPlanFailed" text="[总督分配] {KINGDOM}有{COUNT}项总督变更被游戏拒绝；保留实际状态，等待下次每周规划处理。" />

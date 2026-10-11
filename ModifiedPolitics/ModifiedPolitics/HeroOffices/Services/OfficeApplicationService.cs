@@ -98,6 +98,14 @@ namespace ModifiedPolitics.HeroOffices.Services
                 return false;
             }
 
+            if (officeType == OfficeType.Marshal
+                && !OfficeRules.IsMarshalClanAvailable(applicant, kingdom))
+            {
+                failureReason = new TextObject(
+                    "{=MP_OfficeFailureMarshalClanOccupied}Each clan may hold only one marshal seat.").ToString();
+                return false;
+            }
+
             int limit = OfficeRules.GetOfficeLimit(kingdom, officeType);
             if (limit <= behavior.GetAssignments(kingdom, officeType).Count())
             {
@@ -226,7 +234,10 @@ namespace ModifiedPolitics.HeroOffices.Services
             float relation = ruler == null || candidateClanLeader == null
                 ? 0f
                 : ruler.GetRelation(candidateClanLeader);
-            return OfficeRules.GetCandidateScore(candidate, officeType) + relation * 2f;
+            float officeScore = officeType == OfficeType.Marshal
+                ? OfficeRules.GetMarshalAppointmentScore(candidate)
+                : OfficeRules.GetCandidateScore(candidate, officeType);
+            return officeScore + relation * 2f;
         }
 
         private static IEnumerable<Hero> GetEligibleCandidates(Kingdom kingdom, OfficeType officeType)

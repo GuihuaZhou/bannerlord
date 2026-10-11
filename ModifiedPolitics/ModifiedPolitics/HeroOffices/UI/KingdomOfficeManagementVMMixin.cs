@@ -421,7 +421,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                     "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
                 description.SetTextVariable(
                     "SCORE",
-                    (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
+                    (int)OfficeRules.GetMarshalAppointmentScore(Hero.MainHero));
             }
             else
             {
@@ -559,7 +559,7 @@ namespace ModifiedPolitics.HeroOffices.UI
 
             if (assignment.OfficeType == OfficeType.Marshal)
             {
-                if (!MarshalDecisionService.TryProposeDismissal(kingdom))
+                if (!MarshalDecisionService.TryProposeDismissal(kingdom, officer))
                 {
                     ShowActionFailed(new TextObject(
                         "{=MP_OfficeFailureDecisionUnavailable}The kingdom decision cannot be started right now.").ToString());
@@ -626,6 +626,8 @@ namespace ModifiedPolitics.HeroOffices.UI
                 .SelectMany(clan => clan.Heroes)
                 .Where(hero => HeroOfficeBehavior.Current.GetAssignment(hero) == null
                                && OfficeRules.IsEligible(hero, kingdom, officeType))
+                .Where(hero => officeType != OfficeType.Marshal
+                               || OfficeRules.IsMarshalClanAvailable(hero, kingdom))
                 .OrderBy(hero => hero.Name.ToString());
         }
 
@@ -652,7 +654,7 @@ namespace ModifiedPolitics.HeroOffices.UI
                     "{=MP_OfficeMarshalCandidateDescription}{CLAN}\nCandidate score: {SCORE}");
                 description.SetTextVariable(
                     "SCORE",
-                    (int)OfficeRules.GetCandidateScore(hero, officeType));
+                    (int)OfficeRules.GetMarshalAppointmentScore(hero));
             }
             else
             {

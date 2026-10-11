@@ -45,17 +45,20 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                                         && item.Leader != Hero.MainHero)
                          .ToList())
             {
-                OfficeAssignment marshal = behavior
+                List<OfficeAssignment> marshals = behavior
                     .GetAssignments(kingdom, OfficeType.Marshal)
-                    .SingleOrDefault();
-                if (marshal == null)
+                    .Where(item => item?.Hero != null)
+                    .ToList();
+                if (marshals.Count == 0)
                     continue;
 
+                OfficeAssignment invalidMarshal = marshals.FirstOrDefault(
+                    item => !OfficeRules.IsEligible(item.Hero, kingdom, OfficeType.Marshal));
                 // Losing the commanded war party invalidates marshal eligibility, but dismissal
                 // still goes through the existing kingdom decision instead of silent removal.
-                if (!OfficeRules.IsEligible(marshal.Hero, kingdom, OfficeType.Marshal))
+                if (invalidMarshal != null)
                 {
-                    MarshalDecisionService.TryProposeDismissal(kingdom);
+                    MarshalDecisionService.TryProposeDismissal(kingdom, invalidMarshal.Hero);
                     continue;
                 }
 
@@ -65,7 +68,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 if (!reviewDue)
                     continue;
 
-                ReviewMarshal(behavior, kingdom, marshal);
+                ReviewMarshals(behavior, kingdom, marshals);
                 _lastReviewTimes[kingdom] = CampaignTime.Now;
             }
 
@@ -75,11 +78,14 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 _lastReviewTimes.Remove(staleKingdom);
         }
 
-        private static void ReviewMarshal(
+        private static void ReviewMarshals(
             HeroOfficeBehavior behavior,
             Kingdom kingdom,
-            OfficeAssignment marshal)
+            IReadOnlyCollection<OfficeAssignment> marshals)
         {
+            OfficeAssignment marshal = marshals
+                .OrderBy(item => OfficeRules.GetCandidateScore(item.Hero, OfficeType.Marshal))
+                .First();
             float currentScore = Math.Max(
                 0f,
                 OfficeRules.GetCandidateScore(marshal.Hero, OfficeType.Marshal));
@@ -88,6 +94,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 .SelectMany(clan => clan.Heroes)
                 .Where(hero => behavior.GetAssignment(hero) == null)
                 .Where(hero => OfficeRules.IsEligible(hero, kingdom, OfficeType.Marshal))
+                .Where(hero => OfficeRules.IsMarshalClanAvailable(hero, kingdom))
                 .OrderByDescending(hero => OfficeRules.GetCandidateScore(hero, OfficeType.Marshal))
                 .ThenBy(hero => hero.StringId)
                 .FirstOrDefault();
@@ -101,7 +108,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 ? bestScore >= currentScore * 1.25f
                 : bestScore > 0f;
             if (clearsThreshold)
-                MarshalDecisionService.TryProposeDismissal(kingdom);
+                MarshalDecisionService.TryProposeDismissal(kingdom, marshal.Hero);
         }
     }
 }

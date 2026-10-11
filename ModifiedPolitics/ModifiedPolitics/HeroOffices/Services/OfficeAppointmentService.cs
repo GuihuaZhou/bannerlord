@@ -73,9 +73,11 @@ namespace ModifiedPolitics.HeroOffices.Services
         {
             HeroOfficeBehavior behavior = HeroOfficeBehavior.Current;
             if (behavior == null
-                || behavior.GetAssignments(kingdom, OfficeType.Marshal).Any()
+                || behavior.GetAssignments(kingdom, OfficeType.Marshal).Count()
+                   >= OfficeRules.GetOfficeLimit(kingdom, OfficeType.Marshal)
                 || behavior.GetAssignment(candidate) != null
-                || !OfficeRules.IsEligible(candidate, kingdom, OfficeType.Marshal))
+                || !OfficeRules.IsEligible(candidate, kingdom, OfficeType.Marshal)
+                || !OfficeRules.IsMarshalClanAvailable(candidate, kingdom))
                 return false;
 
             behavior.AddAssignment(kingdom, candidate, OfficeType.Marshal);

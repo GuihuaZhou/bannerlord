@@ -25,6 +25,8 @@ namespace ModifiedPolitics.HeroOffices.Patches
         [System.ThreadStatic]
         private static MobileParty _armyEligibilityParty;
 
+        internal static int LeaderGateReplacementCount { get; private set; }
+
         [HarmonyPrefix]
         [HarmonyPatch(typeof(Kingdom), "CreateArmy")]
         private static bool RequireMarshalForArmy(Kingdom __instance, Hero armyLeader)
@@ -32,11 +34,11 @@ namespace ModifiedPolitics.HeroOffices.Patches
             if (__instance == null || armyLeader == null || armyLeader == __instance.Leader)
                 return true;
 
-            Hero marshal = GetMarshal(__instance);
-            if (marshal == null)
+            bool hasMarshal = HasAnyMarshal(__instance);
+            if (!hasMarshal)
                 return true;
 
-            bool allowed = armyLeader == marshal;
+            bool allowed = IsArmyAuthority(armyLeader, __instance);
             if (!allowed && armyLeader == Hero.MainHero)
             {
                 InformationManager.DisplayMessage(new InformationMessage(
@@ -54,8 +56,7 @@ namespace ModifiedPolitics.HeroOffices.Patches
             if (!__result || kingdom == null || Hero.MainHero == kingdom.Leader)
                 return;
 
-            Hero marshal = GetMarshal(kingdom);
-            if (marshal != null && Hero.MainHero != marshal)
+            if (HasAnyMarshal(kingdom) && !IsArmyAuthority(Hero.MainHero, kingdom))
             {
                 __result = false;
                 disabledReason = new TextObject(
@@ -72,19 +73,20 @@ namespace ModifiedPolitics.HeroOffices.Patches
 
             MobileParty party = p.MobilePartyOf;
             Kingdom kingdom = party?.MapFaction as Kingdom;
-            Hero marshal = GetMarshal(kingdom);
-            if (marshal == null)
+            if (!HasAnyMarshal(kingdom))
                 return true;
 
             Hero leader = party?.LeaderHero;
-            return leader != null && (leader == kingdom.Leader || leader == marshal);
+            return IsArmyAuthority(leader, kingdom);
         }
 
         [HarmonyPostfix]
         [HarmonyPatch(typeof(DefaultArmyManagementCalculationModel), "CalculatePartyInfluenceCost")]
         private static void ApplyCallCostDiscount(MobileParty armyLeaderParty, ref int __result)
         {
-            if (__result > 0 && OfficeEffectService.HasOffice(armyLeaderParty?.LeaderHero, OfficeType.Marshal))
+            if (__result > 0 && IsArmyAuthority(
+                    armyLeaderParty?.LeaderHero,
+                    armyLeaderParty?.MapFaction as Kingdom))
                 __result = MathF.Ceiling(__result * 0.75f);
         }
 
@@ -92,7 +94,9 @@ namespace ModifiedPolitics.HeroOffices.Patches
         [HarmonyPatch(typeof(DefaultArmyManagementCalculationModel), "GetCohesionBoostInfluenceCost")]
         private static void ApplyMaintenanceDiscount(Army army, ref int __result)
         {
-            if (__result > 0 && OfficeEffectService.HasOffice(army?.LeaderParty?.LeaderHero, OfficeType.Marshal))
+            if (__result > 0 && IsArmyAuthority(
+                    army?.LeaderParty?.LeaderHero,
+                    army?.LeaderParty?.MapFaction as Kingdom))
                 __result = MathF.Ceiling(__result * 0.80f);
         }
 
@@ -128,6 +132,7 @@ namespace ModifiedPolitics.HeroOffices.Patches
                 typeof(MarshalArmyPatches),
                 nameof(GetEffectiveClanLeader));
 
+            int replacementCount = 0;
             foreach (CodeInstruction instruction in instructions)
             {
                 // Only Clan.Leader reads inside native eligibility are replaced. Influence,
@@ -136,10 +141,13 @@ namespace ModifiedPolitics.HeroOffices.Patches
                 {
                     instruction.opcode = OpCodes.Call;
                     instruction.operand = effectiveLeaderGetter;
+                    replacementCount++;
                 }
 
                 yield return instruction;
             }
+
+            LeaderGateReplacementCount = replacementCount;
         }
 
         private static Hero GetEffectiveClanLeader(Clan clan)
@@ -147,22 +155,32 @@ namespace ModifiedPolitics.HeroOffices.Patches
             MobileParty party = _armyEligibilityParty;
             Hero leader = party?.LeaderHero;
             Kingdom kingdom = party?.MapFaction as Kingdom;
-            Hero marshal = GetMarshal(kingdom);
+            bool isMarshal = IsAppointedMarshal(leader, kingdom);
 
-            if (clan != null && leader != null && leader.Clan == clan && leader == marshal)
+            if (clan != null && leader != null && leader.Clan == clan && isMarshal)
                 return leader;
 
             return clan?.Leader;
         }
 
-        private static Hero GetMarshal(Kingdom kingdom)
+        private static bool HasAnyMarshal(Kingdom kingdom)
         {
-            return kingdom == null
-                ? null
-                : HeroOfficeBehavior.Current?
-                    .GetAssignments(kingdom, OfficeType.Marshal)
-                    .Select(assignment => assignment?.Hero)
-                    .FirstOrDefault(hero => hero != null);
+            return kingdom != null && HeroOfficeBehavior.Current?
+                .GetAssignments(kingdom, OfficeType.Marshal)
+                .Any(assignment => assignment?.Hero != null) == true;
+        }
+
+        private static bool IsAppointedMarshal(Hero hero, Kingdom kingdom)
+        {
+            return hero != null && kingdom != null && HeroOfficeBehavior.Current?
+                .GetAssignments(kingdom, OfficeType.Marshal)
+                .Any(assignment => assignment?.Hero == hero) == true;
+        }
+
+        private static bool IsArmyAuthority(Hero hero, Kingdom kingdom)
+        {
+            return hero != null && kingdom != null
+                   && (hero == kingdom.Leader || IsAppointedMarshal(hero, kingdom));
         }
     }
 }

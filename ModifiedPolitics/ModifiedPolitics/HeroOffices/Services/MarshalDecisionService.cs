@@ -18,19 +18,22 @@ namespace ModifiedPolitics.HeroOffices.Services
         public static bool TryProposeAppointment(Kingdom kingdom, Hero nominatedHero = null)
         {
             if (!CanCreateDecision(kingdom)
-                || HeroOfficeBehavior.Current.GetAssignments(kingdom, OfficeType.Marshal).Any()
+                || HeroOfficeBehavior.Current.GetAssignments(kingdom, OfficeType.Marshal).Count()
+                   >= OfficeRules.GetOfficeLimit(kingdom, OfficeType.Marshal)
                 || (string.Equals(kingdom.Culture?.StringId, "vlandia", System.StringComparison.OrdinalIgnoreCase)
                     && nominatedHero != null)
                 || (nominatedHero != null
                     && (HeroOfficeBehavior.Current.GetAssignment(nominatedHero) != null
-                        || !OfficeRules.IsEligible(nominatedHero, kingdom, OfficeType.Marshal))))
+                        || !OfficeRules.IsEligible(nominatedHero, kingdom, OfficeType.Marshal)
+                        || !OfficeRules.IsMarshalClanAvailable(nominatedHero, kingdom))))
                 return false;
 
             bool hasCandidate = kingdom.Clans
                 .Where(clan => clan != null && !clan.IsEliminated && !clan.IsClanTypeMercenary)
                 .SelectMany(clan => clan.Heroes)
                 .Any(hero => HeroOfficeBehavior.Current.GetAssignment(hero) == null
-                             && OfficeRules.IsEligible(hero, kingdom, OfficeType.Marshal));
+                             && OfficeRules.IsEligible(hero, kingdom, OfficeType.Marshal)
+                             && OfficeRules.IsMarshalClanAvailable(hero, kingdom));
             if (!hasCandidate)
                 return false;
 
@@ -41,15 +44,16 @@ namespace ModifiedPolitics.HeroOffices.Services
             return true;
         }
 
-        public static bool TryProposeDismissal(Kingdom kingdom)
+        public static bool TryProposeDismissal(Kingdom kingdom, Hero marshalToDismiss = null)
         {
             if (!CanCreateDecision(kingdom))
                 return false;
 
-            OfficeAssignment marshal = HeroOfficeBehavior.Current
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .SingleOrDefault();
-            if (marshal?.Hero == null)
+            OfficeAssignment marshal = marshalToDismiss == null
+                ? HeroOfficeBehavior.Current.GetAssignments(kingdom, OfficeType.Marshal).FirstOrDefault()
+                : HeroOfficeBehavior.Current.GetAssignment(marshalToDismiss);
+            if (marshal?.Hero == null || marshal.Kingdom != kingdom
+                                      || marshal.OfficeType != OfficeType.Marshal)
                 return false;
 
             kingdom.AddDecision(

@@ -1,5 +1,6 @@
 using System;
 using System.Linq;
+using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Domain;
 using TaleWorlds.CampaignSystem;
@@ -30,7 +31,7 @@ namespace ModifiedPolitics.HeroOffices.Models
                 return 0;
 
             if (!IsLocal(officeType))
-                return 1;
+                return officeType == OfficeType.Marshal ? 3 : 1;
 
             int settlementCount = officeType == OfficeType.MilitaryOfficer
                 ? Town.AllCastles.Count(town => town?.OwnerClan?.Kingdom == kingdom)
@@ -92,6 +93,15 @@ namespace ModifiedPolitics.HeroOffices.Models
                    && config.IsEnabled(OfficeType.Marshal);
         }
 
+        public static bool IsMarshalClanAvailable(Hero hero, Kingdom kingdom)
+        {
+            if (hero?.Clan == null || kingdom == null)
+                return false;
+
+            return HeroOfficeBehavior.Current?.GetAssignments(kingdom, OfficeType.Marshal)
+                       .All(assignment => assignment?.Hero?.Clan != hero.Clan) != false;
+        }
+
         private static bool IsBaseEligible(Hero hero, Kingdom kingdom)
         {
             return hero != null && kingdom != null && !kingdom.IsEliminated
@@ -127,6 +137,12 @@ namespace ModifiedPolitics.HeroOffices.Models
                     // Chief minister and court steward AI scoring is intentionally deferred.
                     return 0f;
             }
+        }
+
+        public static float GetMarshalAppointmentScore(Hero hero)
+        {
+            float score = GetCandidateScore(hero, OfficeType.Marshal);
+            return hero == Hero.MainHero ? score * 10f : score;
         }
     }
 }
