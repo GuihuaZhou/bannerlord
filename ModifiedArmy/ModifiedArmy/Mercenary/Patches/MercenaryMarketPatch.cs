@@ -13,7 +13,8 @@ namespace ModifiedArmy.Mercenary.Patches
 {
     /// <summary>
     /// Replaces tavern mercenary generation with the settlement culture's
-    /// XML-configured probability, quantity and weighted troop pool.
+    /// XML-configured probability and weighted troop pool. Each troop entry
+    /// owns its exact generation range.
     /// Caravan guards retain their separate native refresh chance.
     /// </summary>
     [HarmonyPatch(
@@ -37,18 +38,18 @@ namespace ModifiedArmy.Mercenary.Patches
             MercenaryTemplate template = MercenaryTemplateManager.Instance
                 .GetTemplateByCulture(town.Culture);
             float spawnChance = template?.SpawnChance ?? 0.3f;
-            int minCount = template?.MinCount ?? 5;
-            int maxCount = template?.MaxCount ?? 10;
 
             if (MBRandom.RandomFloat < spawnChance)
             {
-                CharacterObject selectedTroop = template?.SelectWeightedTroop();
+                MercenaryTroopEntry selectedEntry = template?
+                    .SelectWeightedTroop();
+                CharacterObject selectedTroop = selectedEntry?.Troop;
 
-                if (selectedTroop != null)
+                if (selectedTroop != null && selectedEntry != null)
                 {
                     int finalCount = MBRandom.RandomInt(
-                        minCount,
-                        maxCount + 1);
+                        selectedEntry.MinCount,
+                        selectedEntry.MaxCount + 1);
                     mercenaryData.ChangeMercenaryType(
                         selectedTroop,
                         finalCount);
