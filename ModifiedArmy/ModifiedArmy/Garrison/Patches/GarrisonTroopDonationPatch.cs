@@ -1,21 +1,16 @@
 ﻿using HarmonyLib;
 using Helpers;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Diagnostics;
-using ModifiedArmy.Recruitment.Models;
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
-using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.Core;
-using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using ModifiedArmy.Recruitment;
+using TaleWorlds.Core;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -78,9 +73,10 @@ namespace ModifiedArmy.Garrison.Patches
         "CalculateSettlementIdealPartySizeWithEffects")]
     public static class GarrisonExchangeIdealSizePatch
     {
-        private static void Postfix(ref int __result)
+        private static void Postfix(Settlement settlement, ref int __result)
         {
-            __result = Math.Max(0, MBRandom.RoundRandomized(__result * 0.40f));
+            __result = GarrisonTransferPolicyModel
+                .GetExchangeIdealGarrisonSize(settlement, __result);
         }
     }
 
@@ -95,28 +91,10 @@ namespace ModifiedArmy.Garrison.Patches
             MobileParty mobileParty,
             ref int numberOfTroopsToLeave)
         {
-            if (mobileParty == null || numberOfTroopsToLeave <= 0)
-            {
-                return;
-            }
-
-            int sizeLimit = mobileParty.Party.PartySizeLimit;
-            int wageLimit = MathF.Round(
-                mobileParty.PaymentLimit / Campaign.Current.AverageWage);
-            float food = mobileParty.Army == null
-                ? mobileParty.Food
-                : mobileParty.Army.Parties.Sum(party => party.Food);
-            int foodLimit = MathF.Round(
-                Campaign.Current.Models.MobilePartyFoodConsumptionModel
-                    .NumberOfMenOnMapToEatOneFood * food / 2f);
-            int reasonableTarget = Math.Max(
-                30,
-                Math.Min(sizeLimit, Math.Min(wageLimit, foodLimit)));
-            int surplus = Math.Max(
-                0,
-                mobileParty.Party.NumberOfRegularMembers - reasonableTarget);
-
-            numberOfTroopsToLeave = Math.Min(numberOfTroopsToLeave, surplus);
+            numberOfTroopsToLeave = GarrisonTransferPolicyModel
+                .GetAllowedDonationCount(
+                    mobileParty,
+                    numberOfTroopsToLeave);
         }
     }
 
@@ -137,73 +115,10 @@ namespace ModifiedArmy.Garrison.Patches
             __state = settlement?.Town?.GarrisonParty?.Party
                 .NumberOfRegularMembers ?? 0;
 
-            MobileParty garrison = settlement?.Town?.GarrisonParty;
-            if (mobileParty == null || garrison == null ||
-                numberOfTroopsToTake <= 0)
-            {
-                return false;
-            }
-
-            List<RecruitmentCandidate> candidates = garrison.MemberRoster
-                .GetTroopRoster()
-                .Where(element => element.Character != null &&
-                    !element.Character.IsHero && element.Number > 0)
-                .Select(element => new RecruitmentCandidate(
-                    element.Character,
-                    element.Number,
-                    RecruitmentSource.Transfer))
-                .ToList();
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+            GarrisonTransferPolicyModel.TransferApprovedTroopsFromGarrison(
                 mobileParty,
-                candidates);
-            int remainingRequest = numberOfTroopsToTake;
-
-            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
-            {
-                CharacterObject troop = evaluation.Troop;
-                int available = troop == null
-                    ? 0
-                    : garrison.MemberRoster.GetTroopCount(troop);
-                int count = Math.Min(
-                    remainingRequest,
-                    Math.Min(evaluation.RecruitableCount, available));
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                int woundedAvailable = garrison.MemberRoster
-                    .GetTroopRoster()
-                    .Where(element => element.Character == troop)
-                    .Select(element => element.WoundedNumber)
-                    .FirstOrDefault();
-                int healthyAvailable = Math.Max(
-                    0,
-                    available - woundedAvailable);
-                int wounded = Math.Max(0, count - healthyAvailable);
-
-                mobileParty.MemberRoster.AddToCounts(
-                    troop,
-                    count,
-                    false,
-                    wounded,
-                    0,
-                    true,
-                    -1);
-                garrison.MemberRoster.AddToCounts(
-                    troop,
-                    -count,
-                    false,
-                    -wounded,
-                    0,
-                    true,
-                    -1);
-                remainingRequest -= count;
-                if (remainingRequest <= 0)
-                {
-                    break;
-                }
-            }
+                settlement,
+                numberOfTroopsToTake);
 
             // The approved roster has already been transferred. Skipping the
             // native weighted loop prevents it from selecting a different,
