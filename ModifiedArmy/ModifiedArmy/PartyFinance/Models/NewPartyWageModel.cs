@@ -46,6 +46,11 @@ namespace ModifiedArmy.Models
                 "{=ModifiedArmyFiefWageExemption}" +
                 "Fief troop wage exemption");
 
+        private static readonly TextObject GarrisonWageText =
+            new TextObject(
+                "{=ModifiedArmyGarrisonWage}" +
+                "Garrison wage reduction");
+
         /// <summary>
         /// 在本体完成所有工资修正后, 应用正式战争期间的 WarParty 工资倍率.
         /// 驻军, 商队和其他非 WarParty 不受影响.
@@ -60,6 +65,7 @@ namespace ModifiedArmy.Models
                 troopRoster,
                 includeDescriptions);
 
+            ApplyGarrisonWageReduction(mobileParty, ref result);
             ApplyWarWageMultiplier(mobileParty, ref result);
             return result;
         }
@@ -79,8 +85,25 @@ namespace ModifiedArmy.Models
                 troopRoster,
                 includeDescriptions);
 
+            ApplyGarrisonWageReduction(mobileParty, ref result);
             ApplyWarWageMultiplier(mobileParty, ref result);
             return result;
+        }
+
+        /// <summary>
+        /// Garrison service costs half of field service for the same roster.
+        /// Recruitment transfer checks still evaluate the receiving mobile
+        /// party at its full field wage before any soldier leaves the garrison.
+        /// </summary>
+        private static void ApplyGarrisonWageReduction(
+            MobileParty mobileParty,
+            ref ExplainedNumber wage)
+        {
+            if (mobileParty?.IsGarrison == true)
+            {
+                wage.AddFactor(-0.5f, GarrisonWageText);
+                wage.LimitMin(0f);
+            }
         }
 
         public static float GetWarWageMultiplier(

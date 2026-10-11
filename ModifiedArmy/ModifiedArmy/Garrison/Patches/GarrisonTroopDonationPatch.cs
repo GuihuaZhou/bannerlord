@@ -2,6 +2,7 @@
 using Helpers;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +15,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using ModifiedArmy.Recruitment;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -126,13 +128,87 @@ namespace ModifiedArmy.Garrison.Patches
     [HarmonyPatch(typeof(GarrisonTroopsCampaignBehavior), "TakeTroopsFromGarrison")]
     public static class PlayerKingdomGarrisonWithdrawalLogPatch
     {
-        private static void Prefix(
+        private static bool Prefix(
             MobileParty mobileParty,
             Settlement settlement,
+            int numberOfTroopsToTake,
             out int __state)
         {
             __state = settlement?.Town?.GarrisonParty?.Party
                 .NumberOfRegularMembers ?? 0;
+
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            if (mobileParty == null || garrison == null ||
+                numberOfTroopsToTake <= 0)
+            {
+                return false;
+            }
+
+            List<RecruitmentCandidate> candidates = garrison.MemberRoster
+                .GetTroopRoster()
+                .Where(element => element.Character != null &&
+                    !element.Character.IsHero && element.Number > 0)
+                .Select(element => new RecruitmentCandidate(
+                    element.Character,
+                    element.Number,
+                    RecruitmentSource.Transfer))
+                .ToList();
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                mobileParty,
+                candidates);
+            int remainingRequest = numberOfTroopsToTake;
+
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                CharacterObject troop = evaluation.Troop;
+                int available = troop == null
+                    ? 0
+                    : garrison.MemberRoster.GetTroopCount(troop);
+                int count = Math.Min(
+                    remainingRequest,
+                    Math.Min(evaluation.RecruitableCount, available));
+                if (count <= 0)
+                {
+                    continue;
+                }
+
+                int woundedAvailable = garrison.MemberRoster
+                    .GetTroopRoster()
+                    .Where(element => element.Character == troop)
+                    .Select(element => element.WoundedNumber)
+                    .FirstOrDefault();
+                int healthyAvailable = Math.Max(
+                    0,
+                    available - woundedAvailable);
+                int wounded = Math.Max(0, count - healthyAvailable);
+
+                mobileParty.MemberRoster.AddToCounts(
+                    troop,
+                    count,
+                    false,
+                    wounded,
+                    0,
+                    true,
+                    -1);
+                garrison.MemberRoster.AddToCounts(
+                    troop,
+                    -count,
+                    false,
+                    -wounded,
+                    0,
+                    true,
+                    -1);
+                remainingRequest -= count;
+                if (remainingRequest <= 0)
+                {
+                    break;
+                }
+            }
+
+            // The approved roster has already been transferred. Skipping the
+            // native weighted loop prevents it from selecting a different,
+            // more expensive troop type than the unified plan approved.
+            return false;
         }
 
         private static void Postfix(
