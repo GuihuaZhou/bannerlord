@@ -183,9 +183,14 @@ namespace ModifiedArmy.Recruitment.Models
                 troop,
                 source,
                 state);
+            int safePartySize = Math.Max(
+                0,
+                (int)Math.Floor(
+                    state.PartySizeLimit *
+                        RecruitmentFillPercentage / 100f));
             result.AllowedByPartySize = Math.Max(
                 0,
-                state.PartySizeLimit - state.ProjectedMemberCount);
+                safePartySize - state.ProjectedMemberCount);
             result.AllowedByCombatRole = GetAllowedByMaximum(
                 state.PartySizeLimit,
                 state.GetCount(role),

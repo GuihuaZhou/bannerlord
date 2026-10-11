@@ -27,6 +27,17 @@ namespace ModifiedArmy.Recruitment.Finance
         private static int _cachedCampaignDay = int.MinValue;
 
         /// <summary>
+        /// Starts a fresh shared recruitment budget at the campaign daily
+        /// tick boundary. Relying only on lazy date detection left consumed
+        /// snapshots alive in some event orders until the save was reloaded.
+        /// </summary>
+        public static void BeginCampaignDay()
+        {
+            Snapshots.Clear();
+            _cachedCampaignDay = GetCampaignDay();
+        }
+
+        /// <summary>
         /// Returns the clan that ultimately finances the supplied party.
         /// </summary>
         public static Clan GetSupportingClan(MobileParty party)

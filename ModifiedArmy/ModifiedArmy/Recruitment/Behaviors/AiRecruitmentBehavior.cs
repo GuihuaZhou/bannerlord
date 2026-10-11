@@ -2,6 +2,7 @@ using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
@@ -67,6 +68,10 @@ namespace ModifiedArmy.Models
         private void OnDailyTick()
         {
             if (Campaign.Current == null) return;
+
+            // Reset the transient clan budget before any daily settlement or
+            // party recruitment planning consumes the new day's allowance.
+            ClanRecruitmentBudgetManager.BeginCampaignDay();
 
             _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
             if (_fiefPartyManager == null) return;
