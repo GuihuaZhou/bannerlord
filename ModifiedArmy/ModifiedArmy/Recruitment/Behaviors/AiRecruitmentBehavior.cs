@@ -93,6 +93,27 @@ namespace ModifiedArmy.Models
                         if (IsPartyCurrentlyOnRecruitmentTask(party, clan))
                             continue;
 
+                        // A same-clan fortification can solve several needs
+                        // in one visit: draw troops, use professional manpower
+                        // and deliver worthwhile prisoners. This decision is
+                        // intentionally outside the random recruitment gate.
+                        Settlement multiPurposeTarget =
+                            FindBestMultiPurposeSettlement(party, clan);
+                        if (multiPurposeTarget != null)
+                        {
+                            party.SetMoveGoToSettlement(
+                                multiPurposeTarget,
+                                MobileParty.NavigationType.Default,
+                                isTargetingThePort: false);
+                            if (RecruitmentLogFilter.ShouldLog(party))
+                            {
+                                ModLogger.Info(
+                                    $"[AIRecruitment] {GetPartyDisplayName(party)} is visiting " +
+                                    $"{multiPurposeTarget.Name} for garrison reinforcement or prisoner delivery.");
+                            }
+                            continue;
+                        }
+
                         // 2. 随机概率门控（廉价检查，先过滤部分部队）
                         float roll = MBRandom.RandomFloat;
                         if (roll > _config.AiRecruitRandomChance)
@@ -495,6 +516,83 @@ namespace ModifiedArmy.Models
                 float score = cultureMod / (1f + distance * 0.01f);
 
                 if (score > bestScore)
+                {
+                    bestScore = score;
+                    best = settlement;
+                }
+            }
+
+            return best;
+        }
+
+        /// <summary>
+        /// Chooses a nearby same-clan fortification when the visit has enough
+        /// combined reinforcement and prisoner-delivery value to justify
+        /// interrupting ordinary roaming. Army members and active encounters
+        /// are never redirected by this logistics pass.
+        /// </summary>
+        private Settlement FindBestMultiPurposeSettlement(
+            MobileParty party,
+            Clan clan)
+        {
+            if (party == null || clan == null || party.Army != null ||
+                party.MapEvent != null || party.CurrentSettlement?.SiegeEvent != null)
+            {
+                return null;
+            }
+
+            bool needsTroops = party.PartySizeRatio < 0.85f;
+            int regularPrisoners = party.PrisonRoster.TotalRegulars;
+            bool needsPrison = regularPrisoners >= 10;
+            if (!needsTroops && !needsPrison)
+            {
+                return null;
+            }
+
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            Settlement best = null;
+            float bestScore = 0f;
+
+            foreach (Settlement settlement in clan.Settlements)
+            {
+                if (settlement?.IsFortification != true ||
+                    settlement.IsUnderSiege)
+                {
+                    continue;
+                }
+
+                float distance = party.Position.Distance(
+                    settlement.GatePosition);
+                if (distance > _config.AiMercenarySearchRadius)
+                {
+                    continue;
+                }
+
+                int minimumGarrison = settlement.IsTown ? 125 : 75;
+                int healthyGarrison = Math.Max(
+                    0,
+                    (settlement.Town.GarrisonParty?.Party
+                        .NumberOfRegularMembers ?? 0) - minimumGarrison);
+                int professional = pools?.GetAvailableTroops(
+                        settlement,
+                        RecruitmentPoolKind.Professional)
+                    .Values.Sum() ?? 0;
+                int prisonSpace = Math.Max(
+                    0,
+                    settlement.Party.PrisonerSizeLimit -
+                        settlement.Party.PrisonRoster.TotalManCount);
+
+                float reinforcementValue = needsTroops
+                    ? healthyGarrison + professional
+                    : 0f;
+                float deliveryValue = needsPrison
+                    ? Math.Min(regularPrisoners, prisonSpace) * 2f
+                    : 0f;
+                float score = (reinforcementValue + deliveryValue) /
+                    (1f + distance * 0.05f);
+                if (score > bestScore &&
+                    (reinforcementValue >= 5f || deliveryValue >= 10f))
                 {
                     bestScore = score;
                     best = settlement;

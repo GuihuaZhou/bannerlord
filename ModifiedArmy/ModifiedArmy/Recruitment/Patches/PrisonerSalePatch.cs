@@ -33,12 +33,30 @@ namespace ModifiedArmy.Recruitment.Patches
                 && !mobileParty.MapFaction.IsAtWarWith(settlement.MapFaction)
                 && (mobileParty.PrisonRoster.TotalRegulars > 0 || (mobileParty.PrisonRoster.TotalHeroes > 0 && mobileParty.PrisonRoster.GetTroopRoster().Exists((TroopRosterElement x) => x.Character != CharacterObject.PlayerCharacter && x.Character.HeroObject.MapFaction.IsAtWarWith(settlement.MapFaction)))))
             {
-                TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
+                TroopRoster transferRoster = TroopRoster.CreateDummyTroopRoster();
+                TroopRoster saleRoster = TroopRoster.CreateDummyTroopRoster();
+                int retainCapacity = Math.Max(
+                    0,
+                    mobileParty.Party.PrisonerSizeLimit / 2);
+                int transferCapacity = settlement.OwnerClan == mobileParty.Owner.Clan
+                    ? Math.Max(
+                        0,
+                        settlement.Party.PrisonerSizeLimit -
+                            settlement.Party.PrisonRoster.TotalManCount)
+                    : 0;
 
                 foreach (TroopRosterElement troopRosterElement in mobileParty.PrisonRoster.GetTroopRoster())
                 {
-                    if (troopRosterElement.Character.IsHero || troopRosterElement.Character.IsPlayerCharacter)
+                    if (troopRosterElement.Character.IsHero)
                     {
+                        // Match the native hero-prisoner rule while regular
+                        // prisoners continue through the mod policy below.
+                        if (!troopRosterElement.Character.IsPlayerCharacter &&
+                            troopRosterElement.Character.HeroObject.MapFaction
+                                .IsAtWarWith(settlement.MapFaction))
+                        {
+                            transferRoster.Add(troopRosterElement);
+                        }
                         continue;
                     }
 
@@ -48,39 +66,37 @@ namespace ModifiedArmy.Recruitment.Patches
                         continue;
                     }
 
-                    // 如果是所属Clan的定居点，则可以转移全部俘虏
-                    if (settlement.OwnerClan == mobileParty.Owner.Clan)
-                    {
-                        troopRoster.Add(troopRosterElement);
-                    }
-                    // 否则只转移部分俘虏
-                    else
-                    {
-                        if (troop.Occupation == Occupation.Mercenary)
-                        {
-                            continue;
-                        }
+                    SoldierType type = SoldierTypeClassifier
+                        .GetSoldierType(troop);
+                    bool useful = troop.Occupation == Occupation.Mercenary ||
+                        type == SoldierType.Retinue ||
+                        type == SoldierType.Marine ||
+                        type == SoldierType.Sergeant ||
+                        type == SoldierType.Slave;
+                    int retained = useful
+                        ? Math.Min(troopRosterElement.Number, retainCapacity)
+                        : 0;
+                    retainCapacity -= retained;
+                    int remaining = troopRosterElement.Number - retained;
+                    int transferred = useful
+                        ? Math.Min(remaining, transferCapacity)
+                        : 0;
+                    transferCapacity -= transferred;
+                    int sold = remaining - transferred;
 
-                        var type = SoldierTypeClassifier.GetSoldierType(troop);
-                        // 低价值俘虏全部转移
-                        if (type != SoldierType.Retinue
-                            && type != SoldierType.Marine
-                            && type != SoldierType.Sergeant
-                            && type != SoldierType.Slave)
-                        {
-                            troopRoster.Add(troopRosterElement);
-                        }
-                        // 只有30%的概率转移高阶俘虏
-                        else if (MBRandom.RandomFloat < 0.3)
-                        {
-                            troopRoster.Add(troopRosterElement);
-                        }
-                    }
+                    AddPrisoners(
+                        transferRoster,
+                        troopRosterElement,
+                        transferred);
+                    AddPrisoners(saleRoster, troopRosterElement, sold);
                 }
 
-                if (troopRoster.TotalManCount > 0)
+                if (transferRoster.TotalManCount > 0)
                 {
-                    SellPrisonersAction.ApplyForSelectedPrisoners(mobileParty.Party, settlement.Party, troopRoster);
+                    MoveRegularPrisoners(
+                        mobileParty.PrisonRoster,
+                        settlement.Party.PrisonRoster,
+                        transferRoster);
 
                     if (RecruitmentLogFilter.ShouldLog(mobileParty))
                     {
@@ -91,15 +107,73 @@ namespace ModifiedArmy.Recruitment.Patches
                             PartyLogFormatter.GetDisplayName(mobileParty));
                         message.SetTextVariable(
                             "COUNT",
-                            troopRoster.TotalRegulars);
+                            transferRoster.TotalRegulars);
                         message.SetTextVariable(
                             "SETTLEMENT_NAME",
                             settlement.Name);
                         ModLogger.Info(message.ToString());
                     }
                 }
+
+                if (saleRoster.TotalRegulars > 0)
+                {
+                    SellPrisonersAction.ApplyForSelectedPrisoners(
+                        mobileParty.Party,
+                        null,
+                        saleRoster);
+                }
             }
             return false;
+        }
+
+        private static void AddPrisoners(
+            TroopRoster target,
+            TroopRosterElement source,
+            int count)
+        {
+            if (count <= 0)
+            {
+                return;
+            }
+
+            int wounded = Math.Min(
+                count,
+                MBRandom.RoundRandomized(
+                    source.WoundedNumber * (float)count / source.Number));
+            target.AddToCounts(
+                source.Character,
+                count,
+                false,
+                wounded,
+                0,
+                true,
+                -1);
+        }
+
+        private static void MoveRegularPrisoners(
+            TroopRoster source,
+            TroopRoster target,
+            TroopRoster transfer)
+        {
+            foreach (TroopRosterElement element in transfer.GetTroopRoster())
+            {
+                source.AddToCounts(
+                    element.Character,
+                    -element.Number,
+                    false,
+                    -element.WoundedNumber,
+                    0,
+                    true,
+                    -1);
+                target.AddToCounts(
+                    element.Character,
+                    element.Number,
+                    false,
+                    element.WoundedNumber,
+                    0,
+                    true,
+                    -1);
+            }
         }
     }
 
@@ -121,76 +195,8 @@ namespace ModifiedArmy.Recruitment.Patches
 
         public static bool Prefix(Settlement settlement)
         {
-            // AI settlement recruitment now owns its recruit-then-sell order.
-            // Keep this legacy patch only for player-clan settlements so the
-            // same prisoners cannot be sold twice during one daily tick.
-            if (settlement?.OwnerClan != Clan.PlayerClan)
-            {
-                return false;
-            }
-
-            if (settlement.IsFortification)
-            {
-                TroopRoster prisonRoster = settlement.Party.PrisonRoster;
-
-                // 卖掉一部分俘虏
-                if (prisonRoster.TotalRegulars > 0)
-                {
-                    int num = 0;
-
-                    if (settlement.Owner == Hero.MainHero)
-                    {
-                        num = prisonRoster.TotalManCount - settlement.Party.PrisonerSizeLimit;
-                    }
-                    else
-                    {
-                        float sellRatio = GetAISellPrisonerRatio(settlement);
-                        num = MBRandom.RoundRandomized(prisonRoster.TotalRegulars * sellRatio);
-                    }
-
-                    if (num > 0)
-                    {
-                        TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
-
-                        // 对俘虏排序，优先处理低阶俘虏
-                        IEnumerable<TroopRosterElement> enumerable = from t in prisonRoster.GetTroopRoster()
-                                                                     orderby t.Character.Tier
-                                                                     select t;
-                        foreach (TroopRosterElement troopRosterElement in enumerable)
-                        {
-                            if (!troopRosterElement.Character.IsHero)
-                            {
-                                int num2 = Math.Min(num, troopRosterElement.Number);
-                                num -= num2;
-                                troopRoster.AddToCounts(troopRosterElement.Character, num2, false, 0, 0, true, -1);
-                                if (num <= 0)
-                                {
-                                    break;
-                                }
-                            }
-                        }
-                        if (troopRoster.TotalManCount > 0)
-                        {
-                            SellPrisonersAction.ApplyForSelectedPrisoners(settlement.Party, null, troopRoster);
-
-                            if (RecruitmentLogFilter.ShouldLog(
-                                settlement.OwnerClan))
-                            {
-                                TextObject message = GameTexts.FindText(
-                                    "str_modifiedarmy_prisoner_sale");
-                                message.SetTextVariable(
-                                    "SETTLEMENT_NAME",
-                                    settlement.Name);
-                                message.SetTextVariable(
-                                    "COUNT",
-                                    troopRoster.TotalRegulars);
-                                ModLogger.Info(message.ToString());
-                            }
-                        }
-                    }
-                }
-            }
-
+            // The unified behavior owns AI recruit-then-sell order. Player
+            // prisons are deliberately never cleaned up automatically.
             return false;
         }
     }

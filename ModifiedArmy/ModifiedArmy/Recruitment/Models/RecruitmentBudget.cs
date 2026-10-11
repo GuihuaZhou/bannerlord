@@ -53,6 +53,20 @@ namespace ModifiedArmy.Recruitment.Models
 
             Clan supportingClan =
                 ClanRecruitmentBudgetManager.GetSupportingClan(party);
+
+            // Player-controlled garrisons use the player's actual treasury.
+            // AI reserves and daily allocations must not hide player funds.
+            if (party.IsGarrison && supportingClan == Clan.PlayerClan)
+            {
+                float playerFunds = Math.Max(
+                    0f,
+                    supportingClan.Gold -
+                        supportingClan.AutoRecruitmentExpenses);
+                result.SpendableFunds = playerFunds;
+                result.AvailablePurchaseFunds = playerFunds;
+                return result;
+            }
+
             ClanRecruitmentBudgetSnapshot clanBudget =
                 ClanRecruitmentBudgetManager.GetSnapshot(supportingClan);
 

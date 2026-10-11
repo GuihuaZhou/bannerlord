@@ -132,6 +132,13 @@ namespace ModifiedArmy.Recruitment.Finance
                 return;
             }
 
+            // Player garrison expenses are settled once through
+            // AutoRecruitmentExpenses and do not consume the AI-only cache.
+            if (party.IsGarrison && clan == Clan.PlayerClan)
+            {
+                return;
+            }
+
             ClanRecruitmentBudgetSnapshot snapshot = GetSnapshot(clan);
             float purchaseCost = Math.Max(0f, unitRecruitmentCost) * count;
             float commitment = purchaseCost

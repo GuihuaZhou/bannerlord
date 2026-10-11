@@ -1,14 +1,19 @@
 ﻿using HarmonyLib;
 using Helpers;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Recruitment.Diagnostics;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Patches
 {
@@ -59,6 +64,106 @@ namespace ModifiedArmy.Garrison.Patches
             }
 
             return true;
+        }
+    }
+
+    /// <summary>
+    /// Reduces only the garrison share used by native transfer calculations.
+    /// Native hard floors, capacity and wage limits remain unchanged.
+    /// </summary>
+    [HarmonyPatch(
+        typeof(GarrisonTroopsCampaignBehavior),
+        "CalculateSettlementIdealPartySizeWithEffects")]
+    public static class GarrisonExchangeIdealSizePatch
+    {
+        private static void Postfix(ref int __result)
+        {
+            __result = Math.Max(0, MBRandom.RoundRandomized(__result * 0.40f));
+        }
+    }
+
+    /// <summary>
+    /// Prevents both independent parties and army members from donating below
+    /// the same wage-, food- and capacity-aware target used by native logic.
+    /// </summary>
+    [HarmonyPatch(typeof(GarrisonTroopsCampaignBehavior), "LeaveTroopsToGarrison")]
+    public static class GarrisonPartyPriorityPatch
+    {
+        private static void Prefix(
+            MobileParty mobileParty,
+            ref int numberOfTroopsToLeave)
+        {
+            if (mobileParty == null || numberOfTroopsToLeave <= 0)
+            {
+                return;
+            }
+
+            int sizeLimit = mobileParty.Party.PartySizeLimit;
+            int wageLimit = MathF.Round(
+                mobileParty.PaymentLimit / Campaign.Current.AverageWage);
+            float food = mobileParty.Army == null
+                ? mobileParty.Food
+                : mobileParty.Army.Parties.Sum(party => party.Food);
+            int foodLimit = MathF.Round(
+                Campaign.Current.Models.MobilePartyFoodConsumptionModel
+                    .NumberOfMenOnMapToEatOneFood * food / 2f);
+            int reasonableTarget = Math.Max(
+                30,
+                Math.Min(sizeLimit, Math.Min(wageLimit, foodLimit)));
+            int surplus = Math.Max(
+                0,
+                mobileParty.Party.NumberOfRegularMembers - reasonableTarget);
+
+            numberOfTroopsToLeave = Math.Min(numberOfTroopsToLeave, surplus);
+        }
+    }
+
+    /// <summary>
+    /// Reports actual AI withdrawals from a garrison belonging to the
+    /// player's kingdom. The before/after count avoids logging failed or
+    /// partially fulfilled transfer requests as if they fully succeeded.
+    /// </summary>
+    [HarmonyPatch(typeof(GarrisonTroopsCampaignBehavior), "TakeTroopsFromGarrison")]
+    public static class PlayerKingdomGarrisonWithdrawalLogPatch
+    {
+        private static void Prefix(
+            MobileParty mobileParty,
+            Settlement settlement,
+            out int __state)
+        {
+            __state = settlement?.Town?.GarrisonParty?.Party
+                .NumberOfRegularMembers ?? 0;
+        }
+
+        private static void Postfix(
+            MobileParty mobileParty,
+            Settlement settlement,
+            int __state)
+        {
+            if (mobileParty == null || mobileParty.IsMainParty ||
+                settlement?.Town?.GarrisonParty == null ||
+                Clan.PlayerClan?.Kingdom == null ||
+                mobileParty.MapFaction != Clan.PlayerClan.Kingdom)
+            {
+                return;
+            }
+
+            int remaining = settlement.Town.GarrisonParty.Party
+                .NumberOfRegularMembers;
+            int withdrawn = Math.Max(0, __state - remaining);
+            if (withdrawn <= 0)
+            {
+                return;
+            }
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_garrison_withdrawal");
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(mobileParty));
+            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+            message.SetTextVariable("COUNT", withdrawn);
+            ModLogger.Notice(message.ToString());
         }
     }
 }

@@ -46,70 +46,198 @@ namespace ModifiedArmy.Models
         {
             Town town = settlement?.Town;
 
-            // Player settlements retain direct player control. This behavior
-            // is an AI recruitment policy and must not alter their prisoners.
+            if (settlement?.IsFortification == true && town != null &&
+                town.GarrisonParty == null &&
+                town.GarrisonAutoRecruitmentIsEnabled &&
+                town.FoodChange > 0f && settlement.Party.MapEvent == null &&
+                settlement.Party.SiegeEvent == null)
+            {
+                settlement.AddGarrisonParty();
+            }
+
             if (settlement?.IsFortification != true ||
                 town?.GarrisonParty == null ||
                 settlement.OwnerClan == null ||
-                settlement.OwnerClan == Clan.PlayerClan)
+                !town.GarrisonAutoRecruitmentIsEnabled ||
+                town.FoodChange <= 0f ||
+                settlement.Party.MapEvent != null ||
+                settlement.Party.SiegeEvent != null)
             {
                 return;
             }
 
-            // Professional manpower has first claim on the native daily
-            // garrison recruitment quota. Prisoners may use only what remains
-            // so the two sources cannot double the intended daily growth.
             int dailyLimit = GetDailyRecruitmentLimit(town);
-            int professionalRecruited = RecruitProfessionalTroops(
-                settlement,
-                town.GarrisonParty,
-                dailyLimit);
-            dailyLimit = Math.Max(0, dailyLimit - professionalRecruited);
-
             TroopRoster prisonRoster = settlement.Party.PrisonRoster;
             int initialPrisonerCount = prisonRoster.TotalRegulars;
-
-            // Hero prisoners never participate in this system and do not
-            // cause a daily recruitment message by themselves.
-            if (initialPrisonerCount <= 0)
-            {
-                return;
-            }
 
             int targetCount;
             int readyCount;
             int sold;
-            List<RecruitmentCandidate> candidates =
+            List<RecruitmentCandidate> prisonerCandidates =
                 SelectAndPreparePrisonerCandidates(
                     settlement,
                     town.GarrisonParty,
                     out targetCount,
                     out readyCount,
                     out sold);
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            List<RecruitmentCandidate> candidates = pools == null
+                ? new List<RecruitmentCandidate>()
+                : pools.GetAvailableTroops(
+                        settlement,
+                        RecruitmentPoolKind.Professional)
+                    .Where(entry => entry.Key != null && entry.Value > 0)
+                    .Select(entry => new RecruitmentCandidate(
+                        entry.Key,
+                        entry.Value,
+                        RecruitmentSource.Professional))
+                    .ToList();
+            candidates.AddRange(prisonerCandidates);
             RecruitmentPlan plan = null;
             int recruited = 0;
+            int professionalRecruited = 0;
+            int prisonerRecruited = 0;
 
             if (dailyLimit > 0 && candidates.Count > 0)
             {
                 plan = RecruitmentModelManager.Model.BuildPlan(
                     town.GarrisonParty,
                     candidates);
-                recruited = ExecutePlan(
+                recruited = ExecuteUnifiedPlan(
                     settlement,
                     town.GarrisonParty,
                     plan,
-                    dailyLimit);
+                    dailyLimit,
+                    pools,
+                    out professionalRecruited,
+                    out prisonerRecruited);
             }
 
-            LogDailyResult(
-                town,
-                initialPrisonerCount,
-                sold,
-                targetCount,
-                readyCount,
-                dailyLimit,
-                plan,
-                recruited);
+            int professionalOffered = candidates.Where(candidate =>
+                    candidate.Source == RecruitmentSource.Professional)
+                .Sum(candidate => candidate.AvailableCount);
+            if (plan != null && professionalOffered > 0)
+            {
+                LogProfessionalRecruitment(
+                    town,
+                    professionalOffered,
+                    professionalRecruited,
+                    plan);
+            }
+
+            if (initialPrisonerCount > 0 || sold > 0)
+            {
+                LogDailyResult(
+                    town,
+                    initialPrisonerCount,
+                    sold,
+                    targetCount,
+                    readyCount,
+                    dailyLimit,
+                    plan,
+                    prisonerRecruited);
+            }
+        }
+
+        /// <summary>
+        /// Executes one priority-ordered plan for both sources, ensuring that
+        /// neither professional troops nor prisoners reserve the whole daily
+        /// quota before composition evaluation sees the other source.
+        /// </summary>
+        private static int ExecuteUnifiedPlan(
+            Settlement settlement,
+            MobileParty garrison,
+            RecruitmentPlan plan,
+            int dailyLimit,
+            SettlementRecruitmentPoolBehavior pools,
+            out int professionalRecruited,
+            out int prisonerRecruited)
+        {
+            int recruited = 0;
+            professionalRecruited = 0;
+            prisonerRecruited = 0;
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            {
+                int count = Math.Min(
+                    evaluation.RecruitableCount,
+                    dailyLimit - recruited);
+                if (count <= 0 || evaluation.Troop == null)
+                {
+                    continue;
+                }
+
+                if (evaluation.Source == RecruitmentSource.Professional)
+                {
+                    if (pools == null || !pools.TryConsume(
+                        settlement,
+                        RecruitmentPoolKind.Professional,
+                        evaluation.Troop,
+                        count))
+                    {
+                        continue;
+                    }
+
+                    garrison.MemberRoster.AddToCounts(
+                        evaluation.Troop,
+                        count,
+                        false,
+                        0,
+                        0,
+                        true,
+                        -1);
+                    professionalRecruited += count;
+                }
+                else if (evaluation.Source == RecruitmentSource.Prisoner &&
+                    evaluation.Candidate?.SourceContext is
+                        PrisonerRecruitmentOffer offer)
+                {
+                    TroopRoster prison = settlement.Party.PrisonRoster;
+                    count = Math.Min(
+                        count,
+                        prison.GetTroopCount(evaluation.Troop));
+                    int wounded = GetWoundedTransferCount(
+                        prison,
+                        evaluation.Troop,
+                        count);
+                    prison.AddToCounts(
+                        evaluation.Troop,
+                        -count,
+                        false,
+                        -wounded,
+                        -offer.ConformityCost * count,
+                        true,
+                        -1);
+                    garrison.MemberRoster.AddToCounts(
+                        evaluation.Troop,
+                        count,
+                        false,
+                        wounded,
+                        0,
+                        true,
+                        -1);
+                    prisonerRecruited += count;
+                }
+                else
+                {
+                    continue;
+                }
+
+                settlement.OwnerClan.AutoRecruitmentExpenses +=
+                    evaluation.UnitRecruitmentCost * count;
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    garrison,
+                    count,
+                    evaluation.UnitRecruitmentCost,
+                    evaluation.UnitDailyWage);
+                recruited += count;
+                if (recruited >= dailyLimit)
+                {
+                    break;
+                }
+            }
+
+            return recruited;
         }
 
         /// <summary>
@@ -298,6 +426,79 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
+        /// Returns the same safe, stock-aware upper bound used by the custom
+        /// recruitment path without consuming manpower or prisoner progress.
+        /// </summary>
+        public static int GetPredictedDailyRecruitmentCount(Town town)
+        {
+            Settlement settlement = town?.Settlement;
+            MobileParty garrison = town?.GarrisonParty;
+            if (settlement == null || garrison == null ||
+                !town.GarrisonAutoRecruitmentIsEnabled ||
+                town.FoodChange <= 0f || settlement.Party.MapEvent != null ||
+                settlement.Party.SiegeEvent != null)
+            {
+                return 0;
+            }
+
+            List<RecruitmentCandidate> candidates =
+                new List<RecruitmentCandidate>();
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            if (pools != null)
+            {
+                candidates.AddRange(pools.GetAvailableTroops(
+                        settlement,
+                        RecruitmentPoolKind.Professional)
+                    .Where(entry => entry.Key != null && entry.Value > 0)
+                    .Select(entry => new RecruitmentCandidate(
+                        entry.Key,
+                        entry.Value,
+                        RecruitmentSource.Professional)));
+            }
+
+            foreach (TroopRosterElement element in
+                settlement.Party.PrisonRoster.GetTroopRoster())
+            {
+                CharacterObject troop = element.Character;
+                if (troop == null || troop.IsHero || element.Number <= 0)
+                {
+                    continue;
+                }
+
+                int conformity = Campaign.Current.Models
+                    .PrisonerRecruitmentCalculationModel
+                    .GetConformityNeededToRecruitPrisoner(troop);
+                int ready = conformity <= 0
+                    ? element.Number
+                    : Math.Min(
+                        element.Number,
+                        settlement.Party.PrisonRoster.GetElementXp(troop) /
+                            conformity);
+                if (ready > 0)
+                {
+                    candidates.Add(new RecruitmentCandidate(
+                        troop,
+                        ready,
+                        RecruitmentSource.Prisoner,
+                        new PrisonerRecruitmentOffer(conformity)));
+                }
+            }
+
+            if (candidates.Count == 0)
+            {
+                return 0;
+            }
+
+            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
+                garrison,
+                candidates);
+            return Math.Min(
+                GetDailyRecruitmentLimit(town),
+                plan.Evaluations.Sum(result => result.RecruitableCount));
+        }
+
+        /// <summary>
         /// Selects only prisoners that fill a current minimum-ratio shortage,
         /// sells every surplus or non-military prisoner, then adds one day of
         /// conformity to the retained targets. A
@@ -318,6 +519,8 @@ namespace ModifiedArmy.Models
                 new List<RecruitmentCandidate>();
             TroopRoster prisonRoster = settlement.Party.PrisonRoster;
             TroopRoster saleRoster = TroopRoster.CreateDummyTroopRoster();
+            bool allowAutomaticSale =
+                settlement.OwnerClan != Clan.PlayerClan;
             targetCount = 0;
             readyCount = 0;
             soldCount = 0;
@@ -358,7 +561,9 @@ namespace ModifiedArmy.Models
                     template,
                     roleCounts,
                     qualityCounts);
-                int sellCount = element.Number - retainedCount;
+                int sellCount = allowAutomaticSale
+                    ? element.Number - retainedCount
+                    : 0;
 
                 if (sellCount > 0)
                 {
@@ -459,7 +664,21 @@ namespace ModifiedArmy.Models
 
             if (roleShortage <= 0 && qualityShortage <= 0)
             {
-                return 0;
+                // Useful prisoners remain a future recruitment reserve even
+                // when today's minimum ratios are already satisfied. Low-tier
+                // prisoners still fall through to the sale policy.
+                if (troop.Tier < 3)
+                {
+                    return 0;
+                }
+
+                return Math.Max(
+                    0,
+                    Math.Min(
+                        availableCount,
+                        Math.Min(
+                            roleMaximum - roleCounts[role],
+                            qualityMaximum - qualityCounts[quality])));
             }
 
             return Math.Max(

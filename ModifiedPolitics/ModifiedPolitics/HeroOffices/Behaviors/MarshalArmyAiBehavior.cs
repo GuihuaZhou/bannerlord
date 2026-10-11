@@ -251,7 +251,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 $"{{={textId}}}[Hero Offices] Marshal army AI in {{KINGDOM}} for {{MARSHAL}}: {fallbackReason}.");
             message.SetTextVariable("KINGDOM", kingdom.Name);
             message.SetTextVariable("MARSHAL", party.LeaderHero?.Name ?? TextObject.GetEmpty());
-            ModLogger.Notice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         private void SetDiagnosticState(
@@ -299,7 +299,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             message.SetTextVariable("MINIMUM_FOOD", minimumFoodDays);
             message.SetTextVariable("FOOD_THRESHOLD", siegeFoodThreshold.ToString("0.0"));
             message.SetTextVariable("PATCH_COUNT", MarshalArmyPatches.LeaderGateReplacementCount);
-            ModLogger.Notice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
     }
 }

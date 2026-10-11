@@ -264,7 +264,10 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             message.SetTextVariable("HERO", hero?.Name ?? TextObject.GetEmpty());
             message.SetTextVariable("OFFICE", OfficeText.GetName(officeType));
             message.SetTextVariable("KINGDOM", kingdom.Name);
-            ModLogger.Notice(message.ToString());
+            if (officeType == OfficeType.Marshal)
+                ModLogger.Info(message.ToString());
+            else
+                ModLogger.Notice(message.ToString());
         }
     }
 }

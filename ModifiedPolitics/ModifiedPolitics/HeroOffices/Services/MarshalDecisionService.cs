@@ -86,7 +86,7 @@ namespace ModifiedPolitics.HeroOffices.Services
             message.SetTextVariable(
                 "HERO",
                 hero?.Name ?? new TextObject("{=MP_MarshalSystemCandidates}system-generated candidates"));
-            ModLogger.Notice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
     }
 }
