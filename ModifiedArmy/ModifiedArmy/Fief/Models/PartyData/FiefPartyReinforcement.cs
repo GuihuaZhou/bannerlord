@@ -500,11 +500,14 @@ namespace ModifiedArmy.Models.Fief
                     }
                     else if (detachment.IsReadyToReturn())
                     {
+                        int expiredCount = detachment.GetTotalCount();
                         foreach (var kvp in detachment.Troops)
                         {
                             var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
                             _soldierTypeCounts[type] = Math.Max(0, _soldierTypeCounts[type] - kvp.Value);
                         }
+                        Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
+                            .ReleaseFiefService(_settlement, expiredCount, false);
                         // 移除该分遣队
                         RecruitedTroopDetachmentList.RemoveAt(i);
                     }

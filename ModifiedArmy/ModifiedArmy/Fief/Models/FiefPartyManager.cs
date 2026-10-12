@@ -48,6 +48,8 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(Dictionary<CharacterObject, int>));
             base.ConstructContainerDefinition(typeof(List<FiefTroopDetachment>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, FiefPartyData>));
+            base.ConstructContainerDefinition(typeof(Dictionary<Settlement, int>));
+            base.ConstructContainerDefinition(typeof(Dictionary<Settlement, Settlement>));
             base.ConstructContainerDefinition(
                 typeof(Dictionary<Settlement, SettlementRecruitmentPoolData>));
 
@@ -65,6 +67,18 @@ namespace ModifiedArmy.Models.Fief
         [SaveableField(1)]
         private Dictionary<Settlement, FiefPartyData> _fiefDataMap = new Dictionary<Settlement, FiefPartyData>();
 
+        [SaveableField(2)]
+        private Dictionary<Settlement, int> _mobilizedHearth = new Dictionary<Settlement, int>();
+
+        [SaveableField(3)]
+        private Dictionary<Settlement, Settlement> _mobilizationOwners = new Dictionary<Settlement, Settlement>();
+
+        [SaveableField(4)]
+        private bool _mobilizationMigrationComplete;
+
+        [SaveableField(5)]
+        private Dictionary<Settlement, int> _legacyUntrackedMobilization = new Dictionary<Settlement, int>();
+
         public override void RegisterEvents()
         {
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
@@ -78,11 +92,18 @@ namespace ModifiedArmy.Models.Fief
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData<Dictionary<Settlement, FiefPartyData>>("_fiefDataMap", ref this._fiefDataMap);
+            dataStore.SyncData("_mobilizedHearth", ref _mobilizedHearth);
+            dataStore.SyncData("_mobilizationOwners", ref _mobilizationOwners);
+            dataStore.SyncData("_mobilizationMigrationComplete", ref _mobilizationMigrationComplete);
+            dataStore.SyncData("_legacyUntrackedMobilization", ref _legacyUntrackedMobilization);
 
             if (_fiefDataMap == null)
             {
                 _fiefDataMap = new Dictionary<Settlement, FiefPartyData>();
             }
+            _mobilizedHearth ??= new Dictionary<Settlement, int>();
+            _mobilizationOwners ??= new Dictionary<Settlement, Settlement>();
+            _legacyUntrackedMobilization ??= new Dictionary<Settlement, int>();
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
@@ -90,6 +111,8 @@ namespace ModifiedArmy.Models.Fief
             SoldierTypeClassifier.InitializeAll();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
+            ReconcileMobilization(!_mobilizationMigrationComplete);
+            _mobilizationMigrationComplete = true;
         }
 
         /// <summary>
@@ -140,6 +163,187 @@ namespace ModifiedArmy.Models.Fief
             {
                 data?.DailyUpdate();
             }
+            ReconcileMobilization(false);
+        }
+
+        private void ReconcileMobilization(bool preserveLegacyDeficits)
+        {
+            foreach (Settlement fief in _fiefDataMap.Keys.ToList())
+            {
+                int totalRecords = _fiefDataMap[fief]?.GetRecruitedFiefTroopCount() ?? 0;
+                int tracked = _mobilizationOwners
+                    .Where(p => p.Value == fief)
+                    .Sum(p => _mobilizedHearth.TryGetValue(p.Key, out int n) ? Math.Max(0, n) : 0);
+                if (preserveLegacyDeficits && tracked < totalRecords)
+                    _legacyUntrackedMobilization[fief] = totalRecords - tracked;
+                int legacy = _legacyUntrackedMobilization.TryGetValue(fief, out int oldCount)
+                    ? Math.Min(totalRecords, Math.Max(0, oldCount))
+                    : 0;
+                if (legacy > 0) _legacyUntrackedMobilization[fief] = legacy;
+                else _legacyUntrackedMobilization.Remove(fief);
+                int expected = totalRecords - legacy;
+                if (tracked > expected)
+                {
+                    ReleaseMobilization(fief, tracked - expected, false);
+                }
+                else if (!preserveLegacyDeficits && tracked < expected)
+                {
+                    AddMobilizationMarkers(fief, expected - tracked);
+                }
+            }
+
+            foreach (Settlement orphan in _mobilizationOwners.Values
+                .Where(owner => owner == null || !_fiefDataMap.ContainsKey(owner))
+                .Distinct()
+                .ToList())
+            {
+                if (orphan != null)
+                    ReleaseMobilization(orphan, int.MaxValue, false);
+            }
+            foreach (Settlement village in _mobilizationOwners
+                .Where(p => p.Value == null)
+                .Select(p => p.Key)
+                .ToList())
+            {
+                _mobilizationOwners.Remove(village);
+                _mobilizedHearth.Remove(village);
+            }
+        }
+
+        private void AddMobilizationMarkers(Settlement fief, int count)
+        {
+            List<Village> villages = fief?.BoundVillages?
+                .Where(v => v?.Settlement != null)
+                .OrderBy(v => v.Settlement.StringId)
+                .ToList();
+            if (villages == null || villages.Count == 0) return;
+            for (int i = 0; i < count; i++)
+            {
+                Settlement village = villages[i % villages.Count].Settlement;
+                int current = _mobilizedHearth.TryGetValue(village, out int value) ? value : 0;
+                _mobilizedHearth[village] = current + 1;
+                _mobilizationOwners[village] = fief;
+            }
+        }
+
+        public int GetMobilizedHearth(Village village)
+        {
+            if (village?.Settlement == null) return 0;
+            return _mobilizedHearth.TryGetValue(village.Settlement, out int value)
+                ? Math.Max(0, value)
+                : 0;
+        }
+
+        /// <summary>
+        /// Reserves rural production capacity before any troop roster is changed.
+        /// The deduction is distributed evenly while preserving the recruitment floor.
+        /// </summary>
+        public bool TryMobilize(Settlement fief, int count, int hearthPerTroop)
+        {
+            if (fief == null || count <= 0 || hearthPerTroop <= 0) return false;
+            List<Village> villages = fief.BoundVillages
+                .Where(v => v?.Settlement != null)
+                .OrderBy(v => v.Settlement.StringId)
+                .ToList();
+            int required = checked(count * hearthPerTroop);
+            int capacity = villages.Sum(v => Math.Max(0, (int)Math.Floor(v.Hearth) - 100));
+            if (capacity < required) return false;
+
+            int remaining = required;
+            while (remaining > 0)
+            {
+                bool changed = false;
+                foreach (Village village in villages)
+                {
+                    if (remaining <= 0) break;
+                    if (village.Hearth <= 100f) continue;
+                    village.Hearth -= 1f;
+                    Settlement key = village.Settlement;
+                    _mobilizedHearth[key] = GetMobilizedHearth(village) + 1;
+                    _mobilizationOwners[key] = fief;
+                    remaining--;
+                    changed = true;
+                }
+                if (!changed) return false;
+            }
+            return true;
+        }
+
+        public bool TryConsumeProfessionalHearth(Settlement source, int count)
+        {
+            if (source == null || count <= 0) return false;
+            List<Village> villages = source.IsVillage
+                ? new List<Village> { source.Village }
+                : source.BoundVillages.Where(v => v?.Settlement != null).ToList();
+            int required = checked(count * 2);
+            if (villages.Sum(v => Math.Max(0, (int)Math.Floor(v.Hearth) - 100)) < required)
+                return false;
+            int remaining = required;
+            while (remaining > 0)
+            {
+                foreach (Village village in villages.OrderBy(v => v.Settlement.StringId))
+                {
+                    if (remaining <= 0) break;
+                    if (village.Hearth <= 100f) continue;
+                    village.Hearth -= 1f;
+                    remaining--;
+                }
+            }
+            return true;
+        }
+
+        /// <summary>
+        /// Releases an exact amount of mobilized capacity. Returning soldiers restore
+        /// hearth; expired, captured, or reconciled records only release the marker.
+        /// </summary>
+        public int ReleaseMobilization(Settlement fief, int count, bool restoreHearth)
+        {
+            if (fief == null || count <= 0) return 0;
+            List<Settlement> villages = _mobilizationOwners
+                .Where(p => p.Value == fief && _mobilizedHearth.TryGetValue(p.Key, out int n) && n > 0)
+                .Select(p => p.Key)
+                .OrderBy(s => s.StringId)
+                .ToList();
+            int released = 0;
+            while (released < count)
+            {
+                bool changed = false;
+                foreach (Settlement settlement in villages)
+                {
+                    if (released >= count) break;
+                    if (!_mobilizedHearth.TryGetValue(settlement, out int value) || value <= 0) continue;
+                    _mobilizedHearth[settlement] = value - 1;
+                    if (restoreHearth && settlement.Village != null) settlement.Village.Hearth += 1f;
+                    released++;
+                    changed = true;
+                }
+                if (!changed) break;
+            }
+            foreach (Settlement settlement in villages.Where(s => _mobilizedHearth[s] <= 0).ToList())
+            {
+                _mobilizedHearth.Remove(settlement);
+                _mobilizationOwners.Remove(settlement);
+            }
+            return released;
+        }
+
+        public int ReleaseFiefService(Settlement fief, int count, bool restoreHearth)
+        {
+            if (fief == null || count <= 0) return 0;
+            int legacy = _legacyUntrackedMobilization.TryGetValue(fief, out int value)
+                ? Math.Max(0, value)
+                : 0;
+            int legacyReleased = Math.Min(count, legacy);
+            if (legacyReleased > 0)
+            {
+                int remainingLegacy = legacy - legacyReleased;
+                if (remainingLegacy > 0) _legacyUntrackedMobilization[fief] = remainingLegacy;
+                else _legacyUntrackedMobilization.Remove(fief);
+            }
+            return ReleaseMobilization(
+                fief,
+                count - legacyReleased,
+                restoreHearth);
         }
 
         /// <summary>
@@ -374,19 +578,22 @@ namespace ModifiedArmy.Models.Fief
             //
             // 若无模板，则不扣除繁荣度/户数。
             // ============================================================
-            if (!_fiefDataMap.TryGetValue(settlement, out var fiefData) || fiefData == null)
-                return;
+            // Professional village recruits permanently consume two hearths.
+            // They do not create a mobilized-hearth liability.
+            if (settlement.IsVillage || settlement.IsTown || settlement.IsCastle)
+            {
+                bool accepted = TryConsumeProfessionalHearth(settlement, count);
+                int rejected = accepted ? 0 : count;
 
-            if (settlement.IsTown)
-            {
-                // 扣除繁荣度
-                float prosperityCost = fiefData.CalculateRecruitmentProsperityCost(count);
-                fiefData.UpdateProsperity(prosperityCost, false);
-            }
-            else if (settlement.IsVillage)
-            {
-                // 扣除户数
-                fiefData.UpdateHearth(count, false);
+                // The native event is raised after recruitment. Roll back only
+                // unsupported recruitment so the 100-hearth floor remains real.
+                if (rejected > 0 && recruiter?.PartyBelongedTo != null)
+                {
+                    TroopRoster roster = recruiter.PartyBelongedTo.MemberRoster;
+                    int removable = Math.Min(rejected, roster.GetElementNumber(troop));
+                    if (removable > 0)
+                        roster.RemoveTroop(troop, removable, default(UniqueTroopDescriptor), 0);
+                }
             }
         }
     }

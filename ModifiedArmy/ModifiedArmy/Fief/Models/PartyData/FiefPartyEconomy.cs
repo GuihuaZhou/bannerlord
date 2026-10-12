@@ -71,37 +71,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public void DailyUpdate()
         {
-            int recruitedTroopCount =
-                GetRecruitedFiefTroopCount();
-
-            if (recruitedTroopCount <= 0)
-                return;
-
-            float dailyProsperityLoss =
-                CalculateDailyRecruitmentProsperityLoss(
-                    recruitedTroopCount);
-
-            if (dailyProsperityLoss <= 0f)
-                return;
-
-            dailyProsperityLoss= UpdateProsperity(
-                dailyProsperityLoss,
-                false);
-
-            // 只有玩家领地打印 Daily Debuff 日志
-            if (_settlement.OwnerClan == Clan.PlayerClan)
-            {
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_fief_daily_prosperity_loss");
-                message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
-                message.SetTextVariable(
-                    "PROSPERITY_LOSS",
-                    dailyProsperityLoss.ToString("F2"));
-                message.SetTextVariable(
-                    "RECRUITED_COUNT",
-                    recruitedTroopCount);
-                ModLogger.Info(message.ToString());
-            }
+            // Mobilization now affects village production capacity instead of
+            // applying a second, unrelated prosperity penalty every day.
         }
 
         /// <summary>

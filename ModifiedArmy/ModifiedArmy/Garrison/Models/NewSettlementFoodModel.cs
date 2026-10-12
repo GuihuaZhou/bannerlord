@@ -1,4 +1,5 @@
 using Helpers;
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -116,8 +117,8 @@ namespace ModifiedArmy.Garrison.Models
                     if (village.VillageState
                         == Village.VillageStates.Normal)
                     {
-                        villageProduction =
-                            (village.GetHearthLevel() + 1) * 6f;
+                        float hearth = Math.Max(0f, village.Hearth);
+                        villageProduction = 24f * hearth / (hearth + 300f);
                     }
 
                     production.Add(

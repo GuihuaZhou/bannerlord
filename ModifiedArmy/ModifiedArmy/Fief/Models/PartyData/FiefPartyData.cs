@@ -272,6 +272,11 @@ namespace ModifiedArmy.Models.Fief
         {
             if (settlementWasCaptured)
             {
+                Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
+                    .ReleaseFiefService(
+                        _settlement,
+                        GetRecruitedFiefTroopCount(),
+                        false);
                 RecruitedTroopDetachmentList.Clear();
                 ModLogger.Debug($"Settlement {_settlement.Name} captured - cleared all recruited troop detachments.");
 
@@ -291,6 +296,11 @@ namespace ModifiedArmy.Models.Fief
 
         public void OnSettlementOwnerChanged()
         {
+            Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
+                .ReleaseFiefService(
+                    _settlement,
+                    GetRecruitedFiefTroopCount(),
+                    false);
             RecruitedTroopDetachmentList.Clear();
             SyncManpowerCounters();
         }

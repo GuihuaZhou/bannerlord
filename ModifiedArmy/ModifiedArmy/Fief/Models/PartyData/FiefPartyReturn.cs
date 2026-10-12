@@ -60,47 +60,6 @@ namespace ModifiedArmy.Models.Fief
                 GetRecruitedFiefTroopCount();
 
             // ============================================================
-            // 清空 RecruitedTroopDetachmentList 并扣减计数器
-            //
-            // 注意：
-            // 这里清空之后，_soldierTypeCounts 表示的是：
-            //
-            //     当前没有被征召出去的封建军队数量
-            //
-            // 不能使用这里的封建军队总人数来计算本次
-            // Prosperity 返还。
-            // ============================================================
-            if (RecruitedTroopDetachmentList != null)
-            {
-                foreach (var detachment in RecruitedTroopDetachmentList)
-                {
-                    if (detachment?.IsEmpty() == false)
-                    {
-                        foreach (var kvp in detachment.Troops)
-                        {
-                            var troop = kvp.Key;
-                            int count = kvp.Value;
-
-                            if (troop == null || count <= 0)
-                                continue;
-
-                            var type =
-                                SoldierTypeClassifier.GetSoldierType(troop);
-
-                            _soldierTypeCounts[type] =
-                                Math.Max(
-                                    0,
-                                    _soldierTypeCounts[type] - count);
-                        }
-
-                        detachment.Clear();
-                    }
-                }
-
-                RecruitedTroopDetachmentList.Clear();
-            }
-
-            // ============================================================
             // 记录归还的封邑士兵
             // ============================================================
             Dictionary<CharacterObject, int> tmpReturnTroops = new();
@@ -128,16 +87,10 @@ namespace ModifiedArmy.Models.Fief
                 // ========================================================
                 // 检查剩余容量是否足够
                 // ========================================================
-                int availableCapacity =
-                    Math.Max(
-                        0,
-                        _soldierTypeMaxCounts[type] -
-                        _soldierTypeCounts[type]);
-
-                int taken =
-                    Math.Min(
-                        count,
-                        availableCapacity);
+                int registered = RecruitedTroopDetachmentList
+                    .Where(d => d != null && d.Troops != null)
+                    .Sum(d => d.Troops.TryGetValue(troop, out int n) ? n : 0);
+                int taken = Math.Min(count, registered);
 
                 if (taken > 0)
                 {
@@ -157,10 +110,22 @@ namespace ModifiedArmy.Models.Fief
                         tmpReturnTroops[troop] = taken;
                     }
 
-                    // 修改计数器
-                    _soldierTypeCounts[type] += taken;
+                    int remaining = taken;
+                    foreach (FiefTroopDetachment detachment in
+                        RecruitedTroopDetachmentList.OrderBy(d => d.WaitCycle).ToList())
+                    {
+                        if (remaining <= 0 || detachment?.Troops == null ||
+                            !detachment.Troops.TryGetValue(troop, out int recorded))
+                            continue;
+                        int removed = Math.Min(remaining, recorded);
+                        if (removed == recorded) detachment.Troops.Remove(troop);
+                        else detachment.Troops[troop] = recorded - removed;
+                        remaining -= removed;
+                    }
                 }
             }
+
+            RecruitedTroopDetachmentList.RemoveAll(d => d == null || d.IsEmpty());
 
             int tmpReturnTroopCount =
                 tmpReturnTroops.Values.Sum();
@@ -214,19 +179,7 @@ namespace ModifiedArmy.Models.Fief
             //
             // Daily Debuff 不参与返还。
             // ============================================================
-            float prosperityToReturn =
-                CalculateRecruitmentProsperityCost(
-                    (int)tmpReturnTroopCount);
-
-            // ============================================================
-            // 返还 Prosperity
-            // ============================================================
-            if (prosperityToReturn > 0)
-            {
-                prosperityToReturn = UpdateProsperity(
-                    prosperityToReturn,
-                    true);
-            }
+            float prosperityToReturn = 0f;
 
             // ============================================================
             // 归还 Hearth
@@ -241,9 +194,9 @@ namespace ModifiedArmy.Models.Fief
             //
             // 剩余 30 不恢复。
             // ============================================================
-            float hearthCost = UpdateHearth(
-                tmpReturnTroopCount,
-                true);
+            float hearthCost = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .ReleaseFiefService(_settlement, tmpReturnTroopCount, true) ?? 0;
 
             // ============================================================
             // 添加到 ReturnedTroopDetachmentList，
@@ -319,7 +272,7 @@ namespace ModifiedArmy.Models.Fief
 
             msgResult.SetTextVariable(
                 "HEARTH_COST",
-                tmpReturnTroopCount);
+                hearthCost);
 
             msgResult.SetTextVariable(
                 "RETINUE_COUNT",

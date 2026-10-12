@@ -161,6 +161,20 @@ namespace ModifiedArmy.Models.Fief
                         candidates,
                         out aiPlan);
 
+            int approvedCount = approvedTroops.Values.Sum();
+            FiefPartyManager manager = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (approvedCount <= 0 || manager == null ||
+                !manager.TryMobilize(_settlement, approvedCount, 1))
+            {
+                LogAiFiefRecruitment(
+                    targetParty,
+                    aiPlan,
+                    candidates.Sum(candidate => candidate.AvailableCount),
+                    0);
+                return 0;
+            }
+
             // Apply the completed decision only after all candidates have
             // been evaluated. This prevents earlier roster mutations from
             // changing the model inputs for later candidates.
@@ -204,7 +218,7 @@ namespace ModifiedArmy.Models.Fief
 
                 tmpRecruitTroops[troop] = taken;
                 tmpRecruitSoldierTypeSize[type] += taken;
-                hearthCost += taken * tmpHearthCostPerTroop;
+                hearthCost += taken;
             }
 
             int totalRecruited =
@@ -226,15 +240,7 @@ namespace ModifiedArmy.Models.Fief
                 candidates.Sum(candidate => candidate.AvailableCount),
                 totalRecruited);
 
-            prosperityCost =
-                CalculateRecruitmentProsperityCost(totalRecruited);
-
-            prosperityCost = UpdateProsperity(
-                prosperityCost,
-                false);
-            hearthCost = UpdateHearth(
-                hearthCost,
-                false);
+            // Rural mobilization has already been reserved atomically.
 
             // ============================================================
             // 记录招募的士兵
@@ -522,6 +528,18 @@ namespace ModifiedArmy.Models.Fief
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
+            int requestedCount = selectedRoster.GetTroopRoster()
+                .Where(e => e.Character != null && e.Number > 0 &&
+                    SoldierTypeClassifier.IsFiefTroop(e.Character))
+                .Sum(e => e.Number);
+            FiefPartyManager manager = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (requestedCount <= 0 || manager == null ||
+                !manager.TryMobilize(_settlement, requestedCount, 1))
+            {
+                return 0;
+            }
+
             foreach (var element in selectedRoster.GetTroopRoster())
             {
                 var troop = element.Character;
@@ -545,8 +563,7 @@ namespace ModifiedArmy.Models.Fief
                 // 每征召 1 名士兵，消耗 1 Hearth。
                 // Prosperity 不在这里计算，统一在本次征召完成后计算。
                 // ====================================================
-                hearthCost +=
-                    count * tmpHearthCostPerTroop;
+                hearthCost += count;
             }
 
             int totalRecruited =
@@ -555,15 +572,7 @@ namespace ModifiedArmy.Models.Fief
             if (totalRecruited <= 0)
                 return 0;
 
-            prosperityCost =
-                CalculateRecruitmentProsperityCost(totalRecruited);
-
-            prosperityCost = UpdateProsperity(
-                prosperityCost,
-                false);
-            hearthCost = UpdateHearth(
-                hearthCost,
-                false);
+            // Rural mobilization has already been reserved atomically.
 
             // 添加到 RecruitedTroopDetachmentList
             int maxServiceWeeks =
@@ -645,7 +654,7 @@ namespace ModifiedArmy.Models.Fief
                 return false;
 
 
-            // 3. 直接添加到封建部队并更新繁荣度
+            // Prisoner conversion does not consume or restore rural capacity.
             _fiefParty.AddToCounts(troop, count, false, 0, 0, true, -1);
 
             // 消耗的繁荣度
@@ -664,9 +673,6 @@ namespace ModifiedArmy.Models.Fief
 
             hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;
-
-            prosperityCost = UpdateProsperity(prosperityCost, true);
-            hearthCost = UpdateHearth(hearthCost, true);
 
             // 4. 更新计数器
             _soldierTypeCounts[type] += count;
