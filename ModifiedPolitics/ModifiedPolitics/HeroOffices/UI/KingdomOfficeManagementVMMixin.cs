@@ -406,39 +406,17 @@ namespace ModifiedPolitics.HeroOffices.UI
                     return;
                 }
 
-                TextObject description;
-                if (OfficeRules.IsLocal(office.OfficeType))
-                {
-                    description = new TextObject(
-                        "{=MP_OfficeApplyLocalDescription}Ask {RULER} to appoint you as {OFFICE}.\nGoverns: {SETTLEMENT}\nCandidate score: {SCORE}\nRelation with ruler: {RELATION}");
-                    description.SetTextVariable(
-                        "SETTLEMENT",
-                        Hero.MainHero.GovernorOf?.Settlement?.Name ?? TextObject.GetEmpty());
-                    description.SetTextVariable(
-                        "SCORE",
-                        (int)OfficeRules.GetCandidateScore(Hero.MainHero, office.OfficeType));
-                }
-                else if (office.OfficeType == OfficeType.Marshal)
-                {
-                    description = new TextObject(
-                        "{=MP_OfficeApplyMarshalDescription}Ask {RULER} to nominate you as {OFFICE}.\nPolitical priority: {PRIORITY}\nRuler relation: {MARSHAL_RELATION}\nInfluence: {INFLUENCE}/{REQUIRED_INFLUENCE}\nAbility: {ABILITY}\nTraits: {TRAITS}\nTotal score: {SCORE}");
-                    SetMarshalScoreVariables(
-                        description,
-                        Hero.MainHero,
-                        kingdom);
-                }
-                else
-                {
-                    description = new TextObject(
-                        "{=MP_OfficeApplyDescription}Ask {RULER} to appoint you as {OFFICE}.\nRelation with ruler: {RELATION}");
-                }
+                bool rulerWillAccept = OfficeApplicationService.WillRulerAccept(
+                    kingdom,
+                    Hero.MainHero,
+                    office.OfficeType);
+                TextObject description = new TextObject(rulerWillAccept
+                    ? "{=MP_OfficeApplicationRulerAgrees}{RULER} agrees to appoint {HERO} as {OFFICE}."
+                    : "{=MP_OfficeApplicationRulerDisagrees}{RULER} does not agree to appoint {HERO} as {OFFICE}.");
 
                 description.SetTextVariable("RULER", kingdom.Leader.Name);
+                description.SetTextVariable("HERO", Hero.MainHero.Name);
                 description.SetTextVariable("OFFICE", OfficeText.GetName(office.OfficeType));
-                Hero playerClanLeader = Hero.MainHero.Clan?.Leader;
-                description.SetTextVariable(
-                    "RELATION",
-                    playerClanLeader == null ? 0 : kingdom.Leader.GetRelation(playerClanLeader));
                 InformationManager.ShowInquiry(
                     new InquiryData(
                         new TextObject("{=MP_OfficeApplyTitle}Apply for Office").ToString(),

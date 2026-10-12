@@ -136,7 +136,7 @@ namespace ModifiedPolitics.HeroOffices.Services
             if (!CanApply(kingdom, applicant, officeType, out message))
                 return false;
 
-            if (!ShouldRulerAccept(kingdom, applicant, officeType))
+            if (!WillRulerAccept(kingdom, applicant, officeType))
             {
                 message = new TextObject(
                     "{=MP_OfficeApplicationRejected}The ruler rejected the office application.").ToString();
@@ -174,9 +174,13 @@ namespace ModifiedPolitics.HeroOffices.Services
                     return false;
                 }
 
-                result = OfficeApplicationResult.DecisionStarted;
-                message = new TextObject(
-                    "{=MP_OfficeApplicationDecisionStarted}The ruler accepted the request and opened a marshal appointment decision.").ToString();
+                bool requiresVote = MarshalDecisionService.RequiresAppointmentVote(kingdom);
+                result = requiresVote
+                    ? OfficeApplicationResult.DecisionStarted
+                    : OfficeApplicationResult.Appointed;
+                message = new TextObject(requiresVote
+                    ? "{=MP_OfficeApplicationDecisionStarted}The ruler accepted the request and opened a marshal appointment decision."
+                    : "{=MP_OfficeApplicationAccepted}The ruler accepted the application.").ToString();
                 LogResult(kingdom, applicant, officeType, true);
                 return true;
             }
@@ -204,7 +208,7 @@ namespace ModifiedPolitics.HeroOffices.Services
             LogResult(kingdom, applicant, officeType, false);
         }
 
-        private static bool ShouldRulerAccept(Kingdom kingdom, Hero applicant, OfficeType officeType)
+        internal static bool WillRulerAccept(Kingdom kingdom, Hero applicant, OfficeType officeType)
         {
             Hero ruler = kingdom?.Leader;
             Hero clanLeader = applicant?.Clan?.Leader;

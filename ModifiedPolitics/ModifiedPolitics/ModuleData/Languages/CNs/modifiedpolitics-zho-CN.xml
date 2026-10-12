@@ -474,6 +474,9 @@
     <string id="MP_OfficeApplyDescription" text="向{RULER}申请担任{OFFICE}。&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplyLocalDescription" text="向{RULER}申请担任{OFFICE}。&#xA;治理：{SETTLEMENT}&#xA;候选评分：{SCORE}&#xA;与统治者关系：{RELATION}" />
     <string id="MP_OfficeApplyMarshalDescription" text="请求{RULER}提名你担任{OFFICE}。&#xA;政治优先级：{PRIORITY}&#xA;与统治者关系：{MARSHAL_RELATION}&#xA;影响力：{INFLUENCE}/{REQUIRED_INFLUENCE}&#xA;能力：{ABILITY}&#xA;性格：{TRAITS}&#xA;总评分：{SCORE}" />
+    <string id="MP_OfficeApplicationRulerAgrees" text="{RULER}同意任命{HERO}担任{OFFICE}。" />
+    <string id="MP_OfficeApplicationRulerDisagrees" text="{RULER}不同意任命{HERO}担任{OFFICE}。" />
+    <string id="MP_OfficeAiApplicationSimple" text="{HERO}申请担任{OFFICE}，是否同意任命？" />
     <string id="MP_OfficeAiMarshalApplicationDescription" text="{CLAN}的{HERO}申请担任{OFFICE}。&#xA;政治优先级：{PRIORITY}&#xA;与统治者关系：{MARSHAL_RELATION}&#xA;影响力：{INFLUENCE}/{REQUIRED_INFLUENCE}&#xA;能力：{ABILITY}&#xA;性格：{TRAITS}&#xA;总评分：{SCORE}" />
     <string id="MP_OfficeApplicationInvalidKingdom" text="王国或统治者当前无效，无法申请官职。" />
     <string id="MP_OfficeApplicationRulerCannotApply" text="王国统治者不需要申请官职。" />
