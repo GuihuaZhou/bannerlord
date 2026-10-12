@@ -120,8 +120,11 @@
     <string id="ModifiedPolitics_PartyWage" text="部队工资" />
     <string id="ModifiedPolitics_WarDisposition" text="战争倾向" />
     <string id="ModifiedPolitics_LeaderTraits" text="人物特性" />
+    <string id="ModifiedPolitics_WarDispositionBaseline" text="人格基准" />
     <string id="ModifiedPolitics_WarDuration" text="战争持续" />
-    <string id="ModifiedPolitics_DailyReturn" text="每日回归" />
+    <string id="ModifiedPolitics_PeaceDuration" text="和平持续" />
+    <string id="ModifiedPolitics_DailyTrend" text="每日趋势" />
+    <string id="ModifiedPolitics_PeaceRecoveryRate" text="和平恢复比例" />
     <string id="ModifiedPolitics_TodayBattleInfluence" text="今日战斗影响" />
     <string id="ModifiedPolitics_TodayTerritoryInfluence" text="今日领地影响" />
     <string id="ModifiedPolitics_TodayWarGain" text="今日战争收益" />

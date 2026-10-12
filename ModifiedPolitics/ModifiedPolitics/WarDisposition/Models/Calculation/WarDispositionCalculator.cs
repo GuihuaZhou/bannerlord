@@ -18,6 +18,24 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
         public const float MaximumPersonalityModifier = 2f;
         public const float MinimumDisposition = -100f;
         public const float MaximumDisposition = 100f;
+        public const float MinimumBaseline = -40f;
+        public const float MaximumBaseline = 40f;
+
+        /// <summary>
+        /// Calculates the current leader's long-term disposition baseline.
+        /// The value is intentionally dynamic and is never persisted.
+        /// </summary>
+        public static float CalculateBaseline(Clan clan)
+        {
+            Hero leader = clan?.Leader;
+            if (leader == null)
+                return 0f;
+
+            float baseline = 12f * leader.GetTraitLevel(DefaultTraits.Valor)
+                - 15f * leader.GetTraitLevel(DefaultTraits.Mercy)
+                - 3f * leader.GetTraitLevel(DefaultTraits.Generosity);
+            return Clamp(baseline, MinimumBaseline, MaximumBaseline);
+        }
 
         /// <summary>
         /// 计算一次事件对目标 Clan 的战争倾向影响。

@@ -14,21 +14,23 @@ namespace ModifiedPolitics.UI.KingdomClan
     {
         private string _warDispositionText;
         private string _warDispositionTraitsText;
+        private string _warDispositionBaselineText;
         private string _warDurationText;
         private string _dailyReturnAmountText;
+        private string _peaceRecoveryRateText;
         private string _todayBattleInfluenceText;
         private string _todayTerritoryInfluenceText;
         private string _todayWarGainInfluenceText;
-        private string _weeklyWealthChangeText;
 
         private string _warDispositionLabelText;
         private string _leaderTraitsLabelText;
+        private string _warDispositionBaselineLabelText;
         private string _warDurationLabelText;
         private string _dailyReturnLabelText;
+        private string _peaceRecoveryRateLabelText;
         private string _todayBattleInfluenceLabelText;
         private string _todayTerritoryInfluenceLabelText;
         private string _todayWarGainLabelText;
-        private string _weeklyWealthChangeLabelText;
 
         [DataSourceProperty]
         public string WarDispositionText
@@ -45,6 +47,13 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
+        public string WarDispositionBaselineText
+        {
+            get => _warDispositionBaselineText;
+            set => SetWarDispositionProperty(ref _warDispositionBaselineText, value, nameof(WarDispositionBaselineText));
+        }
+
+        [DataSourceProperty]
         public string WarDurationText
         {
             get => _warDurationText;
@@ -56,6 +65,13 @@ namespace ModifiedPolitics.UI.KingdomClan
         {
             get => _dailyReturnAmountText;
             set => SetWarDispositionProperty(ref _dailyReturnAmountText, value, nameof(DailyReturnAmountText));
+        }
+
+        [DataSourceProperty]
+        public string PeaceRecoveryRateText
+        {
+            get => _peaceRecoveryRateText;
+            set => SetWarDispositionProperty(ref _peaceRecoveryRateText, value, nameof(PeaceRecoveryRateText));
         }
 
         [DataSourceProperty]
@@ -80,13 +96,6 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
-        public string WeeklyWealthChangeText
-        {
-            get => _weeklyWealthChangeText;
-            set => SetWarDispositionProperty(ref _weeklyWealthChangeText, value, nameof(WeeklyWealthChangeText));
-        }
-
-        [DataSourceProperty]
         public string WarDispositionLabelText
         {
             get => _warDispositionLabelText;
@@ -107,6 +116,16 @@ namespace ModifiedPolitics.UI.KingdomClan
         }
 
         [DataSourceProperty]
+        public string WarDispositionBaselineLabelText
+        {
+            get => _warDispositionBaselineLabelText;
+            set => SetWarDispositionProperty(
+                ref _warDispositionBaselineLabelText,
+                value,
+                nameof(WarDispositionBaselineLabelText));
+        }
+
+        [DataSourceProperty]
         public string WarDurationLabelText
         {
             get => _warDurationLabelText;
@@ -124,6 +143,16 @@ namespace ModifiedPolitics.UI.KingdomClan
                 ref _dailyReturnLabelText,
                 value,
                 nameof(DailyReturnLabelText));
+        }
+
+        [DataSourceProperty]
+        public string PeaceRecoveryRateLabelText
+        {
+            get => _peaceRecoveryRateLabelText;
+            set => SetWarDispositionProperty(
+                ref _peaceRecoveryRateLabelText,
+                value,
+                nameof(PeaceRecoveryRateLabelText));
         }
 
         [DataSourceProperty]
@@ -156,16 +185,6 @@ namespace ModifiedPolitics.UI.KingdomClan
                 nameof(TodayWarGainLabelText));
         }
 
-        [DataSourceProperty]
-        public string WeeklyWealthChangeLabelText
-        {
-            get => _weeklyWealthChangeLabelText;
-            set => SetWarDispositionProperty(
-                ref _weeklyWealthChangeLabelText,
-                value,
-                nameof(WeeklyWealthChangeLabelText));
-        }
-
         private void RefreshWarDispositionLocalization()
         {
             WarDispositionLabelText =
@@ -174,11 +193,14 @@ namespace ModifiedPolitics.UI.KingdomClan
             LeaderTraitsLabelText =
                 new TextObject("{=ModifiedPolitics_LeaderTraits}Leader Traits").ToString();
 
-            WarDurationLabelText =
-                new TextObject("{=ModifiedPolitics_WarDuration}War Duration").ToString();
+            WarDispositionBaselineLabelText =
+                new TextObject("{=ModifiedPolitics_WarDispositionBaseline}Personality Baseline").ToString();
 
             DailyReturnLabelText =
-                new TextObject("{=ModifiedPolitics_DailyReturn}Daily Return").ToString();
+                new TextObject("{=ModifiedPolitics_DailyTrend}Daily Trend").ToString();
+
+            PeaceRecoveryRateLabelText =
+                new TextObject("{=ModifiedPolitics_PeaceRecoveryRate}Peace Recovery Rate").ToString();
 
             TodayBattleInfluenceLabelText =
                 new TextObject("{=ModifiedPolitics_TodayBattleInfluence}Today's Battle Influence").ToString();
@@ -189,8 +211,6 @@ namespace ModifiedPolitics.UI.KingdomClan
             TodayWarGainLabelText =
                 new TextObject("{=ModifiedPolitics_TodayWarGain}Today's War Gain").ToString();
 
-            WeeklyWealthChangeLabelText =
-                new TextObject("{=ModifiedPolitics_WeeklyWealthChange}Weekly Wealth Change").ToString();
         }
 
         private void SetWarDispositionProperty(
@@ -216,12 +236,14 @@ namespace ModifiedPolitics.UI.KingdomClan
             {
                 WarDispositionText = Localize("{=ModifiedPolitics_NotApplicable}Not Applicable");
                 WarDispositionTraitsText = Localize("{=ModifiedPolitics_None}None");
+                WarDispositionBaselineText = "0";
+                WarDurationLabelText = Localize("{=ModifiedPolitics_PeaceDuration}Peace Duration");
                 WarDurationText = FormatDays(0);
                 DailyReturnAmountText = "0";
+                PeaceRecoveryRateText = "0%";
                 TodayBattleInfluenceText = "0";
                 TodayTerritoryInfluenceText = "0";
                 TodayWarGainInfluenceText = "0";
-                WeeklyWealthChangeText = "0%(0)";
                 return;
             }
 
@@ -231,38 +253,53 @@ namespace ModifiedPolitics.UI.KingdomClan
             WarDispositionData data = manager?.GetOrCreateData(clan);
 
             WarDispositionTraitsText = BuildWarDispositionTraitsText(clan?.Leader);
-            float warDuration = manager != null
-                ? manager.GetLongestActiveWarDurationDays(clan)
-                : WarDispositionDailyReturnCalculator
-                    .GetLongestActiveWarDurationDays(clan);
-            float dailyReturnAmount = WarDispositionDailyReturnCalculator
-                .GetReturnAmount(warDuration);
+            float baseline = WarDispositionCalculator.CalculateBaseline(clan);
+            WarDispositionBaselineText = FormatSignedValue(baseline);
+            bool atWar = manager != null
+                ? manager.IsInFormalWar(clan)
+                : WarDispositionDailyReturnCalculator.HasActiveFormalWar(clan);
+            float warDuration = atWar
+                ? (manager != null
+                    ? manager.GetLongestActiveWarDurationDays(clan)
+                    : WarDispositionDailyReturnCalculator.GetLongestActiveWarDurationDays(clan))
+                : 0f;
+            int peaceDays = !atWar && manager != null
+                ? manager.GetPeaceDurationDays(clan)
+                : 0;
 
-            WarDurationText = FormatDays((int)warDuration);
-            DailyReturnAmountText = dailyReturnAmount.ToString(
-                "0.##",
-                CultureInfo.InvariantCulture);
+            WarDurationLabelText = atWar
+                ? Localize("{=ModifiedPolitics_WarDuration}War Duration")
+                : Localize("{=ModifiedPolitics_PeaceDuration}Peace Duration");
+            WarDurationText = FormatDays(atWar ? (int)warDuration : peaceDays);
+            float recoveryRate = atWar
+                ? 0f
+                : WarDispositionDailyReturnCalculator.GetPeaceRecoveryRate(peaceDays);
+            PeaceRecoveryRateText = atWar
+                ? "--"
+                : (recoveryRate * 100f).ToString("0.0", CultureInfo.InvariantCulture) + "%";
 
             if (data == null)
             {
                 WarDispositionText =
                     Localize("{=ModifiedPolitics_Neutral}Neutral") + "(0)";
+                DailyReturnAmountText = "0";
                 TodayBattleInfluenceText = "0";
                 TodayTerritoryInfluenceText = "0";
                 TodayWarGainInfluenceText = "0";
-                WeeklyWealthChangeText = "0%(0)";
                 return;
             }
 
             WarDispositionText = FormatWarDisposition(data.Value);
+            float dailyTrend = atWar
+                ? WarDispositionDailyReturnCalculator.GetWarDailyChange(data.Value)
+                : WarDispositionDailyReturnCalculator.GetPeaceDailyChange(
+                    data.Value,
+                    baseline,
+                    peaceDays);
+            DailyReturnAmountText = FormatSignedValue(dailyTrend);
             TodayBattleInfluenceText = FormatSignedValue(data.TodayBattleInfluence);
             TodayTerritoryInfluenceText = FormatSignedValue(data.TodayTerritoryInfluence);
             TodayWarGainInfluenceText = FormatSignedValue(data.TodayWarGainInfluence);
-            WeeklyWealthChangeText =
-                FormatSignedValue(data.WeeklyWealthChangePercent)
-                + "%("
-                + FormatSignedValue(data.WeeklyWealthInfluence)
-                + ")";
         }
 
         private static string FormatWarDisposition(float value)

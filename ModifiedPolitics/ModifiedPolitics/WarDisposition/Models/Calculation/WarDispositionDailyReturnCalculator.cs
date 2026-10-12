@@ -4,11 +4,30 @@ using TaleWorlds.Library;
 namespace ModifiedPolitics.Models.WarDisposition.Calculation
 {
     /// <summary>
-    /// 计算 Clan 当前战争持续时间和每日固定回归量.
-    /// 多场战争并存时使用持续最久的一场, 代表当前政治势力的战争负担.
+    /// Calculates formal-war duration and daily war/peace disposition trends.
     /// </summary>
     public static class WarDispositionDailyReturnCalculator
     {
+        public const float WarWearinessRate = 0.01f;
+        public const float InitialPeaceRecoveryRate = 0.005f;
+        public const float PeaceRecoveryRatePerDay = 0.002f;
+        public const float MaximumPeaceRecoveryRate = 0.06f;
+
+        public static bool HasActiveFormalWar(Clan clan)
+        {
+            IFaction faction = clan?.MapFaction;
+            if (faction == null)
+                return false;
+
+            foreach (IFaction enemy in faction.FactionsAtWarWith)
+            {
+                if (IsFormalKingdomWar(faction, enemy))
+                    return true;
+            }
+
+            return false;
+        }
+
         public static float GetLongestActiveWarDurationDays(
             Clan clan,
             float unknownWarFallbackDays = 0f)
@@ -24,22 +43,10 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
 
             foreach (IFaction enemy in faction.FactionsAtWarWith)
             {
-                if (enemy == null
-                    || enemy.IsBanditFaction
-                    || enemy.IsMinorFaction
-                    // 只统计针对王国的正式战争. 叛军和独立 Clan 敌对关系不计时.
-                    || !enemy.IsKingdomFaction
-                    || enemy.IsEliminated)
-                {
+                if (!IsFormalKingdomWar(faction, enemy))
                     continue;
-                }
 
                 StanceLink stance = faction.GetStanceWith(enemy);
-
-                if (stance == null || !stance.IsAtWar)
-                {
-                    continue;
-                }
 
                 // 中途安装 Mod 或旧版本存档中的部分战争关系可能没有可靠的
                 // WarStartDate. CampaignTime.Zero 会被解释为游戏历法零点,
@@ -75,24 +82,44 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
             return longestDuration;
         }
 
-        public static float GetReturnAmount(float warDurationDays)
+        public static float GetWarDailyChange(float currentDisposition)
         {
-            if (warDurationDays <= 30f)
-            {
-                return 1f;
-            }
+            return (WarDispositionCalculator.MinimumDisposition - currentDisposition)
+                   * WarWearinessRate;
+        }
 
-            if (warDurationDays <= 90f)
-            {
-                return 2f;
-            }
+        public static float GetPeaceRecoveryRate(int peaceDays)
+        {
+            return MathF.Min(
+                InitialPeaceRecoveryRate
+                + PeaceRecoveryRatePerDay * MathF.Max(0, peaceDays),
+                MaximumPeaceRecoveryRate);
+        }
 
-            if (warDurationDays <= 180f)
-            {
-                return 4f;
-            }
+        public static float GetPeaceDailyChange(
+            float currentDisposition,
+            float baseline,
+            int peaceDays)
+        {
+            if (MathF.Abs(baseline - currentDisposition) <= 1f)
+                return baseline - currentDisposition;
 
-            return 6f;
+            return (baseline - currentDisposition)
+                   * GetPeaceRecoveryRate(peaceDays);
+        }
+
+        private static bool IsFormalKingdomWar(IFaction faction, IFaction enemy)
+        {
+            if (faction == null
+                || enemy == null
+                || enemy.IsBanditFaction
+                || enemy.IsMinorFaction
+                || !enemy.IsKingdomFaction
+                || enemy.IsEliminated)
+                return false;
+
+            StanceLink stance = faction.GetStanceWith(enemy);
+            return stance != null && stance.IsAtWar;
         }
     }
 }

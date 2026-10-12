@@ -1,3 +1,4 @@
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedPolitics.Models.WarDisposition
@@ -28,6 +29,9 @@ namespace ModifiedPolitics.Models.WarDisposition
 
         [SaveableProperty(7)]
         public float WeeklyWealthInfluence { get; set; }
+
+        [SaveableProperty(8)]
+        public CampaignTime PeaceStartTime { get; set; }
 
         public WarDispositionData()
         {

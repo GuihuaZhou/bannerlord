@@ -101,6 +101,26 @@ namespace ModifiedPolitics.Models.WarDisposition
                 .GetLongestActiveWarDurationDays(clan, fallbackDays);
         }
 
+        public bool IsInFormalWar(Clan clan)
+        {
+            return WarDispositionDailyReturnCalculator.HasActiveFormalWar(clan);
+        }
+
+        /// <summary>
+        /// Returns completed peace days. Old saves begin tracking when peace is first observed.
+        /// </summary>
+        public int GetPeaceDurationDays(Clan clan)
+        {
+            WarDispositionData data = GetOrCreateData(clan);
+            if (data == null || IsInFormalWar(clan))
+                return 0;
+
+            EnsurePeaceStartTime(data);
+            return data.PeaceStartTime == CampaignTime.Zero
+                ? 0
+                : Math.Max(0, (int)Math.Floor(data.PeaceStartTime.ElapsedDaysUntilNow));
+        }
+
         /// <summary>
         /// 将一次战争事件应用到指定 Clan。
         /// 本方法是事件监听器唯一应调用的数值入口。
@@ -175,14 +195,21 @@ namespace ModifiedPolitics.Models.WarDisposition
 
             foreach (Clan clan in Clan.All)
             {
-                GetOrCreateData(clan);
+                WarDispositionData data = GetOrCreateData(clan);
+                if (data == null)
+                    continue;
+
+                if (IsInFormalWar(clan))
+                    data.PeaceStartTime = CampaignTime.Zero;
+                else
+                    EnsurePeaceStartTime(data);
             }
         }
 
         private void OnDailyTick()
         {
-            int returnedClanCount = 0;
-            float totalAbsoluteReturn = 0f;
+            int processedClanCount = 0;
+            float totalAbsoluteTrend = 0f;
 
             foreach (Clan clan in Clan.All)
             {
@@ -202,46 +229,56 @@ namespace ModifiedPolitics.Models.WarDisposition
                 ResetDailyInfluences(data);
 
                 float previousValue = data.Value;
+                bool atWar = IsInFormalWar(clan);
+                float baseline = WarDispositionCalculator.CalculateBaseline(clan);
+                float warDuration = 0f;
+                int peaceDays = 0;
+                float recoveryRate = 0f;
+                float requestedChange;
 
-                if (Math.Abs(previousValue) < 0.005f)
+                if (atWar)
                 {
-                    data.Value = 0f;
-                    continue;
+                    data.PeaceStartTime = CampaignTime.Zero;
+                    warDuration = GetLongestActiveWarDurationDays(clan);
+                    requestedChange = WarDispositionDailyReturnCalculator
+                        .GetWarDailyChange(previousValue);
+                }
+                else
+                {
+                    EnsurePeaceStartTime(data);
+                    peaceDays = GetPeaceDurationDays(clan);
+                    recoveryRate = WarDispositionDailyReturnCalculator
+                        .GetPeaceRecoveryRate(peaceDays);
+                    requestedChange = WarDispositionDailyReturnCalculator
+                        .GetPeaceDailyChange(previousValue, baseline, peaceDays);
                 }
 
-                float warDuration = GetLongestActiveWarDurationDays(clan);
-                float returnAmount = WarDispositionDailyReturnCalculator
-                    .GetReturnAmount(warDuration);
-
-                // 使用固定数值向零移动; Math.Max 防止小数值跨过零点反向增长.
                 data.Value = WarDispositionCalculator.ClampDisposition(
-                    Math.Sign(previousValue)
-                    * Math.Max(0f, Math.Abs(previousValue) - returnAmount));
+                    previousValue + requestedChange);
 
-                if (Math.Abs(data.Value) < 0.005f)
-                {
-                    data.Value = 0f;
-                }
+                if (!atWar && Math.Abs(baseline - data.Value) <= 1f)
+                    data.Value = baseline;
 
-                float actualReturn = data.Value - previousValue;
-                returnedClanCount++;
-                totalAbsoluteReturn += Math.Abs(actualReturn);
+                float actualChange = data.Value - previousValue;
+                processedClanCount++;
+                totalAbsoluteTrend += Math.Abs(actualChange);
 
-                // 每日只输出玩家家族明细, 避免大量 AI Clan 的 Notice 淹没屏幕.
                 if (clan == Clan.PlayerClan)
                 {
                     ModLogger.Info(
-                        $"[战争倾向] 每日回归 | 家族={clan.Name} | " +
-                        $"战争持续={warDuration:0.0}天 | 回归量={returnAmount:0.##} | " +
-                        $"回归前={previousValue:0.00} | " +
-                        $"实际变化={actualReturn:+0.00;-0.00;0.00} | " +
-                        $"回归后={data.Value:0.00}");
+                        $"[战争倾向] 每日趋势 | 家族={clan.Name} | " +
+                        $"状态={(atWar ? "战争" : "和平")} | " +
+                        $"战争持续={warDuration:0.0}天 | 和平持续={peaceDays}天 | " +
+                        $"人格基准={baseline:0.00} | 恢复比例={recoveryRate:P1} | " +
+                        $"变化前={previousValue:0.00} | " +
+                        $"实际变化={actualChange:+0.00;-0.00;0.00} | " +
+                        $"变化后={data.Value:0.00}");
                 }
             }
 
             ModLogger.Info(
-                $"[战争倾向] 每日回归完成 | 有效家族={returnedClanCount} | " +
-                $"绝对回归总量={totalAbsoluteReturn:0.00}");
+                $"[战争倾向] 每日趋势完成 | 有效家族={processedClanCount} | " +
+                $"绝对变化总量={totalAbsoluteTrend:0.00}");
         }
 
         private static void ResetDailyInfluences(WarDispositionData data)
@@ -258,6 +295,14 @@ namespace ModifiedPolitics.Models.WarDisposition
             {
                 _warTrackingStartTime = CampaignTime.Now;
             }
+        }
+
+        private static void EnsurePeaceStartTime(WarDispositionData data)
+        {
+            if (data != null
+                && data.PeaceStartTime == CampaignTime.Zero
+                && Campaign.Current != null)
+                data.PeaceStartTime = CampaignTime.Now;
         }
 
         private static int GetInitialWealth(Clan clan)
