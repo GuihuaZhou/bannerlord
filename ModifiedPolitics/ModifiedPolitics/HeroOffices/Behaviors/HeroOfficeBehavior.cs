@@ -15,7 +15,7 @@ using TaleWorlds.SaveSystem;
 namespace ModifiedPolitics.HeroOffices.Behaviors
 {
     /// <summary>
-    /// Owns persisted assignments, applies daily influence and removes invalid or excess offices.
+    /// Owns persisted assignments and removes invalid or excess offices.
     /// </summary>
     public sealed class HeroOfficeBehavior : CampaignBehaviorBase
     {
@@ -102,7 +102,6 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
         {
             CleanupInvalidAssignments();
             RemoveExcessLocalAssignments();
-            ApplyDailyInfluence();
             LogPlayerKingdomSnapshot();
 
             // Territory changes can alter local seat limits without adding or removing an assignment.
@@ -187,18 +186,6 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     foreach (OfficeAssignment excess in ordered.Skip(limit).ToList())
                         RemoveAssignment(excess, true);
                 }
-            }
-        }
-
-        private void ApplyDailyInfluence()
-        {
-            foreach (IGrouping<Clan, OfficeAssignment> clanAssignments in _assignments
-                         .Where(item => IsAssignmentStillValid(item))
-                         .GroupBy(item => item.Hero.Clan))
-            {
-                float influence = clanAssignments.Sum(item => OfficeRules.IsLocal(item.OfficeType) ? 1f : 5f);
-                if (influence > 0f)
-                    ChangeClanInfluenceAction.Apply(clanAssignments.Key, influence);
             }
         }
 

@@ -55,6 +55,7 @@
     <string id="MP_OfficeUnknownHero" text="未知 Hero" />
     <string id="MP_OfficeLocalHolder" text="{HERO} ({SETTLEMENT})" />
     <string id="MP_OfficeDailySummary" text="[官职系统] {KINGDOM}: {OFFICE} {USED}/{LIMIT}; 任职: {HOLDERS}; 每名任职者每日影响力 +{INFLUENCE}." />
+    <string id="MP_OfficeInfluenceEffect" text="王国官职" />
     <string id="MP_MarshalDismissDecisionStarted" text="[官职系统] {KINGDOM}已发起解除大元帅{HERO}职务的王国决议." />
     <string id="MP_MarshalAppointmentDecisionStarted" text="[官职系统] {KINGDOM}已发起大元帅任命决议; 统治者提名: {HERO}." />
     <string id="MP_MarshalCandidateScores" text="[官职系统] {KINGDOM}大元帅任命评分：{SCORES}。" />
