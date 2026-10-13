@@ -14,33 +14,20 @@ namespace ModifiedPolitics.HeroOffices.Patches
     [HarmonyPatch]
     internal static class MilitaryOfficeRecruitmentPatches
     {
-        [ThreadStatic]
-        private static Settlement _activeSettlement;
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(SettlementRecruitmentPoolBehavior), "OnDailySettlementTick")]
-        private static void BeginPoolTick(Settlement settlement)
+        [HarmonyPostfix]
+        [HarmonyPatch(typeof(SettlementRecruitmentPoolBehavior), "GetDailyProduction")]
+        private static void IncreaseRegularProduction(
+            Settlement settlement,
+            RecruitmentPoolKind kind,
+            ref float __result)
         {
-            _activeSettlement = settlement;
-        }
-
-        [HarmonyFinalizer]
-        [HarmonyPatch(typeof(SettlementRecruitmentPoolBehavior), "OnDailySettlementTick")]
-        private static void EndPoolTick()
-        {
-            _activeSettlement = null;
-        }
-
-        [HarmonyPrefix]
-        [HarmonyPatch(typeof(SettlementRecruitmentPoolData), "AddProductionProgress")]
-        private static void IncreaseRegularProduction(RecruitmentPoolKind kind, ref float amount)
-        {
-            if (_activeSettlement == null || amount <= 0f)
+            if (settlement == null || __result <= 0f ||
+                kind != RecruitmentPoolKind.Professional)
                 return;
 
-            float factor = OfficeEffectService.GetRegularRecruitmentFactor(_activeSettlement);
+            float factor = OfficeEffectService.GetRegularRecruitmentFactor(settlement);
             if (factor > 0f)
-                amount *= 1f + factor;
+                __result *= 1f + factor;
         }
 
         [HarmonyPostfix]

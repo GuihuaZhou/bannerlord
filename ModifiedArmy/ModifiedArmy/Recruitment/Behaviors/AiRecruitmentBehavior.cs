@@ -554,8 +554,6 @@ namespace ModifiedArmy.Models
                 return null;
             }
 
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
             Settlement best = null;
             float bestScore = 0f;
 
@@ -579,17 +577,13 @@ namespace ModifiedArmy.Models
                     0,
                     (settlement.Town.GarrisonParty?.Party
                         .NumberOfRegularMembers ?? 0) - minimumGarrison);
-                int professional = pools?.GetAvailableTroops(
-                        settlement,
-                        RecruitmentPoolKind.Professional)
-                    .Values.Sum() ?? 0;
                 int prisonSpace = Math.Max(
                     0,
                     settlement.Party.PrisonerSizeLimit -
                         settlement.Party.PrisonRoster.TotalManCount);
 
                 float reinforcementValue = needsTroops
-                    ? healthyGarrison + professional
+                    ? healthyGarrison
                     : 0f;
                 float deliveryValue = needsPrison
                     ? Math.Min(regularPrisoners, prisonSpace) * 2f
@@ -608,7 +602,7 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// Checks whether a fortification has professional manpower.
+        /// Checks whether a fortification can transfer existing garrison troops.
         /// </summary>
         private bool HasAvailableVolunteers(Settlement settlement)
         {
@@ -616,12 +610,9 @@ namespace ModifiedArmy.Models
 
             if (!settlement.IsFortification) return false;
 
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-            return pools != null && pools.GetAvailableTroops(
-                    settlement,
-                    RecruitmentPoolKind.Professional)
-                .Values.Any(count => count > 0);
+            int minimumGarrison = settlement.IsTown ? 125 : 75;
+            return (settlement.Town?.GarrisonParty?.Party
+                .NumberOfRegularMembers ?? 0) > minimumGarrison;
         }
 
         /// <summary>

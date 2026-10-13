@@ -12,7 +12,7 @@
     兵源池的最终目标构成直接由每个 troop 的 weight 决定。
   -->
   <!-- Empire -->
-  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town_port" baseCapacity="30" baseDailyProduction="0.30" dailyProductionStep="0.25">
+  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town_port" professionalRatio="0.80" baseCapacity="30" baseDailyProduction="0.30" dailyProductionStep="0.25">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.imperial_cataphract" weight="1" />
@@ -28,7 +28,7 @@
       </MarineTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town" baseCapacity="30" baseDailyProduction="0.30" dailyProductionStep="0.25">
+  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town" professionalRatio="0.80" baseCapacity="30" baseDailyProduction="0.30" dailyProductionStep="0.25">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.imperial_cataphract" weight="1" />
@@ -41,7 +41,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_castle" baseCapacity="30" baseDailyProduction="0.40" dailyProductionStep="0.30">
+  <ProfessionalTroopTemplate culture="Culture.empire" id="empire_castle" professionalRatio="0.80" baseCapacity="30" baseDailyProduction="0.40" dailyProductionStep="0.30">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.imperial_cataphract" weight="1" />
@@ -56,7 +56,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Aserai -->
-  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town_port" baseCapacity="30" baseDailyProduction="0.35" dailyProductionStep="0.30">
+  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town_port" professionalRatio="0.60" baseCapacity="30" baseDailyProduction="0.35" dailyProductionStep="0.30">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.aserai_archer" weight="2" />
@@ -71,7 +71,7 @@
       </SlaveTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town" baseCapacity="30" baseDailyProduction="0.35" dailyProductionStep="0.30">
+  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town" professionalRatio="0.60" baseCapacity="30" baseDailyProduction="0.35" dailyProductionStep="0.30">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.aserai_archer" weight="2" />
@@ -83,7 +83,7 @@
       </SlaveTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_castle" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
+  <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_castle" professionalRatio="0.60" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.aserai_archer" weight="2" />
@@ -97,7 +97,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Sturgia -->
-  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town_port" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town_port" professionalRatio="0.50" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.druzhinnik" weight="1" />
@@ -112,7 +112,7 @@
       </MarineTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town" professionalRatio="0.50" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.druzhinnik" weight="1" />
@@ -124,7 +124,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_castle" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
+  <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_castle" professionalRatio="0.50" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.druzhinnik" weight="1" />
@@ -138,7 +138,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Vlandia -->
-  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town_port" baseCapacity="30" baseDailyProduction="0.15" dailyProductionStep="0.15">
+  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town_port" professionalRatio="0.20" baseCapacity="30" baseDailyProduction="0.15" dailyProductionStep="0.15">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.vlandian_billman" weight="3" />
@@ -151,7 +151,7 @@
       </MarineTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town" baseCapacity="30" baseDailyProduction="0.15" dailyProductionStep="0.15">
+  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town" professionalRatio="0.20" baseCapacity="30" baseDailyProduction="0.15" dailyProductionStep="0.15">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.vlandian_billman" weight="3" />
@@ -161,7 +161,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_castle" baseCapacity="30" baseDailyProduction="0.20" dailyProductionStep="0.20">
+  <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_castle" professionalRatio="0.20" baseCapacity="30" baseDailyProduction="0.20" dailyProductionStep="0.20">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.vlandian_billman" weight="3" />
@@ -173,7 +173,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Battania -->
-  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town_port" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
+  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town_port" professionalRatio="0.25" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.battanian_falxman" weight="3" />
@@ -184,7 +184,7 @@
       </MarineTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
+  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town" professionalRatio="0.25" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.35">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.battanian_falxman" weight="3" />
@@ -192,7 +192,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_castle" baseCapacity="30" baseDailyProduction="0.55" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.battania" id="battania_castle" professionalRatio="0.25" baseCapacity="30" baseDailyProduction="0.55" dailyProductionStep="0.40">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.battanian_falxman" weight="3" />
@@ -202,7 +202,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Khuzait -->
-  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town_port" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town_port" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.40">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.khuzait_torguud" weight="1" />
@@ -213,7 +213,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.45" dailyProductionStep="0.40">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.khuzait_torguud" weight="1" />
@@ -224,7 +224,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_castle" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
+  <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_castle" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
     <TroopComposition>
       <RetinueTroops>
         <troop id="NPCCharacter.khuzait_torguud" weight="1" />
@@ -237,7 +237,7 @@
   </ProfessionalTroopTemplate>
 
   <!-- Nord -->
-  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town_port" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town_port" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.nord_boandi" weight="2" />
@@ -247,7 +247,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
+  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.50" dailyProductionStep="0.40">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.nord_boandi" weight="2" />
@@ -257,7 +257,7 @@
       </SergeantTroops>
     </TroopComposition>
   </ProfessionalTroopTemplate>
-  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_castle" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
+  <ProfessionalTroopTemplate culture="Culture.nord" id="nord_castle" professionalRatio="0.40" baseCapacity="30" baseDailyProduction="0.60" dailyProductionStep="0.45">
     <TroopComposition>
       <SergeantTroops>
         <troop id="NPCCharacter.nord_boandi" weight="2" />

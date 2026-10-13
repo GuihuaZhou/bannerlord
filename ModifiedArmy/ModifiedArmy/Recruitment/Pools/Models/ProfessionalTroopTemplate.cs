@@ -34,6 +34,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
 
         public float DailyProductionStep { get; private set; }
 
+        public float ProfessionalRatio { get; private set; } = 0.5f;
+
         public IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops =>
             _poolTroops;
 
@@ -59,6 +61,14 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     node,
                     "dailyProductionStep",
                     0f);
+            ProfessionalRatio = Math.Max(
+                0f,
+                Math.Min(
+                    1f,
+                    RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                        node,
+                        "professionalRatio",
+                        0.5f)));
 
             XmlNode composition = node.SelectSingleNode("TroopComposition");
             if (composition != null)

@@ -20,9 +20,8 @@ namespace ModifiedArmy.Recruitment.Pools.UI
 
         public override void RegisterEvents()
         {
-            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
-                this,
-                AddGameMenus);
+            // Direct professional-pool recruitment was removed. Players move
+            // already trained soldiers from their own garrison instead.
         }
 
         public override void SyncData(IDataStore dataStore)

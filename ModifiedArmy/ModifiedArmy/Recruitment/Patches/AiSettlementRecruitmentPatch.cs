@@ -3,6 +3,7 @@ using Helpers;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
@@ -294,92 +295,20 @@ namespace ModifiedArmy.Recruitment.Patches
             MobileParty party,
             Settlement settlement)
         {
-            // Professional manpower belongs to the owning clan. Allied and
-            // foreign parties must not consume another clan's local pool.
             if (party?.ActualClan == null ||
                 party.ActualClan != settlement?.OwnerClan)
             {
                 return false;
             }
-
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-            if (pools == null)
-            {
-                return false;
-            }
-
-            IReadOnlyDictionary<CharacterObject, int> available =
-                pools.GetAvailableTroops(
-                    settlement,
-                    RecruitmentPoolKind.Professional);
-            List<RecruitmentCandidate> candidates = new List<RecruitmentCandidate>();
-
-            foreach (KeyValuePair<CharacterObject, int> entry in available)
-            {
-                if (entry.Key != null && entry.Value > 0)
-                {
-                    candidates.Add(new RecruitmentCandidate(
-                        entry.Key,
-                        entry.Value,
-                        RecruitmentSource.Professional));
-                }
-            }
-
-            if (candidates.Count == 0)
-            {
-                return false;
-            }
-
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
-                party,
-                candidates);
-            int recruited = 0;
-
-            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
-            {
-                int count = evaluation.RecruitableCount;
-                if (evaluation.Troop == null || count <= 0 ||
-                    !pools.TryConsume(
-                        settlement,
-                        RecruitmentPoolKind.Professional,
-                        evaluation.Troop,
-                        count))
-                {
-                    continue;
-                }
-
-                int totalCost = evaluation.UnitRecruitmentCost * count;
-                GiveGoldAction.ApplyBetweenCharacters(
-                    party.LeaderHero,
-                    null,
-                    totalCost,
-                    true);
-                party.AddElementToMemberRoster(
-                    evaluation.Troop,
-                    count,
-                    false);
-                CampaignEventDispatcher.Instance.OnTroopRecruited(
-                    party.LeaderHero,
-                    settlement,
-                    null,
-                    evaluation.Troop,
-                    count);
-                ClanRecruitmentBudgetManager.CommitRecruitment(
+            int freeSlots = Math.Max(
+                0,
+                party.Party.PartySizeLimit -
+                    party.Party.NumberOfAllMembers);
+            return GarrisonTransferPolicyModel
+                .TransferApprovedTroopsFromGarrison(
                     party,
-                    count,
-                    evaluation.UnitRecruitmentCost,
-                    evaluation.UnitDailyWage);
-                recruited += count;
-            }
-
-            LogProfessionalPlan(
-                party,
-                settlement,
-                plan,
-                candidates.Sum(candidate => candidate.AvailableCount),
-                recruited);
-            return recruited > 0;
+                    settlement,
+                    freeSlots) > 0;
         }
 
         private static void LogProfessionalPlan(

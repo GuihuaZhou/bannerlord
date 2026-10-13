@@ -275,13 +275,18 @@ namespace ModifiedArmy.Models.Fief
             List<Village> villages = source.IsVillage
                 ? new List<Village> { source.Village }
                 : source.BoundVillages.Where(v => v?.Settlement != null).ToList();
+            villages = villages
+                .Where(v => v?.VillageState == Village.VillageStates.Normal)
+                .OrderBy(v => v.Settlement.StringId)
+                .ToList();
+            if (villages.Count == 0) return false;
             int required = checked(count * 2);
             if (villages.Sum(v => Math.Max(0, (int)Math.Floor(v.Hearth) - 100)) < required)
                 return false;
             int remaining = required;
             while (remaining > 0)
             {
-                foreach (Village village in villages.OrderBy(v => v.Settlement.StringId))
+                foreach (Village village in villages)
                 {
                     if (remaining <= 0) break;
                     if (village.Hearth <= 100f) continue;

@@ -29,9 +29,8 @@ namespace ModifiedArmy.Models.Fief
     public partial class FiefPartyData
     {
         /// <summary>
-        /// Withdraws saved fief manpower for the legacy Fief Party roster.
-        /// Pool production already applies barracks unlocks and XML weights,
-        /// while this transfer applies the separate Fief Party establishment.
+        /// Selects concrete XML troops for an already approved manpower amount.
+        /// No saved troop inventory is consulted or consumed.
         /// </summary>
         private Dictionary<CharacterObject, int>
         WithdrawFiefPoolTroops(
@@ -39,58 +38,40 @@ namespace ModifiedArmy.Models.Fief
             int maximumCount)
         {
             Dictionary<CharacterObject, int> result = new();
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-            if (pools == null || maximumCount <= 0)
+            if (_fiefPartyTemplate == null || maximumCount <= 0)
             {
                 return result;
             }
 
-            IReadOnlyDictionary<CharacterObject, int> available =
-                pools.GetAvailableTroops(
-                    _settlement,
-                    RecruitmentPoolKind.Fief);
+            int barracksLevel = SettlementRecruitmentPoolBehavior
+                .GetBarracksLevel(_settlement);
+            List<RecruitmentPoolTroopEntry> eligible = _fiefPartyTemplate
+                .PoolTroops
+                .Where(entry => entry?.Troop != null &&
+                    entry.RequiredBarracksLevel <= barracksLevel)
+                .ToList();
             int remainingTotal = maximumCount;
-
-            // The pool already maintains the XML troop weights. Transfer its
-            // largest stocks first while respecting each legacy Fief Party
-            // SoldierType establishment limit.
-            foreach (KeyValuePair<CharacterObject, int> entry in available
-                .Where(entry => entry.Key != null && entry.Value > 0)
-                .OrderByDescending(entry => entry.Value)
-                .ThenBy(entry => entry.Key.StringId))
+            while (remainingTotal > 0)
             {
-                if (remainingTotal <= 0 ||
-                    !_fiefPartyTemplate.IsEnableTroop(entry.Key))
-                {
-                    continue;
-                }
+                RecruitmentPoolTroopEntry selected = eligible
+                    .Where(entry => remainingTypeCapacity.TryGetValue(
+                        SoldierTypeClassifier.GetSoldierType(entry.Troop),
+                        out int capacity) && capacity > 0)
+                    .OrderBy(entry =>
+                        (result.TryGetValue(entry.Troop, out int current)
+                            ? current
+                            : 0) / (float)Math.Max(1, entry.Weight))
+                    .ThenBy(entry => entry.Troop.StringId)
+                    .FirstOrDefault();
+                if (selected == null) break;
 
                 SoldierType type = SoldierTypeClassifier.GetSoldierType(
-                    entry.Key);
-                if (!remainingTypeCapacity.TryGetValue(
-                        type,
-                        out int typeCapacity) ||
-                    typeCapacity <= 0)
-                {
-                    continue;
-                }
-
-                int count = Math.Min(
-                    entry.Value,
-                    Math.Min(typeCapacity, remainingTotal));
-                if (count <= 0 || !pools.TryConsume(
-                        _settlement,
-                        RecruitmentPoolKind.Fief,
-                        entry.Key,
-                        count))
-                {
-                    continue;
-                }
-
-                result[entry.Key] = count;
-                remainingTypeCapacity[type] -= count;
-                remainingTotal -= count;
+                    selected.Troop);
+                result[selected.Troop] = result.TryGetValue(
+                    selected.Troop,
+                    out int currentCount) ? currentCount + 1 : 1;
+                remainingTypeCapacity[type]--;
+                remainingTotal--;
             }
 
             return result;
@@ -152,17 +133,6 @@ namespace ModifiedArmy.Models.Fief
 
             if (tmpTotalWeight <= 0)
                 return;
-
-            // 按权重分配可补充人数
-            foreach (var kvp in _soldierTypeWeights)
-            {
-                if (tmpSoldierTypeSize[kvp.Key] > 0)
-                {
-                    int idealSize = (maxReinforcements * _soldierTypeWeights[kvp.Key]) / tmpTotalWeight;
-                    // 需要考虑兵种类型的最大容量
-                    tmpSoldierTypeSize[kvp.Key] = Math.Min(idealSize, tmpSoldierTypeSize[kvp.Key]);
-                }
-            }
 
             // 若无可补充兵员，直接退出
             if (tmpSoldierTypeSize.Values.Sum() <= 0)
@@ -228,6 +198,18 @@ namespace ModifiedArmy.Models.Fief
             {
                 ModLogger.Debug(msg.ToString());
             }
+        }
+
+        public int ProduceDailyFiefTroops(int approvedCount)
+        {
+            if (!InitialFeifPartyData() || approvedCount <= 0)
+                return 0;
+            int before = _totalTroopCount;
+            int allowed = Math.Min(
+                approvedCount,
+                Math.Max(0, _totalLimit - _totalTroopCount));
+            PerformReinforcement(allowed);
+            return Math.Max(0, _totalTroopCount - before);
         }
 
         /// <summary>
@@ -519,12 +501,8 @@ namespace ModifiedArmy.Models.Fief
             if (_totalTroopCount >= _totalLimit)
                 return;
 
-            // 计算本周最多可补充人数
-            int tmpWeeklyUpdateCount = Math.Min(GetWeeklyUpdateCount(), _totalLimit - _totalTroopCount);
-            if (tmpWeeklyUpdateCount <= 0)
-                return;
-
-            PerformReinforcement(tmpWeeklyUpdateCount);
+            // Daily manpower production is the only path that adds new fief
+            // troops. Weekly updates retain expiry, cooldown and upgrades only.
         }
     }
 }

@@ -6,6 +6,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
+using ModifiedArmy.Models.Fief;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
@@ -45,6 +46,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             _settlementPools =
                 new Dictionary<Settlement, SettlementRecruitmentPoolData>();
 
+        private readonly Dictionary<Settlement, Dictionary<CharacterObject, int>>
+            _dailyProfessionalOffers =
+                new Dictionary<Settlement, Dictionary<CharacterObject, int>>();
+
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
@@ -63,6 +68,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         {
             RecruitmentPoolTemplateRepository.Instance
                 .InitializeTroopSources();
+            foreach (SettlementRecruitmentPoolData data in _settlementPools.Values)
+            {
+                data?.EnsureInitialized();
+                data?.ProfessionalTroops.Clear();
+                data?.FiefTroops.Clear();
+            }
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -161,11 +172,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             Settlement settlement,
             RecruitmentPoolKind kind)
         {
-            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
-            return data == null
-                ? new Dictionary<CharacterObject, int>()
-                : new Dictionary<CharacterObject, int>(
-                    data.GetTroops(kind));
+            if (kind != RecruitmentPoolKind.Professional || settlement == null ||
+                !_dailyProfessionalOffers.TryGetValue(settlement, out var offers))
+                return new Dictionary<CharacterObject, int>();
+            return new Dictionary<CharacterObject, int>(offers);
         }
 
         /// <summary>
@@ -183,18 +193,23 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return false;
             }
 
-            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
-            if (data == null)
+            if (kind != RecruitmentPoolKind.Professional ||
+                !_dailyProfessionalOffers.TryGetValue(settlement, out var troops))
             {
                 return false;
             }
 
-            Dictionary<CharacterObject, int> troops = data.GetTroops(kind);
             if (!troops.TryGetValue(troop, out int available) ||
                 available < count)
             {
                 return false;
             }
+
+            FiefPartyManager manager = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (manager == null ||
+                !manager.TryConsumeProfessionalHearth(settlement, count))
+                return false;
 
             int remaining = available - count;
             if (remaining > 0)
@@ -217,18 +232,197 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return;
             }
 
+            _dailyProfessionalOffers.Remove(settlement);
             SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            FiefPartyManager fiefManager = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>();
+            FiefPartyData fiefData = fiefManager?.GetFiefData(settlement);
+            if (data == null || fiefData == null) return;
+
+            int weekKey = (int)CampaignTime.Now.ToDays / 7;
+            data.ResetWeekIfNeeded(weekKey);
+            RecruitmentProductionForecast forecast = GetProductionForecast(settlement);
+            if (forecast == null || forecast.SharedSupply <= 0f) return;
+
             int barracksLevel = GetBarracksLevel(settlement);
-            ReplenishPool(
-                settlement,
+            ProfessionalTroopTemplate professionalTemplate =
+                RecruitmentPoolTemplateRepository.Instance.Resolve(
+                    settlement,
+                    RecruitmentPoolKind.Professional) as ProfessionalTroopTemplate;
+            int professionalCount = ConvertProgressToCount(
                 data,
                 RecruitmentPoolKind.Professional,
-                barracksLevel);
-            ReplenishPool(
-                settlement,
-                data,
-                RecruitmentPoolKind.Fief,
-                barracksLevel);
+                forecast.ProfessionalAllocation);
+            int weeklyRemaining = Math.Max(
+                0,
+                forecast.FiefWeeklyLimit - forecast.FiefProducedThisWeek);
+            int fiefCount = Math.Min(
+                weeklyRemaining,
+                ConvertProgressToCount(
+                    data,
+                    RecruitmentPoolKind.Fief,
+                    forecast.FiefAllocation));
+            if (professionalCount > 0 && professionalTemplate != null)
+                _dailyProfessionalOffers[settlement] = BuildVirtualOffers(
+                    professionalTemplate,
+                    barracksLevel,
+                    professionalCount);
+            if (fiefCount > 0)
+            {
+                int produced = fiefData.ProduceDailyFiefTroops(fiefCount);
+                data.RecordFiefProduction(produced);
+            }
+        }
+
+        /// <summary>
+        /// Calculates today's allocation without consuming manpower or
+        /// producing troops. The daily tick and UI share this method.
+        /// </summary>
+        public RecruitmentProductionForecast GetProductionForecast(
+            Settlement settlement)
+        {
+            if (settlement?.IsFortification != true) return null;
+            FiefPartyManager manager = Campaign.Current
+                ?.GetCampaignBehavior<FiefPartyManager>();
+            FiefPartyData fiefData = manager?.GetFiefData(settlement);
+            if (fiefData == null) return null;
+
+            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            int weekKey = (int)CampaignTime.Now.ToDays / 7;
+            data.ResetWeekIfNeeded(weekKey);
+            ProfessionalTroopTemplate professionalTemplate =
+                RecruitmentPoolTemplateRepository.Instance.Resolve(
+                    settlement,
+                    RecruitmentPoolKind.Professional) as ProfessionalTroopTemplate;
+            FiefPartyTemplate fiefTemplate = fiefData.GetFiefPartyTemplate();
+            float supply = CalculateSettlementSupply(settlement, fiefData, manager);
+            bool professionalEnabled = professionalTemplate != null &&
+                settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true;
+            float professionalDemand = professionalEnabled
+                ? GetDailyProduction(settlement, RecruitmentPoolKind.Professional)
+                : 0f;
+            int weeklyLimit = fiefTemplate?.MaxWeeklySupplement ?? 0;
+            int weeklyRemaining = Math.Max(
+                0,
+                weeklyLimit - data.FiefProducedThisWeek);
+            int current = fiefData.GetTroopCounts().Values.Sum();
+            int capacity = fiefData.GetFiefTroopLimit();
+            float fiefDemand = Math.Min(
+                weeklyRemaining,
+                Math.Max(0, capacity - current));
+            float ratio = professionalTemplate?.ProfessionalRatio ?? 0.5f;
+            float professionalAllocation = Math.Min(
+                supply * ratio,
+                professionalDemand);
+            float fiefAllocation = Math.Min(
+                supply * (1f - ratio),
+                fiefDemand);
+            float unused = Math.Max(
+                0f,
+                supply - professionalAllocation - fiefAllocation);
+            float extra = Math.Min(
+                unused,
+                Math.Max(0f, professionalDemand - professionalAllocation));
+            professionalAllocation += extra;
+            unused -= extra;
+            fiefAllocation += Math.Min(
+                unused,
+                Math.Max(0f, fiefDemand - fiefAllocation));
+
+            return new RecruitmentProductionForecast
+            {
+                SharedSupply = supply,
+                ProfessionalRatio = ratio,
+                ProfessionalTrainingCapacity = professionalDemand,
+                ProfessionalAllocation = professionalAllocation,
+                FiefDemand = fiefDemand,
+                FiefAllocation = fiefAllocation,
+                FiefCurrent = current,
+                FiefCapacity = capacity,
+                FiefProducedThisWeek = data.FiefProducedThisWeek,
+                FiefWeeklyLimit = weeklyLimit,
+                ProfessionalRecruitmentEnabled = professionalEnabled
+            };
+        }
+
+        private static int ConvertProgressToCount(
+            SettlementRecruitmentPoolData data,
+            RecruitmentPoolKind kind,
+            float allocation)
+        {
+            if (allocation <= 0f) return 0;
+            float progress = data.AddProductionProgress(kind, allocation);
+            int count = (int)Math.Floor(progress);
+            data.ConsumeProductionProgress(kind, count);
+            data.SetProductionProgress(kind, progress - count);
+            return count;
+        }
+
+        private static Dictionary<CharacterObject, int> BuildVirtualOffers(
+            ProfessionalTroopTemplate template,
+            int barracksLevel,
+            int count)
+        {
+            Dictionary<CharacterObject, int> result = new();
+            List<RecruitmentPoolTroopEntry> entries = template.PoolTroops
+                .Where(e => e?.Troop != null &&
+                    e.RequiredBarracksLevel <= barracksLevel)
+                .ToList();
+            for (int i = 0; i < count && entries.Count > 0; i++)
+            {
+                RecruitmentPoolTroopEntry selected = entries
+                    .OrderBy(e =>
+                        (result.TryGetValue(e.Troop, out int current)
+                            ? current
+                            : 0) / (float)Math.Max(1, e.Weight))
+                    .ThenBy(e => e.Troop.StringId)
+                    .First();
+                result[selected.Troop] = result.TryGetValue(
+                    selected.Troop,
+                    out int value) ? value + 1 : 1;
+            }
+            return result;
+        }
+
+        public static float CalculateVillageSupply(Village village, int assignedFiefCount)
+        {
+            if (village?.VillageState != Village.VillageStates.Normal)
+                return 0f;
+            FiefPartyManager manager = Campaign.Current
+                .GetCampaignBehavior<FiefPartyManager>();
+            float effective = Math.Max(
+                0f,
+                village.Hearth + (manager?.GetMobilizedHearth(village) ?? 0) -
+                    Math.Max(0, assignedFiefCount));
+            return effective <= 100f
+                ? 0f
+                : 0.03f * effective * (effective - 100f) /
+                    (effective + 50f);
+        }
+
+        private static float CalculateSettlementSupply(
+            Settlement settlement,
+            FiefPartyData fiefData,
+            FiefPartyManager manager)
+        {
+            List<Village> villages = settlement.BoundVillages
+                .Where(v => v?.Settlement != null)
+                .OrderBy(v => v.Settlement.StringId)
+                .ToList();
+            if (villages.Count == 0) return 0f;
+            int totalFief = fiefData.GetTroopCounts().Values.Sum();
+            int totalMobilized = villages.Sum(v => manager.GetMobilizedHearth(v));
+            int remaining = Math.Max(0, totalFief - totalMobilized);
+            int quotient = remaining / villages.Count;
+            int remainder = remaining % villages.Count;
+            float total = 0f;
+            for (int i = 0; i < villages.Count; i++)
+            {
+                int assigned = manager.GetMobilizedHearth(villages[i]) +
+                    quotient + (i < remainder ? 1 : 0);
+                total += CalculateVillageSupply(villages[i], assigned);
+            }
+            return total;
         }
 
         private static void ReplenishPool(

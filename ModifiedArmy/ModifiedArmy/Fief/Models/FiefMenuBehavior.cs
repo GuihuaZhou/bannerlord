@@ -57,6 +57,12 @@ namespace ModifiedArmy.Models.Fief
         private const string FIEF_POOL_MENU_ID =
             "modified_army_fief_pool_menu";
         private const string LEAVE_FIEF_POOL_OPTION_ID = "fief_pool_return";
+        private const string REINFORCEMENT_RATE_OPTION_ID =
+            "modified_army_view_reinforcement_rate";
+        private const string REINFORCEMENT_RATE_MENU_ID =
+            "modified_army_reinforcement_rate_menu";
+        private const string LEAVE_REINFORCEMENT_RATE_OPTION_ID =
+            "modified_army_reinforcement_rate_return";
 
         private static void SetFiefIntroductionText(Settlement settlement)
         {
@@ -265,6 +271,42 @@ namespace ModifiedArmy.Models.Fief
                 index: -1,
                 isRepeatable: false
             );
+
+            // Keep the rate report directly accessible from both settlement
+            // screens; it is informational and never changes campaign state.
+            starter.AddGameMenuOption(
+                TOWN_MENU_ID,
+                REINFORCEMENT_RATE_OPTION_ID,
+                "{=ModifiedArmy_ReinforcementRate_Entry}View reinforcement rates",
+                fiefCondition,
+                args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
+                isLeave: false,
+                index: -1,
+                isRepeatable: false);
+            starter.AddGameMenuOption(
+                CASTLE_MENU_ID,
+                REINFORCEMENT_RATE_OPTION_ID,
+                "{=ModifiedArmy_ReinforcementRate_Entry}View reinforcement rates",
+                fiefCondition,
+                args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
+                isLeave: false,
+                index: -1,
+                isRepeatable: false);
+
+            starter.AddGameMenu(
+                REINFORCEMENT_RATE_MENU_ID,
+                "{=!}{REINFORCEMENT_RATE_TEXT}",
+                InitializeReinforcementRateMenu,
+                GameMenu.MenuOverlayType.SettlementWithBoth);
+            starter.AddGameMenuOption(
+                REINFORCEMENT_RATE_MENU_ID,
+                LEAVE_REINFORCEMENT_RATE_OPTION_ID,
+                "{=ModifiedArmy_FiefMenu_Return}Return",
+                args => true,
+                ReturnToSettlementAdministration,
+                isLeave: true,
+                index: -1,
+                isRepeatable: false);
 
             // Create the "Your Fief" submenu with dynamic description
             // Register the fief menu with dynamic title
@@ -513,9 +555,9 @@ namespace ModifiedArmy.Models.Fief
         private static void InitializeFiefPoolMenu(MenuCallbackArgs args)
         {
             Settlement settlement = Settlement.CurrentSettlement;
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                ?.GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-            if (settlement?.IsFortification != true || pools == null)
+            FiefPartyManager manager = Campaign.Current
+                ?.GetCampaignBehavior<FiefPartyManager>();
+            if (settlement?.IsFortification != true || manager == null)
             {
                 MBTextManager.SetTextVariable(
                     "FIEF_POOL_TEXT",
@@ -526,10 +568,14 @@ namespace ModifiedArmy.Models.Fief
                 return;
             }
 
-            IReadOnlyDictionary<CharacterObject, int> troops =
-                pools.GetAvailableTroops(
-                    settlement,
-                    RecruitmentPoolKind.Fief);
+            Dictionary<CharacterObject, int> troops = manager
+                .GetFiefTroopRoster(settlement)
+                .GetTroopRoster()
+                .Where(element => element.Character != null &&
+                    element.Number > 0)
+                .ToDictionary(
+                    element => element.Character,
+                    element => element.Number);
             List<string> troopLines = troops
                 .Where(entry => entry.Key != null && entry.Value > 0)
                 .OrderBy(entry => entry.Key.Tier)
@@ -550,12 +596,10 @@ namespace ModifiedArmy.Models.Fief
                 troops.Values.Sum(value => Math.Max(0, value)));
             text.SetTextVariable(
                 "CAPACITY",
-                pools.GetCapacity(settlement, RecruitmentPoolKind.Fief));
+                manager.GetFiefTroopLimit(settlement));
             text.SetTextVariable(
                 "DAILY",
-                pools.GetDailyProduction(
-                    settlement,
-                    RecruitmentPoolKind.Fief).ToString("0.##"));
+                manager.GetWeeklyUpdateCount(settlement).ToString());
             text.SetTextVariable(
                 "TROOPS",
                 troopLines.Count > 0
@@ -565,6 +609,75 @@ namespace ModifiedArmy.Models.Fief
                         .ToString());
 
             MBTextManager.SetTextVariable("FIEF_POOL_TEXT", text, false);
+        }
+
+        /// <summary>
+        /// Displays the exact forecast used by the next daily production tick.
+        /// </summary>
+        private static void InitializeReinforcementRateMenu(
+            MenuCallbackArgs args)
+        {
+            Settlement settlement = Settlement.CurrentSettlement;
+            SettlementRecruitmentPoolBehavior pools = Campaign.Current
+                ?.GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            RecruitmentProductionForecast forecast = pools
+                ?.GetProductionForecast(settlement);
+            if (forecast == null)
+            {
+                MBTextManager.SetTextVariable(
+                    "REINFORCEMENT_RATE_TEXT",
+                    new TextObject(
+                        "{=ModifiedArmy_ReinforcementRate_Unavailable}" +
+                        "Reinforcement data is unavailable."),
+                    false);
+                return;
+            }
+
+            TextObject text = new TextObject(
+                "{=ModifiedArmy_ReinforcementRate_Description}" +
+                "{SETTLEMENT_NAME} reinforcement rates" +
+                "{NEWLINE}{NEWLINE}Shared manpower: {SUPPLY}/day" +
+                "{NEWLINE}{NEWLINE}Professional troops: {PROFESSIONAL}/day" +
+                "{NEWLINE}Training capacity: {TRAINING}/day" +
+                "{NEWLINE}Configured share: {RATIO}%" +
+                "{NEWLINE}Automatic recruitment: {AUTO_RECRUIT}" +
+                "{NEWLINE}{NEWLINE}Fief troops: {FIEF}/day" +
+                "{NEWLINE}Current strength: {FIEF_CURRENT}/{FIEF_CAPACITY}" +
+                "{NEWLINE}Produced this week: {WEEKLY_CURRENT}/{WEEKLY_LIMIT}");
+            text.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+            text.SetTextVariable("NEWLINE", Environment.NewLine);
+            text.SetTextVariable("SUPPLY", FormatRate(forecast.SharedSupply));
+            text.SetTextVariable(
+                "PROFESSIONAL",
+                FormatRate(forecast.ProfessionalAllocation));
+            text.SetTextVariable(
+                "TRAINING",
+                FormatRate(forecast.ProfessionalTrainingCapacity));
+            text.SetTextVariable(
+                "RATIO",
+                (int)Math.Round(forecast.ProfessionalRatio * 100f));
+            text.SetTextVariable(
+                "AUTO_RECRUIT",
+                new TextObject(
+                    forecast.ProfessionalRecruitmentEnabled
+                        ? "{=ModifiedArmy_Common_Enabled}Enabled"
+                        : "{=ModifiedArmy_Common_Disabled}Disabled"));
+            text.SetTextVariable("FIEF", FormatRate(forecast.FiefAllocation));
+            text.SetTextVariable("FIEF_CURRENT", forecast.FiefCurrent);
+            text.SetTextVariable("FIEF_CAPACITY", forecast.FiefCapacity);
+            text.SetTextVariable(
+                "WEEKLY_CURRENT",
+                forecast.FiefProducedThisWeek);
+            text.SetTextVariable("WEEKLY_LIMIT", forecast.FiefWeeklyLimit);
+            MBTextManager.SetTextVariable(
+                "REINFORCEMENT_RATE_TEXT",
+                text,
+                false);
+        }
+
+        private static string FormatRate(float value)
+        {
+            return Math.Max(0f, value).ToString("0.00");
         }
 
         private static bool CanModifyCurrentFief()

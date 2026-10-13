@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
+using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedArmy.Recruitment.Pools.Models
@@ -40,6 +41,35 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         {
             get;
             private set;
+        }
+
+        [SaveableProperty(5)]
+        public int FiefProducedThisWeek { get; private set; }
+
+        [SaveableProperty(6)]
+        public int WeekKey { get; private set; } = -1;
+
+        public void ResetWeekIfNeeded(int weekKey)
+        {
+            if (WeekKey == weekKey) return;
+            WeekKey = weekKey;
+            FiefProducedThisWeek = 0;
+        }
+
+        public void RecordFiefProduction(int count)
+        {
+            FiefProducedThisWeek += Math.Max(0, count);
+        }
+
+        public void SetProductionProgress(
+            RecruitmentPoolKind kind,
+            float value)
+        {
+            value = Math.Max(0f, Math.Min(0.9999f, value));
+            if (kind == RecruitmentPoolKind.Professional)
+                ProfessionalProductionProgress = value;
+            else
+                FiefProductionProgress = value;
         }
 
         public Dictionary<CharacterObject, int> GetTroops(

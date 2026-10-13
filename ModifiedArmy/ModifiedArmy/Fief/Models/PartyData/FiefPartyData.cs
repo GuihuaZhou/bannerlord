@@ -96,7 +96,6 @@ namespace ModifiedArmy.Models.Fief
         {
             _settlement = settlement;
             InitialFeifPartyData();
-            InitialFeifParty();
         }
 
         /// <summary>
@@ -280,9 +279,9 @@ namespace ModifiedArmy.Models.Fief
                 RecruitedTroopDetachmentList.Clear();
                 ModLogger.Debug($"Settlement {_settlement.Name} captured - cleared all recruited troop detachments.");
 
-                // 立即补充一部分士兵
+                // Replacement troops are produced only by the daily shared
+                // manpower coordinator after ownership has stabilized.
                 _totalTroopCount = 0;
-                InitialFeifParty();
 
                 //// 清除驻军的士气惩罚
                 //if (_settlement.Town != null && _settlement.Town.GarrisonParty != null)
