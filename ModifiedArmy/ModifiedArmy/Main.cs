@@ -163,6 +163,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SupplyPartyBehavior());
                 campaignStarter.AddBehavior(
+                    new GarrisonCaptureSupplyBehavior());
+                campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
 
                 campaignStarter.AddModel(new NewVolunteerModel());
