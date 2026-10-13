@@ -277,7 +277,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 TOWN_MENU_ID,
                 REINFORCEMENT_RATE_OPTION_ID,
-                "{=ModifiedArmy_ReinforcementRate_Entry}View reinforcement rates",
+                "{=ModifiedArmy_ReinforcementRate_Entry}View manpower",
                 fiefCondition,
                 args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
                 isLeave: false,
@@ -286,7 +286,7 @@ namespace ModifiedArmy.Models.Fief
             starter.AddGameMenuOption(
                 CASTLE_MENU_ID,
                 REINFORCEMENT_RATE_OPTION_ID,
-                "{=ModifiedArmy_ReinforcementRate_Entry}View reinforcement rates",
+                "{=ModifiedArmy_ReinforcementRate_Entry}View manpower",
                 fiefCondition,
                 args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
                 isLeave: false,
@@ -426,18 +426,6 @@ namespace ModifiedArmy.Models.Fief
                 },
                 isLeave: false, index: 1, isRepeatable: false
             );
-
-            // Inspect the saved fief manpower pool independently from the
-            // legacy ready/recruited detachment data shown by this menu.
-            starter.AddGameMenuOption(
-                FIEF_MENU_ID,
-                VIEW_FIEF_POOL_OPTION_ID,
-                "{=ModifiedArmy_FiefPool_Entry}View Manpower",
-                ConfigureFiefPoolViewOption,
-                (args) => GameMenu.SwitchToMenu(FIEF_POOL_MENU_ID),
-                isLeave: false,
-                index: 3,
-                isRepeatable: false);
 
             starter.AddGameMenuOption(
                 FIEF_MENU_ID,

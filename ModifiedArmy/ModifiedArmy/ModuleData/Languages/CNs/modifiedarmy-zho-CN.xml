@@ -35,11 +35,11 @@
     <string id="ModifiedArmy_FiefPool_Unavailable" text="无法读取封邑兵源数据." />
     <string id="ModifiedArmy_FiefPool_Empty" text="暂无士兵" />
     <string id="ModifiedArmy_FiefPool_Description" text="{SETTLEMENT_NAME}的封邑兵源{NEWLINE}当前兵力: {CURRENT}/{CAPACITY}{NEWLINE}每日补充: {DAILY}{NEWLINE}{NEWLINE}{TROOPS}" />
-    <string id="ModifiedArmy_ReinforcementRate_Entry" text="查看补充速率" />
+    <string id="ModifiedArmy_ReinforcementRate_Entry" text="查看兵源" />
     <string id="ModifiedArmy_ReinforcementRate_Unavailable" text="无法读取兵源补充数据。" />
     <string id="ModifiedArmy_Common_Enabled" text="已启用" />
     <string id="ModifiedArmy_Common_Disabled" text="已停用" />
-    <string id="ModifiedArmy_ReinforcementRate_Description" text="{SETTLEMENT_NAME}的兵源补充速率{NEWLINE}{NEWLINE}共享兵源：每日 {SUPPLY}{NEWLINE}{NEWLINE}职业兵：每日 {PROFESSIONAL}{NEWLINE}训练能力：每日 {TRAINING}{NEWLINE}配置比例：{RATIO}%{NEWLINE}自动招募：{AUTO_RECRUIT}{NEWLINE}{NEWLINE}封建兵：每日 {FIEF}{NEWLINE}当前兵力：{FIEF_CURRENT}/{FIEF_CAPACITY}{NEWLINE}本周已补充：{WEEKLY_CURRENT}/{WEEKLY_LIMIT}" />
+    <string id="ModifiedArmy_ReinforcementRate_Description" text="{SETTLEMENT_NAME}的兵源情况{NEWLINE}{NEWLINE}共享兵源：每日 {SUPPLY}{NEWLINE}{NEWLINE}职业兵：每日补充 {PROFESSIONAL}{NEWLINE}训练能力：每日 {TRAINING}{NEWLINE}兵源分配比例：{RATIO}%{NEWLINE}自动招募：{AUTO_RECRUIT}{NEWLINE}{NEWLINE}封建兵：每日补充 {FIEF}{NEWLINE}当前兵力：{FIEF_CURRENT}/{FIEF_CAPACITY}{NEWLINE}本周已补充：{WEEKLY_CURRENT}/{WEEKLY_LIMIT}" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
 
     <!-- Garrison and wage UI. -->
