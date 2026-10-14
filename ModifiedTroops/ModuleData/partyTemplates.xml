@@ -198,63 +198,83 @@
 		id="kingdom_hero_party_empire_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
-				max_value="20"
-				troop="NPCCharacter.imperial_recruit" />
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.imperial_infantryman" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.imperial_archer" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_sturgia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
-				max_value="20"
-				troop="NPCCharacter.sturgian_recruit" />
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.sturgian_warrior" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.sturgian_woodsman" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_aserai_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
+				min_value="10"
 				max_value="20"
-				troop="NPCCharacter.aserai_recruit" />
+				troop="NPCCharacter.aserai_tribesman" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_vlandia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
-				max_value="20"
-				troop="NPCCharacter.vlandian_recruit" />
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.vlandian_footman" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.vlandian_levy_crossbowman" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_battania_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
-				max_value="20"
-				troop="NPCCharacter.battanian_volunteer" />
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.battanian_clanwarrior" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.battanian_woodrunner" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_khuzait_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
+				min_value="10"
 				max_value="20"
-				troop="NPCCharacter.khuzait_nomad" />
+				troop="NPCCharacter.khuzait_footman" />
 		</stacks>
 	</MBPartyTemplate>
 	<MBPartyTemplate
 		id="kingdom_hero_party_nord_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="15"
-				max_value="20"
-				troop="NPCCharacter.nord_youngling" />
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.nord_axe_warrior" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.nord_freeman_archer" />
 		</stacks>
 	</MBPartyTemplate>
 </partyTemplates>
