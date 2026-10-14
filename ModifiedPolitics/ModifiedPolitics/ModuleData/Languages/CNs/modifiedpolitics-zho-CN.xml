@@ -33,6 +33,7 @@
     <string id="MP_OfficeInvalidated" text="[官职系统] {HERO}在{KINGDOM}担任的{OFFICE}已自动失效." />
     <string id="MP_TaxOfficerEffect" text="税务长官" />
     <string id="MP_AgricultureOfficerEffect" text="农业长官" />
+    <string id="MP_VillageNaturalDecay" text="自然衰减" />
     <string id="MP_SecurityOfficerEffect" text="治安长官" />
     <string id="MP_MarshalRequired" text="只有王国统治者或大元帅可以创建军团." />
     <string id="MP_OfficeMarshal" text="大元帅" />

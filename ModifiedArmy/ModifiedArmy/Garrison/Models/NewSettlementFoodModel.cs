@@ -117,8 +117,7 @@ namespace ModifiedArmy.Garrison.Models
                     if (village.VillageState
                         == Village.VillageStates.Normal)
                     {
-                        float hearth = Math.Max(0f, village.Hearth);
-                        villageProduction = 24f * hearth / (hearth + 300f);
+                        villageProduction = CalculateVillageDirectFood(village);
                     }
 
                     production.Add(
@@ -190,6 +189,16 @@ namespace ModifiedArmy.Garrison.Models
                 out int amount)
                 ? amount
                 : 0;
+        }
+
+        /// <summary>
+        /// Allows a dependent civilian-economy model to replace only the
+        /// village contribution while retaining all military food handling.
+        /// </summary>
+        protected virtual float CalculateVillageDirectFood(Village village)
+        {
+            float hearth = Math.Max(0f, village?.Hearth ?? 0f);
+            return 24f * hearth / (hearth + 300f);
         }
     }
 }

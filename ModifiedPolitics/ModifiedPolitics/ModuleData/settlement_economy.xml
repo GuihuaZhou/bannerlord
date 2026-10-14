@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<SettlementEconomyConfigs>
+  <SettlementEconomyConfig id="default">
+    <Food>
+      <!-- Civilian prosperity food demand equals Prosperity divided by this value. -->
+      <ProsperityConsumptionDivisor value="34" />
+    </Food>
+  </SettlementEconomyConfig>
+</SettlementEconomyConfigs>

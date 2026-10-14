@@ -44,6 +44,10 @@
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
 
+    <None Update="ModuleData\settlement_economy.xml">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+
     <PackageReference Include="Bannerlord.BuildResources" Version="1.1.0.129">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
@@ -54,10 +58,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="ModifiedArmy">
-      <HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ModifiedArmy\bin\Win64_Shipping_Client\ModifiedArmy.dll</HintPath>
+    <ProjectReference Include="..\..\ModifiedArmy\ModifiedArmy\ModifiedArmy.csproj">
       <Private>false</Private>
-    </Reference>
+    </ProjectReference>
 
     <Reference Include="TaleWorlds.ObjectSystem">
       <HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath>

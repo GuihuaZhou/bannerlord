@@ -9,6 +9,9 @@ using ModifiedPolitics.Governor.Behaviors;
 using ModifiedPolitics.Governor.Config;
 using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
+using ModifiedPolitics.HeroOffices.Models;
+using ModifiedPolitics.SettlementEconomy.Config;
+using ModifiedPolitics.SettlementEconomy.Models;
 using ModifiedPolitics.Tool;
 using System;
 using System.Reflection;
@@ -43,6 +46,28 @@ namespace ModifiedPolitics
             if (game.GameType is Campaign
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
+                SettlementEconomyConfigManager.Instance.Clear();
+                try
+                {
+                    game.ObjectManager.RegisterType<SettlementEconomyConfig>(
+                        "SettlementEconomyConfig",
+                        "SettlementEconomyConfigs",
+                        100U,
+                        true,
+                        false);
+                    MBObjectManager.Instance.LoadXML(
+                        "SettlementEconomyConfigs",
+                        true);
+                }
+                catch (Exception exception)
+                {
+                    // Missing or malformed optional configuration must not
+                    // prevent a campaign from loading; the manager keeps 34.
+                    SettlementEconomyConfigManager.Instance.Clear();
+                    ModLogger.Warn(
+                        "[Settlement Economy] Configuration load failed; " +
+                        "using prosperity divisor 34. " + exception.Message);
+                }
                 // Register and load policy objects through Bannerlord's standard XML object pipeline.
                 GovernorPolicyManager.Instance.Clear();
                 game.ObjectManager.RegisterType<CultureGovernorPolicy>(
@@ -77,6 +102,13 @@ namespace ModifiedPolitics
 
                 campaignStarter.AddModel(new WarPotentialModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
+                campaignStarter.AddModel(new SettlementEconomyFoodModel());
+                campaignStarter.AddModel(
+                    new SettlementEconomyVillageProductionModel());
+                campaignStarter.AddModel(
+                    new SettlementEconomyProsperityModel());
+                campaignStarter.AddModel(new OfficeSettlementTaxModel());
+                campaignStarter.AddModel(new OfficeSettlementLoyaltyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
