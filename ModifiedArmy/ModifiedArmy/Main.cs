@@ -11,7 +11,6 @@ using ModifiedArmy.PartyFinance.Behaviors;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
-using ModifiedArmy.Recruitment.Pools.UI;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using System.Collections.Generic;
 using System.Reflection;
@@ -167,7 +166,6 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
 
-                campaignStarter.AddModel(new NewVolunteerModel());
                 campaignStarter.AddModel(
                     new NewMobilePartyFoodConsumptionModel());
                 campaignStarter.AddModel(
@@ -192,10 +190,6 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
                 campaignStarter.AddBehavior(
                     new SettlementRecruitmentPoolBehavior());
-                campaignStarter.AddBehavior(
-                    new PlayerRecruitmentMenuBehavior());
-
-
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
