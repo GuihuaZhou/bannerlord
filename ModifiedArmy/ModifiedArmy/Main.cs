@@ -1,4 +1,4 @@
-﻿using Bannerlord.UIExtenderEx;
+using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
@@ -96,7 +96,7 @@ namespace ModifiedArmy
                     false);
                 MBObjectManager.Instance.LoadXML("BasicTroopGroups", true);
 
-                RecruitmentPoolTemplateRepository.Instance.Clear();
+                TroopProductionTemplateRepository.Instance.Clear();
 
 
                 game.ObjectManager.RegisterType<FiefPartyTemplate>(
@@ -189,7 +189,7 @@ namespace ModifiedArmy
 
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
                 campaignStarter.AddBehavior(
-                    new SettlementRecruitmentPoolBehavior());
+                    new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);

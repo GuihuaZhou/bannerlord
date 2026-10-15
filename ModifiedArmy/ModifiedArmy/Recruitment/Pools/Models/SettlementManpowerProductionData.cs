@@ -9,7 +9,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// counter. Generated troops are transferred directly to their target.
     /// </summary>
     [SaveableRootClass(5)]
-    public sealed class SettlementRecruitmentPoolData
+    public sealed class SettlementManpowerProductionData
     {
         [SaveableProperty(3)]
         public float ProfessionalProductionProgress
@@ -44,21 +44,21 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         }
 
         public void SetProductionProgress(
-            RecruitmentPoolKind kind,
+            TroopProductionKind kind,
             float value)
         {
             value = Math.Max(0f, Math.Min(0.9999f, value));
-            if (kind == RecruitmentPoolKind.Professional)
+            if (kind == TroopProductionKind.Professional)
                 ProfessionalProductionProgress = value;
             else
                 FiefProductionProgress = value;
         }
 
         public float AddProductionProgress(
-            RecruitmentPoolKind kind,
+            TroopProductionKind kind,
             float amount)
         {
-            if (kind == RecruitmentPoolKind.Professional)
+            if (kind == TroopProductionKind.Professional)
             {
                 ProfessionalProductionProgress = Math.Max(
                     0f,
@@ -73,7 +73,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         }
 
         public void ConsumeProductionProgress(
-            RecruitmentPoolKind kind,
+            TroopProductionKind kind,
             int amount)
         {
             if (amount <= 0)
@@ -81,7 +81,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 return;
             }
 
-            if (kind == RecruitmentPoolKind.Professional)
+            if (kind == TroopProductionKind.Professional)
             {
                 ProfessionalProductionProgress = Math.Max(
                     0f,

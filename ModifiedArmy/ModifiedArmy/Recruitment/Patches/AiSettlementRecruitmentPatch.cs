@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using Helpers;
 using ModifiedArmy.common;
 using ModifiedArmy.Models;
@@ -28,7 +28,7 @@ namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
     /// 替换原版 RecruitmentCampaignBehavior.CheckRecruiting
-    /// 将单一志愿兵招募升级为按 AI 决策权重降序的多兵源动态招募
+    /// 按 AI 决策权重依次执行封邑征召、驻军调拨和雇佣兵招募。
     /// </summary>
     /// 
 
@@ -88,7 +88,7 @@ namespace ModifiedArmy.Recruitment.Patches
             var candidates = new List<(RecruitSource source, float weight)>
             {
                 (RecruitSource.Fief, decision.FiefWeight),
-                (RecruitSource.Volunteer, decision.VolunteerWeight),
+                (RecruitSource.GarrisonTransfer, decision.GarrisonTransferWeight),
                 (RecruitSource.Mercenary, decision.MercenaryWeight)
             };
             // 按权重从高到低排序
@@ -123,8 +123,8 @@ namespace ModifiedArmy.Recruitment.Patches
                         case RecruitSource.Fief:
                             recruited = TryRecruitFief(mobileParty, settlement);
                             break;
-                        case RecruitSource.Volunteer:
-                            recruited = TryRecruitVolunteers(__instance, mobileParty, settlement);
+                        case RecruitSource.GarrisonTransfer:
+                            recruited = TryTransferFromGarrison(__instance, mobileParty, settlement);
                             break;
                         case RecruitSource.Mercenary:
                             recruited = TryRecruitLordMercenary(__instance, mobileParty, settlement, finalProbability);
@@ -142,69 +142,41 @@ namespace ModifiedArmy.Recruitment.Patches
             return false; // 拦截原版逻辑
         }
 
-        private static void ApplyInternal(
-            RecruitmentCampaignBehavior instance, 
-            MobileParty side1Party, 
-            Settlement settlement, 
-            Hero individual, 
-            CharacterObject troop, 
-            int number, 
-            int bitCode, 
-            RecruitmentCampaignBehavior.RecruitingDetail detail)
-        {
-            int roundedResultNumber = Campaign.Current.Models.PartyWageModel.GetTroopRecruitmentCost(troop, side1Party.LeaderHero, false).RoundedResultNumber;
-            if (detail == RecruitmentCampaignBehavior.RecruitingDetail.MercenaryFromTavern)
-            {
-                if (side1Party.IsCaravan)
-                {
-                    side1Party.PartyTradeGold -= number * roundedResultNumber;
-                    instance.GetMercenaryData(settlement.Town).ChangeMercenaryCount(-number);
-                }
-                else
-                {
-                    GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * roundedResultNumber, true);
-                    instance.GetMercenaryData(settlement.Town).ChangeMercenaryCount(-number);
-                }
-                side1Party.AddElementToMemberRoster(troop, number, false);
-            }
-            else if (detail == RecruitmentCampaignBehavior.RecruitingDetail.VolunteerFromIndividual)
-            {
-                GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, roundedResultNumber, true);
-                individual.VolunteerTypes[bitCode] = null;
-                side1Party.AddElementToMemberRoster(troop, 1, false);
-            }
-            else if (detail == RecruitmentCampaignBehavior.RecruitingDetail.VolunteerFromMap)
-            {
-                GiveGoldAction.ApplyBetweenCharacters(side1Party.LeaderHero, null, number * roundedResultNumber, true);
-                side1Party.AddElementToMemberRoster(troop, number, false);
-            }
-            else if (detail == RecruitmentCampaignBehavior.RecruitingDetail.VolunteerFromIndividualToGarrison)
-            {
-                individual.VolunteerTypes[bitCode] = null;
-                side1Party.AddElementToMemberRoster(troop, 1, false);
-            }
-            CampaignEventDispatcher.Instance.OnTroopRecruited(side1Party.LeaderHero, settlement, individual, troop, number);
-        }
-        
-        private static void GetRecruitVolunteerFromIndividual(
-            RecruitmentCampaignBehavior instance, 
-            MobileParty side1Party, 
-            CharacterObject subject, 
-            Hero individual, 
-            int bitCode)
-        {
-            ApplyInternal(instance, side1Party, individual.CurrentSettlement, individual, subject, 1, bitCode, RecruitmentCampaignBehavior.RecruitingDetail.VolunteerFromIndividual);
-        }
-
         private static void ApplyRecruitMercenary(
-            RecruitmentCampaignBehavior instance, 
-            MobileParty side1Party, 
-            Settlement side2Party, 
-            CharacterObject subject, 
+            RecruitmentCampaignBehavior instance,
+            MobileParty party,
+            Settlement settlement,
+            CharacterObject troop,
             int number)
-		{
-			ApplyInternal(instance, side1Party, side2Party, null, subject, number, -1, RecruitmentCampaignBehavior.RecruitingDetail.MercenaryFromTavern);
-		}
+        {
+            int cost = Campaign.Current.Models.PartyWageModel
+                .GetTroopRecruitmentCost(
+                    troop,
+                    party.LeaderHero,
+                    false)
+                .RoundedResultNumber;
+            if (party.IsCaravan)
+            {
+                party.PartyTradeGold -= number * cost;
+            }
+            else
+            {
+                GiveGoldAction.ApplyBetweenCharacters(
+                    party.LeaderHero,
+                    null,
+                    number * cost,
+                    true);
+            }
+            instance.GetMercenaryData(settlement.Town)
+                .ChangeMercenaryCount(-number);
+            party.AddElementToMemberRoster(troop, number, false);
+            CampaignEventDispatcher.Instance.OnTroopRecruited(
+                party.LeaderHero,
+                settlement,
+                null,
+                troop,
+                number);
+        }
 
         // ==========================================
         // 商队雇佣兵招募（原版 if 分支逻辑提取）
@@ -272,29 +244,22 @@ namespace ModifiedArmy.Recruitment.Patches
         }
 
         // ==========================================
-        // AI lord volunteer recruitment
+        // AI lord garrison transfer
         // ==========================================
-        private static bool TryRecruitVolunteers(
-            RecruitmentCampaignBehavior instance, MobileParty party, Settlement settlement)
+        private static bool TryTransferFromGarrison(
+            RecruitmentCampaignBehavior instance,
+            MobileParty party,
+            Settlement settlement)
         {
             if (party.Party.NumberOfAllMembers >= party.Party.PartySizeLimit)
             {
                 return false;
             }
 
-            return settlement.IsFortification &&
-                TryRecruitProfessionalPool(party, settlement);
-        }
-
-        /// <summary>
-        /// Offers the current professional pool to the unified recruitment
-        /// model, then applies only approved and successfully withdrawn
-        /// quantities. Player recruitment is intentionally not routed here.
-        /// </summary>
-        private static bool TryRecruitProfessionalPool(
-            MobileParty party,
-            Settlement settlement)
-        {
+            if (!settlement.IsFortification)
+            {
+                return false;
+            }
             if (party?.ActualClan == null ||
                 party.ActualClan != settlement?.OwnerClan)
             {
@@ -309,53 +274,6 @@ namespace ModifiedArmy.Recruitment.Patches
                     party,
                     settlement,
                     freeSlots) > 0;
-        }
-
-        private static void LogProfessionalPlan(
-            MobileParty party,
-            Settlement settlement,
-            RecruitmentPlan plan,
-            int offeredCount,
-            int recruitedCount)
-        {
-            if (!RecruitmentLogFilter.ShouldLog(party))
-            {
-                return;
-            }
-
-            RecruitmentLimitReason mainLimit = RecruitmentLimitReason.None;
-            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
-            {
-                if (evaluation.RecruitableCount < evaluation.RequestedCount)
-                {
-                    mainLimit = evaluation.PrimaryLimit;
-                    break;
-                }
-            }
-
-            // Successful pool recruitment is presented as ordinary volunteer
-            // recruitment. The manpower pool is an implementation detail and
-            // routine recruitment remains an Info-level diagnostic.
-            string textId = recruitedCount > 0
-                ? "str_modifiedarmy_ai_recruitment_volunteer_plan"
-                : "str_modifiedarmy_ai_recruitment_professional_plan";
-            TextObject message = GameTexts.FindText(textId);
-            message.SetTextVariable(
-                "PARTY_NAME",
-                PartyLogFormatter.GetDisplayName(party));
-            message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
-            message.SetTextVariable("OFFERED", offeredCount);
-            message.SetTextVariable("APPROVED", recruitedCount);
-            message.SetTextVariable("LIMIT", GetLimitReasonText(mainLimit));
-
-            if (recruitedCount > 0)
-            {
-                ModLogger.Info(message.ToString());
-            }
-            else
-            {
-                ModLogger.Info(message.ToString());
-            }
         }
 
         // ==========================================

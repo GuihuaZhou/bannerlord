@@ -1,31 +1,24 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <FiefPartyTemplates>
   <!--
     封邑部队模板（Fief Party Templates）
     定义各文化在城镇（town）、港口城镇（town_port）、城堡（castle）中自动生成的部队构成与规模规则。
 
     每个 <FiefPartyTemplate> 对应一种定居点类型（如 empire_town），
-    控制该定居点每周向"封邑兵力池"自动补充的士兵种类与数量上限。
+    控制该定居点封邑部队的兵种构成与生产约束。
 
     属性说明：
-    - baseCapacity: 封建兵源池的固定容量，当前统一为 30
-    - baseDailyProduction: 0级兵营的每日基础补充速度
-    - dailyProductionStep: 兵营每提升一级增加的每日补充速度
-    - 当前代码仍读取 baseLimit、villageBonus、minWeeklySupplement 和
-      maxWeeklySupplement；迁移完成前暂时保留这些兼容属性。
+    - 当前代码读取 baseLimit、villageBonus 和 maxWeeklySupplement。
     - maxServiceWeeks: 封邑兵最大服役周期（周），默认 5
     - returnCooldownWeeks: 归还后冷却周期（周），默认 3
     - prosperityCostPerTroop: 征召时每名士兵消耗的基础繁荣度，默认 4
     - hearthCostPerTroop: 征召时每名士兵消耗的户数，默认 1
   -->
 
-  <!-- =============== Empire - 军区制，封邑弱，依赖雇佣兵/志愿兵 =============== -->
+  <!-- =============== Empire - 军区制，封邑弱，依赖雇佣兵与驻军 =============== -->
   <FiefPartyTemplate
       culture="Culture.empire" id="empire_town_port"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="40" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="40" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
@@ -44,10 +37,7 @@
 
   <FiefPartyTemplate
       culture="Culture.empire" id="empire_town"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="40" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="40" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
@@ -63,10 +53,7 @@
 
   <FiefPartyTemplate
       culture="Culture.empire" id="empire_castle"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="40" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="40" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="2" hearthCostPerTroop="1">
     <TroopComposition>
@@ -83,10 +70,7 @@
   <!-- =============== Aserai - 伊克塔制，灵活征召，依赖奴隶兵 =============== -->
   <FiefPartyTemplate
       culture="Culture.aserai" id="aserai_town_port"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="50" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="50" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
@@ -101,10 +85,7 @@
 
   <FiefPartyTemplate
       culture="Culture.aserai" id="aserai_town"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="50" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="50" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="5" hearthCostPerTroop="1">
     <TroopComposition>
@@ -119,10 +100,7 @@
 
   <FiefPartyTemplate
       culture="Culture.aserai" id="aserai_castle"
-      baseCapacity="30"
-      baseDailyProduction="0.71" dailyProductionStep="0.24"
-      baseLimit="40" villageBonus="10"
-      minWeeklySupplement="5" maxWeeklySupplement="10"
+      baseLimit="40" villageBonus="10" maxWeeklySupplement="10"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="2" hearthCostPerTroop="1">
     <TroopComposition>
@@ -138,10 +116,7 @@
   <!-- =============== Sturgia - 亲兵制，兵力上限高 =============== -->
   <FiefPartyTemplate
       culture="Culture.sturgia" id="sturgia_town_port"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="90" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="90" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -157,10 +132,7 @@
 
   <FiefPartyTemplate
       culture="Culture.sturgia" id="sturgia_town"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="90" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="90" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -176,10 +148,7 @@
 
   <FiefPartyTemplate
       culture="Culture.sturgia" id="sturgia_castle"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="90" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="90" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="3" hearthCostPerTroop="1">
     <TroopComposition>
@@ -196,10 +165,7 @@
   <!-- =============== Vlandia - 西欧采邑制，服役长、征召贵 =============== -->
   <FiefPartyTemplate
       culture="Culture.vlandia" id="vlandia_town_port"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.95"
-      baseLimit="120" villageBonus="30"
-      minWeeklySupplement="10" maxWeeklySupplement="30"
+      baseLimit="120" villageBonus="30" maxWeeklySupplement="30"
       maxServiceWeeks="7" returnCooldownWeeks="3"
       prosperityCostPerTroop="10" hearthCostPerTroop="1">
     <TroopComposition>
@@ -215,10 +181,7 @@
 
   <FiefPartyTemplate
       culture="Culture.vlandia" id="vlandia_town"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.95"
-      baseLimit="120" villageBonus="30"
-      minWeeklySupplement="10" maxWeeklySupplement="30"
+      baseLimit="120" villageBonus="30" maxWeeklySupplement="30"
       maxServiceWeeks="7" returnCooldownWeeks="3"
       prosperityCostPerTroop="10" hearthCostPerTroop="1">
     <TroopComposition>
@@ -234,10 +197,7 @@
 
   <FiefPartyTemplate
       culture="Culture.vlandia" id="vlandia_castle"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.95"
-      baseLimit="80" villageBonus="25"
-      minWeeklySupplement="10" maxWeeklySupplement="30"
+      baseLimit="80" villageBonus="25" maxWeeklySupplement="30"
       maxServiceWeeks="7" returnCooldownWeeks="3"
       prosperityCostPerTroop="4" hearthCostPerTroop="1">
     <TroopComposition>
@@ -254,10 +214,7 @@
   <!-- =============== Battania - 部落制，依赖乡村，弓箭手传统 =============== -->
   <FiefPartyTemplate
       culture="Culture.battania" id="battania_town_port"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="80" villageBonus="30"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="80" villageBonus="30" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="7" hearthCostPerTroop="1">
     <TroopComposition>
@@ -273,10 +230,7 @@
 
   <FiefPartyTemplate
       culture="Culture.battania" id="battania_town"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="30"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="30" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="7" hearthCostPerTroop="1">
     <TroopComposition>
@@ -292,10 +246,7 @@
 
   <FiefPartyTemplate
       culture="Culture.battania" id="battania_castle"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="30"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="30" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="3" hearthCostPerTroop="1">
     <TroopComposition>
@@ -312,10 +263,7 @@
   <!-- =============== Khuzait - 游牧制，冷却快、召之即来 =============== -->
   <FiefPartyTemplate
       culture="Culture.khuzait" id="khuzait_town_port"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="1"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -331,10 +279,7 @@
 
   <FiefPartyTemplate
       culture="Culture.khuzait" id="khuzait_town"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="1"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -350,10 +295,7 @@
 
   <FiefPartyTemplate
       culture="Culture.khuzait" id="khuzait_castle"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="40"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="40" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="1"
       prosperityCostPerTroop="3" hearthCostPerTroop="1">
     <TroopComposition>
@@ -370,10 +312,7 @@
   <!-- =============== Nord - 维京全民战士，民兵占比高 =============== -->
   <FiefPartyTemplate
       culture="Culture.nord" id="nord_town_port"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -389,10 +328,7 @@
 
   <FiefPartyTemplate
       culture="Culture.nord" id="nord_town"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="8" hearthCostPerTroop="1">
     <TroopComposition>
@@ -408,10 +344,7 @@
 
   <FiefPartyTemplate
       culture="Culture.nord" id="nord_castle"
-      baseCapacity="30"
-      baseDailyProduction="1.43" dailyProductionStep="0.48"
-      baseLimit="70" villageBonus="20"
-      minWeeklySupplement="10" maxWeeklySupplement="20"
+      baseLimit="70" villageBonus="20" maxWeeklySupplement="20"
       maxServiceWeeks="5" returnCooldownWeeks="3"
       prosperityCostPerTroop="3" hearthCostPerTroop="1">
     <TroopComposition>

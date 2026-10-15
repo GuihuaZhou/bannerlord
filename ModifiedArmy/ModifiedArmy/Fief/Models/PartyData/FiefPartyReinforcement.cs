@@ -33,7 +33,7 @@ namespace ModifiedArmy.Models.Fief
         /// No saved troop inventory is consulted or consumed.
         /// </summary>
         private Dictionary<CharacterObject, int>
-        WithdrawFiefPoolTroops(
+        WithdrawFiefTroopEntries(
             Dictionary<SoldierType, int> remainingTypeCapacity,
             int maximumCount)
         {
@@ -43,17 +43,17 @@ namespace ModifiedArmy.Models.Fief
                 return result;
             }
 
-            int barracksLevel = SettlementRecruitmentPoolBehavior
+            int barracksLevel = SettlementManpowerProductionBehavior
                 .GetBarracksLevel(_settlement);
-            List<RecruitmentPoolTroopEntry> eligible = _fiefPartyTemplate
-                .PoolTroops
+            List<TroopProductionEntry> eligible = _fiefPartyTemplate
+                .TroopEntries
                 .Where(entry => entry?.Troop != null &&
                     entry.RequiredBarracksLevel <= barracksLevel)
                 .ToList();
             int remainingTotal = maximumCount;
             while (remainingTotal > 0)
             {
-                RecruitmentPoolTroopEntry selected = eligible
+                TroopProductionEntry selected = eligible
                     .Where(entry => remainingTypeCapacity.TryGetValue(
                         SoldierTypeClassifier.GetSoldierType(entry.Troop),
                         out int capacity) && capacity > 0)
@@ -145,7 +145,7 @@ namespace ModifiedArmy.Models.Fief
             // manpower pool. No troop is created by this legacy weekly path.
             Dictionary<SoldierType, int> remainingTypeCapacity =
                 new Dictionary<SoldierType, int>(tmpSoldierTypeSize);
-            var tmpNewTroops = WithdrawFiefPoolTroops(
+            var tmpNewTroops = WithdrawFiefTroopEntries(
                 remainingTypeCapacity,
                 maxReinforcements);
 
@@ -210,70 +210,6 @@ namespace ModifiedArmy.Models.Fief
                 Math.Max(0, _totalLimit - _totalTroopCount));
             PerformReinforcement(allowed);
             return Math.Max(0, _totalTroopCount - before);
-        }
-
-        /// <summary>
-        /// 获取当前繁荣度和户数对补员的影响
-        /// </summary>
-        /// 
-        public float CalculateReinforcementMultiplier()
-        {
-            // === 1. 获取繁荣度 ===
-            float prosperity = _settlement.Town.Prosperity; // 使用 Settlement 的 Prosperity 属性
-            float prosperityRatio = 0f;
-
-            if (_settlement.IsTown)
-            {
-                prosperityRatio = MathF.Min(1f, prosperity / CommonConstants.TOWN_VERY_RICH_THRESHOLD); 
-            }
-            else if (_settlement.IsCastle)
-            {
-                prosperityRatio = MathF.Min(1f, prosperity / CommonConstants.CASTLE_VERY_RICH_THRESHOLD); 
-            }
-
-            // === 2. 获取附属村庄总户数 ===
-            float totalHearth = 0;
-            int villageCount = 0;
-            foreach (var village in _settlement.BoundVillages)
-            {
-                if (!village.IsDeserted)
-                    totalHearth += village.Hearth;
-                
-                villageCount += 1;
-            }
-            float hearthRatio = MathF.Min(1f, totalHearth / (CommonConstants.VillageMaxReinforcementHearthThreshold * villageCount)); 
-
-            // === 3. 计算加权综合比例 ===
-            float prosperityWeight = CommonConstants.ProsperityWeight; // 繁荣度权重
-            float hearthWeight = CommonConstants.HearthsWeight;    // 村庄户数权重
-            float combinedRatio = prosperityRatio * prosperityWeight + hearthRatio * hearthWeight;
-            combinedRatio = MathF.Clamp(combinedRatio, 0f, 1f);
-
-            return combinedRatio;
-        }
-
-        /// <summary>
-        /// 获取每周自动补员的数量
-        /// </summary>
-        public int GetWeeklyUpdateCount()
-        {
-            if (_settlement == null || _fiefPartyTemplate == null) 
-                return 0;
-
-            int minReinforcements = _fiefPartyTemplate.MinWeeklySupplement;
-            int maxReinforcements = _fiefPartyTemplate.MaxWeeklySupplement;
-
-            // 如果 min >= max，直接返回 min（避免无效区间）
-            if (minReinforcements >= maxReinforcements)
-                return minReinforcements;
-
-
-            float combinedRatio = CalculateReinforcementMultiplier();
-
-            // 映射到 [min, max] 区间 ===
-            float reinforcements = minReinforcements + combinedRatio * (maxReinforcements - minReinforcements);
-            
-            return (int)MathF.Round(reinforcements);
         }
 
         /// <summary>

@@ -51,24 +51,11 @@
       </AiImpact>
     </FiefEconomy>
 
-    <!-- ========== 志愿兵文化倍率 ========== -->
-    <VolunteerRecruitment>
-      <Vlandia>
-        <GenerationMultiplier value="0.2"/>
-      </Vlandia>
-      <Empire>
-        <GenerationMultiplier value="0.6"/>
-      </Empire>
-      <Aserai>
-        <GenerationMultiplier value="0.7"/>
-      </Aserai>
-    </VolunteerRecruitment>
-
     <!-- ========== AI 招募决策 ========== -->
     <!--
       三层决策模型：
       第一层 NeedScore  → 判断是否需要招兵
-      第二层 SourcePreference → 选择 Fief/Volunteer/Mercenary
+      第二层 SourcePreference → 选择 Fief/GarrisonTransfer/Mercenary
       第三层 Execute  → 执行对应招募路径
     -->
     <AiRecruitment>
@@ -95,46 +82,46 @@
 
       <!-- 文化基础偏好：AI 对三种兵源的偏好权重，决定该文化的典型招募倾向 -->
       <CulturalPreferences>
-        <!-- Vlandia：西欧采邑制 → 封邑核心，志愿兵极少 -->
+        <!-- Vlandia：西欧采邑制 → 封邑核心，驻军调拨极少 -->
         <Culture id="Culture.vlandia">
           <Fief value="0.7"/>
-          <Volunteer value="0.2"/>
+          <GarrisonTransfer value="0.2"/>
           <Mercenary value="0.1"/>
         </Culture>
-        <!-- Empire：拜占庭军区制 → 志愿兵为主，封邑弱 -->
+        <!-- Empire：拜占庭军区制 → 驻军调拨为主，封邑弱 -->
         <Culture id="Culture.empire">
           <Fief value="0.1"/>
-          <Volunteer value="0.1"/>
+          <GarrisonTransfer value="0.1"/>
           <Mercenary value="0.8"/>
         </Culture>
         <!-- Aserai：阿拉伯伊克塔 → 雇佣兵+奴隶兵，封邑弱 -->
         <Culture id="Culture.aserai">
           <Fief value="0.2"/>
-          <Volunteer value="0.3"/>
+          <GarrisonTransfer value="0.3"/>
           <Mercenary value="0.5"/>
         </Culture>
         <!-- Sturgia：东欧亲兵制 → 封邑精英 -->
         <Culture id="Culture.sturgia">
           <Fief value="0.6"/>
-          <Volunteer value="0.3"/>
+          <GarrisonTransfer value="0.3"/>
           <Mercenary value="0.1"/>
         </Culture>
-        <!-- Battania：凯尔特部落制 → 封邑/志愿兵均衡 -->
+        <!-- Battania：凯尔特部落制 → 封邑/驻军调拨均衡 -->
         <Culture id="Culture.battania">
           <Fief value="0.4"/>
-          <Volunteer value="0.4"/>
+          <GarrisonTransfer value="0.4"/>
           <Mercenary value="0.2"/>
         </Culture>
         <!-- Khuzait：游牧召之即来 → 封邑快速周转 -->
         <Culture id="Culture.khuzait">
           <Fief value="0.5"/>
-          <Volunteer value="0.3"/>
+          <GarrisonTransfer value="0.3"/>
           <Mercenary value="0.2"/>
         </Culture>
-        <!-- Nord：维京全民战士 → 志愿兵多 -->
+        <!-- Nord：维京全民战士 → 驻军调拨多 -->
         <Culture id="Culture.nord">
           <Fief value="0.4"/>
-          <Volunteer value="0.5"/>
+          <GarrisonTransfer value="0.5"/>
           <Mercenary value="0.1"/>
         </Culture>
       </CulturalPreferences>
@@ -142,45 +129,45 @@
       <!-- 文化身份修正：领主文化与定居点文化匹配/不匹配时的偏好乘数 -->
       <CulturalIdentity>
         <MatchFiefBonus value="1.3"/>
-        <MismatchVolunteerPenalty value="0.5"/>
+        <MismatchGarrisonTransferPenalty value="0.5"/>
         <MismatchMercenaryBonus value="1.3"/>
       </CulturalIdentity>
       <!-- MatchFiefBonus: 本文化领主封邑偏好乘数 -->
-      <!-- MismatchVolunteerPenalty: 异文化领主志愿兵偏好乘数 -->
+      <!-- MismatchGarrisonTransferPenalty: 异文化领主驻军调拨偏好乘数 -->
       <!-- MismatchMercenaryBonus: 异文化领主雇佣兵偏好乘数 -->
 
       <!-- 情境修正：各情境下三种兵源的偏好乘数，叠加在基础权重上 -->
       <SituationalModifiers>
-        <!-- 被围攻：封邑/志愿兵慢，雇佣兵即时可用 -->
+        <!-- 被围攻：封邑/驻军调拨慢，雇佣兵即时可用 -->
         <Situation id="siege">
           <Fief value="0.3"/>
-          <Volunteer value="0.5"/>
+          <GarrisonTransfer value="0.5"/>
           <Mercenary value="2.0"/>
         </Situation>
         <!-- 经济紧张（Gold &lt; brokeThreshold × TotalWage）：封邑有工资豁免最省钱 -->
         <Situation id="broke">
           <Fief value="1.2"/>
-          <Volunteer value="1.0"/>
+          <GarrisonTransfer value="1.0"/>
           <Mercenary value="0.3"/>
           <Threshold value="3.0"/>
         </Situation>
         <!-- 兵力严重不足（PartySizeRatio &lt; criticalThreshold）：急需即时战力 -->
         <Situation id="critical">
           <Fief value="0.5"/>
-          <Volunteer value="1.0"/>
+          <GarrisonTransfer value="1.0"/>
           <Mercenary value="1.5"/>
           <Threshold value="0.3"/>
         </Situation>
-        <!-- 和平期：不急，养封邑/志愿兵更经济 -->
+        <!-- 和平期：不急，养封邑/驻军调拨更经济 -->
         <Situation id="peace">
           <Fief value="1.0"/>
-          <Volunteer value="1.2"/>
+          <GarrisonTransfer value="1.2"/>
           <Mercenary value="0.5"/>
         </Situation>
         <!-- 战争中：需要灵活补充 -->
         <Situation id="war">
           <Fief value="1.0"/>
-          <Volunteer value="0.8"/>
+          <GarrisonTransfer value="0.8"/>
           <Mercenary value="1.2"/>
         </Situation>
       </SituationalModifiers>

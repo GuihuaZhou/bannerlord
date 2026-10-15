@@ -1,4 +1,4 @@
-﻿using ModifiedArmy.common;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using ModifiedArmy.Recruitment.Pools.Models;
@@ -39,7 +39,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(FiefWageExemption), 3);
             base.AddClassDefinition(typeof(FiefWageExemptionManager), 4);
             base.AddClassDefinition(
-                typeof(SettlementRecruitmentPoolData),
+                typeof(SettlementManpowerProductionData),
                 5);
         }
 
@@ -51,7 +51,7 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, int>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, Settlement>));
             base.ConstructContainerDefinition(
-                typeof(Dictionary<Settlement, SettlementRecruitmentPoolData>));
+                typeof(Dictionary<Settlement, SettlementManpowerProductionData>));
 
             base.ConstructContainerDefinition(typeof(List<FiefWageExemption>));
             base.ConstructContainerDefinition(typeof(Dictionary<String, List<FiefWageExemption>>));
@@ -504,17 +504,6 @@ namespace ModifiedArmy.Models.Fief
             return null;
         }
 
-
-        /// <summary>
-        /// 获取指定封邑每周更新的实际人数
-        /// </summary>
-        public int GetWeeklyUpdateCount(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-                return data.GetWeeklyUpdateCount();
-            return 0;
-        }
 
         /// <summary>
         /// 监听围城结束事件

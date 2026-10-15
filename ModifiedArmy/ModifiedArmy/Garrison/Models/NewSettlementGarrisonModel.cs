@@ -15,7 +15,7 @@ namespace ModifiedArmy.Garrison.Models
         {
             return town == null
                 ? 0
-                : 1 + SettlementRecruitmentPoolBehavior.GetBarracksLevel(
+                : 1 + SettlementManpowerProductionBehavior.GetBarracksLevel(
                     town.Settlement);
         }
     }

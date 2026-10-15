@@ -14,7 +14,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
     /// Converts settlement manpower into daily professional offers and direct
     /// fief-party reinforcement. No generated troop inventory is persisted.
     /// </summary>
-    public sealed class SettlementRecruitmentPoolBehavior :
+    public sealed class SettlementManpowerProductionBehavior :
         CampaignBehaviorBase
     {
         private const float HighProfessionalProductionRate = 1f;
@@ -40,9 +40,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             public int MaximumBarracksLevel { get; }
         }
 
-        private Dictionary<Settlement, SettlementRecruitmentPoolData>
-            _settlementPools =
-                new Dictionary<Settlement, SettlementRecruitmentPoolData>();
+        private Dictionary<Settlement, SettlementManpowerProductionData>
+            _settlementProductionData =
+                new Dictionary<Settlement, SettlementManpowerProductionData>();
 
         private readonly Dictionary<Settlement, Dictionary<CharacterObject, int>>
             _dailyProfessionalOffers =
@@ -59,13 +59,13 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         {
             dataStore.SyncData(
                 "_settlementRecruitmentPools",
-                ref _settlementPools);
-            _settlementPools ??=
-                new Dictionary<Settlement, SettlementRecruitmentPoolData>();
+                ref _settlementProductionData);
+            _settlementProductionData ??=
+                new Dictionary<Settlement, SettlementManpowerProductionData>();
 
         }
 
-        public SettlementRecruitmentPoolData GetOrCreatePool(
+        public SettlementManpowerProductionData GetOrCreateProductionData(
             Settlement settlement)
         {
             if (settlement?.IsFortification != true)
@@ -73,11 +73,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return null;
             }
 
-            if (!_settlementPools.TryGetValue(settlement, out var data) ||
+            if (!_settlementProductionData.TryGetValue(settlement, out var data) ||
                 data == null)
             {
-                data = new SettlementRecruitmentPoolData();
-                _settlementPools[settlement] = data;
+                data = new SettlementManpowerProductionData();
+                _settlementProductionData[settlement] = data;
             }
 
             return data;
@@ -85,24 +85,29 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
         public float GetDailyProduction(
             Settlement settlement,
-            RecruitmentPoolKind kind)
+            TroopProductionKind kind)
         {
+            if (kind != TroopProductionKind.Professional)
+            {
+                return 0f;
+            }
             int barracksLevel = GetBarracksLevel(settlement);
             ProfessionalProductionRule professionalRule = kind ==
-                RecruitmentPoolKind.Professional
+                TroopProductionKind.Professional
                     ? ResolveProfessionalProductionRule(settlement)
                     : null;
-            if (kind == RecruitmentPoolKind.Professional &&
+            if (kind == TroopProductionKind.Professional &&
                 professionalRule == null)
             {
                 return 0f;
             }
 
-            IRecruitmentPoolTemplate template =
-                RecruitmentPoolTemplateRepository.Instance.Resolve(
+            ProfessionalTroopTemplate template =
+                TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
                     kind,
-                    professionalRule?.Culture ?? settlement?.Culture);
+                    professionalRule?.Culture ?? settlement?.Culture)
+                    as ProfessionalTroopTemplate;
             if (professionalRule != null)
             {
                 barracksLevel = Math.Min(
@@ -119,11 +124,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         /// Returns a detached snapshot of today's generated professional
         /// offers so callers cannot bypass the manpower transaction.
         /// </summary>
-        public IReadOnlyDictionary<CharacterObject, int> GetAvailableTroops(
-            Settlement settlement,
-            RecruitmentPoolKind kind)
+        public IReadOnlyDictionary<CharacterObject, int> GetAvailableProfessionalOffers(
+            Settlement settlement)
         {
-            if (kind != RecruitmentPoolKind.Professional || settlement == null ||
+            if (settlement == null ||
                 !_dailyProfessionalOffers.TryGetValue(settlement, out var offers))
                 return new Dictionary<CharacterObject, int>();
             return new Dictionary<CharacterObject, int>(offers);
@@ -133,9 +137,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         /// Consumes an exact quantity from today's offers and charges the
         /// corresponding village hearth manpower.
         /// </summary>
-        public bool TryConsume(
+        public bool TryConsumeProfessionalOffer(
             Settlement settlement,
-            RecruitmentPoolKind kind,
             CharacterObject troop,
             int count)
         {
@@ -144,8 +147,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return false;
             }
 
-            if (kind != RecruitmentPoolKind.Professional ||
-                !_dailyProfessionalOffers.TryGetValue(settlement, out var troops))
+            if (!_dailyProfessionalOffers.TryGetValue(
+                    settlement,
+                    out var troops))
             {
                 return false;
             }
@@ -184,7 +188,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             _dailyProfessionalOffers.Remove(settlement);
-            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
             FiefPartyManager fiefManager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
             FiefPartyData fiefData = fiefManager?.GetFiefData(settlement);
@@ -197,12 +201,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
             int barracksLevel = GetBarracksLevel(settlement);
             ProfessionalTroopTemplate professionalTemplate =
-                RecruitmentPoolTemplateRepository.Instance.Resolve(
+                TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
-                    RecruitmentPoolKind.Professional) as ProfessionalTroopTemplate;
+                    TroopProductionKind.Professional) as ProfessionalTroopTemplate;
             int professionalCount = ConvertProgressToCount(
                 data,
-                RecruitmentPoolKind.Professional,
+                TroopProductionKind.Professional,
                 forecast.ProfessionalAllocation);
             int weeklyRemaining = Math.Max(
                 0,
@@ -211,10 +215,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 weeklyRemaining,
                 ConvertProgressToCount(
                     data,
-                    RecruitmentPoolKind.Fief,
+                    TroopProductionKind.Fief,
                     forecast.FiefAllocation));
             if (professionalCount > 0 && professionalTemplate != null)
-                _dailyProfessionalOffers[settlement] = BuildVirtualOffers(
+                _dailyProfessionalOffers[settlement] = BuildDailyProfessionalOffers(
                     professionalTemplate,
                     barracksLevel,
                     professionalCount);
@@ -238,19 +242,19 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             FiefPartyData fiefData = manager?.GetFiefData(settlement);
             if (fiefData == null) return null;
 
-            SettlementRecruitmentPoolData data = GetOrCreatePool(settlement);
+            SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
             int weekKey = (int)CampaignTime.Now.ToDays / 7;
             data.ResetWeekIfNeeded(weekKey);
             ProfessionalTroopTemplate professionalTemplate =
-                RecruitmentPoolTemplateRepository.Instance.Resolve(
+                TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
-                    RecruitmentPoolKind.Professional) as ProfessionalTroopTemplate;
+                    TroopProductionKind.Professional) as ProfessionalTroopTemplate;
             FiefPartyTemplate fiefTemplate = fiefData.GetFiefPartyTemplate();
             float supply = CalculateSettlementSupply(settlement, fiefData, manager);
             bool professionalEnabled = professionalTemplate != null &&
                 settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true;
             float professionalDemand = professionalEnabled
-                ? GetDailyProduction(settlement, RecruitmentPoolKind.Professional)
+                ? GetDailyProduction(settlement, TroopProductionKind.Professional)
                 : 0f;
             int weeklyLimit = fiefTemplate?.MaxWeeklySupplement ?? 0;
             int weeklyRemaining = Math.Max(
@@ -297,8 +301,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         }
 
         private static int ConvertProgressToCount(
-            SettlementRecruitmentPoolData data,
-            RecruitmentPoolKind kind,
+            SettlementManpowerProductionData data,
+            TroopProductionKind kind,
             float allocation)
         {
             if (allocation <= 0f) return 0;
@@ -309,19 +313,19 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return count;
         }
 
-        private static Dictionary<CharacterObject, int> BuildVirtualOffers(
+        private static Dictionary<CharacterObject, int> BuildDailyProfessionalOffers(
             ProfessionalTroopTemplate template,
             int barracksLevel,
             int count)
         {
             Dictionary<CharacterObject, int> result = new();
-            List<RecruitmentPoolTroopEntry> entries = template.PoolTroops
+            List<TroopProductionEntry> entries = template.TroopEntries
                 .Where(e => e?.Troop != null &&
                     e.RequiredBarracksLevel <= barracksLevel)
                 .ToList();
             for (int i = 0; i < count && entries.Count > 0; i++)
             {
-                RecruitmentPoolTroopEntry selected = entries
+                TroopProductionEntry selected = entries
                     .OrderBy(e =>
                         (result.TryGetValue(e.Troop, out int current)
                             ? current

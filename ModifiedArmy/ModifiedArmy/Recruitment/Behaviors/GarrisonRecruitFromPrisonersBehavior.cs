@@ -80,18 +80,16 @@ namespace ModifiedArmy.Models
                     out targetCount,
                     out readyCount,
                     out sold);
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            SettlementManpowerProductionBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             List<RecruitmentCandidate> candidates = pools == null
                 ? new List<RecruitmentCandidate>()
-                : pools.GetAvailableTroops(
-                        settlement,
-                        RecruitmentPoolKind.Professional)
+                : pools.GetAvailableProfessionalOffers(settlement)
                     .Where(entry => entry.Key != null && entry.Value > 0)
                     .Select(entry => new RecruitmentCandidate(
                         entry.Key,
                         entry.Value,
-                        RecruitmentSource.Professional))
+                        RecruitmentSource.ProfessionalProduction))
                     .ToList();
             candidates.AddRange(prisonerCandidates);
             RecruitmentPlan plan = null;
@@ -115,7 +113,7 @@ namespace ModifiedArmy.Models
             }
 
             int professionalOffered = candidates.Where(candidate =>
-                    candidate.Source == RecruitmentSource.Professional)
+                    candidate.Source == RecruitmentSource.ProfessionalProduction)
                 .Sum(candidate => candidate.AvailableCount);
             if (plan != null && professionalOffered > 0)
             {
@@ -150,7 +148,7 @@ namespace ModifiedArmy.Models
             MobileParty garrison,
             RecruitmentPlan plan,
             int dailyLimit,
-            SettlementRecruitmentPoolBehavior pools,
+            SettlementManpowerProductionBehavior pools,
             out int professionalRecruited,
             out int prisonerRecruited)
         {
@@ -167,11 +165,10 @@ namespace ModifiedArmy.Models
                     continue;
                 }
 
-                if (evaluation.Source == RecruitmentSource.Professional)
+                if (evaluation.Source == RecruitmentSource.ProfessionalProduction)
                 {
-                    if (pools == null || !pools.TryConsume(
+                    if (pools == null || !pools.TryConsumeProfessionalOffer(
                         settlement,
-                        RecruitmentPoolKind.Professional,
                         evaluation.Troop,
                         count))
                     {
@@ -237,96 +234,6 @@ namespace ModifiedArmy.Models
                 }
             }
 
-            return recruited;
-        }
-
-        /// <summary>
-        /// Recruits from the settlement's professional pool through the same
-        /// composition, wage and clan-budget model used by mobile parties.
-        /// Garrison purchases are charged through AutoRecruitmentExpenses,
-        /// matching Bannerlord's deferred settlement accounting.
-        /// </summary>
-        private static int RecruitProfessionalTroops(
-            Settlement settlement,
-            MobileParty garrison,
-            int dailyLimit)
-        {
-            if (dailyLimit <= 0)
-            {
-                return 0;
-            }
-
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
-            if (pools == null)
-            {
-                return 0;
-            }
-
-            IReadOnlyDictionary<CharacterObject, int> available =
-                pools.GetAvailableTroops(
-                    settlement,
-                    RecruitmentPoolKind.Professional);
-            List<RecruitmentCandidate> candidates = available
-                .Where(entry => entry.Key != null && entry.Value > 0)
-                .Select(entry => new RecruitmentCandidate(
-                    entry.Key,
-                    entry.Value,
-                    RecruitmentSource.Professional))
-                .ToList();
-            if (candidates.Count == 0)
-            {
-                return 0;
-            }
-
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
-                garrison,
-                candidates);
-            int recruited = 0;
-
-            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
-            {
-                int count = Math.Min(
-                    evaluation.RecruitableCount,
-                    dailyLimit - recruited);
-                if (evaluation.Troop == null || count <= 0 ||
-                    !pools.TryConsume(
-                        settlement,
-                        RecruitmentPoolKind.Professional,
-                        evaluation.Troop,
-                        count))
-                {
-                    continue;
-                }
-
-                garrison.MemberRoster.AddToCounts(
-                    evaluation.Troop,
-                    count,
-                    false,
-                    0,
-                    0,
-                    true,
-                    -1);
-                settlement.OwnerClan.AutoRecruitmentExpenses +=
-                    evaluation.UnitRecruitmentCost * count;
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    garrison,
-                    count,
-                    evaluation.UnitRecruitmentCost,
-                    evaluation.UnitDailyWage);
-                recruited += count;
-
-                if (recruited >= dailyLimit)
-                {
-                    break;
-                }
-            }
-
-            LogProfessionalRecruitment(
-                settlement.Town,
-                candidates.Sum(candidate => candidate.AvailableCount),
-                recruited,
-                plan);
             return recruited;
         }
 
@@ -443,18 +350,17 @@ namespace ModifiedArmy.Models
 
             List<RecruitmentCandidate> candidates =
                 new List<RecruitmentCandidate>();
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            SettlementManpowerProductionBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             if (pools != null)
             {
-                candidates.AddRange(pools.GetAvailableTroops(
-                        settlement,
-                        RecruitmentPoolKind.Professional)
+                candidates.AddRange(pools.GetAvailableProfessionalOffers(
+                        settlement)
                     .Where(entry => entry.Key != null && entry.Value > 0)
                     .Select(entry => new RecruitmentCandidate(
                         entry.Key,
                         entry.Value,
-                        RecruitmentSource.Professional)));
+                        RecruitmentSource.ProfessionalProduction)));
             }
 
             foreach (TroopRosterElement element in

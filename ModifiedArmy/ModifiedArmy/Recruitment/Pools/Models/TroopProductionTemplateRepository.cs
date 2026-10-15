@@ -9,24 +9,24 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// Stores loaded troop-production templates. Templates remain XML data
     /// and are never saved.
     /// </summary>
-    public sealed class RecruitmentPoolTemplateRepository
+    public sealed class TroopProductionTemplateRepository
     {
-        private readonly Dictionary<string, IRecruitmentPoolTemplate>
+        private readonly Dictionary<string, ITroopProductionTemplate>
             _professionalTemplates =
-                new Dictionary<string, IRecruitmentPoolTemplate>(
+                new Dictionary<string, ITroopProductionTemplate>(
                     StringComparer.OrdinalIgnoreCase);
-        private readonly Dictionary<string, IRecruitmentPoolTemplate>
+        private readonly Dictionary<string, ITroopProductionTemplate>
             _fiefTemplates =
-                new Dictionary<string, IRecruitmentPoolTemplate>(
+                new Dictionary<string, ITroopProductionTemplate>(
                     StringComparer.OrdinalIgnoreCase);
-        public static RecruitmentPoolTemplateRepository Instance { get; } =
-            new RecruitmentPoolTemplateRepository();
+        public static TroopProductionTemplateRepository Instance { get; } =
+            new TroopProductionTemplateRepository();
 
-        private RecruitmentPoolTemplateRepository()
+        private TroopProductionTemplateRepository()
         {
         }
 
-        public void Register(IRecruitmentPoolTemplate template)
+        public void Register(ITroopProductionTemplate template)
         {
             if (template == null || string.IsNullOrWhiteSpace(
                     template.TemplateId))
@@ -34,23 +34,23 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 return;
             }
 
-            Dictionary<string, IRecruitmentPoolTemplate> templates =
-                template.PoolKind == RecruitmentPoolKind.Professional
+            Dictionary<string, ITroopProductionTemplate> templates =
+                template.ProductionKind == TroopProductionKind.Professional
                     ? _professionalTemplates
                     : _fiefTemplates;
             templates[template.TemplateId] = template;
         }
 
-        public IRecruitmentPoolTemplate Resolve(
+        public ITroopProductionTemplate Resolve(
             Settlement settlement,
-            RecruitmentPoolKind kind)
+            TroopProductionKind kind)
         {
             return Resolve(settlement, kind, settlement?.Culture);
         }
 
-        public IRecruitmentPoolTemplate Resolve(
+        public ITroopProductionTemplate Resolve(
             Settlement settlement,
-            RecruitmentPoolKind kind,
+            TroopProductionKind kind,
             CultureObject culture)
         {
             if (settlement == null || culture == null)
@@ -58,8 +58,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 return null;
             }
 
-            Dictionary<string, IRecruitmentPoolTemplate> templates =
-                kind == RecruitmentPoolKind.Professional
+            Dictionary<string, ITroopProductionTemplate> templates =
+                kind == TroopProductionKind.Professional
                     ? _professionalTemplates
                     : _fiefTemplates;
             string settlementType = settlement.IsCastle

@@ -15,14 +15,14 @@ namespace ModifiedPolitics.HeroOffices.Patches
     internal static class MilitaryOfficeRecruitmentPatches
     {
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(SettlementRecruitmentPoolBehavior), "GetDailyProduction")]
+        [HarmonyPatch(typeof(SettlementManpowerProductionBehavior), "GetDailyProduction")]
         private static void IncreaseRegularProduction(
             Settlement settlement,
-            RecruitmentPoolKind kind,
+            TroopProductionKind kind,
             ref float __result)
         {
             if (settlement == null || __result <= 0f ||
-                kind != RecruitmentPoolKind.Professional)
+                kind != TroopProductionKind.Professional)
                 return;
 
             float factor = OfficeEffectService.GetRegularRecruitmentFactor(settlement);

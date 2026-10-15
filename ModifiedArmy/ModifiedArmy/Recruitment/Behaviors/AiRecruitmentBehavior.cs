@@ -25,7 +25,7 @@ namespace ModifiedArmy.Models
     /// <summary>
     /// AI 招募决策控制器。
     ///
-    /// 控制AI领主在三种兵源之间的招募偏好：封邑兵（Fief）、志愿兵（Volunteer）、雇佣兵（Mercenary）。
+    /// 控制 AI 领主在封邑征召、驻军调拨和雇佣兵之间的偏好。
     /// 偏好与可用性分离：偏好由文化权重和情境修正决定，可用性在执行阶段检查。
     /// 决策流程：
     ///   1. 重派检查 — 已在前往招募据点途中则跳过
@@ -136,7 +136,7 @@ namespace ModifiedArmy.Models
                         var candidates = new List<(RecruitSource source, float score)>
                         {
                             (RecruitSource.Fief, fiefScore),
-                            (RecruitSource.Volunteer, volScore),
+                            (RecruitSource.GarrisonTransfer, volScore),
                             (RecruitSource.Mercenary, mercScore)
                         };
                         candidates.Sort((a, b) => b.score.CompareTo(a.score));
@@ -164,7 +164,7 @@ namespace ModifiedArmy.Models
                             else if (source == RecruitSource.Mercenary)
                                 target = FindBestMercenarySettlement(party);
                             else
-                                target = FindBestVolunteerSettlement(party, clan);
+                                target = FindBestGarrisonTransferSettlement(party, clan);
 
                             if (target == null)
                             {
@@ -313,7 +313,7 @@ namespace ModifiedArmy.Models
             else if (mercScore >= volScore)
                 chosen = RecruitSource.Mercenary;
             else
-                chosen = RecruitSource.Volunteer;
+                chosen = RecruitSource.GarrisonTransfer;
 
             string displayName = GetPartyDisplayName(party);
             if (RecruitmentLogFilter.ShouldLog(party))
@@ -502,7 +502,7 @@ namespace ModifiedArmy.Models
         /// Villages no longer provide recruits through notable slots.
         /// 按 文化匹配 × 距离 排序。
         /// </summary>
-        private Settlement FindBestVolunteerSettlement(MobileParty party, Clan clan)
+        private Settlement FindBestGarrisonTransferSettlement(MobileParty party, Clan clan)
         {
             Settlement best = null;
             float bestScore = 0f;
@@ -513,11 +513,11 @@ namespace ModifiedArmy.Models
                 if (!settlement.IsFortification)
                     continue;
 
-                if (!HasAvailableVolunteers(settlement)) continue;
+                if (!HasTransferableGarrisonTroops(settlement)) continue;
 
                 float distance = party.Position.Distance(settlement.GatePosition);
                 bool cultureMatch = leaderCulture == settlement.Culture;
-                float cultureMod = cultureMatch ? 1f : _config.AiCultMismatchVolunteerPenalty;
+                float cultureMod = cultureMatch ? 1f : _config.AiCultMismatchGarrisonTransferPenalty;
                 float score = cultureMod / (1f + distance * 0.01f);
 
                 if (score > bestScore)
@@ -604,7 +604,7 @@ namespace ModifiedArmy.Models
         /// <summary>
         /// Checks whether a fortification can transfer existing garrison troops.
         /// </summary>
-        private bool HasAvailableVolunteers(Settlement settlement)
+        private bool HasTransferableGarrisonTroops(Settlement settlement)
         {
             if (settlement == null) return false;
 
@@ -683,7 +683,7 @@ namespace ModifiedArmy.Models
 
         /// <summary>
         /// 判断该部队是否正在前往招募据点执行任务（且尚未到达）。
-        /// 检查 Fief（clan 拥有的 town/castle）和 Volunteer（clan 拥有的 village）目标。
+        /// 检查正在前往的家族直属城镇或城堡招募目标。
         /// Mercenary 不检查（由 randomChance 控制，避免阻塞原版 AI 行为）。
         /// </summary>
         private bool IsPartyCurrentlyOnRecruitmentTask(MobileParty party, Clan clan)
@@ -702,10 +702,6 @@ namespace ModifiedArmy.Models
 
             // Fief: 前往 clan 拥有的 town/castle
             if (target.OwnerClan == clan && (target.IsTown || target.IsCastle))
-                return true;
-
-            // Volunteer: 前往 clan 拥有的 village
-            if (target.OwnerClan == clan && target.IsVillage)
                 return true;
 
             return false;

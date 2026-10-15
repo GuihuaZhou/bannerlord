@@ -1,4 +1,4 @@
-﻿using HarmonyLib;
+using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
@@ -51,12 +51,8 @@ namespace ModifiedArmy.Models.Fief
         private const string DISBAND_FIEF_OPTION_ID = "fief_disband";
         private const string MANAGE_FIEF_OPTION_ID = "fief_manage";
         private const string LEAVE_FIEF_OPTION_ID = "fief_return";
-        private const string VIEW_FIEF_POOL_OPTION_ID = "fief_view_pool";
         private const string VIEW_FIEF_TROOPS_OPTION_ID =
             "fief_view_troops";
-        private const string FIEF_POOL_MENU_ID =
-            "modified_army_fief_pool_menu";
-        private const string LEAVE_FIEF_POOL_OPTION_ID = "fief_pool_return";
         private const string REINFORCEMENT_RATE_OPTION_ID =
             "modified_army_view_reinforcement_rate";
         private const string REINFORCEMENT_RATE_MENU_ID =
@@ -149,7 +145,7 @@ namespace ModifiedArmy.Models.Fief
                 "{INTRO_LINE}" +
                 "{DESCRIPTION}" +
                 "You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
-                "and {WAITCYCLE} are on their way back to their homes, and up to {WEEKLY_REINFORCEMENT} will be replenished each week.\n\n" +
+                "and {WAITCYCLE} are on their way back home. Current daily fief production is {FIEF_DAILY}.\n\n" +
                 "Current troop composition:\n" +
                 "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
                 "- Sergeants: {SERGEANT_COUNT}/{SERGEANT_MAX}\n" +
@@ -166,7 +162,12 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
-            text.SetTextVariable("WEEKLY_REINFORCEMENT", fiefManager.GetWeeklyUpdateCount(settlement).ToString());
+            RecruitmentProductionForecast forecast = Campaign.Current
+                .GetCampaignBehavior<SettlementManpowerProductionBehavior>()
+                ?.GetProductionForecast(settlement);
+            text.SetTextVariable(
+                "FIEF_DAILY",
+                FormatRate(forecast?.FiefAllocation ?? 0f));
             text.SetTextVariable("RETINUE_COUNT", tmpSoldierTypeCounts[SoldierType.Retinue].ToString());
             text.SetTextVariable("RETINUE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Retinue].ToString());
             text.SetTextVariable("SERGEANT_COUNT", tmpSoldierTypeCounts[SoldierType.Sergeant].ToString());
@@ -437,21 +438,6 @@ namespace ModifiedArmy.Models.Fief
                 index: 4,
                 isRepeatable: false);
 
-            starter.AddGameMenu(
-                FIEF_POOL_MENU_ID,
-                "{=!}{FIEF_POOL_TEXT}",
-                InitializeFiefPoolMenu,
-                GameMenu.MenuOverlayType.SettlementWithBoth);
-            starter.AddGameMenuOption(
-                FIEF_POOL_MENU_ID,
-                LEAVE_FIEF_POOL_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Return}Return",
-                (args) => true,
-                (args) => GameMenu.SwitchToMenu(FIEF_MENU_ID),
-                isLeave: true,
-                index: -1,
-                isRepeatable: false);
-
             // Return
             starter.AddGameMenuOption(
                 FIEF_MENU_ID,
@@ -536,78 +522,14 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// Builds a read-only summary of the unassigned fief manpower still
-        /// stored in the settlement pool. This view is available for foreign
-        /// settlements because it does not expose any mutation command.
-        /// </summary>
-        private static void InitializeFiefPoolMenu(MenuCallbackArgs args)
-        {
-            Settlement settlement = Settlement.CurrentSettlement;
-            FiefPartyManager manager = Campaign.Current
-                ?.GetCampaignBehavior<FiefPartyManager>();
-            if (settlement?.IsFortification != true || manager == null)
-            {
-                MBTextManager.SetTextVariable(
-                    "FIEF_POOL_TEXT",
-                    new TextObject(
-                        "{=ModifiedArmy_FiefPool_Unavailable}" +
-                        "Fief manpower data is unavailable."),
-                    false);
-                return;
-            }
-
-            Dictionary<CharacterObject, int> troops = manager
-                .GetFiefTroopRoster(settlement)
-                .GetTroopRoster()
-                .Where(element => element.Character != null &&
-                    element.Number > 0)
-                .ToDictionary(
-                    element => element.Character,
-                    element => element.Number);
-            List<string> troopLines = troops
-                .Where(entry => entry.Key != null && entry.Value > 0)
-                .OrderBy(entry => entry.Key.Tier)
-                .ThenBy(entry => entry.Key.Name.ToString())
-                .Select(entry =>
-                    entry.Key.Name.ToString() + ": " + entry.Value)
-                .ToList();
-            TextObject text = new TextObject(
-                "{=ModifiedArmy_FiefPool_Description}" +
-                "{SETTLEMENT_NAME} fief manpower" +
-                "{NEWLINE}Available: {CURRENT}/{CAPACITY}" +
-                "{NEWLINE}Daily reinforcement: {DAILY}" +
-                "{NEWLINE}{NEWLINE}{TROOPS}");
-            text.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
-            text.SetTextVariable("NEWLINE", Environment.NewLine);
-            text.SetTextVariable(
-                "CURRENT",
-                troops.Values.Sum(value => Math.Max(0, value)));
-            text.SetTextVariable(
-                "CAPACITY",
-                manager.GetFiefTroopLimit(settlement));
-            text.SetTextVariable(
-                "DAILY",
-                manager.GetWeeklyUpdateCount(settlement).ToString());
-            text.SetTextVariable(
-                "TROOPS",
-                troopLines.Count > 0
-                    ? string.Join(Environment.NewLine, troopLines)
-                    : new TextObject(
-                        "{=ModifiedArmy_FiefPool_Empty}No troops")
-                        .ToString());
-
-            MBTextManager.SetTextVariable("FIEF_POOL_TEXT", text, false);
-        }
-
-        /// <summary>
         /// Displays the exact forecast used by the next daily production tick.
         /// </summary>
         private static void InitializeReinforcementRateMenu(
             MenuCallbackArgs args)
         {
             Settlement settlement = Settlement.CurrentSettlement;
-            SettlementRecruitmentPoolBehavior pools = Campaign.Current
-                ?.GetCampaignBehavior<SettlementRecruitmentPoolBehavior>();
+            SettlementManpowerProductionBehavior pools = Campaign.Current
+                ?.GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             RecruitmentProductionForecast forecast = pools
                 ?.GetProductionForecast(settlement);
             if (forecast == null)

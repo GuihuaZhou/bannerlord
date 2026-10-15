@@ -16,17 +16,17 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// from basic_troop_config.xml.
     /// </summary>
     public sealed class ProfessionalTroopTemplate : MBObjectBase,
-        IRecruitmentPoolTemplate
+        ITroopProductionTemplate
     {
-        private readonly List<RecruitmentPoolTroopEntry> _poolTroops =
-            new List<RecruitmentPoolTroopEntry>();
+        private readonly List<TroopProductionEntry> _troopEntries =
+            new List<TroopProductionEntry>();
 
         public string TemplateId => StringId;
 
         public CultureObject Culture { get; private set; }
 
-        public RecruitmentPoolKind PoolKind =>
-            RecruitmentPoolKind.Professional;
+        public TroopProductionKind ProductionKind =>
+            TroopProductionKind.Professional;
 
         public float BaseDailyProduction { get; private set; }
 
@@ -34,8 +34,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
 
         public float ProfessionalRatio { get; private set; } = 0.5f;
 
-        public IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops =>
-            _poolTroops;
+        public IReadOnlyList<TroopProductionEntry> TroopEntries =>
+            _troopEntries;
 
         public override void Deserialize(
             MBObjectManager objectManager,
@@ -46,12 +46,12 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 "culture",
                 node);
             BaseDailyProduction =
-                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                TroopProductionTemplateUtility.ReadOptionalFloat(
                     node,
                     "baseDailyProduction",
                     0f);
             DailyProductionStep =
-                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                TroopProductionTemplateUtility.ReadOptionalFloat(
                     node,
                     "dailyProductionStep",
                     0f);
@@ -59,7 +59,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 0f,
                 Math.Min(
                     1f,
-                    RecruitmentPoolTemplateUtility.ReadOptionalFloat(
+                    TroopProductionTemplateUtility.ReadOptionalFloat(
                         node,
                         "professionalRatio",
                         0.5f)));
@@ -73,12 +73,12 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 }
             }
 
-            RecruitmentPoolTemplateRepository.Instance.Register(this);
+            TroopProductionTemplateRepository.Instance.Register(this);
         }
 
         public float GetDailyProduction(int barracksLevel)
         {
-            return RecruitmentPoolTemplateUtility.CalculateDailyProduction(
+            return TroopProductionTemplateUtility.CalculateDailyProduction(
                 BaseDailyProduction,
                 DailyProductionStep,
                 barracksLevel);
@@ -110,11 +110,11 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     continue;
                 }
 
-                int weight = RecruitmentPoolTemplateUtility.ReadOptionalInt(
+                int weight = TroopProductionTemplateUtility.ReadOptionalInt(
                     troopNode,
                     "weight",
                     1);
-                _poolTroops.Add(new RecruitmentPoolTroopEntry(
+                _troopEntries.Add(new TroopProductionEntry(
                     troop,
                     weight,
                     basicTroop.RequiredBarracksLevel));

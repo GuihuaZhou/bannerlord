@@ -10,7 +10,7 @@ namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
     /// Disables native notable-slot recruitment. The mod's garrison behavior
-    /// now consumes the settlement professional pool through the unified
+    /// now consumes daily professional production through the unified
     /// composition and clan-budget model.
     /// </summary>
     [HarmonyPatch(
@@ -25,7 +25,7 @@ namespace ModifiedArmy.Recruitment.Patches
     }
 
     /// <summary>
-    /// Replaces the native notable-slot forecast with the custom pool and
+    /// Replaces the native notable-slot forecast with professional production and
     /// prisoner forecast used by the actual daily recruitment behavior.
     /// </summary>
     [HarmonyPatch(

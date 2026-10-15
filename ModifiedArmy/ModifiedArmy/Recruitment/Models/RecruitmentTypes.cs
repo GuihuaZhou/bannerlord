@@ -2,8 +2,7 @@ namespace ModifiedArmy.Recruitment.Models
 {
     public enum RecruitmentSource
     {
-        Volunteer,
-        Professional,
+        ProfessionalProduction,
         Fief,
         Prisoner,
         Transfer,

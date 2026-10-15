@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Text;
 
@@ -87,10 +87,6 @@ namespace ModifiedArmy.common
         public static float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER => Cfg?.AiFiefProsperityImpactMultiplier ?? 0.1f;
         public static float AI_FIEF_HEARTH_IMPACT_MULTIPLIER => Cfg?.AiFiefHearthImpactMultiplier ?? 0.1f;
 
-        public static float VLANDIA_VOLUNTEER_GENERATION_MULTIPLIER => Cfg?.VlandiaVolunteerMultiplier ?? 0.2f;
-        public static float EMPIRE_VOLUNTEER_GENERATION_MULTIPLIER => Cfg?.EmpireVolunteerMultiplier ?? 0.6f;
-        public static float ASERAI_VOLUNTEER_GENERATION_MULTIPLIER => Cfg?.AseraiVolunteerMultiplier ?? 0.7f;
-
     }
 
 
@@ -101,8 +97,8 @@ namespace ModifiedArmy.common
     {
         /// <summary>封邑兵 — 需前往自有 town/castle 招募，有工资豁免，消耗繁荣度</summary>
         Fief,
-        /// <summary>志愿兵 — 需前往自有 town/village 招募，低成本但数量有限</summary>
-        Volunteer,
+        /// <summary>驻军调拨 — 从家族直属城镇或城堡驻军中调入士兵</summary>
+        GarrisonTransfer,
         /// <summary>雇佣兵 — 需前往有雇佣兵的城镇招募，即时可用但昂贵</summary>
         Mercenary
     }
@@ -116,7 +112,7 @@ namespace ModifiedArmy.common
         public readonly float NeedScore;
         public readonly RecruitSource Preferred;
         public readonly float FiefWeight;
-        public readonly float VolunteerWeight;
+        public readonly float GarrisonTransferWeight;
         public readonly float MercenaryWeight;
 
         public RecruitmentDecision(bool shouldRecruit, float needScore,
@@ -126,7 +122,7 @@ namespace ModifiedArmy.common
             NeedScore = needScore;
             Preferred = preferred;
             FiefWeight = fief;
-            VolunteerWeight = vol;
+            GarrisonTransferWeight = vol;
             MercenaryWeight = merc;
         }
     }

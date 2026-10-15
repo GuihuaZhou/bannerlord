@@ -1,4 +1,4 @@
-﻿using ModifiedArmy.common;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Pools.Models;
 using System;
@@ -19,7 +19,7 @@ namespace ModifiedArmy.Models.Fief
     /// 这些由外部调用方根据命名约定或上下文决定。
     /// </summary>
     public class FiefPartyTemplate : MBObjectBase,
-        IRecruitmentPoolTemplate
+        ITroopProductionTemplate
     {
         /// <summary>
         /// 模板唯一标识符
@@ -28,17 +28,13 @@ namespace ModifiedArmy.Models.Fief
 
         public CultureObject Culture => culture;
 
-        public RecruitmentPoolKind PoolKind => RecruitmentPoolKind.Fief;
+        public TroopProductionKind ProductionKind => TroopProductionKind.Fief;
 
-        public float BaseDailyProduction { get; private set; }
+        private readonly List<TroopProductionEntry> _troopEntries =
+            new List<TroopProductionEntry>();
 
-        public float DailyProductionStep { get; private set; }
-
-        private readonly List<RecruitmentPoolTroopEntry> _poolTroops =
-            new List<RecruitmentPoolTroopEntry>();
-
-        public IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops =>
-            _poolTroops;
+        public IReadOnlyList<TroopProductionEntry> TroopEntries =>
+            _troopEntries;
 
         /// <summary>
         /// 所有基础兵种
@@ -64,11 +60,6 @@ namespace ModifiedArmy.Models.Fief
         /// 每个附属村庄额外提供的人数加成
         /// </summary>
         public int VillageBonus { get; private set; } = 10;
-
-        /// <summary>
-        /// 每周最少补充总兵力（保底值）
-        /// </summary>
-        public int MinWeeklySupplement { get; private set; } = 5;
 
         /// <summary>
         /// 每周最多补充总兵力（上限值）
@@ -167,21 +158,7 @@ namespace ModifiedArmy.Models.Fief
 
             BaseLimit = XmlHelper.ReadInt(node, "baseLimit");
             VillageBonus = XmlHelper.ReadInt(node, "villageBonus");
-            MinWeeklySupplement = XmlHelper.ReadInt(node, "minWeeklySupplement");
             MaxWeeklySupplement = XmlHelper.ReadInt(node, "maxWeeklySupplement");
-
-            BaseDailyProduction =
-                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
-                    node,
-                    "baseDailyProduction",
-                    MinWeeklySupplement / 7f);
-            DailyProductionStep =
-                RecruitmentPoolTemplateUtility.ReadOptionalFloat(
-                    node,
-                    "dailyProductionStep",
-                    Math.Max(
-                        0f,
-                        (MaxWeeklySupplement - MinWeeklySupplement) / 21f));
 
             // ============================================================
             // 读取封邑经济/服役参数（可选，向后兼容）
@@ -218,15 +195,7 @@ namespace ModifiedArmy.Models.Fief
             }
 
             FiefPartyTemplateManager.Instance.RegisterTemplate(this);
-            RecruitmentPoolTemplateRepository.Instance.Register(this);
-        }
-
-        public float GetDailyProduction(int barracksLevel)
-        {
-            return RecruitmentPoolTemplateUtility.CalculateDailyProduction(
-                BaseDailyProduction,
-                DailyProductionStep,
-                barracksLevel);
+            TroopProductionTemplateRepository.Instance.Register(this);
         }
 
 
@@ -288,7 +257,7 @@ namespace ModifiedArmy.Models.Fief
                     basicTroop.RequiredBarracksLevel);
                 _allBasicTroops[troopType].Add(templateTroop);
                 _soldierTypeWeights[troopType] += troopWeight;
-                _poolTroops.Add(new RecruitmentPoolTroopEntry(
+                _troopEntries.Add(new TroopProductionEntry(
                     templateTroop.Troop,
                     troopWeight,
                     templateTroop.RequiredBarracksLevel));

@@ -243,26 +243,6 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
-        /// 初始化封邑部队，最多补充1/2满编
-        /// <summary>
-        /// 
-        private void InitialFeifParty()
-        {
-            int deficit = _totalLimit - _totalTroopCount;
-            if (deficit <= 0)
-                return;
-
-            float multiplier = CalculateReinforcementMultiplier();
-            int count = (int)(deficit * 0.5f * multiplier);
-
-            if (count <= 0)
-                return;
-
-            // 执行补员
-            PerformReinforcement(count);
-        }
-
-        /// <summary>
         /// 围攻结束后调用，用于同步当前兵力并处理定居点陷落逻辑。
         /// </summary>
         /// <param name="settlementWasCaptured">是否被攻击方攻占成功（即原领主失去控制权）</param>

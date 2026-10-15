@@ -19,9 +19,9 @@ namespace ModifiedArmy.common
         /// </summary>
         public float Fief;
         /// <summary>
-        /// 志愿兵偏好权重。
+        /// 驻军调拨偏好权重。
         /// </summary>
-        public float Volunteer;
+        public float GarrisonTransfer;
         /// <summary>
         /// 雇佣兵偏好权重。
         /// </summary>
@@ -38,9 +38,9 @@ namespace ModifiedArmy.common
         /// </summary>
         public float Fief;
         /// <summary>
-        /// 志愿兵偏好乘数。
+        /// 驻军调拨偏好乘数。
         /// </summary>
-        public float Volunteer;
+        public float GarrisonTransfer;
         /// <summary>
         /// 雇佣兵偏好乘数。
         /// </summary>
@@ -142,21 +142,6 @@ namespace ModifiedArmy.common
         /// </summary>
         public float AiFiefHearthImpactMultiplier { get; private set; } = 0.1f;
 
-        /// <summary>
-        /// 瓦兰迪亚志愿兵生成倍率。值越低志愿兵越少。默认 0.2。
-        /// </summary>
-        public float VlandiaVolunteerMultiplier { get; private set; } = 0.2f;
-
-        /// <summary>
-        /// 帝国志愿兵生成倍率。默认 0.6。
-        /// </summary>
-        public float EmpireVolunteerMultiplier { get; private set; } = 0.6f;
-
-        /// <summary>
-        /// 阿塞莱志愿兵生成倍率。默认 0.7。
-        /// </summary>
-        public float AseraiVolunteerMultiplier { get; private set; } = 0.7f;
-
         // ========== AI 招募决策配置 ==========
 
         // --- Need Score（招兵紧迫度）---
@@ -216,9 +201,9 @@ namespace ModifiedArmy.common
         public float AiCultMatchFiefBonus { get; private set; } = 1.3f;
 
         /// <summary>
-        /// 异文化领主志愿兵偏好乘数。默认 0.5。
+        /// 异文化驻军调拨偏好乘数。默认 0.5。
         /// </summary>
-        public float AiCultMismatchVolunteerPenalty { get; private set; } = 0.5f;
+        public float AiCultMismatchGarrisonTransferPenalty { get; private set; } = 0.5f;
 
         /// <summary>
         /// 异文化领主雇佣兵偏好乘数。默认 1.3。
@@ -335,27 +320,6 @@ namespace ModifiedArmy.common
                 }
             }
 
-            // ========== VolunteerRecruitment ==========
-            XmlNode volunteerRecruitmentNode = node.SelectSingleNode("VolunteerRecruitment");
-            if (volunteerRecruitmentNode != null)
-            {
-                XmlNode vlandiaNode = volunteerRecruitmentNode.SelectSingleNode("Vlandia");
-                if (vlandiaNode != null)
-                {
-                    VlandiaVolunteerMultiplier = ReadFloatVal(vlandiaNode, "GenerationMultiplier", 0.2f);
-                }
-                XmlNode empireNode = volunteerRecruitmentNode.SelectSingleNode("Empire");
-                if (empireNode != null)
-                {
-                    EmpireVolunteerMultiplier = ReadFloatVal(empireNode, "GenerationMultiplier", 0.6f);
-                }
-                XmlNode aseraiNode = volunteerRecruitmentNode.SelectSingleNode("Aserai");
-                if (aseraiNode != null)
-                {
-                    AseraiVolunteerMultiplier = ReadFloatVal(aseraiNode, "GenerationMultiplier", 0.7f);
-                }
-            }
-
             // ========== AI 招募决策（嵌套 XML）==========
             DeserializeAiRecruitment(node);
 
@@ -423,7 +387,7 @@ namespace ModifiedArmy.common
                         AiCulturalPrefs[culture] = new AiCulturalPreference
                         {
                             Fief = ReadFloatVal(cultureNode, "Fief", 0.4f),
-                            Volunteer = ReadFloatVal(cultureNode, "Volunteer", 0.4f),
+                            GarrisonTransfer = ReadFloatVal(cultureNode, "GarrisonTransfer", 0.4f),
                             Mercenary = ReadFloatVal(cultureNode, "Mercenary", 0.2f)
                         };
                     }
@@ -443,7 +407,7 @@ namespace ModifiedArmy.common
             if (cultIdNode != null)
             {
                 AiCultMatchFiefBonus = ReadFloatVal(cultIdNode, "MatchFiefBonus", 1.3f);
-                AiCultMismatchVolunteerPenalty = ReadFloatVal(cultIdNode, "MismatchVolunteerPenalty", 0.5f);
+                AiCultMismatchGarrisonTransferPenalty = ReadFloatVal(cultIdNode, "MismatchGarrisonTransferPenalty", 0.5f);
                 AiCultMismatchMercenaryBonus = ReadFloatVal(cultIdNode, "MismatchMercenaryBonus", 1.3f);
             }
 
@@ -459,7 +423,7 @@ namespace ModifiedArmy.common
                         AiSituationalMods[id] = new AiSituationalModifier
                         {
                             Fief = ReadFloatVal(sitNode, "Fief", 1.0f),
-                            Volunteer = ReadFloatVal(sitNode, "Volunteer", 1.0f),
+                            GarrisonTransfer = ReadFloatVal(sitNode, "GarrisonTransfer", 1.0f),
                             Mercenary = ReadFloatVal(sitNode, "Mercenary", 1.0f),
                             Threshold = ReadFloatVal(sitNode, "Threshold", 0f)
                         };
@@ -489,10 +453,10 @@ namespace ModifiedArmy.common
         /// <summary>
         /// 根据文化对象获取 AI 招募兵源偏好权重。未找到文化时返回默认均衡偏好。
         /// </summary>
-        public (float Fief, float Volunteer, float Mercenary) GetAiCulturalPreference(CultureObject culture)
+        public (float Fief, float GarrisonTransfer, float Mercenary) GetAiCulturalPreference(CultureObject culture)
         {
             if (culture != null && AiCulturalPrefs.TryGetValue(culture, out var pref))
-                return (pref.Fief, pref.Volunteer, pref.Mercenary);
+                return (pref.Fief, pref.GarrisonTransfer, pref.Mercenary);
 
             return (0.4f, 0.4f, 0.2f);
         }
@@ -500,10 +464,10 @@ namespace ModifiedArmy.common
         /// <summary>
         /// 根据情境 id 获取 AI 招募兵源偏好修正。未找到情境时返回中性修正（全 1.0）。
         /// </summary>
-        public (float Fief, float Volunteer, float Mercenary) GetAiSituationalModifier(string situationId)
+        public (float Fief, float GarrisonTransfer, float Mercenary) GetAiSituationalModifier(string situationId)
         {
             if (situationId != null && AiSituationalMods.TryGetValue(situationId, out var mod))
-                return (mod.Fief, mod.Volunteer, mod.Mercenary);
+                return (mod.Fief, mod.GarrisonTransfer, mod.Mercenary);
 
             return (1.0f, 1.0f, 1.0f);
         }

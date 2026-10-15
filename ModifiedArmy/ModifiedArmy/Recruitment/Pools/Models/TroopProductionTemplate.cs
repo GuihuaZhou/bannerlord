@@ -12,7 +12,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// Flags allow one troop tree to be supplied by both systems.
     /// </summary>
     [Flags]
-    public enum RecruitmentPoolKind
+    public enum TroopProductionKind
     {
         None = 0,
         Professional = 1,
@@ -24,9 +24,9 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// Weight belongs to the pool template; barracks level belongs to the
     /// troop and is copied from basic_troop_config.xml.
     /// </summary>
-    public sealed class RecruitmentPoolTroopEntry
+    public sealed class TroopProductionEntry
     {
-        public RecruitmentPoolTroopEntry(
+        public TroopProductionEntry(
             CharacterObject troop,
             int weight,
             int requiredBarracksLevel)
@@ -47,27 +47,21 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// Shared contract used by professional and fief manpower production.
     /// Production uses a base value plus one step per barracks level.
     /// </summary>
-    public interface IRecruitmentPoolTemplate
+    public interface ITroopProductionTemplate
     {
         string TemplateId { get; }
 
         CultureObject Culture { get; }
 
-        RecruitmentPoolKind PoolKind { get; }
+        TroopProductionKind ProductionKind { get; }
 
-        float BaseDailyProduction { get; }
-
-        float DailyProductionStep { get; }
-
-        IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops { get; }
-
-        float GetDailyProduction(int barracksLevel);
+        IReadOnlyList<TroopProductionEntry> TroopEntries { get; }
     }
 
     /// <summary>
     /// Common parsing and formula helpers shared by both XML template types.
     /// </summary>
-    public static class RecruitmentPoolTemplateUtility
+    public static class TroopProductionTemplateUtility
     {
         public static int ReadOptionalInt(
             XmlNode node,
