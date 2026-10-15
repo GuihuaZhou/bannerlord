@@ -30,8 +30,6 @@ namespace ModifiedArmy.Models.Fief
 
         public RecruitmentPoolKind PoolKind => RecruitmentPoolKind.Fief;
 
-        public int BaseCapacity { get; private set; }
-
         public float BaseDailyProduction { get; private set; }
 
         public float DailyProductionStep { get; private set; }
@@ -172,10 +170,6 @@ namespace ModifiedArmy.Models.Fief
             MinWeeklySupplement = XmlHelper.ReadInt(node, "minWeeklySupplement");
             MaxWeeklySupplement = XmlHelper.ReadInt(node, "maxWeeklySupplement");
 
-            BaseCapacity = RecruitmentPoolTemplateUtility.ReadOptionalInt(
-                node,
-                "baseCapacity",
-                BaseLimit);
             BaseDailyProduction =
                 RecruitmentPoolTemplateUtility.ReadOptionalFloat(
                     node,
@@ -225,11 +219,6 @@ namespace ModifiedArmy.Models.Fief
 
             FiefPartyTemplateManager.Instance.RegisterTemplate(this);
             RecruitmentPoolTemplateRepository.Instance.Register(this);
-        }
-
-        public int GetCapacity()
-        {
-            return Math.Max(0, BaseCapacity);
         }
 
         public float GetDailyProduction(int barracksLevel)

@@ -11,10 +11,8 @@ using ModifiedArmy.Models.Fief;
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
     /// <summary>
-    /// Owns the saved professional and fief manpower pools for every town and
-    /// castle. Daily production fills the largest weighted shortage first,
-    /// while AI recruitment and Fief Party reinforcement consume saved stock
-    /// through explicit transactions.
+    /// Converts settlement manpower into daily professional offers and direct
+    /// fief-party reinforcement. No generated troop inventory is persisted.
     /// </summary>
     public sealed class SettlementRecruitmentPoolBehavior :
         CampaignBehaviorBase
@@ -52,28 +50,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
         public override void RegisterEvents()
         {
-            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
-                this,
-                OnSessionLaunched);
             CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(
                 this,
                 OnDailySettlementTick);
-        }
-
-        /// <summary>
-        /// Defers upgrade-tree traversal until all character objects and
-        /// their upgrade targets have finished loading.
-        /// </summary>
-        private void OnSessionLaunched(CampaignGameStarter starter)
-        {
-            RecruitmentPoolTemplateRepository.Instance
-                .InitializeTroopSources();
-            foreach (SettlementRecruitmentPoolData data in _settlementPools.Values)
-            {
-                data?.EnsureInitialized();
-                data?.ProfessionalTroops.Clear();
-                data?.FiefTroops.Clear();
-            }
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -84,11 +63,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             _settlementPools ??=
                 new Dictionary<Settlement, SettlementRecruitmentPoolData>();
 
-            foreach (SettlementRecruitmentPoolData data in
-                _settlementPools.Values)
-            {
-                data?.EnsureInitialized();
-            }
         }
 
         public SettlementRecruitmentPoolData GetOrCreatePool(
@@ -106,30 +80,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 _settlementPools[settlement] = data;
             }
 
-            data.EnsureInitialized();
             return data;
-        }
-
-        public int GetCapacity(
-            Settlement settlement,
-            RecruitmentPoolKind kind)
-        {
-            ProfessionalProductionRule professionalRule = kind ==
-                RecruitmentPoolKind.Professional
-                    ? ResolveProfessionalProductionRule(settlement)
-                    : null;
-            if (kind == RecruitmentPoolKind.Professional &&
-                professionalRule == null)
-            {
-                return 0;
-            }
-
-            IRecruitmentPoolTemplate template =
-                RecruitmentPoolTemplateRepository.Instance.Resolve(
-                    settlement,
-                    kind,
-                    professionalRule?.Culture ?? settlement?.Culture);
-            return template?.GetCapacity() ?? 0;
         }
 
         public float GetDailyProduction(
@@ -165,8 +116,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         }
 
         /// <summary>
-        /// Returns a detached snapshot so recruitment callers cannot mutate
-        /// saved pool state without using the transaction method below.
+        /// Returns a detached snapshot of today's generated professional
+        /// offers so callers cannot bypass the manpower transaction.
         /// </summary>
         public IReadOnlyDictionary<CharacterObject, int> GetAvailableTroops(
             Settlement settlement,
@@ -179,8 +130,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         }
 
         /// <summary>
-        /// Atomically removes an exact troop quantity from a settlement pool.
-        /// No partial withdrawal occurs when the requested stock is missing.
+        /// Consumes an exact quantity from today's offers and charges the
+        /// corresponding village hearth manpower.
         /// </summary>
         public bool TryConsume(
             Settlement settlement,
@@ -425,78 +376,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return total;
         }
 
-        private static void ReplenishPool(
-            Settlement settlement,
-            SettlementRecruitmentPoolData data,
-            RecruitmentPoolKind kind,
-            int barracksLevel)
-        {
-            ProfessionalProductionRule professionalRule = kind ==
-                RecruitmentPoolKind.Professional
-                    ? ResolveProfessionalProductionRule(settlement)
-                    : null;
-            if (kind == RecruitmentPoolKind.Professional &&
-                professionalRule == null)
-            {
-                return;
-            }
-
-            IRecruitmentPoolTemplate template =
-                RecruitmentPoolTemplateRepository.Instance.Resolve(
-                    settlement,
-                    kind,
-                    professionalRule?.Culture ?? settlement?.Culture);
-            if (template == null)
-            {
-                return;
-            }
-
-            int effectiveBarracksLevel = professionalRule == null
-                ? barracksLevel
-                : Math.Min(
-                    barracksLevel,
-                    professionalRule.MaximumBarracksLevel);
-
-            Dictionary<CharacterObject, int> troops = data.GetTroops(kind);
-            List<RecruitmentPoolTroopEntry> eligible = template.PoolTroops
-                .Where(entry =>
-                    entry?.Troop != null &&
-                    entry.RequiredBarracksLevel <= effectiveBarracksLevel)
-                .ToList();
-            int capacity = template.GetCapacity();
-            int currentCount = troops.Values.Sum(value => Math.Max(0, value));
-
-            if (eligible.Count == 0 || currentCount >= capacity)
-            {
-                return;
-            }
-
-            float progress = data.AddProductionProgress(
-                kind,
-                template.GetDailyProduction(effectiveBarracksLevel) *
-                (professionalRule?.ProductionRate ?? 1f));
-            int produced = Math.Min(
-                (int)Math.Floor(progress),
-                capacity - currentCount);
-
-            for (int index = 0; index < produced; index++)
-            {
-                RecruitmentPoolTroopEntry selected = SelectLargestShortage(
-                    eligible,
-                    troops,
-                    capacity);
-                if (selected == null)
-                {
-                    break;
-                }
-
-                troops.TryGetValue(selected.Troop, out int count);
-                troops[selected.Troop] = Math.Max(0, count) + 1;
-            }
-
-            data.ConsumeProductionProgress(kind, produced);
-        }
-
         private static ProfessionalProductionRule
             ResolveProfessionalProductionRule(Settlement settlement)
         {
@@ -566,36 +445,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     first.StringId,
                     second.StringId,
                     StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
-        /// Chooses the troop furthest below its weighted capacity target.
-        /// This produces stable long-term ratios without random streaks.
-        /// </summary>
-        private static RecruitmentPoolTroopEntry SelectLargestShortage(
-            IReadOnlyList<RecruitmentPoolTroopEntry> entries,
-            IReadOnlyDictionary<CharacterObject, int> troops,
-            int capacity)
-        {
-            int totalWeight = entries.Sum(entry => entry.Weight);
-            RecruitmentPoolTroopEntry selected = null;
-            float largestShortage = float.MinValue;
-
-            foreach (RecruitmentPoolTroopEntry entry in entries)
-            {
-                troops.TryGetValue(entry.Troop, out int currentCount);
-                float target = capacity * entry.Weight /
-                    (float)Math.Max(1, totalWeight);
-                float shortage = target - Math.Max(0, currentCount);
-
-                if (shortage > largestShortage)
-                {
-                    largestShortage = shortage;
-                    selected = entry;
-                }
-            }
-
-            return selected;
         }
 
         public static int GetBarracksLevel(Settlement settlement)

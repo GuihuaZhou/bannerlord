@@ -28,8 +28,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         public RecruitmentPoolKind PoolKind =>
             RecruitmentPoolKind.Professional;
 
-        public int BaseCapacity { get; private set; }
-
         public float BaseDailyProduction { get; private set; }
 
         public float DailyProductionStep { get; private set; }
@@ -47,10 +45,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             Culture = objectManager.ReadObjectReferenceFromXml<CultureObject>(
                 "culture",
                 node);
-            BaseCapacity = RecruitmentPoolTemplateUtility.ReadOptionalInt(
-                node,
-                "baseCapacity",
-                0);
             BaseDailyProduction =
                 RecruitmentPoolTemplateUtility.ReadOptionalFloat(
                     node,
@@ -80,11 +74,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             }
 
             RecruitmentPoolTemplateRepository.Instance.Register(this);
-        }
-
-        public int GetCapacity()
-        {
-            return Math.Max(0, BaseCapacity);
         }
 
         public float GetDailyProduction(int barracksLevel)

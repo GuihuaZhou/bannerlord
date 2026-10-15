@@ -44,10 +44,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     }
 
     /// <summary>
-    /// Shared contract used by professional and fief manpower pools.
-    /// Capacity is fixed by the template. Production uses a base value plus
-    /// one step per barracks level, so culture and settlement type remain
-    /// fully data-driven without allowing barracks to enlarge storage.
+    /// Shared contract used by professional and fief manpower production.
+    /// Production uses a base value plus one step per barracks level.
     /// </summary>
     public interface IRecruitmentPoolTemplate
     {
@@ -57,15 +55,11 @@ namespace ModifiedArmy.Recruitment.Pools.Models
 
         RecruitmentPoolKind PoolKind { get; }
 
-        int BaseCapacity { get; }
-
         float BaseDailyProduction { get; }
 
         float DailyProductionStep { get; }
 
         IReadOnlyList<RecruitmentPoolTroopEntry> PoolTroops { get; }
-
-        int GetCapacity();
 
         float GetDailyProduction(int barracksLevel);
     }

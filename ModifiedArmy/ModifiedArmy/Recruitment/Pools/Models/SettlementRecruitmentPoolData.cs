@@ -1,34 +1,16 @@
 using System;
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.Core;
-using TaleWorlds.Library;
 using TaleWorlds.SaveSystem;
 
 namespace ModifiedArmy.Recruitment.Pools.Models
 {
     /// <summary>
-    /// Save data for both manpower pools owned by one settlement. Template
-    /// definitions are intentionally excluded because they are rebuilt from
-    /// XML whenever the game starts.
+    /// Saves fractional production progress and the weekly fief-production
+    /// counter. Generated troops are transferred directly to their target.
     /// </summary>
     [SaveableRootClass(5)]
     public sealed class SettlementRecruitmentPoolData
     {
-        [SaveableProperty(1)]
-        public Dictionary<CharacterObject, int> ProfessionalTroops
-        {
-            get;
-            private set;
-        } = new Dictionary<CharacterObject, int>();
-
-        [SaveableProperty(2)]
-        public Dictionary<CharacterObject, int> FiefTroops
-        {
-            get;
-            private set;
-        } = new Dictionary<CharacterObject, int>();
-
         [SaveableProperty(3)]
         public float ProfessionalProductionProgress
         {
@@ -72,15 +54,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 FiefProductionProgress = value;
         }
 
-        public Dictionary<CharacterObject, int> GetTroops(
-            RecruitmentPoolKind kind)
-        {
-            EnsureInitialized();
-            return kind == RecruitmentPoolKind.Professional
-                ? ProfessionalTroops
-                : FiefTroops;
-        }
-
         public float AddProductionProgress(
             RecruitmentPoolKind kind,
             float amount)
@@ -97,13 +70,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                 0f,
                 FiefProductionProgress + amount);
             return FiefProductionProgress;
-        }
-
-        public float GetProductionProgress(RecruitmentPoolKind kind)
-        {
-            return kind == RecruitmentPoolKind.Professional
-                ? ProfessionalProductionProgress
-                : FiefProductionProgress;
         }
 
         public void ConsumeProductionProgress(
@@ -129,10 +95,5 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             }
         }
 
-        public void EnsureInitialized()
-        {
-            ProfessionalTroops ??= new Dictionary<CharacterObject, int>();
-            FiefTroops ??= new Dictionary<CharacterObject, int>();
-        }
     }
 }
