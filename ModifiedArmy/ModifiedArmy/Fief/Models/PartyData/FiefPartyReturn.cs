@@ -1,347 +1,121 @@
-using Bannerlord.UIExtenderEx;
-using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
-using System.Text;
-using System.Text.RegularExpressions;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
-using TaleWorlds.Engine;
-using TaleWorlds.Library;
 using TaleWorlds.Localization;
-using TaleWorlds.SaveSystem;
-using static System.Collections.Specialized.BitVector32;
-using static ModifiedArmy.common.CommonConstants;
 
 namespace ModifiedArmy.Models.Fief
 {
     public partial class FiefPartyData
     {
-        /// <summary>
-        /// 玩家/AI 将部队中的采邑士兵（含伤员）归还至封邑军队。
-        /// - 所有归还士兵（健康+伤员）均作为健康兵加入 FiefTroops（通过冷却分遣队）
-        /// - 使用 RemoveTroop 自动处理健康/伤员混合移除
-        /// - 仅处理 Occupation.Soldier
-        /// - 先清空 RecruitedTroopDetachmentList
-        /// - 按兵种剩余容量归还（不再循环权重）
-        /// - 归还时：
-        ///     1. 恢复实际归还士兵对应的 Hearth
-        ///     2. 按照征召模型恢复对应的一次性 Prosperity 动员成本
-        /// - Daily Debuff 不会因为归还而返还
-        /// </summary>
         public int ReturnTroopsToSettlement(MobileParty sourceParty)
         {
-            if (sourceParty == null || _fiefParty == null)
+            if (sourceParty == null || _fiefParty == null ||
+                sourceParty.ActualClan == null ||
+                sourceParty.ActualClan != _settlement?.OwnerClan)
                 return 0;
 
-            // ============================================================
-            // 记录当前处于征召状态的士兵数量
-            //
-            // 必须在清空 RecruitedTroopDetachmentList 之前获取。
-            //
-            // 例如：
-            //     当前有 60 名采邑士兵被征召
-            //     recruitedCountBeforeReturn = 60
-            //
-            // 这个值目前主要用于日志和调试。
-            // Prosperity 返还按照实际归还人数重新使用
-            // CalculateRecruitmentProsperityCost() 计算。
-            // ============================================================
-            int recruitedCountBeforeReturn =
-                GetRecruitedFiefTroopCount();
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (manager == null) return 0;
+            manager.AdvanceServiceDays(sourceParty);
+            manager.ReconcilePartyFiefTroops(sourceParty);
 
-            // ============================================================
-            // 记录归还的封邑士兵
-            // ============================================================
-            Dictionary<CharacterObject, int> tmpReturnTroops = new();
+            List<FiefServiceBatch> batches = ServiceBatches
+                .Where(d => d?.ServingParty == sourceParty && !d.IsEmpty())
+                .OrderBy(d => d.BatchId, StringComparer.Ordinal)
+                .ToList();
+            if (batches.Count == 0) return 0;
 
-            foreach (var element in sourceParty.MemberRoster.GetTroopRoster())
+            Dictionary<CharacterObject, int> returned = new();
+            foreach (CharacterObject troop in batches.SelectMany(b => b.Troops.Keys)
+                .Distinct().OrderBy(t => t.StringId))
             {
-                var troop = element.Character;
+                int available = sourceParty.MemberRoster.GetElementNumber(troop);
+                int registered = batches.Sum(b =>
+                    b.Troops.TryGetValue(troop, out int n) ? n : 0);
+                int target = Math.Min(available, registered);
+                if (target <= 0) continue;
 
-                if (troop == null ||
-                    troop.Occupation != Occupation.Soldier)
-                    continue;
-
-                if (!_fiefPartyTemplate.IsEnableTroop(troop))
-                    continue;
-
-                // Number already includes wounded troops in Bannerlord rosters.
-                int count = element.Number;
-
-                if (count <= 0)
-                    continue;
-
-                var type =
-                    SoldierTypeClassifier.GetSoldierType(troop);
-
-                // ========================================================
-                // 检查剩余容量是否足够
-                // ========================================================
-                int registered = RecruitedTroopDetachmentList
-                    .Where(d => d != null && d.Troops != null)
-                    .Sum(d => d.Troops.TryGetValue(troop, out int n) ? n : 0);
-                int taken = Math.Min(count, registered);
-
-                if (taken > 0)
+                int remaining = target;
+                int remainingWeight = registered;
+                foreach (FiefServiceBatch batch in batches)
                 {
-                    // 从 sourceParty 移除士兵
-                    RemoveTroopsFromParty(
-                        sourceParty.MemberRoster,
-                        troop,
-                        taken);
-
-                    // 记录归还的士兵和数量
-                    if (tmpReturnTroops.ContainsKey(troop))
+                    if (!batch.Troops.TryGetValue(troop, out int weight) || weight <= 0) continue;
+                    int share = remainingWeight <= 0 ? 0 :
+                        Math.Min(weight, (int)Math.Floor((double)remaining * weight / remainingWeight));
+                    if (share > 0)
                     {
-                        tmpReturnTroops[troop] += taken;
+                        batch.Troops[troop] -= share;
+                        remaining -= share;
                     }
-                    else
-                    {
-                        tmpReturnTroops[troop] = taken;
-                    }
-
-                    int remaining = taken;
-                    foreach (FiefTroopDetachment detachment in
-                        RecruitedTroopDetachmentList.OrderBy(d => d.WaitCycle).ToList())
-                    {
-                        if (remaining <= 0 || detachment?.Troops == null ||
-                            !detachment.Troops.TryGetValue(troop, out int recorded))
-                            continue;
-                        int removed = Math.Min(remaining, recorded);
-                        if (removed == recorded) detachment.Troops.Remove(troop);
-                        else detachment.Troops[troop] = recorded - removed;
-                        remaining -= removed;
-                    }
+                    remainingWeight -= weight;
                 }
+                foreach (FiefServiceBatch batch in batches)
+                {
+                    if (remaining <= 0) break;
+                    if (!batch.Troops.TryGetValue(troop, out int count) || count <= 0) continue;
+                    batch.Troops[troop]--;
+                    remaining--;
+                }
+                foreach (FiefServiceBatch batch in batches)
+                    if (batch.Troops.TryGetValue(troop, out int count) && count <= 0)
+                        batch.Troops.Remove(troop);
+
+                sourceParty.MemberRoster.RemoveTroop(troop, target);
+                returned[troop] = target;
             }
 
-            RecruitedTroopDetachmentList.RemoveAll(d => d == null || d.IsEmpty());
-
-            int tmpReturnTroopCount =
-                tmpReturnTroops.Values.Sum();
-
-            if (tmpReturnTroopCount <= 0)
+            int returnedCount = returned.Values.Sum();
+            if (returnedCount <= 0) return 0;
+            foreach (FiefServiceBatch empty in batches.Where(b => b.IsEmpty()).ToList())
             {
-                ModLogger.Debug(
-                    $"[Return] Returned {tmpReturnTroopCount} troops to fief '{_settlement?.Name}'. ");
-
-                return 0;
+                ServiceBatches.Remove(empty);
+                manager.UnregisterServingDetachment(_settlement, empty);
             }
 
-            // ============================================================
-            // 计算本次实际归还士兵对应的 Prosperity
-            //
-            // 重要：
-            //
-            // CalculateRecruitmentProsperityCost() 的逻辑是：
-            //
-            //     当前已征召人数
-            //          ↓
-            //     再征召 N 人所需要的 Prosperity
-            //
-            // 由于前面已经清空 RecruitedTroopDetachmentList，
-            // 此时：
-            //
-            //     GetRecruitedFiefTroopCount() = 0
-            //
-            // 因此：
-            //
-            //     归还 60 人
-            //     → CalculateRecruitmentProsperityCost(60)
-            //     → 0 → 60
-            //
-            // Town：
-            //     60 × 3 × 1 = 180
-            //
-            // 所以：
-            //
-            //     征召 60 → -180
-            //     归还 60 → +180
-            //
-            // 如果只回来 40 人：
-            //
-            //     40 × 3 × 1 = 120
-            //
-            //     征召 60 → -180
-            //     归还 40 → +120
-            //
-            // 剩余 20 人对应的 Prosperity 永久损失。
-            //
-            // Daily Debuff 不参与返还。
-            // ============================================================
-            float prosperityToReturn = 0f;
-
-            // ============================================================
-            // 归还 Hearth
-            //
-            // 只恢复实际活着归还的士兵数量。
-            //
-            // 例如：
-            //     征召 100
-            //     归还 70
-            //
-            //     Hearth +70
-            //
-            // 剩余 30 不恢复。
-            // ============================================================
-            float hearthCost = Campaign.Current
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .ReleaseFiefService(_settlement, tmpReturnTroopCount, true) ?? 0;
-
-            // ============================================================
-            // 添加到 ReturnedTroopDetachmentList，
-            // 记录处于冷却状态的士兵
-            //
-            // 冷却周期从模板读取（_fiefPartyTemplate.ReturnCooldownWeeks），
-            // 替代原 CommonConstants.RETURN_TROOP_WAIT_CYCLE。
-            // ============================================================
-            int returnCooldown =
-                _fiefPartyTemplate?.ReturnCooldownWeeks
-                ?? CommonConstants.RETURN_TROOP_WAIT_CYCLE;
-
-            FiefTroopDetachment targetDetachment =
-                ReturnedTroopDetachmentList
-                    .FirstOrDefault(
-                        d => d != null &&
-                            d.WaitCycle ==
-                            returnCooldown);
-
-            if (targetDetachment == null)
+            int restoredHearth = manager.ReleaseFiefService(
+                _settlement,
+                returnedCount,
+                true);
+            int cooldown = _fiefPartyTemplate?.ReturnCooldownWeeks ??
+                CommonConstants.RETURN_TROOP_WAIT_CYCLE;
+            FiefReturnBatch cooling = ReturnBatches
+                .FirstOrDefault(d => d != null && d.WaitWeeks == cooldown);
+            if (cooling == null)
             {
-                targetDetachment =
-                    new FiefTroopDetachment(
-                        returnCooldown);
-
-                ReturnedTroopDetachmentList.Add(
-                    targetDetachment);
+                cooling = new FiefReturnBatch(cooldown);
+                ReturnBatches.Add(cooling);
             }
+            cooling.AddTroops(returned);
+            SyncManpowerCounters();
 
-            // 向目标分遣队添加归还的部队
-            targetDetachment.AddTroops(
-                tmpReturnTroops);
-
-            // ============================================================
-            // 更新计数器
-            // ============================================================
-            _totalTroopCount =
-                _soldierTypeCounts.Values.Sum();
-
-            // ============================================================
-            // 清除工资减免
-            // ============================================================
-            var _fiefWageExemptionManager =
-                Campaign.Current
-                    .GetCampaignBehavior<FiefWageExemptionManager>();
-
-            _fiefWageExemptionManager?.ConsumeExemption(
-                sourceParty,
-                tmpReturnTroopCount);
-
-            // ============================================================
-            // 显示归还结果
-            // ============================================================
-            TextObject msgResult =
-                GameTexts.FindText(
-                    "str_modifiedarmy_fief_return_result");
-
-            msgResult.SetTextVariable(
-                "PARTY_NAME",
-                PartyLogFormatter.GetDisplayName(sourceParty));
-
-            msgResult.SetTextVariable(
-                "SETTLEMENT_NAME",
-                _settlement.Name.ToString());
-
-            msgResult.SetTextVariable(
-                "RETURNED_COUNT",
-                tmpReturnTroopCount);
-
-            msgResult.SetTextVariable(
-                "PROSPERITY_COST",
-                prosperityToReturn);
-
-            msgResult.SetTextVariable(
-                "HEARTH_COST",
-                hearthCost);
-
-            msgResult.SetTextVariable(
-                "RETINUE_COUNT",
-                _soldierTypeCounts[SoldierType.Retinue]);
-
-            msgResult.SetTextVariable(
-                "MAX_RETINUE",
-                _soldierTypeMaxCounts[SoldierType.Retinue]);
-
-            msgResult.SetTextVariable(
-                "SERGEANT_COUNT",
-                _soldierTypeCounts[SoldierType.Sergeant]);
-
-            msgResult.SetTextVariable(
-                "MAX_SERGEANT",
-                _soldierTypeMaxCounts[SoldierType.Sergeant]);
-
-            msgResult.SetTextVariable(
-                "MARINE_COUNT",
-                _soldierTypeCounts[SoldierType.Marine]);
-
-            msgResult.SetTextVariable(
-                "MAX_MARINE",
-                _soldierTypeMaxCounts[SoldierType.Marine]);
-
-            msgResult.SetTextVariable(
-                "SLAVE_COUNT",
-                _soldierTypeCounts[SoldierType.Slave]);
-
-            msgResult.SetTextVariable(
-                "MAX_SLAVE",
-                _soldierTypeMaxCounts[SoldierType.Slave]);
-
-            msgResult.SetTextVariable(
-                "MILITIA_COUNT",
-                _soldierTypeCounts[SoldierType.Militia]);
-
-            msgResult.SetTextVariable(
-                "MAX_MILITIA",
-                _soldierTypeMaxCounts[SoldierType.Militia]);
-
-            msgResult.SetTextVariable(
-                "TROOP_COUNT",
-                _totalTroopCount);
-
-            msgResult.SetTextVariable(
-                "TOTAL_LIMIT",
-                _totalLimit);
-
-            if (sourceParty.LeaderHero.Clan == Clan.PlayerClan)
-                ModLogger.Notice(
-                    msgResult.ToString());
-            else
-                ModLogger.Debug(
-                    msgResult.ToString());
-
-            // ============================================================
-            // 玩家额外输出 Prosperity 归还日志
-            // ============================================================
-            if (_settlement.OwnerClan == Clan.PlayerClan)
-            {
-                ModLogger.Debug(
-                    $"[Return] Fief '{_settlement?.Name}' returned " +
-                    $"{prosperityToReturn:F2} Prosperity. " +
-                    $"Recruited before return: {recruitedCountBeforeReturn}, " +
-                    $"returned troops: {tmpReturnTroopCount}.");
-            }
-
-            return tmpReturnTroopCount;
-        }       
+            TextObject message = GameTexts.FindText("str_modifiedarmy_fief_return_result");
+            message.SetTextVariable("PARTY_NAME", PartyLogFormatter.GetDisplayName(sourceParty));
+            message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+            message.SetTextVariable("RETURNED_COUNT", returnedCount);
+            message.SetTextVariable("PROSPERITY_COST", 0);
+            message.SetTextVariable("HEARTH_COST", restoredHearth);
+            message.SetTextVariable("RETINUE_COUNT", _soldierTypeCounts[SoldierType.Retinue]);
+            message.SetTextVariable("MAX_RETINUE", _soldierTypeMaxCounts[SoldierType.Retinue]);
+            message.SetTextVariable("SERGEANT_COUNT", _soldierTypeCounts[SoldierType.Sergeant]);
+            message.SetTextVariable("MAX_SERGEANT", _soldierTypeMaxCounts[SoldierType.Sergeant]);
+            message.SetTextVariable("MARINE_COUNT", _soldierTypeCounts[SoldierType.Marine]);
+            message.SetTextVariable("MAX_MARINE", _soldierTypeMaxCounts[SoldierType.Marine]);
+            message.SetTextVariable("SLAVE_COUNT", _soldierTypeCounts[SoldierType.Slave]);
+            message.SetTextVariable("MAX_SLAVE", _soldierTypeMaxCounts[SoldierType.Slave]);
+            message.SetTextVariable("MILITIA_COUNT", _soldierTypeCounts[SoldierType.Militia]);
+            message.SetTextVariable("MAX_MILITIA", _soldierTypeMaxCounts[SoldierType.Militia]);
+            message.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            message.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            if (sourceParty.ActualClan == Clan.PlayerClan) ModLogger.Notice(message.ToString());
+            else ModLogger.Debug(message.ToString());
+            return returnedCount;
+        }
     }
 }

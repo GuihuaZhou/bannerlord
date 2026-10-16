@@ -64,7 +64,7 @@ namespace ModifiedArmy.Models.Fief
         /// 每天调用一次，处理封邑军队征召期间的每日 Prosperity 损失。
         ///
         /// 规则：
-        /// - 只计算当前处于 RecruitedTroopDetachmentList 的士兵。
+        /// - Only counts soldiers in the current service batches.
         /// - 玩家和 AI 暂时使用相同的每日损失。
         /// - Prosperity 可以产生小数。
         /// - Hearth 不受 Daily Debuff 影响。

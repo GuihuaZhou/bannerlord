@@ -223,6 +223,8 @@ namespace ModifiedArmy.Models
     public static class SoldierTypeClassifier
     {
         private static readonly Dictionary<CharacterObject, SoldierType> _typeMap = new();
+        private static readonly Dictionary<(CharacterObject From, CharacterObject To), bool>
+            _upgradePathCache = new();
 
         /// <summary>
         /// [DEBUG] Prints all entries in the _typeMap for debugging purposes.
@@ -257,6 +259,40 @@ namespace ModifiedArmy.Models
             return SoldierType.Other;
         }
 
+        public static bool CanUpgradeTo(CharacterObject from, CharacterObject to)
+        {
+            if (from == null || to == null) return false;
+            if (from == to) return true;
+            var key = (from, to);
+            if (_upgradePathCache.TryGetValue(key, out bool cached)) return cached;
+            HashSet<CharacterObject> visited = new();
+            Stack<CharacterObject> pending = new();
+            pending.Push(from);
+            while (pending.Count > 0)
+            {
+                CharacterObject current = pending.Pop();
+                if (current == null || !visited.Add(current)) continue;
+                foreach (CharacterObject upgrade in current.UpgradeTargets ??
+                    Array.Empty<CharacterObject>())
+                {
+                    if (upgrade == to)
+                    {
+                        _upgradePathCache[key] = true;
+                        return true;
+                    }
+                    if (upgrade != null) pending.Push(upgrade);
+                }
+            }
+            _upgradePathCache[key] = false;
+            return false;
+        }
+
+        public static bool CanMatchUpgradeTree(CharacterObject a, CharacterObject b)
+        {
+            return a != null && b != null &&
+                (a == b || CanUpgradeTo(a, b) || CanUpgradeTo(b, a));
+        }
+
         /// <summary>
         /// Recursively assigns the given troop type to the entire upgrade tree starting from 'current'.
         /// </summary>
@@ -287,6 +323,7 @@ namespace ModifiedArmy.Models
 
             // Clear previous data (in case of reload)
             _typeMap.Clear();
+            _upgradePathCache.Clear();
 
             foreach (var culture in MBObjectManager.Instance.GetObjectTypeList<CultureObject>())
             {

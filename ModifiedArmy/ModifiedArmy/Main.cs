@@ -185,7 +185,6 @@ namespace ModifiedArmy
 
                 campaignStarter.AddBehavior(new FiefPartyManager());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
-                campaignStarter.AddBehavior(new FiefWageExemptionManager());
 
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
                 campaignStarter.AddBehavior(

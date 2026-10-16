@@ -3,6 +3,7 @@ using ModifiedArmy.common;
 using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -123,12 +124,12 @@ namespace ModifiedArmy.Models
                 mobileParty,
                 troopRoster,
                 includeDescriptions);
-            FiefWageExemptionManager manager = Campaign.Current?
-                .GetCampaignBehavior<FiefWageExemptionManager>();
-            int exemptionCount =
-                manager?.GetExemptableTroopCount(mobileParty) ?? 0;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            Dictionary<CharacterObject, int> exemptByTroop =
+                manager?.GetExemptTroopCounts(mobileParty) ?? new();
 
-            if (exemptionCount <= 0)
+            if (exemptByTroop.Values.Sum() <= 0)
             {
                 return fullWage;
             }
@@ -136,10 +137,10 @@ namespace ModifiedArmy.Models
             TroopRoster chargeableRoster =
                 BuildChargeableRoster(
                     troopRoster,
-                    exemptionCount,
-                    out int exemptedTroops);
+                    exemptByTroop,
+                    out Dictionary<CharacterObject, int> appliedExemption);
 
-            if (exemptedTroops <= 0)
+            if (appliedExemption.Values.Sum() <= 0)
             {
                 return fullWage;
             }
@@ -165,30 +166,27 @@ namespace ModifiedArmy.Models
 
         private static TroopRoster BuildChargeableRoster(
             TroopRoster source,
-            int exemptionCount,
-            out int exemptedTroops)
+            IReadOnlyDictionary<CharacterObject, int> exemptByTroop,
+            out Dictionary<CharacterObject, int> appliedExemption)
         {
             TroopRoster result =
                 TroopRoster.CreateDummyTroopRoster();
-            int remainingExemption = exemptionCount;
-            exemptedTroops = 0;
+            appliedExemption = new Dictionary<CharacterObject, int>();
 
             foreach (TroopRosterElement element in
                 source.GetTroopRoster())
             {
                 int chargeableCount = element.Number;
 
-                if (!element.Character.IsHero
-                    && remainingExemption > 0
-                    && SoldierTypeClassifier.IsFiefTroop(
-                        element.Character))
+                if (!element.Character.IsHero &&
+                    exemptByTroop.TryGetValue(element.Character, out int registered) &&
+                    registered > 0)
                 {
                     int exempted = Math.Min(
                         chargeableCount,
-                        remainingExemption);
+                        registered);
                     chargeableCount -= exempted;
-                    remainingExemption -= exempted;
-                    exemptedTroops += exempted;
+                    appliedExemption[element.Character] = exempted;
                 }
 
                 if (chargeableCount <= 0)

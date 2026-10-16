@@ -374,15 +374,15 @@ namespace ModifiedArmy.Models.Fief
             // 升级封邑士兵
             PerformAutoUpgrade();
 
-            // 处理 ReturnedTroopDetachmentList, 即解散士兵冷却结束
-            if (ReturnedTroopDetachmentList != null)
+            // Process returned soldiers whose cooldown has completed.
+            if (ReturnBatches != null)
             {
-                for (int i = ReturnedTroopDetachmentList.Count - 1; i >= 0; i--)
+                for (int i = ReturnBatches.Count - 1; i >= 0; i--)
                 {
-                    var detachment = ReturnedTroopDetachmentList[i];
+                    var detachment = ReturnBatches[i];
                     detachment.Tick();
 
-                    if (detachment.IsReadyToReturn())
+                    if (detachment.IsReady())
                     {
                         foreach (var kvp in detachment.Troops)
                         {
@@ -390,7 +390,7 @@ namespace ModifiedArmy.Models.Fief
                         }
 
                         // 移除该分遣队
-                        ReturnedTroopDetachmentList.RemoveAt(i);
+                        ReturnBatches.RemoveAt(i);
 
                         if (_settlement.OwnerClan == Clan.PlayerClan)
                         {
@@ -402,35 +402,9 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
 
-            // 处理已经征召的士兵
-            if (RecruitedTroopDetachmentList != null)
-            {
-                for (int i = RecruitedTroopDetachmentList.Count - 1; i >= 0; i--)
-                {
-                    var detachment = RecruitedTroopDetachmentList[i];
-                    detachment.Tick();
-
-                    if (detachment.IsLastCycle() && _settlement.OwnerClan == Clan.PlayerClan)
-                    {
-                        TextObject textObject = new TextObject("{=FiefTroopsServiceEnding}The service period of {SETTLEMENT_NAME}'s feudal troops is about to end!", null);
-                        textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
-                        MBInformationManager.AddQuickInformation(textObject, 5000, null, null, "");
-                    }
-                    else if (detachment.IsReadyToReturn())
-                    {
-                        int expiredCount = detachment.GetTotalCount();
-                        foreach (var kvp in detachment.Troops)
-                        {
-                            var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
-                            _soldierTypeCounts[type] = Math.Max(0, _soldierTypeCounts[type] - kvp.Value);
-                        }
-                        Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
-                            .ReleaseFiefService(_settlement, expiredCount, false);
-                        // 移除该分遣队
-                        RecruitedTroopDetachmentList.RemoveAt(i);
-                    }
-                }
-            }
+            // Active service has no fixed expiry. Daily reconciliation owns
+            // losses and wage eligibility; weekly processing only advances
+            // returned detachments and upgrades ready troops.
 
             // 检查是否已达总兵力上限
             _totalTroopCount = _soldierTypeCounts.Values.Sum();

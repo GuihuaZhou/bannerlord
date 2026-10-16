@@ -9,7 +9,7 @@
 
     属性说明：
     - 当前代码读取 baseLimit、villageBonus 和 maxWeeklySupplement。
-    - maxServiceWeeks: 封邑兵最大服役周期（周），默认 5
+    - maxServiceWeeks: 已废弃并忽略，仅为旧配置兼容保留
     - returnCooldownWeeks: 归还后冷却周期（周），默认 3
     - prosperityCostPerTroop: 征召时每名士兵消耗的基础繁荣度，默认 4
     - hearthCostPerTroop: 征召时每名士兵消耗的户数，默认 1

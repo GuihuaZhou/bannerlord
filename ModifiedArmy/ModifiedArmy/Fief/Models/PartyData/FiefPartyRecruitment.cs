@@ -46,7 +46,7 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 从封邑军队中按比例招募士兵到目标部队。
         /// - 从 _fiefParty 移除已征召士兵（因为他们已离营）
-        /// - 添加到 RecruitedTroopDetachmentList（标记为已征召）
+        /// - Records the transferred troops in a new FiefServiceBatch.
         /// - 不修改 RetinueCount/SergeantCount/MilitiaCount（兵力仍属封邑）
         ///
         /// 经济规则：
@@ -242,35 +242,7 @@ namespace ModifiedArmy.Models.Fief
 
             // Rural mobilization has already been reserved atomically.
 
-            // ============================================================
-            // 记录招募的士兵
-            //
-            // 服役周期从模板读取（_fiefPartyTemplate.MaxServiceWeeks），
-            // 替代原 CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE。
-            // ============================================================
-            int maxServiceWeeks =
-                _fiefPartyTemplate?.MaxServiceWeeks
-                ?? CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE;
-
-            FiefTroopDetachment targetDetachment =
-                RecruitedTroopDetachmentList
-                    .FirstOrDefault(
-                        d => d != null &&
-                            d.WaitCycle ==
-                            maxServiceWeeks);
-
-            if (targetDetachment == null)
-            {
-                targetDetachment =
-                    new FiefTroopDetachment(
-                        maxServiceWeeks);
-
-                RecruitedTroopDetachmentList.Add(
-                    targetDetachment);
-            }
-
-            targetDetachment.AddTroops(
-                tmpRecruitTroops);
+            CreateServingDetachment(targetParty, tmpRecruitTroops);
 
             TextObject msg =
                 GameTexts.FindText(
@@ -321,17 +293,6 @@ namespace ModifiedArmy.Models.Fief
             {
                 ModLogger.Info(msg.ToString());
             }
-
-            // ============================================================
-            // 给与工资减免
-            // ============================================================
-            var _fiefWageExemptionManager =
-                Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-
-            _fiefWageExemptionManager?.AddExemption(
-                targetParty,
-                totalRecruited,
-                CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
 
             return totalRecruited;
         }
@@ -504,7 +465,8 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>实际招募的总人数（用于工资豁免）</returns>
         public int RecruitManualSelection(TroopRoster selectedRoster, MobileParty targetParty)
         {
-            if (selectedRoster == null || selectedRoster.TotalManCount <= 0 || _fiefParty == null)
+            if (selectedRoster == null || selectedRoster.TotalManCount <= 0 ||
+                _fiefParty == null || targetParty == null)
                 return 0;
 
             var tmpRecruitTroops = new Dictionary<CharacterObject, int>();
@@ -528,10 +490,23 @@ namespace ModifiedArmy.Models.Fief
             int tmpHearthCostPerTroop =
                 _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
 
-            int requestedCount = selectedRoster.GetTroopRoster()
-                .Where(e => e.Character != null && e.Number > 0 &&
-                    SoldierTypeClassifier.IsFiefTroop(e.Character))
-                .Sum(e => e.Number);
+            int remainingPartySpace = Math.Max(0,
+                targetParty.Party.PartySizeLimit - targetParty.Party.NumberOfAllMembers);
+            Dictionary<CharacterObject, int> validatedSelection = new();
+            foreach (var element in selectedRoster.GetTroopRoster())
+            {
+                if (remainingPartySpace <= 0) break;
+                CharacterObject troop = element.Character;
+                if (troop == null || element.Number <= 0 ||
+                    !SoldierTypeClassifier.IsFiefTroop(troop)) continue;
+                int available = _fiefParty.GetElementNumber(troop);
+                int approved = Math.Min(remainingPartySpace,
+                    Math.Min(element.Number, available));
+                if (approved <= 0) continue;
+                validatedSelection[troop] = approved;
+                remainingPartySpace -= approved;
+            }
+            int requestedCount = validatedSelection.Values.Sum();
             FiefPartyManager manager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
             if (requestedCount <= 0 || manager == null ||
@@ -543,7 +518,9 @@ namespace ModifiedArmy.Models.Fief
             foreach (var element in selectedRoster.GetTroopRoster())
             {
                 var troop = element.Character;
-                int count = element.Number;
+                int count = troop != null && validatedSelection.TryGetValue(troop, out int approved)
+                    ? approved
+                    : 0;
                 if (troop == null || count <= 0) continue;
 
                 if (!SoldierTypeClassifier.IsFiefTroop(troop))
@@ -574,20 +551,7 @@ namespace ModifiedArmy.Models.Fief
 
             // Rural mobilization has already been reserved atomically.
 
-            // 添加到 RecruitedTroopDetachmentList
-            int maxServiceWeeks =
-                _fiefPartyTemplate?.MaxServiceWeeks
-                ?? CommonConstants.FIEF_TROOP_MAX_SERVICE_CYCLE;
-
-            FiefTroopDetachment targetDetachment = RecruitedTroopDetachmentList
-                .FirstOrDefault(d => d != null && d.WaitCycle == maxServiceWeeks);
-
-            if (targetDetachment == null)
-            {
-                targetDetachment = new FiefTroopDetachment(maxServiceWeeks);
-                RecruitedTroopDetachmentList.Add(targetDetachment);
-            }
-            targetDetachment.AddTroops(tmpRecruitTroops);
+            CreateServingDetachment(targetParty, tmpRecruitTroops);
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
             msg.SetTextVariable(
@@ -611,15 +575,10 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Debug(msg.ToString());
             }
 
-            // 给予工资减免
-            var _fiefWageExemptionManager = Campaign.Current.GetCampaignBehavior<FiefWageExemptionManager>();
-            _fiefWageExemptionManager?.AddExemption(
-                targetParty,
-                totalRecruited,
-                CommonConstants.FIEF_WAGE_EXEMPTION_DAYS);
-
-            // 将士兵添加到目标party
-            targetParty.MemberRoster.Add(selectedRoster);
+            // Add exactly the roster that was validated and removed from the
+            // fief, never the unchecked UI selection object.
+            foreach (var recruited in tmpRecruitTroops)
+                targetParty.MemberRoster.AddToCounts(recruited.Key, recruited.Value);
 
             return totalRecruited;
         }

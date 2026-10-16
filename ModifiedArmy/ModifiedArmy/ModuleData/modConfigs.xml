@@ -43,7 +43,15 @@
     <!-- ========== 封邑经济 ========== -->
     <FiefEconomy>
       <Wage>
-        <ExemptionDays value="28"/>
+        <FiefFreeWageDays default="28">
+          <Culture id="empire" days="28"/>
+          <Culture id="aserai" days="28"/>
+          <Culture id="sturgia" days="28"/>
+          <Culture id="vlandia" days="42"/>
+          <Culture id="battania" days="28"/>
+          <Culture id="khuzait" days="28"/>
+          <Culture id="nord" days="28"/>
+        </FiefFreeWageDays>
       </Wage>
       <AiImpact>
         <ProsperityMultiplier value="0.1"/>

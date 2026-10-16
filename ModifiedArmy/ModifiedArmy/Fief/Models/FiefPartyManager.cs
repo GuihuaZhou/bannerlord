@@ -41,12 +41,16 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(
                 typeof(SettlementManpowerProductionData),
                 5);
+            base.AddClassDefinition(typeof(FiefServiceBatch), 6);
+            base.AddClassDefinition(typeof(FiefReturnBatch), 7);
         }
 
         protected override void DefineContainerDefinitions()
         {
             base.ConstructContainerDefinition(typeof(Dictionary<CharacterObject, int>));
             base.ConstructContainerDefinition(typeof(List<FiefTroopDetachment>));
+            base.ConstructContainerDefinition(typeof(List<FiefServiceBatch>));
+            base.ConstructContainerDefinition(typeof(List<FiefReturnBatch>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, FiefPartyData>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, int>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, Settlement>));
@@ -79,6 +83,9 @@ namespace ModifiedArmy.Models.Fief
         [SaveableField(5)]
         private Dictionary<Settlement, int> _legacyUntrackedMobilization = new Dictionary<Settlement, int>();
 
+        private readonly Dictionary<MobileParty, List<ServingDetachmentRef>>
+            _servingDetachmentIndex = new Dictionary<MobileParty, List<ServingDetachmentRef>>();
+
         public override void RegisterEvents()
         {
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
@@ -87,6 +94,7 @@ namespace ModifiedArmy.Models.Fief
             CampaignEvents.AfterSiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(this.OnAfterSiegeCompleted));
             CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, new Action<Settlement, bool, Hero, Hero, Hero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail>(this.OnSettlementOwnerChanged));
             CampaignEvents.OnTroopRecruitedEvent.AddNonSerializedListener(this, new Action<Hero, Settlement, Hero, CharacterObject, int>(this.OnTroopRecruited));
+            CampaignEvents.OnPartyRemovedEvent.AddNonSerializedListener(this, OnPartyRemoved);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -111,6 +119,7 @@ namespace ModifiedArmy.Models.Fief
             SoldierTypeClassifier.InitializeAll();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
+            RebuildServingDetachmentIndex();
             ReconcileMobilization(!_mobilizationMigrationComplete);
             _mobilizationMigrationComplete = true;
         }
@@ -164,6 +173,11 @@ namespace ModifiedArmy.Models.Fief
                 data?.DailyUpdate();
             }
             ReconcileMobilization(false);
+            foreach (MobileParty party in _servingDetachmentIndex.Keys.ToList())
+            {
+                AdvanceServiceDays(party);
+                ReconcilePartyFiefTroops(party);
+            }
         }
 
         private void ReconcileMobilization(bool preserveLegacyDeficits)
@@ -351,6 +365,154 @@ namespace ModifiedArmy.Models.Fief
                 restoreHearth);
         }
 
+        public void RebuildServingDetachmentIndex()
+        {
+            _servingDetachmentIndex.Clear();
+            foreach (var pair in _fiefDataMap)
+            {
+                foreach (FiefServiceBatch batch in
+                    pair.Value?.ServiceBatches ??
+                    Enumerable.Empty<FiefServiceBatch>())
+                {
+                    batch?.ResolveServingParty();
+                    if (batch?.ServingParty == null || batch.IsEmpty())
+                    {
+                        if (batch != null && !batch.IsEmpty())
+                            ModLogger.Warn($"[Fief Service] Invalid service batch at {pair.Key?.Name} has no serving party and was removed.");
+                        continue;
+                    }
+                    batch.Repair(batch.ServingParty);
+                    RegisterServingDetachment(pair.Key, batch);
+                }
+            }
+        }
+
+        public void RegisterServingDetachment(
+            Settlement source,
+            FiefServiceBatch batch)
+        {
+            if (source == null || batch?.ServingParty == null || batch.IsEmpty()) return;
+            if (!_servingDetachmentIndex.TryGetValue(batch.ServingParty, out var list))
+            {
+                list = new List<ServingDetachmentRef>();
+                _servingDetachmentIndex[batch.ServingParty] = list;
+            }
+            if (!list.Any(item => item.SourceFief == source && item.Detachment == batch))
+                list.Add(new ServingDetachmentRef(source, batch));
+        }
+
+        public void UnregisterServingDetachment(
+            Settlement source,
+            FiefServiceBatch batch)
+        {
+            MobileParty party = batch?.ServingParty;
+            if (party == null || !_servingDetachmentIndex.TryGetValue(party, out var list)) return;
+            list.RemoveAll(item => item.SourceFief == source && item.Detachment == batch);
+            if (list.Count == 0) _servingDetachmentIndex.Remove(party);
+        }
+
+        internal List<ServingDetachmentRef> GetServingDetachments(MobileParty party)
+        {
+            return party != null && _servingDetachmentIndex.TryGetValue(party, out var list)
+                ? list.ToList()
+                : new List<ServingDetachmentRef>();
+        }
+
+        public void AdvanceServiceDays(MobileParty party)
+        {
+            foreach (ServingDetachmentRef item in GetServingDetachments(party))
+                item.Detachment.AdvanceToCurrentDay();
+        }
+
+        public FiefReconciliationResult ReconcilePartyFiefTroops(MobileParty party)
+        {
+            return FiefServiceReconciler.Reconcile(this, party);
+        }
+
+        public void ReconcileServingPartiesForClan(Clan clan)
+        {
+            if (clan == null) return;
+            foreach (MobileParty party in _servingDetachmentIndex.Keys
+                .Where(p => p != null && p.ActualClan == clan).ToList())
+            {
+                AdvanceServiceDays(party);
+                ReconcilePartyFiefTroops(party);
+            }
+        }
+
+        public Dictionary<CharacterObject, int> GetExemptTroopCounts(MobileParty party)
+        {
+            Dictionary<CharacterObject, int> result = new();
+            foreach (ServingDetachmentRef item in GetServingDetachments(party))
+            {
+                FiefServiceBatch batch = item.Detachment;
+                if (batch.ServiceDays >= batch.FreeWageDays) continue;
+                foreach (var troop in batch.Troops)
+                {
+                    if (troop.Key == null || troop.Value <= 0) continue;
+                    result[troop.Key] = result.TryGetValue(troop.Key, out int old)
+                        ? old + troop.Value
+                        : troop.Value;
+                }
+            }
+            return result;
+        }
+
+        public void TransferFiefService(
+            MobileParty sourceParty,
+            MobileParty targetParty,
+            IReadOnlyDictionary<CharacterObject, int> transferredTroops)
+        {
+            if (sourceParty == null || targetParty == null || transferredTroops == null) return;
+            Dictionary<CharacterObject, int> remaining = transferredTroops
+                .Where(p => p.Key != null && p.Value > 0)
+                .ToDictionary(p => p.Key, p => p.Value);
+            foreach (ServingDetachmentRef item in GetServingDetachments(sourceParty)
+                .OrderBy(p => p.Detachment.BatchId, StringComparer.Ordinal).ToList())
+            {
+                Dictionary<CharacterObject, int> moved = new();
+                foreach (CharacterObject troop in item.Detachment.Troops.Keys.ToList())
+                {
+                    if (!remaining.TryGetValue(troop, out int wanted) || wanted <= 0) continue;
+                    int count = Math.Min(wanted, item.Detachment.Troops[troop]);
+                    if (count <= 0) continue;
+                    item.Detachment.Troops[troop] -= count;
+                    if (item.Detachment.Troops[troop] <= 0) item.Detachment.Troops.Remove(troop);
+                    remaining[troop] -= count;
+                    moved[troop] = count;
+                }
+                if (moved.Count > 0)
+                {
+                    FiefServiceBatch split = item.Detachment.SplitTo(targetParty, moved);
+                    _fiefDataMap[item.SourceFief].ServiceBatches.Add(split);
+                    RegisterServingDetachment(item.SourceFief, split);
+                }
+                if (item.Detachment.IsEmpty())
+                {
+                    _fiefDataMap[item.SourceFief].ServiceBatches.Remove(item.Detachment);
+                    UnregisterServingDetachment(item.SourceFief, item.Detachment);
+                }
+                _fiefDataMap[item.SourceFief].RefreshManpowerCounters();
+            }
+        }
+
+        private void OnPartyRemoved(PartyBase partyBase)
+        {
+            MobileParty party = partyBase?.IsMobile == true
+                ? partyBase.MobileParty
+                : null;
+            if (party == null) return;
+            foreach (ServingDetachmentRef item in GetServingDetachments(party))
+            {
+                int lost = item.Detachment.GetTotalCount();
+                if (lost > 0) ReleaseFiefService(item.SourceFief, lost, false);
+                GetFiefData(item.SourceFief)?.ServiceBatches
+                    .Remove(item.Detachment);
+                GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
+                UnregisterServingDetachment(item.SourceFief, item.Detachment);
+            }
+        }
+
         /// <summary>
         /// Retrieves fief data for a specific settlement.
         /// </summary>
@@ -460,7 +622,7 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 获取指定封邑当前处于解散期的士兵总人数（即 ReturnedTroopDetachmentList 中所有分遣队的士兵之和）。
+        /// Gets the number of returned soldiers still waiting for cooldown.
         /// </summary>
         /// <param name="settlement">目标封邑</param>
         /// <returns>解散期士兵总数，若无或封邑无效则返回 0</returns>
@@ -470,9 +632,9 @@ namespace ModifiedArmy.Models.Fief
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
                 int total = 0;
-                if (data.ReturnedTroopDetachmentList != null)
+                if (data.ReturnBatches != null)
                 {
-                    foreach (var detachment in data.ReturnedTroopDetachmentList)
+                    foreach (var detachment in data.ReturnBatches)
                     {
                         total += detachment.GetTotalCount();
                     }

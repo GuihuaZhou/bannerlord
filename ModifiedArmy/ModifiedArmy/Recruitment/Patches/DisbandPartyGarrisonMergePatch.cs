@@ -1,5 +1,6 @@
 using HarmonyLib;
 using ModifiedArmy.Models;
+using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -66,6 +67,8 @@ namespace ModifiedArmy.Recruitment.Patches
             // settlement merge. Troops rejected by the plan therefore leave
             // service instead of overflowing the garrison.
             disbandParty.MemberRoster.Clear();
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .ReconcilePartyFiefTroops(disbandParty);
             LogResult(
                 disbandParty,
                 relatedSettlement,
@@ -238,6 +241,12 @@ namespace ModifiedArmy.Recruitment.Patches
                 disbandParty,
                 settlement,
                 acceptedRoster);
+            Dictionary<CharacterObject, int> transferred = new();
+            foreach (TroopRosterElement element in acceptedRoster.GetTroopRoster())
+                if (element.Character != null && element.Number > 0)
+                    transferred[element.Character] = element.Number;
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .TransferFiefService(disbandParty, garrison, transferred);
             return acceptedCount;
         }
 

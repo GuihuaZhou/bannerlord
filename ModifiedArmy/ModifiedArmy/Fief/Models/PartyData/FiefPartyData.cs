@@ -44,6 +44,14 @@ namespace ModifiedArmy.Models.Fief
         [SaveableProperty(2)] 
         public List<FiefTroopDetachment> ReturnedTroopDetachmentList { get; private set; }
 
+        // Properties 1 and 2 are retained only so old saves can deserialize.
+        // Their contents are discarded and never participate in new games.
+        [SaveableProperty(6)]
+        public List<FiefServiceBatch> ServiceBatches { get; private set; }
+
+        [SaveableProperty(7)]
+        public List<FiefReturnBatch> ReturnBatches { get; private set; }
+
         [SaveableProperty(3)] 
         public int RetinueCount { get; private set; } = 0;
         [SaveableProperty(4)] 
@@ -90,6 +98,32 @@ namespace ModifiedArmy.Models.Fief
         /// 获取当前定居点使用的部队模板。
         /// </summary>
         public FiefPartyTemplate GetFiefPartyTemplate() => _fiefPartyTemplate;
+
+        public Settlement GetSettlement() => _settlement;
+
+        internal void RefreshManpowerCounters() => SyncManpowerCounters();
+
+        internal FiefServiceBatch CreateServingDetachment(
+            MobileParty servingParty,
+            Dictionary<CharacterObject, int> actualTroops)
+        {
+            if (servingParty == null || actualTroops == null ||
+                actualTroops.Values.Sum() <= 0)
+                return null;
+
+            CultureObject culture = _fiefPartyTemplate?.Culture ?? _settlement?.Culture;
+            int freeWageDays = ModConfigManager.Instance.GetActiveConfig()?
+                .GetFiefFreeWageDays(culture) ?? 28;
+            FiefServiceBatch batch = FiefServiceBatch.Create(
+                servingParty,
+                freeWageDays,
+                actualTroops);
+            ServiceBatches.Add(batch);
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .RegisterServingDetachment(_settlement, batch);
+            SyncManpowerCounters();
+            return batch;
+        }
 
         public FiefPartyData() { }
         public FiefPartyData(Settlement settlement)
@@ -150,7 +184,7 @@ namespace ModifiedArmy.Models.Fief
         /// <param name="detachments">分遣队列表，可为 null</param>
         /// 
         public void AccumulateDetachments(
-            List<FiefTroopDetachment> detachments,
+            IEnumerable<FiefServiceBatch> detachments,
             Dictionary<SoldierType, int> tmpSoldierTypeCounts)
         {
             if (detachments != null)
@@ -192,7 +226,7 @@ namespace ModifiedArmy.Models.Fief
         public int GetRecruitedFiefTroopCount()
         {
             Dictionary<SoldierType, int> tmpSoldierTypeCounts = new();
-            AccumulateDetachments(RecruitedTroopDetachmentList, tmpSoldierTypeCounts);
+            AccumulateDetachments(ServiceBatches, tmpSoldierTypeCounts);
             return tmpSoldierTypeCounts.Values.Sum();
         }
 
@@ -210,10 +244,24 @@ namespace ModifiedArmy.Models.Fief
             // 1. 就绪部队
             AnalyzeCurrentManpower(_fiefParty, _soldierTypeCounts);
             // 2. 征召中部队
-            AccumulateDetachments(RecruitedTroopDetachmentList, _soldierTypeCounts);
+            AccumulateDetachments(ServiceBatches, _soldierTypeCounts);
 
             // 3. 归还冷却中部队
-            AccumulateDetachments(ReturnedTroopDetachmentList, _soldierTypeCounts);
+            if (ReturnBatches != null)
+            {
+                foreach (FiefReturnBatch batch in ReturnBatches)
+                {
+                    if (batch?.Troops == null) continue;
+                    foreach (var pair in batch.Troops)
+                    {
+                        if (pair.Key == null || pair.Value <= 0) continue;
+                        SoldierType type = SoldierTypeClassifier.GetSoldierType(pair.Key);
+                        _soldierTypeCounts[type] = _soldierTypeCounts.TryGetValue(type, out int old)
+                            ? old + pair.Value
+                            : pair.Value;
+                    }
+                }
+            }
 
             _totalTroopCount = _soldierTypeCounts.Values.Sum();
         }
@@ -251,17 +299,10 @@ namespace ModifiedArmy.Models.Fief
         {
             if (settlementWasCaptured)
             {
-                Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
-                    .ReleaseFiefService(
-                        _settlement,
-                        GetRecruitedFiefTroopCount(),
-                        false);
-                RecruitedTroopDetachmentList.Clear();
-                ModLogger.Debug($"Settlement {_settlement.Name} captured - cleared all recruited troop detachments.");
-
-                // Replacement troops are produced only by the daily shared
-                // manpower coordinator after ownership has stabilized.
-                _totalTroopCount = 0;
+                // Serving detachments remain authoritative after a capture.
+                // They may still be alive in their serving parties and must
+                // continue to age and receive the correct wage treatment.
+                ModLogger.Info($"[Fief Service] {_settlement.Name} changed hands; active service batches were preserved.");
 
                 //// 清除驻军的士气惩罚
                 //if (_settlement.Town != null && _settlement.Town.GarrisonParty != null)
@@ -275,12 +316,9 @@ namespace ModifiedArmy.Models.Fief
 
         public void OnSettlementOwnerChanged()
         {
-            Campaign.Current.GetCampaignBehavior<FiefPartyManager>()?
-                .ReleaseFiefService(
-                    _settlement,
-                    GetRecruitedFiefTroopCount(),
-                    false);
-            RecruitedTroopDetachmentList.Clear();
+            // Ownership changes do not prove that serving soldiers died or
+            // returned. Preserve their records and forbid normal return by
+            // the ownership checks in the return flow.
             SyncManpowerCounters();
         }
 
@@ -372,6 +410,14 @@ namespace ModifiedArmy.Models.Fief
 
             if (RecruitedTroopDetachmentList == null)
                 RecruitedTroopDetachmentList = new List<FiefTroopDetachment>();
+
+            ServiceBatches ??= new List<FiefServiceBatch>();
+            ReturnBatches ??= new List<FiefReturnBatch>();
+
+            // Old detachments cannot prove their serving party and are not
+            // migrated. Clear them once the new containers are available.
+            RecruitedTroopDetachmentList.Clear();
+            ReturnedTroopDetachmentList.Clear();
 
             var group = BasicTroopGroupManager.GetGroupForCulture(_settlement.Culture);
             if (group == null)

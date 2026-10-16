@@ -132,6 +132,20 @@ namespace ModifiedArmy.common
         /// </summary>
         public int FiefWageExemptionDays { get; private set; } = 28;
 
+        private readonly Dictionary<string, int> _fiefFreeWageDaysByCulture =
+            new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
+
+        public int GetFiefFreeWageDays(CultureObject culture)
+        {
+            string id = culture?.StringId;
+            if (!string.IsNullOrEmpty(id) &&
+                _fiefFreeWageDaysByCulture.TryGetValue(id, out int days))
+            {
+                return Math.Max(0, days);
+            }
+            return Math.Max(0, FiefWageExemptionDays);
+        }
+
         /// <summary>
         /// AI 对封邑繁荣度的影响系数。AI 征召/解散对繁荣度的影响乘以该值。默认 0.1。
         /// </summary>
@@ -310,7 +324,25 @@ namespace ModifiedArmy.common
                 XmlNode wageNode = fiefEconomyNode.SelectSingleNode("Wage");
                 if (wageNode != null)
                 {
-                    FiefWageExemptionDays = ReadIntVal(wageNode, "ExemptionDays", 28);
+                    XmlNode freeWageNode = wageNode.SelectSingleNode("FiefFreeWageDays");
+                    if (freeWageNode != null)
+                    {
+                        if (int.TryParse(freeWageNode.Attributes?["default"]?.Value, out int defaultDays))
+                            FiefWageExemptionDays = Math.Max(0, defaultDays);
+                        foreach (XmlNode cultureNode in freeWageNode.SelectNodes("Culture"))
+                        {
+                            string cultureId = cultureNode.Attributes?["id"]?.Value;
+                            if (cultureId?.StartsWith("Culture.") == true)
+                                cultureId = cultureId.Substring("Culture.".Length);
+                            if (!string.IsNullOrEmpty(cultureId) &&
+                                int.TryParse(cultureNode.Attributes?["days"]?.Value, out int days))
+                                _fiefFreeWageDaysByCulture[cultureId] = Math.Max(0, days);
+                        }
+                    }
+                    else
+                    {
+                        FiefWageExemptionDays = Math.Max(0, ReadIntVal(wageNode, "ExemptionDays", 28));
+                    }
                 }
                 XmlNode aiImpactNode = fiefEconomyNode.SelectSingleNode("AiImpact");
                 if (aiImpactNode != null)

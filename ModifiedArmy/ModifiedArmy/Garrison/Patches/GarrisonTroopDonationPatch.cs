@@ -3,6 +3,9 @@ using Helpers;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Models.Fief;
+using System.Collections.Generic;
+using System.Linq;
 using System;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -87,14 +90,67 @@ namespace ModifiedArmy.Garrison.Patches
     [HarmonyPatch(typeof(GarrisonTroopsCampaignBehavior), "LeaveTroopsToGarrison")]
     public static class GarrisonPartyPriorityPatch
     {
+        private sealed class TransferState
+        {
+            public MobileParty Source;
+            public MobileParty Target;
+            public Dictionary<CharacterObject, int> SourceBefore;
+            public Dictionary<CharacterObject, int> TargetBefore;
+        }
+
         private static void Prefix(
             MobileParty mobileParty,
-            ref int numberOfTroopsToLeave)
+            ref int numberOfTroopsToLeave,
+            out TransferState __state)
         {
+            MobileParty garrison = mobileParty?.CurrentSettlement?.Town?.GarrisonParty;
+            __state = new TransferState
+            {
+                Source = mobileParty,
+                Target = garrison,
+                SourceBefore = Snapshot(mobileParty),
+                TargetBefore = Snapshot(garrison)
+            };
             numberOfTroopsToLeave = GarrisonTransferPolicyModel
                 .GetAllowedDonationCount(
                     mobileParty,
                     numberOfTroopsToLeave);
+        }
+
+        private static void Postfix(TransferState __state)
+        {
+            if (__state?.Source == null || __state.Target == null) return;
+            Dictionary<CharacterObject, int> sourceAfter = Snapshot(__state.Source);
+            Dictionary<CharacterObject, int> targetAfter = Snapshot(__state.Target);
+            Dictionary<CharacterObject, int> transferred = new();
+            foreach (CharacterObject troop in __state.SourceBefore.Keys
+                .Union(__state.TargetBefore.Keys))
+            {
+                int sourceLoss = GetCount(__state.SourceBefore, troop) -
+                    GetCount(sourceAfter, troop);
+                int targetGain = GetCount(targetAfter, troop) -
+                    GetCount(__state.TargetBefore, troop);
+                int moved = Math.Min(Math.Max(0, sourceLoss), Math.Max(0, targetGain));
+                if (moved > 0) transferred[troop] = moved;
+            }
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .TransferFiefService(__state.Source, __state.Target, transferred);
+        }
+
+        private static Dictionary<CharacterObject, int> Snapshot(MobileParty party)
+        {
+            return party?.MemberRoster?.GetTroopRoster()
+                .Where(e => e.Character != null && !e.Character.IsHero && e.Number > 0)
+                .ToDictionary(e => e.Character, e => e.Number) ?? new();
+        }
+
+        private static int GetCount(
+            IReadOnlyDictionary<CharacterObject, int> roster,
+            CharacterObject troop)
+        {
+            return roster != null && roster.TryGetValue(troop, out int count)
+                ? count
+                : 0;
         }
     }
 
