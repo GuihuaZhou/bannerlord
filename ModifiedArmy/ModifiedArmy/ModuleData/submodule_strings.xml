@@ -122,7 +122,7 @@
     <string id="str_modifiedarmy_manpower_produce"
         text="{=ModifiedArmy_ManpowerProduce}[Manpower][Production] Day={DAY} Settlement={SETTLEMENT_ID} BaseManpower={SUPPLY} Training={TRAINING} Allocation={ALLOCATION} Requested={REQUESTED} Offers={OFFERED}" />
     <string id="str_modifiedarmy_manpower_recruitment_blocked"
-        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[Manpower][Recruitment blocked] Day={DAY} Settlement={SETTLEMENT_ID} Offers={OFFERS} Garrison={GARRISON} Owner={OWNER} AutoRecruit={AUTO_RECRUIT} FoodChange={FOOD_CHANGE} MapEvent={MAP_EVENT} Siege={SIEGE}" />
+        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[Manpower][Recruitment blocked] Day={DAY} Settlement={SETTLEMENT_ID} Offers={OFFERS} Garrison={GARRISON} Owner={OWNER} AutoRecruit={AUTO_RECRUIT} MapEvent={MAP_EVENT} Siege={SIEGE}" />
     <string id="str_modifiedarmy_manpower_recruitment"
         text="{=ModifiedArmy_ManpowerRecruitment}[Manpower][Recruitment] Day={DAY} Settlement={SETTLEMENT_ID} GarrisonBefore={GARRISON_BEFORE} Offers={OFFERS} DailyLimit={DAILY_LIMIT} Approved={APPROVED} ProfessionalActual={PROFESSIONAL_ACTUAL} PrisonerActual={PRISONER_ACTUAL} GarrisonAfter={GARRISON_AFTER}" />
     <string id="str_modifiedarmy_recruits_unavailable"

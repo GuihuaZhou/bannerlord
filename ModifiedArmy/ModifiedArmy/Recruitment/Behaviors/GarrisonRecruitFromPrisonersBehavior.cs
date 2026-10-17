@@ -64,7 +64,7 @@ namespace ModifiedArmy.Models
 
             if (town.GarrisonParty == null &&
                 town.GarrisonAutoRecruitmentIsEnabled &&
-                town.FoodChange > 0f && settlement.Party.MapEvent == null &&
+                settlement.Party.MapEvent == null &&
                 settlement.Party.SiegeEvent == null)
             {
                 settlement.AddGarrisonParty();
@@ -73,7 +73,6 @@ namespace ModifiedArmy.Models
             if (town.GarrisonParty == null ||
                 settlement.OwnerClan == null ||
                 !town.GarrisonAutoRecruitmentIsEnabled ||
-                town.FoodChange <= 0f ||
                 settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
@@ -98,9 +97,6 @@ namespace ModifiedArmy.Models
                         "AUTO_RECRUIT",
                         GetBooleanLogText(
                             town.GarrisonAutoRecruitmentIsEnabled));
-                    blockedMessage.SetTextVariable(
-                        "FOOD_CHANGE",
-                        town.FoodChange.ToString("F2"));
                     blockedMessage.SetTextVariable(
                         "MAP_EVENT",
                         GetBooleanLogText(
@@ -433,7 +429,7 @@ namespace ModifiedArmy.Models
             MobileParty garrison = town?.GarrisonParty;
             if (settlement == null || garrison == null ||
                 !town.GarrisonAutoRecruitmentIsEnabled ||
-                town.FoodChange <= 0f || settlement.Party.MapEvent != null ||
+                settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
                 return 0;

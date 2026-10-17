@@ -50,7 +50,7 @@
     <string id="ModifiedArmy_ManpowerReasonRemaining" text="剩余={REMAINING}" />
     <string id="ModifiedArmy_ManpowerProduceNoSupply" text="[兵源][生产] 日期={DAY} 定居点={SETTLEMENT_ID} 候选数=0 原因=无可用基础兵源" />
     <string id="ModifiedArmy_ManpowerProduce" text="[兵源][生产] 日期={DAY} 定居点={SETTLEMENT_ID} 基础兵源={SUPPLY} 训练能力={TRAINING} 生产额度={ALLOCATION} 申请数={REQUESTED} 候选数={OFFERED}" />
-    <string id="ModifiedArmy_ManpowerRecruitmentBlocked" text="[兵源][招募受阻] 日期={DAY} 定居点={SETTLEMENT_ID} 候选数={OFFERS} 存在驻军={GARRISON} 存在领主={OWNER} 自动招募={AUTO_RECRUIT} 食物变化={FOOD_CHANGE} 正在战斗={MAP_EVENT} 正在围城={SIEGE}" />
+    <string id="ModifiedArmy_ManpowerRecruitmentBlocked" text="[兵源][招募受阻] 日期={DAY} 定居点={SETTLEMENT_ID} 候选数={OFFERS} 存在驻军={GARRISON} 存在领主={OWNER} 自动招募={AUTO_RECRUIT} 正在战斗={MAP_EVENT} 正在围城={SIEGE}" />
     <string id="ModifiedArmy_ManpowerRecruitment" text="[兵源][招募] 日期={DAY} 定居点={SETTLEMENT_ID} 招募前驻军={GARRISON_BEFORE} 候选数={OFFERS} 每日上限={DAILY_LIMIT} 批准数={APPROVED} 职业兵实际入伍={PROFESSIONAL_ACTUAL} 俘虏实际入伍={PRISONER_ACTUAL} 招募后驻军={GARRISON_AFTER}" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
 
