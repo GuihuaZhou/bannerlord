@@ -1,8 +1,10 @@
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
@@ -181,6 +183,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
             return BuildDailyProfessionalOffers(
                 template,
+                settlement?.Town?.GarrisonParty,
                 forecast.AllowedRecruitmentLevel,
                 predictedCount,
                 (int)CampaignTime.Now.ToDays + 1);
@@ -401,6 +404,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 Dictionary<CharacterObject, int> offers =
                     BuildDailyProfessionalOffers(
                     professionalTemplate,
+                    settlement.Town.GarrisonParty,
                     forecast.AllowedRecruitmentLevel,
                     professionalCount,
                     day);
@@ -560,6 +564,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
         private static Dictionary<CharacterObject, int> BuildDailyProfessionalOffers(
             ProfessionalTroopTemplate template,
+            MobileParty garrison,
             int allowedRecruitmentLevel,
             int count,
             int day)
@@ -579,15 +584,60 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 }
             }
 
+            RecruitmentSimulationState state = garrison == null
+                ? null
+                : RecruitmentSimulationState.Create(garrison);
             for (int i = 0; i < count && weightedCycle.Count > 0; i++)
             {
-                TroopProductionEntry selected = weightedCycle[
-                    Math.Abs(day + i) % weightedCycle.Count];
+                List<TroopProductionEntry> eligibleCycle = state == null
+                    ? weightedCycle
+                    : weightedCycle.Where(entry =>
+                        IsCompositionEligible(garrison, entry.Troop, state))
+                        .ToList();
+                if (eligibleCycle.Count == 0)
+                {
+                    break;
+                }
+
+                TroopProductionEntry selected = eligibleCycle[
+                    Math.Abs(day + i) % eligibleCycle.Count];
                 result[selected.Troop] = result.TryGetValue(
                     selected.Troop,
                     out int value) ? value + 1 : 1;
+                if (state != null)
+                {
+                    RecruitmentEvaluationResult evaluation =
+                        RecruitmentModelManager.Model.EvaluateRecruitment(
+                            garrison,
+                            selected.Troop,
+                            1,
+                            RecruitmentSource.ProfessionalProduction,
+                            state);
+                    state.Commit(
+                        selected.Troop,
+                        1,
+                        evaluation.UnitDailyWage,
+                        evaluation.UnitRecruitmentCost);
+                }
             }
             return result;
+        }
+
+        private static bool IsCompositionEligible(
+            MobileParty garrison,
+            CharacterObject troop,
+            RecruitmentSimulationState state)
+        {
+            RecruitmentEvaluationResult evaluation =
+                RecruitmentModelManager.Model.EvaluateRecruitment(
+                    garrison,
+                    troop,
+                    1,
+                    RecruitmentSource.ProfessionalProduction,
+                    state);
+            return evaluation.AllowedByPartySize > 0 &&
+                evaluation.AllowedByCombatRole > 0 &&
+                evaluation.AllowedByQuality > 0;
         }
 
         public static float CalculateVillageSupply(Village village, int assignedFiefCount)
