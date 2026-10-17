@@ -22,10 +22,10 @@ namespace ModifiedArmy.Garrison.Behaviors
     {
         private const int DonorReserveDays = 10;
         private const int InitialGarrisonSupplyDays = 15;
-        private const float PendingCaptureDays = 2f;
 
-        private readonly Dictionary<Settlement, CampaignTime> _pendingCaptures =
-            new Dictionary<Settlement, CampaignTime>();
+        private readonly Dictionary<Settlement, MobileParty>
+            _pendingCaptures =
+                new Dictionary<Settlement, MobileParty>();
 
         public override void RegisterEvents()
         {
@@ -59,8 +59,8 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return;
             }
 
-            _pendingCaptures[settlement] = CampaignTime.Now +
-                CampaignTime.Days(PendingCaptureDays);
+            _pendingCaptures[settlement] =
+                attackerParty.Army.LeaderParty;
             DonateArmyFood(attackerParty, settlement);
         }
 
@@ -76,19 +76,51 @@ namespace ModifiedArmy.Garrison.Behaviors
 
             if (_pendingCaptures.TryGetValue(
                     settlement,
-                    out CampaignTime expiry))
+                    out MobileParty capturingArmyLeader) &&
+                IsCapturingArmyLeader(party, capturingArmyLeader))
             {
-                if (expiry.IsPast)
-                {
-                    _pendingCaptures.Remove(settlement);
-                }
-                else if (party.Army != null)
-                {
-                    DonateArmyFood(party.Army.LeaderParty, settlement);
-                }
+                DonateArmyFood(party, settlement);
             }
 
             DonateVisitingPartyFood(party, settlement);
+        }
+
+        /// <summary>
+        /// Allows the army that captured a fortification to use the native
+        /// post-conquest troop donation path once, when its leader enters the
+        /// settlement. Other allied armies remain subject to the normal
+        /// owner-only transfer restriction.
+        /// </summary>
+        public bool CanDonateTroopsAfterCapture(
+            MobileParty party,
+            Settlement settlement)
+        {
+            if (party == null || settlement == null ||
+                !_pendingCaptures.TryGetValue(
+                    settlement,
+                    out MobileParty capturingArmyLeader))
+            {
+                return false;
+            }
+
+            if (!party.IsActive || !party.IsLordParty || party.IsMainParty ||
+                !settlement.IsFortification ||
+                !IsSameKingdom(party, settlement) ||
+                !IsCapturingArmyLeader(party, capturingArmyLeader))
+            {
+                return false;
+            }
+
+            _pendingCaptures.Remove(settlement);
+            return true;
+        }
+
+        private static bool IsCapturingArmyLeader(
+            MobileParty party,
+            MobileParty capturingArmyLeader)
+        {
+            return party != null && party == capturingArmyLeader &&
+                party.Army?.LeaderParty == party;
         }
 
         private static void DonateArmyFood(
@@ -271,5 +303,6 @@ namespace ModifiedArmy.Garrison.Behaviors
             }
             return requested - remaining;
         }
+
     }
 }
