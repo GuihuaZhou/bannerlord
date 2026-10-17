@@ -94,7 +94,7 @@
       Fief/Production：
       - baseLimit：定居点本身提供的封邑兵容量。
       - villageBonus：每个附属村庄增加的容量。
-      - weeklyLimit：每周最多生产的封邑兵数量。
+      - dailyRate：封邑兵每日基础补员能力，支持小数并通过每日进度累计。
       - prosperityCostPerTroop / hearthCostPerTroop：征召成本基数。
       TownPort 为可选覆盖；未配置时港口城镇继承 Town。
     -->
@@ -104,15 +104,15 @@
         <MilitaryDoctrine fief="1" professional="4" mercenary="3"/>
         <Professional>
           <Training>
-            <Town base="0.50" barracksStep="0.40"/>
-            <Castle base="0.60" barracksStep="0.45"/>
+            <Town base="1.30" barracksStep="0.90"/>
+            <Castle base="1.45" barracksStep="0.85"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
-            <Castle baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
+            <Town baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+            <Castle baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -122,15 +122,15 @@
         <MilitaryDoctrine fief="7" professional="2" mercenary="1"/>
         <Professional>
           <Training>
-            <Town base="0.25" barracksStep="0.22"/>
-            <Castle base="0.30" barracksStep="0.30"/>
+            <Town base="1.00" barracksStep="0.20"/>
+            <Castle base="1.05" barracksStep="0.25"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="42" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="120" villageBonus="30" weeklyLimit="30" prosperityCostPerTroop="10" hearthCostPerTroop="1"/>
-            <Castle baseLimit="80" villageBonus="25" weeklyLimit="30" prosperityCostPerTroop="4" hearthCostPerTroop="1"/>
+            <Town baseLimit="120" villageBonus="30" dailyRate="4.00" prosperityCostPerTroop="10" hearthCostPerTroop="1"/>
+            <Castle baseLimit="80" villageBonus="25" dailyRate="4.00" prosperityCostPerTroop="4" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -140,15 +140,15 @@
         <MilitaryDoctrine fief="2" professional="3" mercenary="5"/>
         <Professional>
           <Training>
-            <Town base="0.50" barracksStep="0.45"/>
-            <Castle base="0.65" barracksStep="0.50"/>
+            <Town base="1.25" barracksStep="0.85"/>
+            <Castle base="1.35" barracksStep="0.85"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="50" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
-            <Castle baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
+            <Town baseLimit="50" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+            <Castle baseLimit="40" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -158,15 +158,15 @@
         <MilitaryDoctrine fief="6" professional="4" mercenary="1"/>
         <Professional>
           <Training>
-            <Town base="0.70" barracksStep="0.55"/>
-            <Castle base="0.80" barracksStep="0.65"/>
+            <Town base="1.05" barracksStep="0.15"/>
+            <Castle base="1.05" barracksStep="0.20"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="90" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
-            <Castle baseLimit="90" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+            <Town baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <Castle baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -176,16 +176,16 @@
         <MilitaryDoctrine fief="3" professional="1" mercenary="1"/>
         <Professional>
           <Training>
-            <Town base="0.65" barracksStep="0.50"/>
-            <Castle base="0.75" barracksStep="0.55"/>
+            <Town base="1.00" barracksStep="0.10"/>
+            <Castle base="1.00" barracksStep="0.15"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="70" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
-            <TownPort baseLimit="80" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
-            <Castle baseLimit="70" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+            <Town baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+            <TownPort baseLimit="80" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+            <Castle baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -195,15 +195,15 @@
         <MilitaryDoctrine fief="5" professional="3" mercenary="2"/>
         <Professional>
           <Training>
-            <Town base="0.65" barracksStep="0.60"/>
-            <Castle base="0.80" barracksStep="0.65"/>
+            <Town base="1.05" barracksStep="0.15"/>
+            <Castle base="1.05" barracksStep="0.20"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="1"/>
           <Production>
-            <Town baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
-            <Castle baseLimit="70" villageBonus="40" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+            <Town baseLimit="70" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <Castle baseLimit="70" villageBonus="40" dailyRate="1.90" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
@@ -213,15 +213,15 @@
         <MilitaryDoctrine fief="4" professional="5" mercenary="1"/>
         <Professional>
           <Training>
-            <Town base="0.70" barracksStep="0.55"/>
-            <Castle base="0.80" barracksStep="0.65"/>
+            <Town base="1.01" barracksStep="0.03"/>
+            <Castle base="1.05" barracksStep="0.05"/>
           </Training>
         </Professional>
         <Fief>
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <Town baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
-            <Castle baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+            <Town baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <Castle baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>

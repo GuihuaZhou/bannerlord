@@ -23,7 +23,7 @@
     <string id="Fief_Desc_Battania" text="山高林密的巴丹尼亚孕育了大陆最强的贵族弓箭手, 他们隐匿于雾霭之中, 箭无虚发." />
     <string id="Fief_Desc_Northern" text="峡湾与长船是诺德人的生命线, 他们的战士以战斧与盾墙横扫海岸, 无惧风浪与死亡." />
     <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
-    <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵，已有 {RECRUITED} 名士兵随你出征，另有 {WAITCYCLE} 名士兵正在返回自己的土地。当前封建兵每日补充 {FIEF_DAILY} 名。{NEWLINE}{NEWLINE}当前部队构成:{NEWLINE}- 扈从: {RETINUE_COUNT}/{RETINUE_MAX}{NEWLINE}- 军士: {SERGEANT_COUNT}/{SERGEANT_MAX}{NEWLINE}- 水兵: {MARINE_COUNT}/{MARINE_MAX}{NEWLINE}- 军事奴隶: {SLAVE_COUNT}/{SLAVE_MAX}{NEWLINE}- 民兵: {MILITIA_COUNT}/{MILITIA_MAX}" />
+    <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵，已有 {RECRUITED} 名士兵出征，另有 {WAITCYCLE} 名士兵正在返回自己的土地。" />
     <string id="ModifiedArmy_FiefMenu_Entry" text="查看封邑" />
     <string id="ModifiedArmy_FiefMenu_Recruit" text="全部征召" />
     <string id="ModifiedArmy_FiefMenu_Disband" text="解散部队" />
@@ -35,7 +35,9 @@
     <string id="ModifiedArmy_ReinforcementRate_Unavailable" text="无法读取兵源补充数据。" />
     <string id="ModifiedArmy_Common_Enabled" text="已启用" />
     <string id="ModifiedArmy_Common_Disabled" text="已停用" />
-    <string id="ModifiedArmy_ReinforcementRate_Description" text="{SETTLEMENT_NAME}的兵源情况{NEWLINE}{NEWLINE}共享兵源：每日 {SUPPLY}{NEWLINE}{NEWLINE}职业兵：每日补充 {PROFESSIONAL}{NEWLINE}训练能力：每日 {TRAINING}{NEWLINE}兵源分配比例：{RATIO}%{NEWLINE}自动招募：{AUTO_RECRUIT}{NEWLINE}{NEWLINE}封建兵：每日补充 {FIEF}{NEWLINE}当前兵力：{FIEF_CURRENT}/{FIEF_CAPACITY}{NEWLINE}本周已补充：{WEEKLY_CURRENT}/{WEEKLY_LIMIT}" />
+    <string id="ModifiedArmy_ReinforcementRate_Description" text="基础兵源：{SUPPLY} /天{NEWLINE}{NEWLINE}职业兵{NEWLINE}基础训练：{TRAINING_BASE} /天{NEWLINE}兵营加成（有效{BARRACKS_LEVEL}级）：+{BARRACKS_BONUS} /天{NEWLINE}文化效率：{CULTURE_EFFICIENCY}%{NEWLINE}额外加成（含官职）：{EXTERNAL_BONUS}%{NEWLINE}训练能力：{TRAINING} /天{NEWLINE}预计补员：{PROFESSIONAL} /天{NEWLINE}实际补员：{PROFESSIONAL_ACTUAL}{NEWLINE}自动招募：{AUTO_RECRUIT}{NEWLINE}{NEWLINE}封邑兵{NEWLINE}基础补员：{FIEF_BASE} /天{NEWLINE}预计补员：{FIEF} /天{NEWLINE}实际补员：{FIEF_ACTUAL}" />
+    <string id="ModifiedArmy_ReinforcementRate_NoRecord" text="暂无记录" />
+    <string id="ModifiedArmy_ReinforcementRate_ActualRecorded" text="{COUNT} 人" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
 
     <!-- Garrison and wage UI. -->

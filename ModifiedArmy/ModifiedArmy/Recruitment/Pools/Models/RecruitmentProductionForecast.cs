@@ -12,16 +12,21 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         public int ProfessionalDoctrineWeight { get; internal set; }
         public float ProfessionalTrainingBase { get; internal set; }
         public float ProfessionalTrainingStep { get; internal set; }
-        public int BarracksLevel { get; internal set; }
+        public int EffectiveBarracksLevel { get; internal set; }
         public float CultureEfficiency { get; internal set; }
+        public float RawProfessionalTrainingBeforeExternalEffects
+        {
+            get;
+            internal set;
+        }
+        public float ExternalTrainingBonusRate { get; internal set; }
         public float ProfessionalTrainingCapacity { get; internal set; }
         public float ProfessionalAllocation { get; internal set; }
         public float FiefDemand { get; internal set; }
         public float FiefAllocation { get; internal set; }
         public int FiefCurrent { get; internal set; }
         public int FiefCapacity { get; internal set; }
-        public int FiefProducedThisWeek { get; internal set; }
-        public int FiefWeeklyLimit { get; internal set; }
+        public float FiefBaseDailyRate { get; internal set; }
         public bool ProfessionalRecruitmentEnabled { get; internal set; }
     }
 }

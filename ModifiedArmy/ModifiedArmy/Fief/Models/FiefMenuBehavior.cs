@@ -144,40 +144,17 @@ namespace ModifiedArmy.Models.Fief
                 "{=ModifiedArmy_Fief_Intro}" +
                 "{INTRO_LINE}" +
                 "{DESCRIPTION}" +
-                "You can currently recruit {AVAILABLE} troops, {RECRUITED} are already serving with you, " +
-                "and {WAITCYCLE} are on their way back home. Current daily fief production is {FIEF_DAILY}.\n\n" +
-                "Current troop composition:\n" +
-                "- Retinue: {RETINUE_COUNT}/{RETINUE_MAX}\n" +
-                "- Sergeants: {SERGEANT_COUNT}/{SERGEANT_MAX}\n" +
-                "- Marine: {MARINE_COUNT}/{MARINE_MAX}\n" +
-                "- Slave: {SLAVE_COUNT}/{SLAVE_MAX}\n" +
-                "- Militia: {MILITIA_COUNT}/{MILITIA_MAX}"
+                "You can currently recruit {AVAILABLE} troops, " +
+                "{RECRUITED} are already deployed, and " +
+                "{WAITCYCLE} are on their way back home."
             );
 
             text.SetTextVariable("INTRO_LINE", introKey.ToString());
             text.SetTextVariable("DESCRIPTION", descKey.ToString());
 
-            Dictionary<SoldierType, int> tmpSoldierTypeMaxCounts = fiefManager.GetFiefMaxTroopCounts(settlement);
-            Dictionary<SoldierType, int> tmpSoldierTypeCounts = fiefManager.GetFiefTroopCounts(settlement);
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
-            RecruitmentProductionForecast forecast = Campaign.Current
-                .GetCampaignBehavior<SettlementManpowerProductionBehavior>()
-                ?.GetProductionForecast(settlement);
-            text.SetTextVariable(
-                "FIEF_DAILY",
-                FormatRate(forecast?.FiefAllocation ?? 0f));
-            text.SetTextVariable("RETINUE_COUNT", tmpSoldierTypeCounts[SoldierType.Retinue].ToString());
-            text.SetTextVariable("RETINUE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Retinue].ToString());
-            text.SetTextVariable("SERGEANT_COUNT", tmpSoldierTypeCounts[SoldierType.Sergeant].ToString());
-            text.SetTextVariable("SERGEANT_MAX", tmpSoldierTypeMaxCounts[SoldierType.Sergeant].ToString());
-            text.SetTextVariable("MARINE_COUNT", tmpSoldierTypeCounts[SoldierType.Marine].ToString());
-            text.SetTextVariable("MARINE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Marine].ToString());
-            text.SetTextVariable("SLAVE_COUNT", tmpSoldierTypeCounts[SoldierType.Slave].ToString());
-            text.SetTextVariable("SLAVE_MAX", tmpSoldierTypeMaxCounts[SoldierType.Slave].ToString());
-            text.SetTextVariable("MILITIA_COUNT", tmpSoldierTypeCounts[SoldierType.Militia].ToString());
-            text.SetTextVariable("MILITIA_MAX", tmpSoldierTypeMaxCounts[SoldierType.Militia].ToString());
 
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
@@ -545,19 +522,20 @@ namespace ModifiedArmy.Models.Fief
 
             TextObject text = new TextObject(
                 "{=ModifiedArmy_ReinforcementRate_Description}" +
-                "{SETTLEMENT_NAME} reinforcement rates" +
-                "{NEWLINE}{NEWLINE}Shared manpower: {SUPPLY}/day" +
-                "{NEWLINE}{NEWLINE}Professional troops: {PROFESSIONAL}/day" +
-                "{NEWLINE}Doctrine weights (fief/professional): {FIEF_WEIGHT}/{PROFESSIONAL_WEIGHT}" +
-                "{NEWLINE}Configured professional share: {RATIO}%" +
-                "{NEWLINE}Base training: {TRAINING_BASE} + {TRAINING_STEP} × barracks level {BARRACKS_LEVEL}" +
+                "Base manpower: {SUPPLY}/day" +
+                "{NEWLINE}{NEWLINE}Professional troops" +
+                "{NEWLINE}Base training: {TRAINING_BASE}/day" +
+                "{NEWLINE}Barracks bonus (effective level {BARRACKS_LEVEL}): +{BARRACKS_BONUS}/day" +
                 "{NEWLINE}Culture efficiency: {CULTURE_EFFICIENCY}%" +
-                "{NEWLINE}Effective training capacity: {TRAINING}/day" +
+                "{NEWLINE}Extra effects (including offices): {EXTERNAL_BONUS}%" +
+                "{NEWLINE}Training capacity: {TRAINING}/day" +
+                "{NEWLINE}Expected replenishment: {PROFESSIONAL}/day" +
+                "{NEWLINE}Actual replenishment: {PROFESSIONAL_ACTUAL}" +
                 "{NEWLINE}Automatic recruitment: {AUTO_RECRUIT}" +
-                "{NEWLINE}{NEWLINE}Fief troops: {FIEF}/day" +
-                "{NEWLINE}Current strength: {FIEF_CURRENT}/{FIEF_CAPACITY}" +
-                "{NEWLINE}Produced this week: {WEEKLY_CURRENT}/{WEEKLY_LIMIT}");
-            text.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+                "{NEWLINE}{NEWLINE}Fief troops" +
+                "{NEWLINE}Base replenishment: {FIEF_BASE}/day" +
+                "{NEWLINE}Expected replenishment: {FIEF}/day" +
+                "{NEWLINE}Actual replenishment: {FIEF_ACTUAL}");
             text.SetTextVariable("NEWLINE", Environment.NewLine);
             text.SetTextVariable("SUPPLY", FormatRate(forecast.SharedSupply));
             text.SetTextVariable(
@@ -567,22 +545,22 @@ namespace ModifiedArmy.Models.Fief
                 "TRAINING",
                 FormatRate(forecast.ProfessionalTrainingCapacity));
             text.SetTextVariable(
-                "RATIO",
-                (int)Math.Round(forecast.ProfessionalRatio * 100f));
-            text.SetTextVariable("FIEF_WEIGHT", forecast.FiefDoctrineWeight);
-            text.SetTextVariable(
-                "PROFESSIONAL_WEIGHT",
-                forecast.ProfessionalDoctrineWeight);
-            text.SetTextVariable(
                 "TRAINING_BASE",
                 FormatRate(forecast.ProfessionalTrainingBase));
             text.SetTextVariable(
-                "TRAINING_STEP",
-                FormatRate(forecast.ProfessionalTrainingStep));
-            text.SetTextVariable("BARRACKS_LEVEL", forecast.BarracksLevel);
+                "BARRACKS_BONUS",
+                FormatRate(
+                    forecast.ProfessionalTrainingStep *
+                    forecast.EffectiveBarracksLevel));
+            text.SetTextVariable(
+                "BARRACKS_LEVEL",
+                forecast.EffectiveBarracksLevel);
             text.SetTextVariable(
                 "CULTURE_EFFICIENCY",
                 (int)Math.Round(forecast.CultureEfficiency * 100f));
+            text.SetTextVariable(
+                "EXTERNAL_BONUS",
+                (int)Math.Round(forecast.ExternalTrainingBonusRate * 100f));
             text.SetTextVariable(
                 "AUTO_RECRUIT",
                 new TextObject(
@@ -590,12 +568,21 @@ namespace ModifiedArmy.Models.Fief
                         ? "{=ModifiedArmy_Common_Enabled}Enabled"
                         : "{=ModifiedArmy_Common_Disabled}Disabled"));
             text.SetTextVariable("FIEF", FormatRate(forecast.FiefAllocation));
-            text.SetTextVariable("FIEF_CURRENT", forecast.FiefCurrent);
-            text.SetTextVariable("FIEF_CAPACITY", forecast.FiefCapacity);
             text.SetTextVariable(
-                "WEEKLY_CURRENT",
-                forecast.FiefProducedThisWeek);
-            text.SetTextVariable("WEEKLY_LIMIT", forecast.FiefWeeklyLimit);
+                "FIEF_BASE",
+                FormatRate(forecast.FiefBaseDailyRate));
+            SettlementManpowerProductionData productionData = pools
+                .GetProductionData(settlement);
+            text.SetTextVariable(
+                "PROFESSIONAL_ACTUAL",
+                CreateActualReplenishmentText(
+                    productionData?.HasProfessionalRecord == true,
+                    productionData?.LastProfessionalRecruited ?? 0));
+            text.SetTextVariable(
+                "FIEF_ACTUAL",
+                CreateActualReplenishmentText(
+                    productionData?.HasFiefRecord == true,
+                    productionData?.LastFiefReplenished ?? 0));
             MBTextManager.SetTextVariable(
                 "REINFORCEMENT_RATE_TEXT",
                 text,
@@ -605,6 +592,24 @@ namespace ModifiedArmy.Models.Fief
         private static string FormatRate(float value)
         {
             return Math.Max(0f, value).ToString("0.00");
+        }
+
+        private static TextObject CreateActualReplenishmentText(
+            bool hasRecord,
+            int count)
+        {
+            if (!hasRecord)
+            {
+                return new TextObject(
+                    "{=ModifiedArmy_ReinforcementRate_NoRecord}" +
+                    "No record");
+            }
+
+            TextObject result = new TextObject(
+                "{=ModifiedArmy_ReinforcementRate_ActualRecorded}" +
+                "{COUNT}");
+            result.SetTextVariable("COUNT", Math.Max(0, count));
+            return result;
         }
 
         private static bool CanModifyCurrentFief()

@@ -46,8 +46,19 @@ namespace ModifiedArmy.Models
         {
             Town town = settlement?.Town;
 
-            if (settlement?.IsFortification == true && town != null &&
-                town.GarrisonParty == null &&
+            if (settlement?.IsFortification != true || town == null)
+            {
+                return;
+            }
+
+            SettlementManpowerProductionBehavior pools = Campaign.Current
+                .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
+            SettlementManpowerProductionData productionData = pools
+                ?.GetOrCreateProductionData(settlement);
+            int day = (int)CampaignTime.Now.ToDays;
+            productionData?.RecordProfessionalRecruitment(day, 0);
+
+            if (town.GarrisonParty == null &&
                 town.GarrisonAutoRecruitmentIsEnabled &&
                 town.FoodChange > 0f && settlement.Party.MapEvent == null &&
                 settlement.Party.SiegeEvent == null)
@@ -55,8 +66,7 @@ namespace ModifiedArmy.Models
                 settlement.AddGarrisonParty();
             }
 
-            if (settlement?.IsFortification != true ||
-                town?.GarrisonParty == null ||
+            if (town.GarrisonParty == null ||
                 settlement.OwnerClan == null ||
                 !town.GarrisonAutoRecruitmentIsEnabled ||
                 town.FoodChange <= 0f ||
@@ -80,8 +90,6 @@ namespace ModifiedArmy.Models
                     out targetCount,
                     out readyCount,
                     out sold);
-            SettlementManpowerProductionBehavior pools = Campaign.Current
-                .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             List<RecruitmentCandidate> candidates = pools == null
                 ? new List<RecruitmentCandidate>()
                 : pools.GetAvailableProfessionalOffers(settlement)
@@ -111,6 +119,10 @@ namespace ModifiedArmy.Models
                     out professionalRecruited,
                     out prisonerRecruited);
             }
+
+            productionData?.RecordProfessionalRecruitment(
+                day,
+                professionalRecruited);
 
             int professionalOffered = candidates.Where(candidate =>
                     candidate.Source == RecruitmentSource.ProfessionalProduction)

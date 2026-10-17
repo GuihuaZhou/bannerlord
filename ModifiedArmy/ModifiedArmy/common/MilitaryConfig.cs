@@ -31,7 +31,7 @@ namespace ModifiedArmy.common
     {
         public int BaseLimit { get; internal set; }
         public int VillageBonus { get; internal set; }
-        public int WeeklyLimit { get; internal set; }
+        public float DailyRate { get; internal set; }
         public int ProsperityCostPerTroop { get; internal set; }
         public int HearthCostPerTroop { get; internal set; }
     }
@@ -252,7 +252,7 @@ namespace ModifiedArmy.common
         {
             BaseLimit = NonNegativeInt(node, "baseLimit"),
             VillageBonus = NonNegativeInt(node, "villageBonus"),
-            WeeklyLimit = NonNegativeInt(node, "weeklyLimit"),
+            DailyRate = NonNegativeFloat(node, "dailyRate"),
             ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop"),
             HearthCostPerTroop = NonNegativeInt(node, "hearthCostPerTroop")
         };

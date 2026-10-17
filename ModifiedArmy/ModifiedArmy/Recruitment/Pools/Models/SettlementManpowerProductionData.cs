@@ -5,8 +5,9 @@ using TaleWorlds.SaveSystem;
 namespace ModifiedArmy.Recruitment.Pools.Models
 {
     /// <summary>
-    /// Saves fractional production progress and the weekly fief-production
-    /// counter. Generated troops are transferred directly to their target.
+    /// Saves fractional production progress and the latest completed daily
+    /// recruitment results. Generated troops are transferred directly to
+    /// their target.
     /// </summary>
     [SaveableRootClass(5)]
     public sealed class SettlementManpowerProductionData
@@ -31,16 +32,43 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         [SaveableProperty(6)]
         public int WeekKey { get; private set; } = -1;
 
-        public void ResetWeekIfNeeded(int weekKey)
+        [SaveableProperty(7)]
+        public int LastProfessionalRecruited { get; private set; }
+
+        [SaveableProperty(8)]
+        public int LastFiefReplenished { get; private set; }
+
+        [SaveableProperty(9)]
+        public int LastProfessionalRecordedDay { get; private set; } = -1;
+
+        [SaveableProperty(10)]
+        public int LastFiefRecordedDay { get; private set; } = -1;
+
+        public bool HasProfessionalRecord =>
+            LastProfessionalRecordedDay >= 0;
+
+        public bool HasFiefRecord => LastFiefRecordedDay >= 0;
+
+        public void RecordProfessionalRecruitment(int day, int count)
         {
-            if (WeekKey == weekKey) return;
-            WeekKey = weekKey;
-            FiefProducedThisWeek = 0;
+            if (day < 0 || day < LastProfessionalRecordedDay)
+            {
+                return;
+            }
+
+            LastProfessionalRecordedDay = day;
+            LastProfessionalRecruited = Math.Max(0, count);
         }
 
-        public void RecordFiefProduction(int count)
+        public void RecordFiefReplenishment(int day, int count)
         {
-            FiefProducedThisWeek += Math.Max(0, count);
+            if (day < 0 || day < LastFiefRecordedDay)
+            {
+                return;
+            }
+
+            LastFiefRecordedDay = day;
+            LastFiefReplenished = Math.Max(0, count);
         }
 
         public void SetProductionProgress(

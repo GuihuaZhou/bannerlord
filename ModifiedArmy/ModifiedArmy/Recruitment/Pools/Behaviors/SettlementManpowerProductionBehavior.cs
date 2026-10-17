@@ -49,6 +49,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             _dailyProfessionalOffers =
                 new Dictionary<Settlement, Dictionary<CharacterObject, int>>();
 
+        private readonly Dictionary<Settlement, int> _professionalOfferDays =
+            new Dictionary<Settlement, int>();
+
         public override void RegisterEvents()
         {
             CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(
@@ -81,6 +84,18 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 _settlementProductionData[settlement] = data;
             }
 
+            return data;
+        }
+
+        public SettlementManpowerProductionData GetProductionData(
+            Settlement settlement)
+        {
+            if (settlement == null)
+            {
+                return null;
+            }
+
+            _settlementProductionData.TryGetValue(settlement, out var data);
             return data;
         }
 
@@ -125,6 +140,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             Settlement settlement)
         {
             if (settlement == null ||
+                !_professionalOfferDays.TryGetValue(
+                    settlement,
+                    out int offerDay) ||
+                offerDay != (int)CampaignTime.Now.ToDays ||
                 !_dailyProfessionalOffers.TryGetValue(settlement, out var offers))
                 return new Dictionary<CharacterObject, int>();
             return new Dictionary<CharacterObject, int>(offers);
@@ -185,18 +204,19 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             _dailyProfessionalOffers.Remove(settlement);
+            _professionalOfferDays[settlement] =
+                (int)CampaignTime.Now.ToDays;
             SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
             FiefPartyManager fiefManager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
             FiefPartyData fiefData = fiefManager?.GetFiefData(settlement);
             if (data == null || fiefData == null) return;
 
-            int weekKey = (int)CampaignTime.Now.ToDays / 7;
-            data.ResetWeekIfNeeded(weekKey);
+            int day = (int)CampaignTime.Now.ToDays;
+            data.RecordFiefReplenishment(day, 0);
             RecruitmentProductionForecast forecast = GetProductionForecast(settlement);
             if (forecast == null || forecast.SharedSupply <= 0f) return;
 
-            int barracksLevel = GetBarracksLevel(settlement);
             ProfessionalTroopTemplate professionalTemplate =
                 TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
@@ -205,24 +225,40 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 data,
                 TroopProductionKind.Professional,
                 forecast.ProfessionalAllocation);
-            int weeklyRemaining = Math.Max(
-                0,
-                forecast.FiefWeeklyLimit - forecast.FiefProducedThisWeek);
-            int fiefCount = Math.Min(
-                weeklyRemaining,
-                ConvertProgressToCount(
-                    data,
-                    TroopProductionKind.Fief,
-                    forecast.FiefAllocation));
+            int fiefCount = ConvertProgressToCount(
+                data,
+                TroopProductionKind.Fief,
+                forecast.FiefAllocation);
             if (professionalCount > 0 && professionalTemplate != null)
-                _dailyProfessionalOffers[settlement] = BuildDailyProfessionalOffers(
+            {
+                Dictionary<CharacterObject, int> offers =
+                    BuildDailyProfessionalOffers(
                     professionalTemplate,
-                    barracksLevel,
-                    professionalCount);
+                    forecast.EffectiveBarracksLevel,
+                    professionalCount,
+                    day);
+                int offeredCount = offers.Values.Sum();
+                if (offeredCount > 0)
+                {
+                    _dailyProfessionalOffers[settlement] = offers;
+                }
+                if (offeredCount < professionalCount)
+                {
+                    data.AddProductionProgress(
+                        TroopProductionKind.Professional,
+                        professionalCount - offeredCount);
+                }
+            }
             if (fiefCount > 0)
             {
                 int produced = fiefData.ProduceDailyFiefTroops(fiefCount);
-                data.RecordFiefProduction(produced);
+                data.RecordFiefReplenishment(day, produced);
+                if (produced < fiefCount)
+                {
+                    data.AddProductionProgress(
+                        TroopProductionKind.Fief,
+                        fiefCount - produced);
+                }
             }
         }
 
@@ -239,9 +275,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             FiefPartyData fiefData = manager?.GetFiefData(settlement);
             if (fiefData == null) return null;
 
-            SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
-            int weekKey = (int)CampaignTime.Now.ToDays / 7;
-            data.ResetWeekIfNeeded(weekKey);
             ProfessionalTroopTemplate professionalTemplate =
                 TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
@@ -249,24 +282,40 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             float supply = CalculateSettlementSupply(settlement, fiefData, manager);
             bool professionalEnabled = professionalTemplate != null &&
                 settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true;
+            float professionalTrainingCapacity = professionalTemplate != null
+                ? GetDailyProduction(
+                    settlement,
+                    TroopProductionKind.Professional)
+                : 0f;
             float professionalDemand = professionalEnabled
-                ? GetDailyProduction(settlement, TroopProductionKind.Professional)
+                ? professionalTrainingCapacity
                 : 0f;
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(settlement);
-            int weeklyLimit = doctrine.GetProduction(settlement).WeeklyLimit;
-            int weeklyRemaining = Math.Max(
-                0,
-                weeklyLimit - data.FiefProducedThisWeek);
+            FiefProductionConfig fiefProduction =
+                doctrine.GetProduction(settlement);
             int current = fiefData.GetTroopCounts().Values.Sum();
             int capacity = fiefData.GetFiefTroopLimit();
             float fiefDemand = Math.Min(
-                weeklyRemaining,
+                fiefProduction.DailyRate,
                 Math.Max(0, capacity - current));
             float ratio = doctrine.ProfessionalShare;
             ProfessionalProductionRule productionRule =
                 ResolveProfessionalProductionRule(settlement);
             ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
+            int effectiveBarracksLevel = productionRule == null
+                ? 0
+                : Math.Min(
+                    GetBarracksLevel(settlement),
+                    productionRule.MaximumBarracksLevel);
+            float rawTraining = training.GetDailyProduction(
+                effectiveBarracksLevel) *
+                (productionRule?.ProductionRate ?? 0f);
+            float externalBonusRate = rawTraining > 0.0001f
+                ? Math.Max(
+                    0f,
+                    professionalTrainingCapacity / rawTraining - 1f)
+                : 0f;
             float professionalAllocation = Math.Min(
                 supply * ratio,
                 professionalDemand);
@@ -293,16 +342,17 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 ProfessionalDoctrineWeight = doctrine.ProfessionalWeight,
                 ProfessionalTrainingBase = training.Base,
                 ProfessionalTrainingStep = training.BarracksStep,
-                BarracksLevel = GetBarracksLevel(settlement),
+                EffectiveBarracksLevel = effectiveBarracksLevel,
                 CultureEfficiency = productionRule?.ProductionRate ?? 0f,
-                ProfessionalTrainingCapacity = professionalDemand,
+                RawProfessionalTrainingBeforeExternalEffects = rawTraining,
+                ExternalTrainingBonusRate = externalBonusRate,
+                ProfessionalTrainingCapacity = professionalTrainingCapacity,
                 ProfessionalAllocation = professionalAllocation,
                 FiefDemand = fiefDemand,
                 FiefAllocation = fiefAllocation,
                 FiefCurrent = current,
                 FiefCapacity = capacity,
-                FiefProducedThisWeek = data.FiefProducedThisWeek,
-                FiefWeeklyLimit = weeklyLimit,
+                FiefBaseDailyRate = fiefProduction.DailyRate,
                 ProfessionalRecruitmentEnabled = professionalEnabled
             };
         }
@@ -323,22 +373,28 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         private static Dictionary<CharacterObject, int> BuildDailyProfessionalOffers(
             ProfessionalTroopTemplate template,
             int barracksLevel,
-            int count)
+            int count,
+            int day)
         {
             Dictionary<CharacterObject, int> result = new();
             List<TroopProductionEntry> entries = template.TroopEntries
                 .Where(e => e?.Troop != null &&
                     e.RequiredBarracksLevel <= barracksLevel)
+                .OrderBy(e => e.Troop.StringId)
                 .ToList();
-            for (int i = 0; i < count && entries.Count > 0; i++)
+            List<TroopProductionEntry> weightedCycle = new();
+            foreach (TroopProductionEntry entry in entries)
             {
-                TroopProductionEntry selected = entries
-                    .OrderBy(e =>
-                        (result.TryGetValue(e.Troop, out int current)
-                            ? current
-                            : 0) / (float)Math.Max(1, e.Weight))
-                    .ThenBy(e => e.Troop.StringId)
-                    .First();
+                for (int i = 0; i < Math.Max(1, entry.Weight); i++)
+                {
+                    weightedCycle.Add(entry);
+                }
+            }
+
+            for (int i = 0; i < count && weightedCycle.Count > 0; i++)
+            {
+                TroopProductionEntry selected = weightedCycle[
+                    Math.Abs(day + i) % weightedCycle.Count];
                 result[selected.Troop] = result.TryGetValue(
                     selected.Troop,
                     out int value) ? value + 1 : 1;
