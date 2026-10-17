@@ -97,6 +97,34 @@
         text="{=ModifiedArmy_GarrisonPrisonerRecruited}[驻军招募] {SETTLEMENT_NAME}从俘虏中招募了{RECRUITED}人, 并出售了{SOLD}名多余俘虏." />
     <string id="str_modifiedarmy_garrison_professional_recruitment"
         text="{=ModifiedArmy_GarrisonProfessionalRecruitment}[驻军招募] {SETTLEMENT_NAME}今日没有补充职业兵, 当时可训练{OFFERED}人, 首要限制是{LIMIT}." />
+    <string id="str_modifiedarmy_manpower_consume"
+        text="{=ModifiedArmy_ManpowerConsume}[Manpower][Offer consumption] Day={DAY} Settlement={SETTLEMENT_ID} Troop={TROOP_ID} Count={COUNT} Outcome={OUTCOME} Detail={DETAIL}" />
+    <string id="str_modifiedarmy_manpower_outcome_success"
+        text="{=ModifiedArmy_ManpowerOutcomeSuccess}Success" />
+    <string id="str_modifiedarmy_manpower_outcome_failure"
+        text="{=ModifiedArmy_ManpowerOutcomeFailure}Failure" />
+    <string id="str_modifiedarmy_manpower_reason_invalid_troop"
+        text="{=ModifiedArmy_ManpowerReasonInvalidTroop}Invalid troop or count" />
+    <string id="str_modifiedarmy_manpower_reason_offer_not_today"
+        text="{=ModifiedArmy_ManpowerReasonOfferNotToday}No offer is available today" />
+    <string id="str_modifiedarmy_manpower_reason_offer_missing"
+        text="{=ModifiedArmy_ManpowerReasonOfferMissing}Offer collection is missing" />
+    <string id="str_modifiedarmy_manpower_reason_offer_insufficient"
+        text="{=ModifiedArmy_ManpowerReasonOfferInsufficient}Insufficient offers; available={AVAILABLE}" />
+    <string id="str_modifiedarmy_manpower_reason_manager_unavailable"
+        text="{=ModifiedArmy_ManpowerReasonManagerUnavailable}Fief manager is unavailable" />
+    <string id="str_modifiedarmy_manpower_reason_hearth"
+        text="{=ModifiedArmy_ManpowerReasonHearth}Insufficient village hearth" />
+    <string id="str_modifiedarmy_manpower_reason_remaining"
+        text="{=ModifiedArmy_ManpowerReasonRemaining}Remaining={REMAINING}" />
+    <string id="str_modifiedarmy_manpower_produce_no_supply"
+        text="{=ModifiedArmy_ManpowerProduceNoSupply}[Manpower][Production] Day={DAY} Settlement={SETTLEMENT_ID} Offers=0 Reason=No available base manpower" />
+    <string id="str_modifiedarmy_manpower_produce"
+        text="{=ModifiedArmy_ManpowerProduce}[Manpower][Production] Day={DAY} Settlement={SETTLEMENT_ID} BaseManpower={SUPPLY} Training={TRAINING} Allocation={ALLOCATION} Requested={REQUESTED} Offers={OFFERED}" />
+    <string id="str_modifiedarmy_manpower_recruitment_blocked"
+        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[Manpower][Recruitment blocked] Day={DAY} Settlement={SETTLEMENT_ID} Offers={OFFERS} Garrison={GARRISON} Owner={OWNER} AutoRecruit={AUTO_RECRUIT} FoodChange={FOOD_CHANGE} MapEvent={MAP_EVENT} Siege={SIEGE}" />
+    <string id="str_modifiedarmy_manpower_recruitment"
+        text="{=ModifiedArmy_ManpowerRecruitment}[Manpower][Recruitment] Day={DAY} Settlement={SETTLEMENT_ID} GarrisonBefore={GARRISON_BEFORE} Offers={OFFERS} DailyLimit={DAILY_LIMIT} Approved={APPROVED} ProfessionalActual={PROFESSIONAL_ACTUAL} PrisonerActual={PRISONER_ACTUAL} GarrisonAfter={GARRISON_AFTER}" />
     <string id="str_modifiedarmy_recruits_unavailable"
         text="{=ModifiedArmy_RecruitsUnavailable}部分士兵已无法招募, 请重新选择." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"

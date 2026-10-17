@@ -53,6 +53,10 @@ namespace ModifiedArmy.Models
 
             SettlementManpowerProductionBehavior pools = Campaign.Current
                 .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
+            pools?.EnsureDailyProduction(settlement);
+            int availableProfessionalOffers = pools
+                ?.GetAvailableProfessionalOffers(settlement)
+                .Values.Sum() ?? 0;
             SettlementManpowerProductionData productionData = pools
                 ?.GetOrCreateProductionData(settlement);
             int day = (int)CampaignTime.Now.ToDays;
@@ -73,6 +77,40 @@ namespace ModifiedArmy.Models
                 settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
+                if (availableProfessionalOffers > 0)
+                {
+                    TextObject blockedMessage = GameTexts.FindText(
+                        "str_modifiedarmy_manpower_recruitment_blocked");
+                    blockedMessage.SetTextVariable("DAY", day);
+                    blockedMessage.SetTextVariable(
+                        "SETTLEMENT_ID",
+                        settlement.StringId);
+                    blockedMessage.SetTextVariable(
+                        "OFFERS",
+                        availableProfessionalOffers);
+                    blockedMessage.SetTextVariable(
+                        "GARRISON",
+                        GetBooleanLogText(town.GarrisonParty != null));
+                    blockedMessage.SetTextVariable(
+                        "OWNER",
+                        GetBooleanLogText(settlement.OwnerClan != null));
+                    blockedMessage.SetTextVariable(
+                        "AUTO_RECRUIT",
+                        GetBooleanLogText(
+                            town.GarrisonAutoRecruitmentIsEnabled));
+                    blockedMessage.SetTextVariable(
+                        "FOOD_CHANGE",
+                        town.FoodChange.ToString("F2"));
+                    blockedMessage.SetTextVariable(
+                        "MAP_EVENT",
+                        GetBooleanLogText(
+                            settlement.Party.MapEvent != null));
+                    blockedMessage.SetTextVariable(
+                        "SIEGE",
+                        GetBooleanLogText(
+                            settlement.Party.SiegeEvent != null));
+                    ModLogger.Debug(blockedMessage.ToString());
+                }
                 return;
             }
 
@@ -127,6 +165,39 @@ namespace ModifiedArmy.Models
             int professionalOffered = candidates.Where(candidate =>
                     candidate.Source == RecruitmentSource.ProfessionalProduction)
                 .Sum(candidate => candidate.AvailableCount);
+            int professionalApproved = plan?.Evaluations
+                .Where(evaluation => evaluation.Source ==
+                    RecruitmentSource.ProfessionalProduction)
+                .Sum(evaluation => evaluation.RecruitableCount) ?? 0;
+            if (professionalOffered > 0)
+            {
+                TextObject recruitmentMessage = GameTexts.FindText(
+                    "str_modifiedarmy_manpower_recruitment");
+                recruitmentMessage.SetTextVariable("DAY", day);
+                recruitmentMessage.SetTextVariable(
+                    "SETTLEMENT_ID",
+                    settlement.StringId);
+                recruitmentMessage.SetTextVariable(
+                    "GARRISON_BEFORE",
+                    town.GarrisonParty.MemberRoster.TotalManCount - recruited);
+                recruitmentMessage.SetTextVariable(
+                    "OFFERS",
+                    professionalOffered);
+                recruitmentMessage.SetTextVariable("DAILY_LIMIT", dailyLimit);
+                recruitmentMessage.SetTextVariable(
+                    "APPROVED",
+                    professionalApproved);
+                recruitmentMessage.SetTextVariable(
+                    "PROFESSIONAL_ACTUAL",
+                    professionalRecruited);
+                recruitmentMessage.SetTextVariable(
+                    "PRISONER_ACTUAL",
+                    prisonerRecruited);
+                recruitmentMessage.SetTextVariable(
+                    "GARRISON_AFTER",
+                    town.GarrisonParty.MemberRoster.TotalManCount);
+                ModLogger.Debug(recruitmentMessage.ToString());
+            }
             if (plan != null && professionalOffered > 0)
             {
                 LogProfessionalRecruitment(
@@ -148,6 +219,14 @@ namespace ModifiedArmy.Models
                     plan,
                     prisonerRecruited);
             }
+        }
+
+        private static TextObject GetBooleanLogText(bool value)
+        {
+            return new TextObject(
+                value
+                    ? "{=ModifiedArmy_Common_Enabled}Enabled"
+                    : "{=ModifiedArmy_Common_Disabled}Disabled");
         }
 
         /// <summary>
@@ -366,7 +445,7 @@ namespace ModifiedArmy.Models
                 .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             if (pools != null)
             {
-                candidates.AddRange(pools.GetAvailableProfessionalOffers(
+                candidates.AddRange(pools.GetPredictedProfessionalOffers(
                         settlement)
                     .Where(entry => entry.Key != null && entry.Value > 0)
                     .Select(entry => new RecruitmentCandidate(

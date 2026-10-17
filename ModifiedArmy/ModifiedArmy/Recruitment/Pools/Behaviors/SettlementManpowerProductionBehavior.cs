@@ -6,8 +6,10 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.common;
+using ModifiedArmy.Tool;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
@@ -141,6 +143,50 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         }
 
         /// <summary>
+        /// Returns current offers when recruitment is still pending, otherwise
+        /// projects the next daily batch without changing production progress.
+        /// </summary>
+        public IReadOnlyDictionary<CharacterObject, int>
+            GetPredictedProfessionalOffers(Settlement settlement)
+        {
+            IReadOnlyDictionary<CharacterObject, int> currentOffers =
+                GetAvailableProfessionalOffers(settlement);
+            if (currentOffers.Count > 0)
+            {
+                return currentOffers;
+            }
+
+            RecruitmentProductionForecast forecast =
+                GetProductionForecast(settlement);
+            ProfessionalTroopTemplate template =
+                TroopProductionTemplateRepository.Instance.Resolve(
+                    settlement,
+                    TroopProductionKind.Professional) as
+                    ProfessionalTroopTemplate;
+            if (forecast == null || template == null ||
+                !forecast.ProfessionalRecruitmentEnabled)
+            {
+                return new Dictionary<CharacterObject, int>();
+            }
+
+            SettlementManpowerProductionData data =
+                GetProductionData(settlement);
+            float progress = data?.ProfessionalProductionProgress ?? 0f;
+            int predictedCount = (int)Math.Floor(
+                progress + forecast.ProfessionalAllocation);
+            if (predictedCount <= 0)
+            {
+                return new Dictionary<CharacterObject, int>();
+            }
+
+            return BuildDailyProfessionalOffers(
+                template,
+                forecast.AllowedRecruitmentLevel,
+                predictedCount,
+                (int)CampaignTime.Now.ToDays + 1);
+        }
+
+        /// <summary>
         /// Consumes an exact quantity from today's offers and charges the
         /// corresponding village hearth manpower.
         /// </summary>
@@ -151,6 +197,29 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         {
             if (troop == null || count <= 0)
             {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    GameTexts.FindText(
+                        "str_modifiedarmy_manpower_reason_invalid_troop"));
+                return false;
+            }
+
+            int day = (int)CampaignTime.Now.ToDays;
+            if (!_professionalOfferDays.TryGetValue(
+                    settlement,
+                    out int offerDay) ||
+                offerDay != day)
+            {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    GameTexts.FindText(
+                        "str_modifiedarmy_manpower_reason_offer_not_today"));
                 return false;
             }
 
@@ -158,20 +227,52 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     settlement,
                     out var troops))
             {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    GameTexts.FindText(
+                        "str_modifiedarmy_manpower_reason_offer_missing"));
                 return false;
             }
 
             if (!troops.TryGetValue(troop, out int available) ||
                 available < count)
             {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    CreateAvailableCountReason(available));
                 return false;
             }
 
             FiefPartyManager manager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
-            if (manager == null ||
-                !manager.TryConsumeProfessionalHearth(settlement, count))
+            if (manager == null)
+            {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    GameTexts.FindText(
+                        "str_modifiedarmy_manpower_reason_manager_unavailable"));
                 return false;
+            }
+            if (!manager.TryConsumeProfessionalHearth(settlement, count))
+            {
+                LogOfferConsumption(
+                    settlement,
+                    troop,
+                    count,
+                    false,
+                    GameTexts.FindText(
+                        "str_modifiedarmy_manpower_reason_hearth"));
+                return false;
+            }
 
             int remaining = available - count;
             if (remaining > 0)
@@ -183,10 +284,67 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 troops.Remove(troop);
             }
 
+            LogOfferConsumption(
+                settlement,
+                troop,
+                count,
+                true,
+                CreateRemainingCountReason(remaining));
             return true;
         }
 
+        private static void LogOfferConsumption(
+            Settlement settlement,
+            CharacterObject troop,
+            int count,
+            bool succeeded,
+            TextObject detail)
+        {
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_manpower_consume");
+            message.SetTextVariable("DAY", (int)CampaignTime.Now.ToDays);
+            message.SetTextVariable(
+                "SETTLEMENT_ID",
+                settlement?.StringId ?? "null");
+            message.SetTextVariable("TROOP_ID", troop?.StringId ?? "null");
+            message.SetTextVariable("COUNT", count);
+            message.SetTextVariable(
+                "OUTCOME",
+                GameTexts.FindText(
+                    succeeded
+                        ? "str_modifiedarmy_manpower_outcome_success"
+                        : "str_modifiedarmy_manpower_outcome_failure"));
+            message.SetTextVariable("DETAIL", detail);
+            ModLogger.Debug(message.ToString());
+        }
+
+        private static TextObject CreateAvailableCountReason(int count)
+        {
+            TextObject reason = GameTexts.FindText(
+                "str_modifiedarmy_manpower_reason_offer_insufficient");
+            reason.SetTextVariable("AVAILABLE", count);
+            return reason;
+        }
+
+        private static TextObject CreateRemainingCountReason(int count)
+        {
+            TextObject reason = GameTexts.FindText(
+                "str_modifiedarmy_manpower_reason_remaining");
+            reason.SetTextVariable("REMAINING", count);
+            return reason;
+        }
+
         private void OnDailySettlementTick(Settlement settlement)
+        {
+            EnsureDailyProduction(settlement);
+        }
+
+        /// <summary>
+        /// Produces today's offers and fief reinforcements at most once. The
+        /// recruitment behavior calls this explicitly so correctness does not
+        /// depend on campaign-event listener order.
+        /// </summary>
+        public void EnsureDailyProduction(Settlement settlement)
         {
             if (settlement?.IsFortification != true ||
                 settlement.Town == null)
@@ -194,19 +352,36 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return;
             }
 
+            int day = (int)CampaignTime.Now.ToDays;
+            if (_professionalOfferDays.TryGetValue(
+                    settlement,
+                    out int producedDay) &&
+                producedDay == day)
+            {
+                return;
+            }
+
             _dailyProfessionalOffers.Remove(settlement);
-            _professionalOfferDays[settlement] =
-                (int)CampaignTime.Now.ToDays;
+            _professionalOfferDays[settlement] = day;
             SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
             FiefPartyManager fiefManager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
             FiefPartyData fiefData = fiefManager?.GetFiefData(settlement);
             if (data == null || fiefData == null) return;
 
-            int day = (int)CampaignTime.Now.ToDays;
             data.RecordFiefReplenishment(day, 0);
             RecruitmentProductionForecast forecast = GetProductionForecast(settlement);
-            if (forecast == null || forecast.SharedSupply <= 0f) return;
+            if (forecast == null || forecast.SharedSupply <= 0f)
+            {
+                TextObject noSupplyMessage = GameTexts.FindText(
+                    "str_modifiedarmy_manpower_produce_no_supply");
+                noSupplyMessage.SetTextVariable("DAY", day);
+                noSupplyMessage.SetTextVariable(
+                    "SETTLEMENT_ID",
+                    settlement.StringId);
+                ModLogger.Debug(noSupplyMessage.ToString());
+                return;
+            }
 
             ProfessionalTroopTemplate professionalTemplate =
                 TroopProductionTemplateRepository.Instance.Resolve(
@@ -220,6 +395,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 data,
                 TroopProductionKind.Fief,
                 forecast.FiefAllocation);
+            int offeredCount = 0;
             if (professionalCount > 0 && professionalTemplate != null)
             {
                 Dictionary<CharacterObject, int> offers =
@@ -228,7 +404,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     forecast.AllowedRecruitmentLevel,
                     professionalCount,
                     day);
-                int offeredCount = offers.Values.Sum();
+                offeredCount = offers.Values.Sum();
                 if (offeredCount > 0)
                 {
                     _dailyProfessionalOffers[settlement] = offers;
@@ -251,6 +427,25 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                         fiefCount - produced);
                 }
             }
+
+            TextObject productionMessage = GameTexts.FindText(
+                "str_modifiedarmy_manpower_produce");
+            productionMessage.SetTextVariable("DAY", day);
+            productionMessage.SetTextVariable(
+                "SETTLEMENT_ID",
+                settlement.StringId);
+            productionMessage.SetTextVariable(
+                "SUPPLY",
+                forecast.SharedSupply.ToString("F2"));
+            productionMessage.SetTextVariable(
+                "TRAINING",
+                forecast.ProfessionalTrainingCapacity.ToString("F2"));
+            productionMessage.SetTextVariable(
+                "ALLOCATION",
+                forecast.ProfessionalAllocation.ToString("F2"));
+            productionMessage.SetTextVariable("REQUESTED", professionalCount);
+            productionMessage.SetTextVariable("OFFERED", offeredCount);
+            ModLogger.Debug(productionMessage.ToString());
         }
 
         /// <summary>

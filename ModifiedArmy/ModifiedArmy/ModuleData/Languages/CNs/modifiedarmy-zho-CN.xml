@@ -38,6 +38,20 @@
     <string id="ModifiedArmy_ReinforcementRate_Description" text="基础兵源：{SUPPLY} /天{NEWLINE}{NEWLINE}职业兵{NEWLINE}基础训练：{TRAINING_BASE} /天{NEWLINE}兵营加成（{BARRACKS_LEVEL}级）：+{BARRACKS_BONUS} /天{NEWLINE}文化效率：{CULTURE_EFFICIENCY}%{NEWLINE}其他加成：{EXTERNAL_BONUS}%{NEWLINE}训练能力：{TRAINING} /天{NEWLINE}预计补员：{PROFESSIONAL} /天{NEWLINE}实际补员：{PROFESSIONAL_ACTUAL}{NEWLINE}自动招募：{AUTO_RECRUIT}{NEWLINE}{NEWLINE}封邑兵{NEWLINE}基础补员：{FIEF_BASE} /天{NEWLINE}预计补员：{FIEF} /天{NEWLINE}实际补员：{FIEF_ACTUAL}" />
     <string id="ModifiedArmy_ReinforcementRate_NoRecord" text="暂无记录" />
     <string id="ModifiedArmy_ReinforcementRate_ActualRecorded" text="{COUNT} 人" />
+    <string id="ModifiedArmy_ManpowerConsume" text="[兵源][候选消费] 日期={DAY} 定居点={SETTLEMENT_ID} 兵种={TROOP_ID} 数量={COUNT} 结果={OUTCOME} 详情={DETAIL}" />
+    <string id="ModifiedArmy_ManpowerOutcomeSuccess" text="成功" />
+    <string id="ModifiedArmy_ManpowerOutcomeFailure" text="失败" />
+    <string id="ModifiedArmy_ManpowerReasonInvalidTroop" text="兵种无效或数量不正确" />
+    <string id="ModifiedArmy_ManpowerReasonOfferNotToday" text="当天候选不存在" />
+    <string id="ModifiedArmy_ManpowerReasonOfferMissing" text="候选集合不存在" />
+    <string id="ModifiedArmy_ManpowerReasonOfferInsufficient" text="候选数量不足；可用={AVAILABLE}" />
+    <string id="ModifiedArmy_ManpowerReasonManagerUnavailable" text="封邑管理器不可用" />
+    <string id="ModifiedArmy_ManpowerReasonHearth" text="村庄户数不足" />
+    <string id="ModifiedArmy_ManpowerReasonRemaining" text="剩余={REMAINING}" />
+    <string id="ModifiedArmy_ManpowerProduceNoSupply" text="[兵源][生产] 日期={DAY} 定居点={SETTLEMENT_ID} 候选数=0 原因=无可用基础兵源" />
+    <string id="ModifiedArmy_ManpowerProduce" text="[兵源][生产] 日期={DAY} 定居点={SETTLEMENT_ID} 基础兵源={SUPPLY} 训练能力={TRAINING} 生产额度={ALLOCATION} 申请数={REQUESTED} 候选数={OFFERED}" />
+    <string id="ModifiedArmy_ManpowerRecruitmentBlocked" text="[兵源][招募受阻] 日期={DAY} 定居点={SETTLEMENT_ID} 候选数={OFFERS} 存在驻军={GARRISON} 存在领主={OWNER} 自动招募={AUTO_RECRUIT} 食物变化={FOOD_CHANGE} 正在战斗={MAP_EVENT} 正在围城={SIEGE}" />
+    <string id="ModifiedArmy_ManpowerRecruitment" text="[兵源][招募] 日期={DAY} 定居点={SETTLEMENT_ID} 招募前驻军={GARRISON_BEFORE} 候选数={OFFERS} 每日上限={DAILY_LIMIT} 批准数={APPROVED} 职业兵实际入伍={PROFESSIONAL_ACTUAL} 俘虏实际入伍={PRISONER_ACTUAL} 招募后驻军={GARRISON_AFTER}" />
     <string id="Fief_Party" text="{SETTLEMENT}的封邑部队" />
 
     <!-- Garrison and wage UI. -->
