@@ -8,6 +8,12 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     {
         public float SharedSupply { get; internal set; }
         public float ProfessionalRatio { get; internal set; }
+        public int FiefDoctrineWeight { get; internal set; }
+        public int ProfessionalDoctrineWeight { get; internal set; }
+        public float ProfessionalTrainingBase { get; internal set; }
+        public float ProfessionalTrainingStep { get; internal set; }
+        public int BarracksLevel { get; internal set; }
+        public float CultureEfficiency { get; internal set; }
         public float ProfessionalTrainingCapacity { get; internal set; }
         public float ProfessionalAllocation { get; internal set; }
         public float FiefDemand { get; internal set; }

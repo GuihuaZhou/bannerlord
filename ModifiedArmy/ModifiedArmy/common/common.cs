@@ -57,35 +57,27 @@ namespace ModifiedArmy.common
     }
 
     /// <summary>
-    /// 全局常量入口，全部委托给 ModConfig 实例。
-    /// 保持向后兼容，所有代码无需修改。
+    /// Legacy economy constants retained for the still-active fief economy.
+    /// Military doctrine and AI recruitment values live in MilitaryConfig.
     /// </summary>
     public static class CommonConstants
     {
-        private static ModConfig Cfg => ModConfigManager.Instance.GetActiveConfig();
-
-        public static float TOWN_POOR_THRESHOLD => Cfg?.TownPoorThreshold ?? 1000f;
-        public static float TOWN_AVERAGE_THRESHOLD => Cfg?.TownAverageThreshold ?? 4000f;
-        public static float TOWN_RICH_THRESHOLD => Cfg?.TownRichThreshold ?? 8000f;
-        public static float TOWN_VERY_RICH_THRESHOLD => Cfg?.TownVeryRichThreshold ?? 12000f;
-
-        public static float CASTLE_POOR_THRESHOLD => Cfg?.CastlePoorThreshold ?? 300f;
-        public static float CASTLE_AVERAGE_THRESHOLD => Cfg?.CastleAverageThreshold ?? 800f;
-        public static float CASTLE_RICH_THRESHOLD => Cfg?.CastleRichThreshold ?? 1500f;
-        public static float CASTLE_VERY_RICH_THRESHOLD => Cfg?.CastleVeryRichThreshold ?? 2000f;
-
-        public static float ProsperityWeight => Cfg?.ProsperityWeight ?? 0.4f;
-        public static float HearthsWeight => Cfg?.HearthsWeight ?? 0.6f;
-
-        public static float VillageMinHearthThreshold => Cfg?.VillageMinHearthThreshold ?? 100f;
-        public static float VillageMaxReinforcementHearthThreshold => Cfg?.VillageMaxReinforcementHearthThreshold ?? 900f;
-
-        public static int FIEF_WAGE_EXEMPTION_DAYS => Cfg?.FiefWageExemptionDays ?? 28;
+        public const float TOWN_POOR_THRESHOLD = 1000f;
+        public const float TOWN_AVERAGE_THRESHOLD = 4000f;
+        public const float TOWN_RICH_THRESHOLD = 8000f;
+        public const float TOWN_VERY_RICH_THRESHOLD = 12000f;
+        public const float CASTLE_POOR_THRESHOLD = 300f;
+        public const float CASTLE_AVERAGE_THRESHOLD = 800f;
+        public const float CASTLE_RICH_THRESHOLD = 1500f;
+        public const float CASTLE_VERY_RICH_THRESHOLD = 2000f;
+        public const float VillageMinHearthThreshold = 100f;
+        public const float VillageMaxReinforcementHearthThreshold = 900f;
+        public const int FIEF_WAGE_EXEMPTION_DAYS = 28;
         public static int RETURN_TROOP_WAIT_CYCLE => 3;
         public static int FIEF_TROOP_MAX_SERVICE_CYCLE => 5;
 
-        public static float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER => Cfg?.AiFiefProsperityImpactMultiplier ?? 0.1f;
-        public static float AI_FIEF_HEARTH_IMPACT_MULTIPLIER => Cfg?.AiFiefHearthImpactMultiplier ?? 0.1f;
+        public const float AI_FIEF_PROSPERITY_IMPACT_MULTIPLIER = 0.1f;
+        public const float AI_FIEF_HEARTH_IMPACT_MULTIPLIER = 0.1f;
 
     }
 

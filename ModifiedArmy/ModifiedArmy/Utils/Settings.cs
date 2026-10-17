@@ -9,7 +9,7 @@ namespace ModifiedArmy.Utils
 {
     /// <summary>
     /// Player-facing settings owned exclusively by ModifiedArmy.
-    /// Gameplay balance remains in ModConfigs.xml.
+    /// Gameplay balance remains in militaryConfig.xml.
     /// </summary>
     public sealed class Settings : AttributeGlobalSettings<Settings>
     {

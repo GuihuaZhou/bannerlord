@@ -7,6 +7,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.common;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
@@ -102,12 +103,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return 0f;
             }
 
-            ProfessionalTroopTemplate template =
-                TroopProductionTemplateRepository.Instance.Resolve(
-                    settlement,
-                    kind,
-                    professionalRule?.Culture ?? settlement?.Culture)
-                    as ProfessionalTroopTemplate;
             if (professionalRule != null)
             {
                 barracksLevel = Math.Min(
@@ -115,9 +110,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     professionalRule.MaximumBarracksLevel);
             }
 
-            return template?.GetDailyProduction(
-                barracksLevel) *
-                (professionalRule?.ProductionRate ?? 1f) ?? 0f;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(
+                    professionalRule?.Culture ?? settlement?.Culture);
+            return doctrine.GetTraining(settlement).GetDailyProduction(
+                barracksLevel) * (professionalRule?.ProductionRate ?? 1f);
         }
 
         /// <summary>
@@ -249,14 +246,15 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
                     TroopProductionKind.Professional) as ProfessionalTroopTemplate;
-            FiefPartyTemplate fiefTemplate = fiefData.GetFiefPartyTemplate();
             float supply = CalculateSettlementSupply(settlement, fiefData, manager);
             bool professionalEnabled = professionalTemplate != null &&
                 settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true;
             float professionalDemand = professionalEnabled
                 ? GetDailyProduction(settlement, TroopProductionKind.Professional)
                 : 0f;
-            int weeklyLimit = fiefTemplate?.MaxWeeklySupplement ?? 0;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(settlement);
+            int weeklyLimit = doctrine.GetProduction(settlement).WeeklyLimit;
             int weeklyRemaining = Math.Max(
                 0,
                 weeklyLimit - data.FiefProducedThisWeek);
@@ -265,7 +263,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             float fiefDemand = Math.Min(
                 weeklyRemaining,
                 Math.Max(0, capacity - current));
-            float ratio = professionalTemplate?.ProfessionalRatio ?? 0.5f;
+            float ratio = doctrine.ProfessionalShare;
+            ProfessionalProductionRule productionRule =
+                ResolveProfessionalProductionRule(settlement);
+            ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
             float professionalAllocation = Math.Min(
                 supply * ratio,
                 professionalDemand);
@@ -288,6 +289,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             {
                 SharedSupply = supply,
                 ProfessionalRatio = ratio,
+                FiefDoctrineWeight = doctrine.FiefWeight,
+                ProfessionalDoctrineWeight = doctrine.ProfessionalWeight,
+                ProfessionalTrainingBase = training.Base,
+                ProfessionalTrainingStep = training.BarracksStep,
+                BarracksLevel = GetBarracksLevel(settlement),
+                CultureEfficiency = productionRule?.ProductionRate ?? 0f,
                 ProfessionalTrainingCapacity = professionalDemand,
                 ProfessionalAllocation = professionalAllocation,
                 FiefDemand = fiefDemand,

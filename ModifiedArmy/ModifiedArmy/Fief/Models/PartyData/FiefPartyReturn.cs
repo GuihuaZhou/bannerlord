@@ -83,8 +83,8 @@ namespace ModifiedArmy.Models.Fief
                 _settlement,
                 returnedCount,
                 true);
-            int cooldown = _fiefPartyTemplate?.ReturnCooldownWeeks ??
-                CommonConstants.RETURN_TROOP_WAIT_CYCLE;
+            int cooldown = MilitaryConfigManager.Instance.RequireActiveConfig()
+                .GetDoctrine(_settlement).Service.ReturnCooldownWeeks;
             FiefReturnBatch cooling = ReturnBatches
                 .FirstOrDefault(d => d != null && d.WaitWeeks == cooldown);
             if (cooling == null)

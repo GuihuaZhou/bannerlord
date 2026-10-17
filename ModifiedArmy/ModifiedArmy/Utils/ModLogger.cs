@@ -42,7 +42,7 @@ namespace ModifiedArmy.Tool
 
         /// <summary>
         /// Reads MCM on every call so a changed threshold applies immediately.
-        /// The XML setting remains a fallback before MCM becomes available.
+        /// Before MCM becomes available, use the fixed Notice threshold.
         /// </summary>
         private static LogLevel CurrentMinLogLevel
         {
@@ -54,14 +54,7 @@ namespace ModifiedArmy.Tool
                     return settings.MinLogLevel.SelectedValue;
                 }
 
-                int level = ModifiedArmy.common.ModConfigManager.Instance
-                    .GetActiveConfig()?.MinLogLevel ?? 2;
-                if (level < 0 || level > 4)
-                {
-                    level = 2;
-                }
-
-                return (LogLevel)level;
+                return LogLevel.Notice;
             }
         }
 

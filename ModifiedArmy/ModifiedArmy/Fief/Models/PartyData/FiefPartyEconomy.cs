@@ -103,10 +103,10 @@ namespace ModifiedArmy.Models.Fief
             //     Castle = 1
             //
             // 新逻辑：
-            //     由 _fiefPartyTemplate.ProsperityCostPerTroop 决定，
+            //     由文化 MilitaryDoctrine 的 ProsperityCostPerTroop 决定，
             //     允许每个文化/定居点类型独立配置。
             // ============================================================
-            float baseProsperityCost = _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0f;
+            float baseProsperityCost = GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0f;
 
             if (baseProsperityCost <= 0f)
                 return 0;

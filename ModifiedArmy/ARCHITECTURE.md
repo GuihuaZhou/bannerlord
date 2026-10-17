@@ -204,9 +204,9 @@ BasicTroopGroup (per culture)
 | 方法 | 说明 |
 |------|------|
 | `InitialFeifPartyData()` | 初始化：解析模板、计算上限、同步计数器 |
-| `CalculateSizeLimit()` | BaseLimit + VillageBonus × 村庄数 |
+| `CalculateSizeLimit()` | 文化制度的 BaseLimit + VillageBonus × 村庄数 |
 | `CalculateReinforcementMultiplier()` | 繁荣度权重0.4 + 户数权重0.6，映射到 [0,1] |
-| `GetWeeklyUpdateCount()` | MinWeeklySupplement ~ MaxWeeklySupplement × 补员倍率 |
+| `GetWeeklyUpdateCount()` | 受文化制度的 WeeklyLimit 约束 |
 | `WeeklyUpdate()` | 自动升级 + 处理冷却到期 + 补员 |
 | `DailyUpdate()` | 征召期间每日 Prosperity 损失 |
 | `RecruitTroopsToParty()` | 按权重征召全部就绪兵 |
@@ -262,10 +262,10 @@ BasicTroopGroup (per culture)
 
 | 字段 | 说明 |
 |------|------|
-| `BaseLimit` | 定居点自身可供养的基础部队人数（默认100） |
-| `VillageBonus` | 每个附属村庄的额外加成（默认10） |
+| `BaseLimit` | `militaryConfig.xml` 中按文化和定居点类型配置的基础上限 |
+| `VillageBonus` | `militaryConfig.xml` 中按文化和定居点类型配置的村庄加成 |
 | `MinWeeklySupplement` | 每周最少补员（默认5） |
-| `MaxWeeklySupplement` | 每周最多补员（默认20） |
+| `WeeklyLimit` | `militaryConfig.xml` 中每周最多补员 |
 | `_allBasicTroops` | 各 SoldierType 的基础兵种列表 |
 | `_soldierTypeWeights` | 各 SoldierType 的权重 |
 | `_allEnableTroops` | 所有使能兵种（含升级树） |

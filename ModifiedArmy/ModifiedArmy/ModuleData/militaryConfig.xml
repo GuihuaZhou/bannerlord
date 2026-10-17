@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MilitaryConfigs>
+  <MilitaryConfig id="default">
+    <AiRecruitment>
+      <NeedScore>
+        <ManpowerWeight value="0.4"/><WarUrgencyWeight value="0.35"/><EconomicWeight value="0.25"/>
+        <Threshold value="0.25"/><PeaceUrgency value="0.1"/><WarUrgency value="0.7"/>
+        <SiegeUrgency value="1.0"/><EconomicWeeks value="10.0"/>
+      </NeedScore>
+      <CulturalIdentity>
+        <MatchFiefBonus value="1.3"/><MismatchGarrisonTransferPenalty value="0.5"/>
+      </CulturalIdentity>
+      <SituationalModifiers>
+        <Situation id="siege"><Fief value="0.3"/><GarrisonTransfer value="0.5"/><Mercenary value="2.0"/></Situation>
+        <Situation id="broke"><Fief value="1.2"/><GarrisonTransfer value="1.0"/><Mercenary value="0.3"/><Threshold value="3.0"/></Situation>
+        <Situation id="critical"><Fief value="0.5"/><GarrisonTransfer value="1.0"/><Mercenary value="1.5"/><Threshold value="0.3"/></Situation>
+        <Situation id="peace"><Fief value="1.0"/><GarrisonTransfer value="1.2"/><Mercenary value="0.5"/></Situation>
+        <Situation id="war"><Fief value="1.0"/><GarrisonTransfer value="0.8"/><Mercenary value="1.2"/></Situation>
+      </SituationalModifiers>
+      <EnemyDetection><Radius value="50.0"/><StrengthRatio value="0.5"/></EnemyDetection>
+      <RecruitmentLimits><RandomChance value="0.8"/><MercenarySearchRadius value="150"/></RecruitmentLimits>
+    </AiRecruitment>
+    <Cultures>
+      <Culture id="Culture.empire">
+        <MilitaryDoctrine fief="1" professional="4" mercenary="3"/>
+        <Professional><Training><Town base="0.50" barracksStep="0.40"/><Castle base="0.60" barracksStep="0.45"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+          <Castle baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.vlandia">
+        <MilitaryDoctrine fief="7" professional="2" mercenary="1"/>
+        <Professional><Training><Town base="0.25" barracksStep="0.22"/><Castle base="0.30" barracksStep="0.30"/></Training></Professional>
+        <Fief><Service freeWageDays="42" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="120" villageBonus="30" weeklyLimit="30" prosperityCostPerTroop="10" hearthCostPerTroop="1"/>
+          <Castle baseLimit="80" villageBonus="25" weeklyLimit="30" prosperityCostPerTroop="4" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.aserai">
+        <MilitaryDoctrine fief="2" professional="3" mercenary="5"/>
+        <Professional><Training><Town base="0.50" barracksStep="0.45"/><Castle base="0.65" barracksStep="0.50"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="50" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+          <Castle baseLimit="40" villageBonus="10" weeklyLimit="10" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.sturgia">
+        <MilitaryDoctrine fief="6" professional="4" mercenary="1"/>
+        <Professional><Training><Town base="0.70" barracksStep="0.55"/><Castle base="0.80" barracksStep="0.65"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="90" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+          <Castle baseLimit="90" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.battania">
+        <MilitaryDoctrine fief="3" professional="1" mercenary="1"/>
+        <Professional><Training><Town base="0.65" barracksStep="0.50"/><Castle base="0.75" barracksStep="0.55"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="70" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+          <TownPort baseLimit="80" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+          <Castle baseLimit="70" villageBonus="30" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.khuzait">
+        <MilitaryDoctrine fief="5" professional="3" mercenary="2"/>
+        <Professional><Training><Town base="0.65" barracksStep="0.60"/><Castle base="0.80" barracksStep="0.65"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="1"/><Production>
+          <Town baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+          <Castle baseLimit="70" villageBonus="40" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+      <Culture id="Culture.nord">
+        <MilitaryDoctrine fief="4" professional="5" mercenary="1"/>
+        <Professional><Training><Town base="0.70" barracksStep="0.55"/><Castle base="0.80" barracksStep="0.65"/></Training></Professional>
+        <Fief><Service freeWageDays="28" returnCooldownWeeks="3"/><Production>
+          <Town baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+          <Castle baseLimit="70" villageBonus="20" weeklyLimit="20" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
+        </Production></Fief>
+      </Culture>
+    </Cultures>
+  </MilitaryConfig>
+</MilitaryConfigs>

@@ -111,10 +111,10 @@ namespace ModifiedArmy.Models.Fief
             // 若无模板（无 fallback），则不扣除繁荣度/户数。
             // ============================================================
             int tmpProsperityCostPerTroop =
-                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
 
             List<RecruitmentCandidate> candidates = new();
 
@@ -485,10 +485,10 @@ namespace ModifiedArmy.Models.Fief
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
             int tmpProsperityCostPerTroop =
-                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
 
             int remainingPartySpace = Math.Max(0,
                 targetParty.Party.PartySizeLimit - targetParty.Party.NumberOfAllMembers);
@@ -625,10 +625,10 @@ namespace ModifiedArmy.Models.Fief
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
             int tmpProsperityCostPerTroop =
-                _fiefPartyTemplate?.ProsperityCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
 
             int tmpHearthCostPerTroop =
-                _fiefPartyTemplate?.HearthCostPerTroop ?? 0;
+                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
 
             hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;

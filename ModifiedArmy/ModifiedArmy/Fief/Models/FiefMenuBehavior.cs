@@ -548,8 +548,11 @@ namespace ModifiedArmy.Models.Fief
                 "{SETTLEMENT_NAME} reinforcement rates" +
                 "{NEWLINE}{NEWLINE}Shared manpower: {SUPPLY}/day" +
                 "{NEWLINE}{NEWLINE}Professional troops: {PROFESSIONAL}/day" +
-                "{NEWLINE}Training capacity: {TRAINING}/day" +
-                "{NEWLINE}Configured share: {RATIO}%" +
+                "{NEWLINE}Doctrine weights (fief/professional): {FIEF_WEIGHT}/{PROFESSIONAL_WEIGHT}" +
+                "{NEWLINE}Configured professional share: {RATIO}%" +
+                "{NEWLINE}Base training: {TRAINING_BASE} + {TRAINING_STEP} × barracks level {BARRACKS_LEVEL}" +
+                "{NEWLINE}Culture efficiency: {CULTURE_EFFICIENCY}%" +
+                "{NEWLINE}Effective training capacity: {TRAINING}/day" +
                 "{NEWLINE}Automatic recruitment: {AUTO_RECRUIT}" +
                 "{NEWLINE}{NEWLINE}Fief troops: {FIEF}/day" +
                 "{NEWLINE}Current strength: {FIEF_CURRENT}/{FIEF_CAPACITY}" +
@@ -566,6 +569,20 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable(
                 "RATIO",
                 (int)Math.Round(forecast.ProfessionalRatio * 100f));
+            text.SetTextVariable("FIEF_WEIGHT", forecast.FiefDoctrineWeight);
+            text.SetTextVariable(
+                "PROFESSIONAL_WEIGHT",
+                forecast.ProfessionalDoctrineWeight);
+            text.SetTextVariable(
+                "TRAINING_BASE",
+                FormatRate(forecast.ProfessionalTrainingBase));
+            text.SetTextVariable(
+                "TRAINING_STEP",
+                FormatRate(forecast.ProfessionalTrainingStep));
+            text.SetTextVariable("BARRACKS_LEVEL", forecast.BarracksLevel);
+            text.SetTextVariable(
+                "CULTURE_EFFICIENCY",
+                (int)Math.Round(forecast.CultureEfficiency * 100f));
             text.SetTextVariable(
                 "AUTO_RECRUIT",
                 new TextObject(

@@ -101,6 +101,11 @@ namespace ModifiedArmy.Models.Fief
 
         public Settlement GetSettlement() => _settlement;
 
+        private FiefProductionConfig GetFiefProductionConfig() =>
+            _settlement == null ? null : MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement)
+                .GetProduction(_settlement);
+
         internal void RefreshManpowerCounters() => SyncManpowerCounters();
 
         internal FiefServiceBatch CreateServingDetachment(
@@ -112,8 +117,8 @@ namespace ModifiedArmy.Models.Fief
                 return null;
 
             CultureObject culture = _fiefPartyTemplate?.Culture ?? _settlement?.Culture;
-            int freeWageDays = ModConfigManager.Instance.GetActiveConfig()?
-                .GetFiefFreeWageDays(culture) ?? 28;
+            int freeWageDays = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(culture).Service.FreeWageDays;
             FiefServiceBatch batch = FiefServiceBatch.Create(
                 servingParty,
                 freeWageDays,
@@ -278,7 +283,11 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
 
             int boundVillageCount = _settlement.BoundVillages?.Count ?? 0;
-            return _fiefPartyTemplate.BaseLimit + (boundVillageCount * _fiefPartyTemplate.VillageBonus);
+            FiefProductionConfig production = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement)
+                .GetProduction(_settlement);
+            return production.BaseLimit +
+                (boundVillageCount * production.VillageBonus);
         }
 
         /// <summary>

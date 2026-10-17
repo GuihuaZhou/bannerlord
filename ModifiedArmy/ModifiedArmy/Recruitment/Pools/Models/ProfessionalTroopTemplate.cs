@@ -1,6 +1,5 @@
 using ModifiedArmy.Models;
 using ModifiedArmy.Tool;
-using System;
 using System.Collections.Generic;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
@@ -28,12 +27,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         public TroopProductionKind ProductionKind =>
             TroopProductionKind.Professional;
 
-        public float BaseDailyProduction { get; private set; }
-
-        public float DailyProductionStep { get; private set; }
-
-        public float ProfessionalRatio { get; private set; } = 0.5f;
-
         public IReadOnlyList<TroopProductionEntry> TroopEntries =>
             _troopEntries;
 
@@ -45,25 +38,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             Culture = objectManager.ReadObjectReferenceFromXml<CultureObject>(
                 "culture",
                 node);
-            BaseDailyProduction =
-                TroopProductionTemplateUtility.ReadOptionalFloat(
-                    node,
-                    "baseDailyProduction",
-                    0f);
-            DailyProductionStep =
-                TroopProductionTemplateUtility.ReadOptionalFloat(
-                    node,
-                    "dailyProductionStep",
-                    0f);
-            ProfessionalRatio = Math.Max(
-                0f,
-                Math.Min(
-                    1f,
-                    TroopProductionTemplateUtility.ReadOptionalFloat(
-                        node,
-                        "professionalRatio",
-                        0.5f)));
-
             XmlNode composition = node.SelectSingleNode("TroopComposition");
             if (composition != null)
             {
@@ -74,14 +48,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             }
 
             TroopProductionTemplateRepository.Instance.Register(this);
-        }
-
-        public float GetDailyProduction(int barracksLevel)
-        {
-            return TroopProductionTemplateUtility.CalculateDailyProduction(
-                BaseDailyProduction,
-                DailyProductionStep,
-                barracksLevel);
         }
 
         private void ParseTroops(

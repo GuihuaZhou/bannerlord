@@ -118,13 +118,15 @@ namespace ModifiedArmy
                     true);
 
 
-                game.ObjectManager.RegisterType<ModConfig>(
-                    "ModConfig",
-                    "ModConfigs",
+                MilitaryConfigManager.Instance.Clear();
+                game.ObjectManager.RegisterType<MilitaryConfig>(
+                    "MilitaryConfig",
+                    "MilitaryConfigs",
                     100U,
                     true,
                     false);
-                MBObjectManager.Instance.LoadXML("ModConfigs", true);
+                MBObjectManager.Instance.LoadXML("MilitaryConfigs", true);
+                MilitaryConfigManager.Instance.RequireActiveConfig();
 
 
                 game.ObjectManager.RegisterType<MercenaryTemplate>(

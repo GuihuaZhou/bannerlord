@@ -29,7 +29,7 @@ namespace ModifiedArmy.PartyFinance.Models
             float currentLongTermWage = GetLongTermDailyWage(party);
             float reserveDays = Math.Max(
                 1f,
-                ModConfigManager.Instance
+                MilitaryConfigManager.Instance
                     .GetActiveConfig()
                     .AiNeedEconomicWeeks);
             float operatingFunds =

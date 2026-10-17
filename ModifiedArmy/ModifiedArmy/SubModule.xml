@@ -38,7 +38,7 @@
 			</IncludedGameTypes>
 		</XmlNode>  
 		<XmlNode>                
-			<XmlName id="ModConfigs" path="modConfigs" />
+			<XmlName id="MilitaryConfigs" path="militaryConfig" />
 			<IncludedGameTypes>
 				<GameType value="Campaign" />
 				<GameType value="CampaignStoryMode" />

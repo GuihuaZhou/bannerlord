@@ -34,12 +34,12 @@ namespace ModifiedArmy.Models
     ///   4. 偏好→可行性→执行/回退 — 按偏好得分降序尝试各兵源，
     ///      找到可用据点则派兵前往，不可用则回退到下一偏好源
     ///
-    /// 所有参数通过 ModConfig（modConfigs.xml → AiRecruitment 节点）配置，无硬编码数值。
+    /// 所有参数通过 MilitaryConfig 配置，无硬编码数值。
     /// </summary>
     public class AiRecruitmentBehavior : CampaignBehaviorBase
     {
         private FiefPartyManager _fiefPartyManager;
-        private ModConfig _config;
+        private MilitaryConfig _config;
 
         // ========== 事件注册 ==========
 
@@ -76,7 +76,7 @@ namespace ModifiedArmy.Models
             _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
             if (_fiefPartyManager == null) return;
 
-            _config = ModConfigManager.Instance?.GetActiveConfig();
+            _config = MilitaryConfigManager.Instance.GetActiveConfig();
             if (_config == null) return;
 
             foreach (Kingdom kingdom in Kingdom.All)
@@ -92,6 +92,7 @@ namespace ModifiedArmy.Models
                         MobileParty party = warParty.MobileParty;
 
                         if (party == null || !party.IsLordParty || party.Army != null) continue;
+                        if (party.LeaderHero?.Culture == null) continue;
                         if (party.Party.IsStarving) continue;
 
                         // 1. 重派检查：已在前往招募据点途中则跳过
@@ -206,8 +207,8 @@ namespace ModifiedArmy.Models
         // 
         public RecruitmentDecision GetRecruitmentDecision(MobileParty party)
         {
-            var config = ModConfigManager.Instance?.GetActiveConfig();
-            if (config == null)
+            var config = MilitaryConfigManager.Instance.GetActiveConfig();
+            if (config == null || party?.LeaderHero?.Culture == null)
                 return new RecruitmentDecision(false, 0f, RecruitSource.Fief, 0f, 0f, 0f);
             
             // 在此处return，不会抛异常
@@ -233,7 +234,7 @@ namespace ModifiedArmy.Models
         private (float score, float manpowerGap, float warUrgency, float economicCapacity) CalculateNeedScore(MobileParty party)
         {
             if (_config == null)
-                _config = ModConfigManager.Instance.GetActiveConfig();
+                _config = MilitaryConfigManager.Instance.RequireActiveConfig();
 
             if (_fiefPartyManager == null)
                 _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();

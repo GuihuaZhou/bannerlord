@@ -22,7 +22,7 @@ ModifiedArmy/
 ├── Main.cs                    — 模组入口，注册 Model/Behavior，加载 XML
 ├── Common/
 │   ├── common.cs              — SoldierType 枚举 + CommonConstants 常量
-│   └── ModConfig.cs           — XML 配置模型（MinLogLevel 等）
+│   └── MilitaryConfig.cs      — 统一军事制度与 AI 招募配置模型
 ├── Fief/                      — 封邑子系统
 │   ├── Models/
 │   │   ├── Data/               — 存档数据类型（兵力统计、分遣队）
@@ -64,7 +64,7 @@ ModifiedArmy/
     ├── basic_troop_config.xml      — 各文化基础兵种（SoldierType 分类）
     ├── fiefPartyTemplates.xml      — 各文化封邑模板（town/castle/port 变体）
     ├── mercenaryTemplates.xml      — 雇佣兵模板
-    ├── modConfigs.xml             — Mod 配置（MinLogLevel 等）
+    ├── militaryConfig.xml         — 统一军事制度与 AI 招募配置
     └── submodule_strings.xml       — 本地化字符串
 ```
 
@@ -115,4 +115,4 @@ ModifiedArmy/
 - **游戏 DLL 路径**：引用 `D:\Steam\steamapps\common\Mount & Blade II Bannerlord\bin\Win64_Shipping_Client\` 下的 DLL
 - **XML 数据部署路径**：`D:\Steam\steamapps\common\Mount & Blade II Bannerlord\Modules\ModifiedArmy\ModuleData\`
 - **当前无自动化测试**——验证需在游戏内运行，修改后建议检查存档兼容性
-- **日志级别**：默认 `Notice`，Debug/Info 不显示；可通过 `modConfigs.xml` 的 `MinLogLevel` 调整
+- **日志级别**：MCM 未就绪时默认 `Notice`；游戏内显示和文件阈值由 MCM 动态调整
