@@ -27,18 +27,19 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             public ProfessionalProductionRule(
                 CultureObject culture,
                 float productionRate,
-                int maximumBarracksLevel)
+                int maximumRecruitableBarracksLevel)
             {
                 Culture = culture;
                 ProductionRate = productionRate;
-                MaximumBarracksLevel = maximumBarracksLevel;
+                MaximumRecruitableBarracksLevel =
+                    maximumRecruitableBarracksLevel;
             }
 
             public CultureObject Culture { get; }
 
             public float ProductionRate { get; }
 
-            public int MaximumBarracksLevel { get; }
+            public int MaximumRecruitableBarracksLevel { get; }
         }
 
         private Dictionary<Settlement, SettlementManpowerProductionData>
@@ -108,28 +109,18 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return 0f;
             }
             int barracksLevel = GetBarracksLevel(settlement);
-            ProfessionalProductionRule professionalRule = kind ==
-                TroopProductionKind.Professional
-                    ? ResolveProfessionalProductionRule(settlement)
-                    : null;
-            if (kind == TroopProductionKind.Professional &&
-                professionalRule == null)
+            ProfessionalProductionRule professionalRule =
+                ResolveProfessionalProductionRule(settlement);
+            if (professionalRule == null)
             {
                 return 0f;
             }
 
-            if (professionalRule != null)
-            {
-                barracksLevel = Math.Min(
-                    barracksLevel,
-                    professionalRule.MaximumBarracksLevel);
-            }
-
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(
-                    professionalRule?.Culture ?? settlement?.Culture);
+                    professionalRule.Culture);
             return doctrine.GetTraining(settlement).GetDailyProduction(
-                barracksLevel) * (professionalRule?.ProductionRate ?? 1f);
+                barracksLevel) * professionalRule.ProductionRate;
         }
 
         /// <summary>
@@ -234,7 +225,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 Dictionary<CharacterObject, int> offers =
                     BuildDailyProfessionalOffers(
                     professionalTemplate,
-                    forecast.EffectiveBarracksLevel,
+                    forecast.AllowedRecruitmentLevel,
                     professionalCount,
                     day);
                 int offeredCount = offers.Values.Sum();
@@ -303,13 +294,14 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             ProfessionalProductionRule productionRule =
                 ResolveProfessionalProductionRule(settlement);
             ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
-            int effectiveBarracksLevel = productionRule == null
+            int barracksLevel = GetBarracksLevel(settlement);
+            int allowedRecruitmentLevel = productionRule == null
                 ? 0
                 : Math.Min(
-                    GetBarracksLevel(settlement),
-                    productionRule.MaximumBarracksLevel);
+                    barracksLevel,
+                    productionRule.MaximumRecruitableBarracksLevel);
             float rawTraining = training.GetDailyProduction(
-                effectiveBarracksLevel) *
+                barracksLevel) *
                 (productionRule?.ProductionRate ?? 0f);
             float externalBonusRate = rawTraining > 0.0001f
                 ? Math.Max(
@@ -342,7 +334,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 ProfessionalDoctrineWeight = doctrine.ProfessionalWeight,
                 ProfessionalTrainingBase = training.Base,
                 ProfessionalTrainingStep = training.BarracksStep,
-                EffectiveBarracksLevel = effectiveBarracksLevel,
+                BarracksLevel = barracksLevel,
+                AllowedRecruitmentLevel = allowedRecruitmentLevel,
                 CultureEfficiency = productionRule?.ProductionRate ?? 0f,
                 RawProfessionalTrainingBeforeExternalEffects = rawTraining,
                 ExternalTrainingBonusRate = externalBonusRate,
@@ -372,14 +365,14 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
         private static Dictionary<CharacterObject, int> BuildDailyProfessionalOffers(
             ProfessionalTroopTemplate template,
-            int barracksLevel,
+            int allowedRecruitmentLevel,
             int count,
             int day)
         {
             Dictionary<CharacterObject, int> result = new();
             List<TroopProductionEntry> entries = template.TroopEntries
                 .Where(e => e?.Troop != null &&
-                    e.RequiredBarracksLevel <= barracksLevel)
+                    e.RequiredBarracksLevel <= allowedRecruitmentLevel)
                 .OrderBy(e => e.Troop.StringId)
                 .ToList();
             List<TroopProductionEntry> weightedCycle = new();
@@ -456,13 +449,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             Kingdom kingdom = ownerClan.Kingdom;
-            if (kingdom == null || kingdom.IsEliminated ||
-                kingdom.Culture == null)
+            if (kingdom != null && kingdom.Culture == null)
             {
                 return null;
             }
 
-            CultureObject kingdomCulture = kingdom.Culture;
+            CultureObject kingdomCulture = kingdom?.Culture ?? clanCulture;
             bool settlementMatchesClan = CulturesMatch(
                 settlementCulture,
                 clanCulture);
@@ -494,7 +486,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return new ProfessionalProductionRule(
                     settlementCulture,
                     MediumProfessionalProductionRate,
-                    1);
+                    2);
             }
 
             return new ProfessionalProductionRule(

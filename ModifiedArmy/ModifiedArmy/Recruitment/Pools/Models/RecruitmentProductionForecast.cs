@@ -12,7 +12,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         public int ProfessionalDoctrineWeight { get; internal set; }
         public float ProfessionalTrainingBase { get; internal set; }
         public float ProfessionalTrainingStep { get; internal set; }
-        public int EffectiveBarracksLevel { get; internal set; }
+        public int BarracksLevel { get; internal set; }
+        public int AllowedRecruitmentLevel { get; internal set; }
         public float CultureEfficiency { get; internal set; }
         public float RawProfessionalTrainingBeforeExternalEffects
         {

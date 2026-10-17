@@ -525,9 +525,9 @@ namespace ModifiedArmy.Models.Fief
                 "Base manpower: {SUPPLY}/day" +
                 "{NEWLINE}{NEWLINE}Professional troops" +
                 "{NEWLINE}Base training: {TRAINING_BASE}/day" +
-                "{NEWLINE}Barracks bonus (effective level {BARRACKS_LEVEL}): +{BARRACKS_BONUS}/day" +
+                "{NEWLINE}Barracks bonus (level {BARRACKS_LEVEL}): +{BARRACKS_BONUS}/day" +
                 "{NEWLINE}Culture efficiency: {CULTURE_EFFICIENCY}%" +
-                "{NEWLINE}Extra effects (including offices): {EXTERNAL_BONUS}%" +
+                "{NEWLINE}Other bonuses: {EXTERNAL_BONUS}%" +
                 "{NEWLINE}Training capacity: {TRAINING}/day" +
                 "{NEWLINE}Expected replenishment: {PROFESSIONAL}/day" +
                 "{NEWLINE}Actual replenishment: {PROFESSIONAL_ACTUAL}" +
@@ -551,10 +551,10 @@ namespace ModifiedArmy.Models.Fief
                 "BARRACKS_BONUS",
                 FormatRate(
                     forecast.ProfessionalTrainingStep *
-                    forecast.EffectiveBarracksLevel));
+                    forecast.BarracksLevel));
             text.SetTextVariable(
                 "BARRACKS_LEVEL",
-                forecast.EffectiveBarracksLevel);
+                forecast.BarracksLevel);
             text.SetTextVariable(
                 "CULTURE_EFFICIENCY",
                 (int)Math.Round(forecast.CultureEfficiency * 100f));
