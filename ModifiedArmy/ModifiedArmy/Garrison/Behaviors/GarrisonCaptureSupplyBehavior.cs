@@ -12,9 +12,11 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Garrison.Behaviors
 {
     /// <summary>
-    /// Makes an AI army provision the military granary after capturing a
-    /// fortification. Every donated item is removed from an army party's real
-    /// inventory, and each donor retains a campaign-food reserve.
+    /// Lets AI lord parties provision undersupplied military granaries in
+    /// fortifications owned by their kingdom. A conquering army additionally
+    /// uses an emergency target while the new garrison is being established.
+    /// Every donated item is removed from the donor's real inventory, and each
+    /// donor retains a campaign-food reserve.
     /// </summary>
     public sealed class GarrisonCaptureSupplyBehavior : CampaignBehaviorBase
     {
@@ -67,20 +69,26 @@ namespace ModifiedArmy.Garrison.Behaviors
             Settlement settlement,
             Hero hero)
         {
-            if (party?.Army == null || party.IsMainParty ||
-                settlement?.IsFortification != true ||
-                !_pendingCaptures.TryGetValue(settlement, out CampaignTime expiry))
+            if (!CanDonateToSettlement(party, settlement))
             {
                 return;
             }
 
-            if (expiry.IsPast || party.MapFaction != settlement.MapFaction)
+            if (_pendingCaptures.TryGetValue(
+                    settlement,
+                    out CampaignTime expiry))
             {
-                _pendingCaptures.Remove(settlement);
-                return;
+                if (expiry.IsPast)
+                {
+                    _pendingCaptures.Remove(settlement);
+                }
+                else if (party.Army != null)
+                {
+                    DonateArmyFood(party.Army.LeaderParty, settlement);
+                }
             }
 
-            DonateArmyFood(party.Army.LeaderParty, settlement);
+            DonateVisitingPartyFood(party, settlement);
         }
 
         private static void DonateArmyFood(
@@ -89,7 +97,7 @@ namespace ModifiedArmy.Garrison.Behaviors
         {
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             if (armyParty?.Army == null || garrison == null ||
-                armyParty.MapFaction != settlement.MapFaction)
+                !IsSameKingdom(armyParty, settlement))
             {
                 return;
             }
@@ -103,9 +111,51 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return;
             }
 
-            foreach (MobileParty donor in armyParty.Army.Parties
-                .Where(p => p != null && p.IsActive && !p.IsMainParty &&
-                    p.MapFaction == settlement.MapFaction)
+            DonateFood(
+                armyParty.Army.Parties,
+                settlement,
+                remaining);
+        }
+
+        private static void DonateVisitingPartyFood(
+            MobileParty party,
+            Settlement settlement)
+        {
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            if (garrison == null)
+            {
+                return;
+            }
+
+            GarrisonLogisticsStatus status =
+                GarrisonLogisticsModel.Calculate(settlement.Town);
+            if (!GarrisonLogisticsModel.NeedsReplenishment(status) ||
+                status.FoodDeficit <= 0)
+            {
+                return;
+            }
+
+            IEnumerable<MobileParty> donors = party.Army != null
+                ? party.Army.Parties
+                : new[] { party };
+            DonateFood(donors, settlement, status.FoodDeficit);
+        }
+
+        private static void DonateFood(
+            IEnumerable<MobileParty> donors,
+            Settlement settlement,
+            int requestedFood)
+        {
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            if (garrison == null || requestedFood <= 0)
+            {
+                return;
+            }
+
+            int remaining = requestedFood;
+            foreach (MobileParty donor in donors
+                .Where(p => CanDonateToSettlement(p, settlement))
+                .Distinct()
                 .OrderByDescending(p => p.ItemRoster?.TotalFood ?? 0))
             {
                 if (remaining <= 0)
@@ -113,8 +163,7 @@ namespace ModifiedArmy.Garrison.Behaviors
                     break;
                 }
 
-                int reserve = (int)Math.Ceiling(
-                    Math.Abs(donor.FoodChange) * DonorReserveDays);
+                int reserve = CalculateDonorFoodReserve(donor);
                 int available = Math.Max(
                     0,
                     (donor.ItemRoster?.TotalFood ?? 0) - reserve);
@@ -128,6 +177,47 @@ namespace ModifiedArmy.Garrison.Behaviors
                     garrison.ItemRoster,
                     Math.Min(remaining, available));
             }
+        }
+
+        private static int CalculateDonorFoodReserve(MobileParty donor)
+        {
+            float dailyConsumption = 0f;
+            var foodModel = Campaign.Current?.Models?
+                .MobilePartyFoodConsumptionModel;
+            if (foodModel != null)
+            {
+                var baseConsumption = foodModel
+                    .CalculateDailyBaseFoodConsumptionf(donor, false);
+                dailyConsumption = Math.Abs(foodModel
+                    .CalculateDailyFoodConsumptionf(
+                        donor,
+                        baseConsumption)
+                    .ResultNumber);
+            }
+
+            float dailyReserve = Math.Max(
+                dailyConsumption,
+                Math.Abs(donor.FoodChange));
+            return (int)Math.Ceiling(dailyReserve * DonorReserveDays);
+        }
+
+        private static bool CanDonateToSettlement(
+            MobileParty party,
+            Settlement settlement)
+        {
+            return party != null && party.IsActive && party.IsLordParty &&
+                !party.IsMainParty && settlement?.IsFortification == true &&
+                settlement.Town?.GarrisonParty != null &&
+                IsSameKingdom(party, settlement);
+        }
+
+        private static bool IsSameKingdom(
+            MobileParty party,
+            Settlement settlement)
+        {
+            Kingdom partyKingdom = party?.ActualClan?.Kingdom;
+            Kingdom settlementKingdom = settlement?.OwnerClan?.Kingdom;
+            return partyKingdom != null && partyKingdom == settlementKingdom;
         }
 
         private static int CalculateInitialTargetFood(
