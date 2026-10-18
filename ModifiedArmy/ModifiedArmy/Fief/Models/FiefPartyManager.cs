@@ -458,6 +458,32 @@ namespace ModifiedArmy.Models.Fief
             return result;
         }
 
+        /// <summary>
+        /// Returns every currently serving fief troop by character type,
+        /// regardless of whether its temporary wage exemption has expired.
+        /// </summary>
+        public Dictionary<CharacterObject, int> GetServingTroopCounts(
+            MobileParty party)
+        {
+            Dictionary<CharacterObject, int> result = new();
+            foreach (ServingDetachmentRef item in GetServingDetachments(party))
+            {
+                foreach (var troop in item.Detachment.Troops)
+                {
+                    if (troop.Key == null || troop.Value <= 0)
+                    {
+                        continue;
+                    }
+                    result[troop.Key] = result.TryGetValue(
+                        troop.Key,
+                        out int existing)
+                            ? existing + troop.Value
+                            : troop.Value;
+                }
+            }
+            return result;
+        }
+
         public void TransferFiefService(
             MobileParty sourceParty,
             MobileParty targetParty,
@@ -574,6 +600,20 @@ namespace ModifiedArmy.Models.Fief
             {
                 data.ReturnTroopsToSettlement(mobileParty);
             }
+        }
+
+        public int ReturnTroopsToSettlementWithResult(
+            Settlement settlement,
+            MobileParty mobileParty = null)
+        {
+            if (settlement == null ||
+                !_fiefDataMap.TryGetValue(settlement, out var data) ||
+                data == null)
+            {
+                return 0;
+            }
+
+            return data.ReturnTroopsToSettlement(mobileParty);
         }
 
         /// <summary>

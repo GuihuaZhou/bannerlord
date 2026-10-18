@@ -12,6 +12,7 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
+using ModifiedArmy.ForceManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -55,6 +56,8 @@ namespace ModifiedArmy.Recruitment.Patches
             // ==========================================
             // 2. 领主队伍前置条件检查（原版 else if 条件保留）
             // ==========================================
+            var forceTarget = ForceManagementFacade.Current
+                .GetPartyTarget(mobileParty);
             bool isLordEligible =
                 mobileParty.IsLordParty &&
                 !mobileParty.IsDisbanding &&
@@ -65,8 +68,7 @@ namespace ModifiedArmy.Recruitment.Patches
                 (mobileParty.LeaderHero == mobileParty.LeaderHero.Clan.Leader ||
                     (float)mobileParty.LeaderHero.Clan.Gold > HeroHelper.StartRecruitingMoneyLimitForClanLeader(mobileParty.LeaderHero)) &&
                 mobileParty.Party.PartySizeLimit > 0 &&
-                (long)mobileParty.Party.NumberOfAllMembers * 100L <=
-                    (long)mobileParty.Party.PartySizeLimit * 95L;
+                forceTarget.GapCount > 0;
 
             if (!isLordEligible)
                 return false; // 不满足领主条件，跳过原版
@@ -369,7 +371,8 @@ namespace ModifiedArmy.Recruitment.Patches
             RecruitmentPlan plan,
             RecruitmentEvaluationResult evaluation)
         {
-            if (!RecruitmentLogFilter.ShouldLog(party))
+            if (!RecruitmentLogFilter.ShouldLog(party) ||
+                evaluation?.RecruitableCount <= 0)
             {
                 return;
             }
@@ -400,14 +403,7 @@ namespace ModifiedArmy.Recruitment.Patches
                 evaluation.UnitRecruitmentCost);
             message.SetTextVariable("UNIT_WAGE", evaluation.UnitDailyWage);
             message.SetTextVariable("DAYS", evaluation.SustainableDays);
-            if (evaluation.RecruitableCount > 0)
-            {
-                ModLogger.Info(message.ToString());
-            }
-            else
-            {
-                ModLogger.Info(message.ToString());
-            }
+            ModLogger.FileNotice(message.ToString());
         }
 
         /// <summary>

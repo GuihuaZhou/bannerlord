@@ -1,4 +1,5 @@
 using ModifiedArmy.Garrison.Supply;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -20,7 +21,7 @@ namespace ModifiedArmy.Garrison.Models
         private static readonly HashSet<string> ReportedMultipleParties =
             new HashSet<string>();
 
-        public const int RecruitmentFillPercentage = 95;
+        public const int DefaultRecruitmentFillPercentage = 80;
 
         public static int GetActiveSupplyEscortCount(Settlement home)
         {
@@ -54,7 +55,7 @@ namespace ModifiedArmy.Garrison.Models
                 message.SetTextVariable("SETTLEMENT_ID", settlementId);
                 message.SetTextVariable("PARTY_COUNT", activePartyCount);
                 message.SetTextVariable("RESERVED", result);
-                ModLogger.FileInfo(message.ToString());
+                ModLogger.Debug(message.ToString());
             }
             else if (activePartyCount <= 1)
             {
@@ -142,17 +143,54 @@ namespace ModifiedArmy.Garrison.Models
                 return 0;
             }
 
-            int safePartySize = Math.Max(
-                0,
-                (int)Math.Floor(
-                    garrison.Party.PartySizeLimit *
-                        RecruitmentFillPercentage / 100f));
+            int safePartySize = GetAutomaticRecruitmentTarget(
+                garrison.Party.PartySizeLimit);
             return Math.Max(
                 0,
                 safePartySize -
                     GetEffectiveMemberCount(
                         garrison,
                         reservedReturningMembers));
+        }
+
+        public static int GetTransferFreeSlots(MobileParty garrison)
+        {
+            return GetTransferFreeSlots(
+                garrison,
+                GetActiveSupplyEscortCount(garrison?.CurrentSettlement));
+        }
+
+        public static int GetTransferFreeSlots(
+            MobileParty garrison,
+            int reservedReturningMembers)
+        {
+            if (garrison == null)
+            {
+                return 0;
+            }
+
+            float ratio = MilitaryConfigManager.Instance.GetActiveConfig()?
+                .AiRecruitment.ForceManagement
+                .ExistingTroopTransferRatio ?? 0.90f;
+            int transferLimit = Math.Max(
+                0,
+                (int)Math.Floor(garrison.Party.PartySizeLimit * ratio));
+            return Math.Max(
+                0,
+                transferLimit - GetEffectiveMemberCount(
+                    garrison,
+                    reservedReturningMembers));
+        }
+
+        public static int GetAutomaticRecruitmentTarget(int hardLimit)
+        {
+            float ratio = MilitaryConfigManager.Instance.GetActiveConfig()?
+                .AiRecruitment.ForceManagement
+                .GarrisonAutoRecruitmentRatio ??
+                    DefaultRecruitmentFillPercentage / 100f;
+            return Math.Max(
+                0,
+                (int)Math.Floor(Math.Max(0, hardLimit) * ratio));
         }
     }
 }

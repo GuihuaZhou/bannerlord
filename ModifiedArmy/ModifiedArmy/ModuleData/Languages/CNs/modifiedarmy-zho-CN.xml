@@ -126,5 +126,13 @@
     <string id="ModifiedArmy_SupplyEscortCapacity" text="[驻军编制] 定居点={SETTLEMENT_ID}，征粮队={PARTY_ID}，返还前驻军={GARRISON_BEFORE}，返还人数={RETURNING}，返还前预留={RESERVED_BEFORE}，返还后驻军={GARRISON_AFTER}，返还后预留={RESERVED_AFTER}，上限={LIMIT}，超编={EXCESS}，任务状态={MISSION_STATE}。" />
     <string id="ModifiedArmy_MultipleSupplyParties" text="[驻军编制] 定居点={SETTLEMENT_ID}同时存在{PARTY_COUNT}支征粮队，共预留{RESERVED}个编制。" />
     <string id="ModifiedArmy_DisbandMergeOverflow" text="[驻军编制] 定居点={SETTLEMENT_ID}发生解散部队并入超编：普通士兵={REGULARS}，英雄={HEROES}，征粮队预留={RESERVED}，上限={LIMIT}，超编={EXCESS}。" />
+    <string id="ModifiedArmy_ForceDispositionFallback" text="[兵力管理] 没能读到家族{CLAN_ID}的战争倾向，本次按中立态度处理。" />
+    <string id="ModifiedArmy_ForceTarget" text="[兵力管理] {PARTY_NAME}目前处于{SCENARIO}状态，战争倾向为{DISPOSITION}。部队现在有{CURRENT}人，准备补到{TARGET}人，编制最多容纳{LIMIT}人。还缺{GAP}人，当前判断为{REASON}。" />
+    <string id="ModifiedArmy_ForceScenarioPeace" text="和平" />
+    <string id="ModifiedArmy_ForceScenarioWarRoutine" text="常规战争" />
+    <string id="ModifiedArmy_ForceScenarioArmyGathering" text="军团集结" />
+    <string id="ModifiedArmy_ForceScenarioOwnFiefDefense" text="自家封邑防守" />
+    <string id="ModifiedArmy_ForceReasonBelowTarget" text="低于目标" />
+    <string id="ModifiedArmy_ForceReasonTargetReached" text="已达目标" />
   </strings>
 </base>

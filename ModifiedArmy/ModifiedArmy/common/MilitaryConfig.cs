@@ -92,6 +92,23 @@ namespace ModifiedArmy.common
         public float MercenarySearchRadius { get; internal set; }
         public Dictionary<string, AiSituationalModifier> SituationalModifiers { get; } =
             new Dictionary<string, AiSituationalModifier>(StringComparer.OrdinalIgnoreCase);
+        public ForceManagementConfig ForceManagement { get; } =
+            new ForceManagementConfig();
+    }
+
+    public sealed class ForceManagementConfig
+    {
+        public float PeaceTargetRatio { get; internal set; } = 0.35f;
+        public int PeaceMinimumCount { get; internal set; } = 50;
+        public float AggressiveWarDispositionThreshold { get; internal set; } = 20f;
+        public float ArmyGatheringTargetRatio { get; internal set; } = 0.90f;
+        public float OwnFiefDefenseTargetRatio { get; internal set; } = 1f;
+        public float GarrisonAutoRecruitmentRatio { get; internal set; } = 0.80f;
+        public float ExistingTroopTransferRatio { get; internal set; } = 0.90f;
+        public int MinimumOwnSurplusDelivery { get; internal set; } = 20;
+        public int MinimumFiefRecruitBatch { get; internal set; } = 25;
+        public bool EnableAutomaticSwap { get; internal set; }
+        public bool EnableAutomaticReinforcement { get; internal set; }
     }
 
     public sealed class MilitaryConfig : MBObjectBase
@@ -205,6 +222,90 @@ namespace ModifiedArmy.common
             XmlNode limits = Required(ai, "RecruitmentLimits");
             AiRecruitment.RandomChance = Value(limits, "RandomChance");
             AiRecruitment.MercenarySearchRadius = Value(limits, "MercenarySearchRadius");
+            ParseForceManagement(ai.SelectSingleNode("ForceManagement"));
+        }
+
+        private void ParseForceManagement(XmlNode node)
+        {
+            ForceManagementConfig value = AiRecruitment.ForceManagement;
+            if (node == null)
+            {
+                return;
+            }
+
+            value.PeaceTargetRatio = RatioValue(
+                node, "PeaceTargetRatio", value.PeaceTargetRatio);
+            value.PeaceMinimumCount = NonNegativeValue(
+                node, "PeaceMinimumCount", value.PeaceMinimumCount);
+            value.AggressiveWarDispositionThreshold = OptionalValue(
+                node,
+                "AggressiveWarDispositionThreshold",
+                value.AggressiveWarDispositionThreshold);
+            value.ArmyGatheringTargetRatio = RatioValue(
+                node,
+                "ArmyGatheringTargetRatio",
+                value.ArmyGatheringTargetRatio);
+            value.OwnFiefDefenseTargetRatio = RatioValue(
+                node,
+                "OwnFiefDefenseTargetRatio",
+                value.OwnFiefDefenseTargetRatio);
+            value.GarrisonAutoRecruitmentRatio = RatioValue(
+                node,
+                "GarrisonAutoRecruitmentRatio",
+                value.GarrisonAutoRecruitmentRatio);
+            value.ExistingTroopTransferRatio = RatioValue(
+                node,
+                "ExistingTroopTransferRatio",
+                value.ExistingTroopTransferRatio);
+            value.MinimumOwnSurplusDelivery = NonNegativeValue(
+                node,
+                "MinimumOwnSurplusDelivery",
+                value.MinimumOwnSurplusDelivery);
+            value.MinimumFiefRecruitBatch = NonNegativeValue(
+                node,
+                "MinimumFiefRecruitBatch",
+                value.MinimumFiefRecruitBatch);
+            value.EnableAutomaticSwap = BooleanValue(
+                node, "EnableAutomaticSwap", false);
+            value.EnableAutomaticReinforcement = BooleanValue(
+                node, "EnableAutomaticReinforcement", false);
+        }
+
+        private static float RatioValue(
+            XmlNode parent,
+            string name,
+            float fallback)
+        {
+            return Math.Max(
+                0f,
+                Math.Min(1f, OptionalValue(parent, name, fallback)));
+        }
+
+        private static int NonNegativeValue(
+            XmlNode parent,
+            string name,
+            int fallback)
+        {
+            XmlNode node = parent?.SelectSingleNode(name);
+            if (node == null)
+            {
+                return fallback;
+            }
+
+            return Math.Max(
+                0,
+                int.Parse(Attr(node, "value"), CultureInfo.InvariantCulture));
+        }
+
+        private static bool BooleanValue(
+            XmlNode parent,
+            string name,
+            bool fallback)
+        {
+            XmlNode node = parent?.SelectSingleNode(name);
+            return node == null
+                ? fallback
+                : bool.Parse(Attr(node, "value"));
         }
 
         private static CulturalMilitaryDoctrine ParseDoctrine(XmlNode node, CultureObject culture)

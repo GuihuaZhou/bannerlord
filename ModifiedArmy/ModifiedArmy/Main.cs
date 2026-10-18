@@ -12,6 +12,7 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.SettlementInspection.Behaviors;
+using ModifiedArmy.ForceManagement.Behaviors;
 using System.Collections.Generic;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -189,6 +190,7 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
 
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
+                campaignStarter.AddBehavior(new ForceManagementBehavior());
                 campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());

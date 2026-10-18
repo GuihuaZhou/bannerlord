@@ -1,5 +1,8 @@
 using ModifiedArmy.PartyFinance.Models;
 using ModifiedArmy.Recruitment.Classification;
+using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Garrison.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,8 +19,6 @@ namespace ModifiedArmy.Recruitment.Models
     /// </summary>
     public sealed class DefaultAIRecruitmentModel : AIRecruitmentModel
     {
-        private const int RecruitmentFillPercentage = 95;
-
         private readonly RecruitmentTemplateRepository _templates;
 
         public DefaultAIRecruitmentModel(
@@ -119,13 +120,28 @@ namespace ModifiedArmy.Recruitment.Models
                 return result;
             }
 
-            // Recruitment is intentionally conservative near full strength.
-            // A party already above 95% of its current establishment may not
-            // add troops from any source routed through the unified model.
+            int recruitmentTarget = GetRecruitmentTarget(
+                party,
+                state,
+                source);
+            ForceOperation operation = source == RecruitmentSource.Transfer
+                ? party.IsGarrison
+                    ? ForceOperation.FieldToGarrison
+                    : ForceOperation.GarrisonToField
+                : ForceOperation.NewRecruitment;
+            RecruitmentApproval capacityApproval =
+                ForceManagementFacade.Current.RecruitmentAdmission.Evaluate(
+                    new RecruitmentCapacityContext
+                    {
+                        Operation = operation,
+                        RequestedCount = availableCount,
+                        HardLimit = state.PartySizeLimit,
+                        EffectiveCurrentCount =
+                            state.EffectiveProjectedMemberCount,
+                        TargetCount = recruitmentTarget
+                    });
             if (state.PartySizeLimit <= 0 ||
-                (long)state.EffectiveProjectedMemberCount * 100L >
-                    (long)state.PartySizeLimit *
-                        RecruitmentFillPercentage)
+                capacityApproval.ApprovedCount <= 0)
             {
                 result.AllowedByPartySize = 0;
                 result.PrimaryLimit = RecruitmentLimitReason.PartySize;
@@ -202,14 +218,9 @@ namespace ModifiedArmy.Recruitment.Models
                 state.PartySizeLimit,
                 state.GetCount(quality),
                 qualityRange);
-            int safePartySize = Math.Max(
-                0,
-                (int)Math.Floor(
-                    state.PartySizeLimit *
-                        RecruitmentFillPercentage / 100f));
             result.AllowedByPartySize = Math.Max(
                 0,
-                safePartySize - state.EffectiveProjectedMemberCount);
+                capacityApproval.ApprovedCount);
             result.AllowedByWageLimit = GetAllowedByWageLimit(
                 state,
                 unitWage);
@@ -470,6 +481,27 @@ namespace ModifiedArmy.Recruitment.Models
             }
 
             return RecruitmentLimitReason.MaintenanceFunds;
+        }
+
+        private static int GetRecruitmentTarget(
+            MobileParty party,
+            RecruitmentSimulationState state,
+            RecruitmentSource source)
+        {
+            if (source == RecruitmentSource.Transfer)
+            {
+                return state.PartySizeLimit;
+            }
+
+            if (party?.IsGarrison == true)
+            {
+                return GarrisonRecruitmentCapacity
+                    .GetAutomaticRecruitmentTarget(state.PartySizeLimit);
+            }
+
+            PartyForceTargetResult target = ForceManagementFacade.Current
+                .GetPartyTarget(party);
+            return Math.Min(state.PartySizeLimit, target.TargetCount);
         }
 
         private static int Minimum(params int[] values)

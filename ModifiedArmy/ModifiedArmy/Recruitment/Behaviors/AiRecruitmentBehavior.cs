@@ -7,6 +7,8 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
+using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -113,7 +115,7 @@ namespace ModifiedArmy.Models
                                 isTargetingThePort: false);
                             if (RecruitmentLogFilter.ShouldLog(party))
                             {
-                                ModLogger.Info(
+                                ModLogger.Debug(
                                     $"[AIRecruitment] {GetPartyDisplayName(party)} is visiting " +
                                     $"{multiPurposeTarget.Name} for garrison reinforcement or prisoner delivery.");
                             }
@@ -239,8 +241,14 @@ namespace ModifiedArmy.Models
             if (_fiefPartyManager == null)
                 _fiefPartyManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
 
-            // 兵力缺口：PartySizeRatio=1 → gap=0（满员），Ratio=0.3 → gap=0.7（严重缺兵）
-            float manpowerGap = Math.Max(0f, 1f - party.PartySizeRatio);
+            PartyForceTargetResult forceTarget = ForceManagementFacade.Current
+                .GetPartyTarget(party);
+            float manpowerGap = forceTarget.TargetCount <= 0
+                ? 0f
+                : MathF.Clamp(
+                    (float)forceTarget.GapCount / forceTarget.TargetCount,
+                    0f,
+                    1f);
 
             // 战争紧迫度：被围攻 > 战争中 > 和平期
             float warUrgency;
@@ -257,7 +265,9 @@ namespace ModifiedArmy.Models
                 ? Math.Min(1f, gold / (party.TotalWage * _config.AiNeedEconomicWeeks))
                 : 1f;
 
-            float score = _config.AiNeedManpowerWeight * manpowerGap
+            float score = forceTarget.GapCount <= 0
+                ? 0f
+                : _config.AiNeedManpowerWeight * manpowerGap
                         + _config.AiNeedWarUrgencyWeight * warUrgency
                         + _config.AiNeedEconomicWeight * economicCapacity;
 
@@ -547,7 +557,10 @@ namespace ModifiedArmy.Models
                 return null;
             }
 
-            bool needsTroops = party.PartySizeRatio < 0.85f;
+            PartyForceTargetResult forceTarget = ForceManagementFacade.Current
+                .GetPartyTarget(party);
+            bool needsTroops = forceTarget.CanStartRecruitmentVisit &&
+                forceTarget.GapCount > 0;
             int regularPrisoners = party.PrisonRoster.TotalRegulars;
             bool needsPrison = regularPrisoners >= 10;
             if (!needsTroops && !needsPrison)

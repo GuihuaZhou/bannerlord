@@ -210,12 +210,7 @@ namespace ModifiedArmy.Recruitment.Patches
                     availableCount);
                 count = Math.Min(
                     count,
-                    GarrisonRecruitmentCapacity.GetHardFreeSlots(
-                        garrison,
-                        reservedReturningMembers));
-                count = Math.Min(
-                    count,
-                    GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
+                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(
                         garrison,
                         reservedReturningMembers));
 
@@ -363,7 +358,7 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("RESERVED", reserved);
             message.SetTextVariable("LIMIT", limit);
             message.SetTextVariable("EXCESS", effective - limit);
-            ModLogger.FileInfo(message.ToString());
+            ModLogger.Debug(message.ToString());
         }
     }
 }

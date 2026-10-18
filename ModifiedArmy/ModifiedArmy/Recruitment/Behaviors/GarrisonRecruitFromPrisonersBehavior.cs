@@ -343,7 +343,8 @@ namespace ModifiedArmy.Models
             int recruitedCount,
             RecruitmentPlan plan)
         {
-            if (!RecruitmentLogFilter.ShouldLog(town.GarrisonParty))
+            if (!RecruitmentLogFilter.ShouldLog(town.GarrisonParty) ||
+                recruitedCount <= 0)
             {
                 return;
             }
@@ -371,14 +372,7 @@ namespace ModifiedArmy.Models
             message.SetTextVariable("RECRUITED", recruitedCount);
             message.SetTextVariable("LIMIT", GetLimitText(reason));
 
-            if (recruitedCount > 0)
-            {
-                ModLogger.Info(message.ToString());
-            }
-            else
-            {
-                ModLogger.Info(message.ToString());
-            }
+            ModLogger.FileNotice(message.ToString());
         }
 
         private static void OnWeeklyTick()
@@ -804,7 +798,7 @@ namespace ModifiedArmy.Models
                 message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                 message.SetTextVariable("RECRUITED", recruitedCount);
                 message.SetTextVariable("SOLD", soldCount);
-                ModLogger.Info(message.ToString());
+                ModLogger.FileNotice(message.ToString());
                 return;
             }
 
@@ -836,7 +830,7 @@ namespace ModifiedArmy.Models
             skippedMessage.SetTextVariable("INITIAL", initialPrisonerCount);
             skippedMessage.SetTextVariable("SOLD", soldCount);
             skippedMessage.SetTextVariable("REASON", reason);
-            ModLogger.Info(skippedMessage.ToString());
+            ModLogger.Debug(skippedMessage.ToString());
         }
 
         private static TextObject GetPlanLimitText(RecruitmentPlan plan)

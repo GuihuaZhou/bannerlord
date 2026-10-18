@@ -593,7 +593,7 @@ namespace ModifiedArmy.Garrison.Supply
             message.SetTextVariable("LIMIT", partySizeLimit);
             message.SetTextVariable("EXCESS", excess);
             message.SetTextVariable("MISSION_STATE", missionState);
-            ModLogger.FileInfo(message.ToString());
+            ModLogger.Debug(message.ToString());
         }
 
         private static void RestoreTroops(

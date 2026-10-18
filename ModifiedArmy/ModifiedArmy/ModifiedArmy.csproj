@@ -25,6 +25,10 @@
 	  <PackageReference Include="Lib.Harmony" Version="2.4.2" />
 	</ItemGroup>
 	<ItemGroup>
+		<Reference Include="ModifiedPolitics">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\Modules\ModifiedPolitics\bin\Win64_Shipping_Client\ModifiedPolitics.dll</HintPath>
+			<Private>false</Private>
+		</Reference>
 		<Reference Include="0Harmony">
 			<HintPath>..\..\harmony\0Harmony.dll</HintPath>
 		</Reference>

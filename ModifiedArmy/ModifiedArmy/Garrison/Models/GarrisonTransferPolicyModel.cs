@@ -1,5 +1,8 @@
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Finance;
+using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -88,10 +91,14 @@ namespace ModifiedArmy.Garrison.Models
             int reasonableTarget = Math.Max(
                 30,
                 Math.Min(sizeLimit, Math.Min(wageLimit, foodLimit)));
-            int surplus = Math.Max(
+            int operationalSurplus = Math.Max(
                 0,
                 party.Party.NumberOfRegularMembers - reasonableTarget);
-            return Math.Min(requestedCount, surplus);
+            int forceTargetSurplus = ForceManagementFacade.Current
+                .GetSafeFieldSurplus(party);
+            return Math.Min(
+                requestedCount,
+                Math.Min(operationalSurplus, forceTargetSurplus));
         }
 
         /// <summary>
@@ -106,6 +113,18 @@ namespace ModifiedArmy.Garrison.Models
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             if (receivingParty == null || garrison == null ||
                 requestedCount <= 0)
+            {
+                return 0;
+            }
+
+            GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
+                .GarrisonDefense.Evaluate(settlement);
+            int safeTransferCount = ForceManagementFacade.Current
+                .GarrisonDefense.GetSafeTransferOutCount(
+                    defense,
+                    garrison.MemberRoster);
+            requestedCount = Math.Min(requestedCount, safeTransferCount);
+            if (requestedCount <= 0)
             {
                 return 0;
             }
@@ -153,6 +172,11 @@ namespace ModifiedArmy.Garrison.Models
                     troop, count, false, wounded, 0, true, -1);
                 garrison.MemberRoster.AddToCounts(
                     troop, -count, false, -wounded, 0, true, -1);
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    receivingParty,
+                    count,
+                    0f,
+                    evaluation.UnitDailyWage);
                 remainingRequest -= count;
                 transferred += count;
                 if (remainingRequest <= 0)

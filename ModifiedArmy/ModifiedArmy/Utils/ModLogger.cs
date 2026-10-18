@@ -87,6 +87,15 @@ namespace ModifiedArmy.Tool
             WriteToFile(LogLevel.Info, message);
         }
 
+        /// <summary>
+        /// Writes an important diagnostic to the file without displaying it
+        /// in the campaign message feed.
+        /// </summary>
+        public static void FileNotice(string message)
+        {
+            WriteToFile(LogLevel.Notice, message);
+        }
+
         public static void Notice(string message, Color? color = null)
         {
             Display(LogLevel.Notice, message, color ?? NoticeColor);

@@ -162,6 +162,19 @@ namespace ModifiedArmy.Models.Fief
                         out aiPlan);
 
             int approvedCount = approvedTroops.Values.Sum();
+            int minimumAiBatch = MilitaryConfigManager.Instance
+                .RequireActiveConfig()
+                .AiRecruitment.ForceManagement.MinimumFiefRecruitBatch;
+            if (targetParty.LeaderHero.Clan != Clan.PlayerClan &&
+                approvedCount > 0 && approvedCount < minimumAiBatch)
+            {
+                LogAiFiefRecruitment(
+                    targetParty,
+                    aiPlan,
+                    candidates.Sum(candidate => candidate.AvailableCount),
+                    0);
+                return 0;
+            }
             FiefPartyManager manager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
             if (approvedCount <= 0 || manager == null ||

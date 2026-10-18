@@ -201,6 +201,10 @@
         text="{=ModifiedArmy_MultipleSupplyParties}[Garrison Capacity] settlement={SETTLEMENT_ID} has {PARTY_COUNT} active supply parties reserving {RESERVED} places." />
     <string id="str_modifiedarmy_disband_merge_overflow"
         text="{=ModifiedArmy_DisbandMergeOverflow}[Garrison Capacity] disband merge overflow at settlement={SETTLEMENT_ID}: regulars={REGULARS}, heroes={HEROES}, reserved={RESERVED}, limit={LIMIT}, excess={EXCESS}." />
+    <string id="str_modifiedarmy_force_disposition_fallback"
+        text="{=ModifiedArmy_ForceDispositionFallback}[Force Management] The war disposition for clan {CLAN_ID} could not be read, so the clan is being treated as neutral." />
+    <string id="str_modifiedarmy_force_target"
+        text="{=ModifiedArmy_ForceTarget}[Force Management] {PARTY_NAME} is in the {SCENARIO} situation. Its war disposition is {DISPOSITION}. It currently has {CURRENT} troops, aims for {TARGET}, and may hold up to {LIMIT}. It still needs {GAP} troops because it is {REASON}." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
         text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"

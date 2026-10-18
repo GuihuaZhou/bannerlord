@@ -80,6 +80,26 @@
         <RandomChance value="0.8"/>
         <MercenarySearchRadius value="150"/>
       </RecruitmentLimits>
+
+      <!--
+        AI兵力管理：
+        和平时以35%且至少50人为目标；正式战争中只有战争倾向高于20的Clan
+        才会主动扩军到60%以上。驻军自动生成新兵只补到80%，普通现有士兵转移最多到90%。
+        自动换兵和跨城增援的安全策略尚未完成，因此默认保持关闭。
+      -->
+      <ForceManagement>
+        <PeaceTargetRatio value="0.35"/>
+        <PeaceMinimumCount value="50"/>
+        <AggressiveWarDispositionThreshold value="20"/>
+        <ArmyGatheringTargetRatio value="0.90"/>
+        <OwnFiefDefenseTargetRatio value="1.00"/>
+        <GarrisonAutoRecruitmentRatio value="0.80"/>
+        <ExistingTroopTransferRatio value="0.90"/>
+        <MinimumOwnSurplusDelivery value="20"/>
+        <MinimumFiefRecruitBatch value="25"/>
+        <EnableAutomaticSwap value="false"/>
+        <EnableAutomaticReinforcement value="false"/>
+      </ForceManagement>
     </AiRecruitment>
 
     <!--

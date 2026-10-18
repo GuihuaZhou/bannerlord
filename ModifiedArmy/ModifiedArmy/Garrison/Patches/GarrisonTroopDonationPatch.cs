@@ -5,6 +5,7 @@ using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.ForceManagement.Services;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -101,7 +102,7 @@ namespace ModifiedArmy.Garrison.Patches
             public Dictionary<CharacterObject, int> TargetBefore;
         }
 
-        private static void Prefix(
+        private static bool Prefix(
             MobileParty mobileParty,
             ref int numberOfTroopsToLeave,
             out TransferState __state)
@@ -114,14 +115,36 @@ namespace ModifiedArmy.Garrison.Patches
                 SourceBefore = Snapshot(mobileParty),
                 TargetBefore = Snapshot(garrison)
             };
-            numberOfTroopsToLeave = GarrisonTransferPolicyModel
-                .GetAllowedDonationCount(
+            Settlement settlement = mobileParty?.CurrentSettlement;
+            if (garrison == null || settlement == null)
+            {
+                return true;
+            }
+
+            if (mobileParty.ActualClan != settlement.OwnerClan)
+            {
+                numberOfTroopsToLeave = Math.Min(
+                    GarrisonTransferPolicyModel.GetAllowedDonationCount(
+                        mobileParty,
+                        numberOfTroopsToLeave),
+                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(garrison));
+                return true;
+            }
+
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .ReturnTroopsToSettlementWithResult(
+                    settlement,
+                    mobileParty);
+            ForceManagementFacade.Current.TroopTransfers
+                .TransferFieldToGarrison(
                     mobileParty,
+                    settlement,
                     numberOfTroopsToLeave);
-            numberOfTroopsToLeave = Math.Min(
-                numberOfTroopsToLeave,
-                GarrisonRecruitmentCapacity.GetHardFreeSlots(
-                    mobileParty?.CurrentSettlement));
+            numberOfTroopsToLeave = 0;
+            // The service explicitly excludes fief-service troops, so the
+            // legacy post-transfer identity migration must not run.
+            __state = null;
+            return false;
         }
 
         private static void Postfix(TransferState __state)
