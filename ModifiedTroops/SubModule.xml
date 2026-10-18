@@ -19,15 +19,6 @@
 		<DependedModule Id="NavalDLC" DependentVersion="v1.2.8" Optional="false"/>
 	</DependedModules>
 	<Xmls> 
-		<XmlNode>                
-			<XmlName id="SPCultures" path="spcultures" />
-			<IncludedGameTypes>
-				<GameType value="Campaign" />
-				<GameType value="CampaignStoryMode" />
-				<GameType value="CustomGame" />
-				<GameType value="EditorGame" />
-			</IncludedGameTypes>
-		</XmlNode>
 		<XmlNode>   
 			<XmlName id="partyTemplates" path="partyTemplates" />
 			<IncludedGameTypes>

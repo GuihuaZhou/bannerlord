@@ -24,4 +24,22 @@
     <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_khuzait_template']"/>
     <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_nord_template']"/>
 
+    <!-- Remove native minor-faction templates before loading the expanded definitions. -->
+    <!-- Keep this list synchronized with the minor-faction block in partyTemplates.xml. -->
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_mercenary_aserai_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_mercenary_empire_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_mercenary_sturgia_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_mercenary_vlandia_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_aserai_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_battania_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_empire_e_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_empire_s_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_empire_w_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_sturgia_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_outlaw_vlandia_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_jawwal_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_karakhuzaits_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_forest_people_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='kingdom_hero_party_eleftheroi_template']"/>
+
 </xsl:stylesheet>
