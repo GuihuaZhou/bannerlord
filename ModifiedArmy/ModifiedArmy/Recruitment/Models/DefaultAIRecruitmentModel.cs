@@ -123,7 +123,7 @@ namespace ModifiedArmy.Recruitment.Models
             // A party already above 95% of its current establishment may not
             // add troops from any source routed through the unified model.
             if (state.PartySizeLimit <= 0 ||
-                (long)state.ProjectedMemberCount * 100L >
+                (long)state.EffectiveProjectedMemberCount * 100L >
                     (long)state.PartySizeLimit *
                         RecruitmentFillPercentage)
             {
@@ -209,7 +209,7 @@ namespace ModifiedArmy.Recruitment.Models
                         RecruitmentFillPercentage / 100f));
             result.AllowedByPartySize = Math.Max(
                 0,
-                safePartySize - state.ProjectedMemberCount);
+                safePartySize - state.EffectiveProjectedMemberCount);
             result.AllowedByWageLimit = GetAllowedByWageLimit(
                 state,
                 unitWage);

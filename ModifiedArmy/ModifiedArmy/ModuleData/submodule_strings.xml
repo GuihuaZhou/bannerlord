@@ -195,6 +195,12 @@
         text="{=ModifiedArmy_SupplyPartyDispatched}[驻军后勤] {HOME_NAME}派出{ESCORT}人的征粮队前往{SOURCE_NAME}, 计划运回{REQUESTED}单位食物." />
     <string id="str_modifiedarmy_supply_party_returned"
         text="{=ModifiedArmy_SupplyPartyReturned}[驻军后勤] {HOME_NAME}征粮队带回{FOOD}单位食物." />
+    <string id="str_modifiedarmy_supply_escort_capacity"
+        text="{=ModifiedArmy_SupplyEscortCapacity}[Garrison Capacity] settlement={SETTLEMENT_ID}, party={PARTY_ID}, before={GARRISON_BEFORE}, returning={RETURNING}, reserved before={RESERVED_BEFORE}, after={GARRISON_AFTER}, reserved after={RESERVED_AFTER}, limit={LIMIT}, excess={EXCESS}, mission state={MISSION_STATE}." />
+    <string id="str_modifiedarmy_multiple_supply_parties"
+        text="{=ModifiedArmy_MultipleSupplyParties}[Garrison Capacity] settlement={SETTLEMENT_ID} has {PARTY_COUNT} active supply parties reserving {RESERVED} places." />
+    <string id="str_modifiedarmy_disband_merge_overflow"
+        text="{=ModifiedArmy_DisbandMergeOverflow}[Garrison Capacity] disband merge overflow at settlement={SETTLEMENT_ID}: regulars={REGULARS}, heroes={HEROES}, reserved={RESERVED}, limit={LIMIT}, excess={EXCESS}." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
         text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"

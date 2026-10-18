@@ -1,6 +1,7 @@
 using System;
 using HarmonyLib;
 using ModifiedArmy.Models;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedPolitics.HeroOffices.Services;
@@ -41,10 +42,8 @@ namespace ModifiedPolitics.HeroOffices.Patches
             if (factor <= 0f)
                 return;
 
-            int freeSlots = Math.Max(
-                0,
-                town.GarrisonParty.Party.PartySizeLimit
-                - town.GarrisonParty.Party.NumberOfAllMembers);
+            int freeSlots = GarrisonRecruitmentCapacity
+                .GetHardFreeSlots(town.GarrisonParty);
             __result = Math.Min(freeSlots, (int)Math.Ceiling(__result * (1f + factor)));
         }
     }

@@ -123,5 +123,8 @@
     <string id="MA_ProsperityWeight_Desc" text="繁荣度在总补员倍率中的占比." />
     <string id="MA_HearthsWeight" text="村庄户数权重" />
     <string id="MA_HearthsWeight_Desc" text="村庄户数在总补员倍率中的占比." />
+    <string id="ModifiedArmy_SupplyEscortCapacity" text="[驻军编制] 定居点={SETTLEMENT_ID}，征粮队={PARTY_ID}，返还前驻军={GARRISON_BEFORE}，返还人数={RETURNING}，返还前预留={RESERVED_BEFORE}，返还后驻军={GARRISON_AFTER}，返还后预留={RESERVED_AFTER}，上限={LIMIT}，超编={EXCESS}，任务状态={MISSION_STATE}。" />
+    <string id="ModifiedArmy_MultipleSupplyParties" text="[驻军编制] 定居点={SETTLEMENT_ID}同时存在{PARTY_COUNT}支征粮队，共预留{RESERVED}个编制。" />
+    <string id="ModifiedArmy_DisbandMergeOverflow" text="[驻军编制] 定居点={SETTLEMENT_ID}发生解散部队并入超编：普通士兵={REGULARS}，英雄={HEROES}，征粮队预留={RESERVED}，上限={LIMIT}，超编={EXCESS}。" />
   </strings>
 </base>

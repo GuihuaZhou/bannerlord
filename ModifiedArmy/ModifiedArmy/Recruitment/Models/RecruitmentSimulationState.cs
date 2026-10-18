@@ -1,3 +1,4 @@
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Classification;
 using System;
 using System.Collections.Generic;
@@ -27,6 +28,11 @@ namespace ModifiedArmy.Recruitment.Models
 
         public int ProjectedMemberCount { get; private set; }
 
+        public int ReservedReturningMembers { get; private set; }
+
+        public int EffectiveProjectedMemberCount =>
+            ProjectedMemberCount + ReservedReturningMembers;
+
         public float ProjectedDailyWage { get; private set; }
 
         public float CommittedRecruitmentCost { get; private set; }
@@ -41,6 +47,11 @@ namespace ModifiedArmy.Recruitment.Models
                     PartySizeLimit = party?.Party.PartySizeLimit ?? 0,
                     ProjectedMemberCount =
                         party?.Party.NumberOfAllMembers ?? 0,
+                    ReservedReturningMembers = party?.IsGarrison == true
+                        ? GarrisonRecruitmentCapacity
+                            .GetActiveSupplyEscortCount(
+                                party.CurrentSettlement)
+                        : 0,
                     Budget = RecruitmentBudget.Create(party)
                 };
 

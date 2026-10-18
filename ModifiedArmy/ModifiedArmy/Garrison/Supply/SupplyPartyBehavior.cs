@@ -391,13 +391,29 @@ namespace ModifiedArmy.Garrison.Supply
             {
                 if (supplyParty != null && supplyParty.IsActive)
                 {
+                    SupplyPartyComponent failedComponent =
+                        GetComponent(supplyParty);
+                    int garrisonBefore = garrison.Party.NumberOfAllMembers;
+                    int returning = supplyParty.Party.NumberOfAllMembers;
+                    int reservedBefore = GarrisonRecruitmentCapacity
+                        .GetActiveSupplyEscortCount(home);
+                    int limit = garrison.Party.PartySizeLimit;
+                    int missionState = failedComponent?.MissionStateValue ?? -1;
+                    failedComponent?.CompleteMission();
                     RestoreTroops(
                         supplyParty.MemberRoster,
                         garrison.MemberRoster);
                     TransferAllItems(
                         supplyParty.ItemRoster,
                         garrison.ItemRoster);
-                    GetComponent(supplyParty)?.CompleteMission();
+                    LogSupplyEscortCapacity(
+                        home,
+                        supplyParty,
+                        garrisonBefore,
+                        returning,
+                        reservedBefore,
+                        limit,
+                        missionState);
                     DestroyPartyAction.Apply(null, supplyParty);
                 }
                 else
@@ -511,10 +527,24 @@ namespace ModifiedArmy.Garrison.Supply
             int returnedPackAnimals =
                 party.ItemRoster.NumberOfPackAnimals;
             int returnedMounts = party.ItemRoster.NumberOfMounts;
+            int garrisonBefore = garrison.Party.NumberOfAllMembers;
+            int reservedBefore = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(component.HomeSettlement);
+            int partySizeLimit = garrison.Party.PartySizeLimit;
+            int missionState = component.MissionStateValue;
 
+            component.CompleteMission();
             RestoreTroops(party.MemberRoster, garrison.MemberRoster);
             TransferAllItems(party.ItemRoster, garrison.ItemRoster);
-            component.CompleteMission();
+
+            LogSupplyEscortCapacity(
+                component.HomeSettlement,
+                party,
+                garrisonBefore,
+                returnedTroops,
+                reservedBefore,
+                partySizeLimit,
+                missionState);
 
             if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
             {
@@ -533,6 +563,37 @@ namespace ModifiedArmy.Garrison.Supply
             }
 
             DestroyPartyAction.Apply(null, party);
+        }
+
+        private static void LogSupplyEscortCapacity(
+            Settlement home,
+            MobileParty supplyParty,
+            int garrisonBefore,
+            int returningTroops,
+            int reservedBefore,
+            int partySizeLimit,
+            int missionState)
+        {
+            MobileParty garrison = home?.Town?.GarrisonParty;
+            int reservedAfter = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(home);
+            int garrisonAfter = garrison?.Party.NumberOfAllMembers ?? 0;
+            int excess = Math.Max(
+                0,
+                garrisonAfter + reservedAfter - partySizeLimit);
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_supply_escort_capacity");
+            message.SetTextVariable("SETTLEMENT_ID", home?.StringId ?? "-");
+            message.SetTextVariable("PARTY_ID", supplyParty?.StringId ?? "-");
+            message.SetTextVariable("GARRISON_BEFORE", garrisonBefore);
+            message.SetTextVariable("RETURNING", returningTroops);
+            message.SetTextVariable("RESERVED_BEFORE", reservedBefore);
+            message.SetTextVariable("GARRISON_AFTER", garrisonAfter);
+            message.SetTextVariable("RESERVED_AFTER", reservedAfter);
+            message.SetTextVariable("LIMIT", partySizeLimit);
+            message.SetTextVariable("EXCESS", excess);
+            message.SetTextVariable("MISSION_STATE", missionState);
+            ModLogger.FileInfo(message.ToString());
         }
 
         private static void RestoreTroops(

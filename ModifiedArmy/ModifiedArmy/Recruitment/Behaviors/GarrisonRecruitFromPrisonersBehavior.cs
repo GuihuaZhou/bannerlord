@@ -1,4 +1,5 @@
 using ModifiedArmy.Recruitment;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
@@ -240,6 +241,8 @@ namespace ModifiedArmy.Models
             out int prisonerRecruited)
         {
             int recruited = 0;
+            int reservedReturningMembers = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(settlement);
             professionalRecruited = 0;
             prisonerRecruited = 0;
             foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
@@ -247,6 +250,16 @@ namespace ModifiedArmy.Models
                 int count = Math.Min(
                     evaluation.RecruitableCount,
                     dailyLimit - recruited);
+                count = Math.Min(
+                    count,
+                    GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                        garrison,
+                        reservedReturningMembers));
+                count = Math.Min(
+                    count,
+                    GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
+                        garrison,
+                        reservedReturningMembers));
                 if (count <= 0 || evaluation.Troop == null)
                 {
                     continue;
@@ -409,10 +422,8 @@ namespace ModifiedArmy.Models
             int maximumDailyRecruitment = Campaign.Current.Models
                 .SettlementGarrisonModel
                 .GetMaximumDailyAutoRecruitmentCount(town);
-            int freeSlots = Math.Max(
-                0,
-                town.GarrisonParty.Party.PartySizeLimit
-                    - town.GarrisonParty.Party.NumberOfAllMembers);
+            int freeSlots = GarrisonRecruitmentCapacity
+                .GetHardFreeSlots(town.GarrisonParty);
 
             return Math.Min(
                 freeSlots,

@@ -1,6 +1,7 @@
 using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -61,6 +62,7 @@ namespace ModifiedArmy.Recruitment.Patches
                         garrison);
                     GarrisonRecruitFromPrisonersBehavior
                         .NormalizeGarrisonNow(relatedSettlement.Town);
+                    LogMergeOverflow(relatedSettlement, garrison);
                 }
             }
 
@@ -193,6 +195,8 @@ namespace ModifiedArmy.Recruitment.Patches
             TroopRoster acceptedRoster =
                 TroopRoster.CreateDummyTroopRoster();
             int acceptedCount = 0;
+            int reservedReturningMembers = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(settlement);
 
             foreach (RecruitmentEvaluationResult evaluation in
                 plan.Evaluations)
@@ -204,6 +208,16 @@ namespace ModifiedArmy.Recruitment.Patches
                 int count = Math.Min(
                     evaluation.RecruitableCount,
                     availableCount);
+                count = Math.Min(
+                    count,
+                    GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                        garrison,
+                        reservedReturningMembers));
+                count = Math.Min(
+                    count,
+                    GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
+                        garrison,
+                        reservedReturningMembers));
 
                 if (count <= 0)
                 {
@@ -321,6 +335,35 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("DISMISSED", dismissedCount);
 
             ModLogger.Notice(message.ToString());
+        }
+
+        private static void LogMergeOverflow(
+            Settlement settlement,
+            MobileParty garrison)
+        {
+            int reserved = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(settlement);
+            int effective = GarrisonRecruitmentCapacity
+                .GetEffectiveMemberCount(garrison, reserved);
+            int limit = garrison.Party.PartySizeLimit;
+            if (effective <= limit)
+            {
+                return;
+            }
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_disband_merge_overflow");
+            message.SetTextVariable("SETTLEMENT_ID", settlement.StringId);
+            message.SetTextVariable(
+                "REGULARS",
+                garrison.Party.NumberOfRegularMembers);
+            message.SetTextVariable(
+                "HEROES",
+                garrison.MemberRoster.TotalHeroes);
+            message.SetTextVariable("RESERVED", reserved);
+            message.SetTextVariable("LIMIT", limit);
+            message.SetTextVariable("EXCESS", effective - limit);
+            ModLogger.FileInfo(message.ToString());
         }
     }
 }

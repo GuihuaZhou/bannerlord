@@ -78,6 +78,15 @@ namespace ModifiedArmy.Tool
             Display(LogLevel.Info, message, color ?? InfoColor);
         }
 
+        /// <summary>
+        /// Writes an informational diagnostic without displaying it in the
+        /// campaign message feed.
+        /// </summary>
+        public static void FileInfo(string message)
+        {
+            WriteToFile(LogLevel.Info, message);
+        }
+
         public static void Notice(string message, Color? color = null)
         {
             Display(LogLevel.Notice, message, color ?? NoticeColor);

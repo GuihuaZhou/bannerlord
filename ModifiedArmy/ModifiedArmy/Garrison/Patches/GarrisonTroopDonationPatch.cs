@@ -118,6 +118,10 @@ namespace ModifiedArmy.Garrison.Patches
                 .GetAllowedDonationCount(
                     mobileParty,
                     numberOfTroopsToLeave);
+            numberOfTroopsToLeave = Math.Min(
+                numberOfTroopsToLeave,
+                GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                    mobileParty?.CurrentSettlement));
         }
 
         private static void Postfix(TransferState __state)
