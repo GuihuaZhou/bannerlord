@@ -97,6 +97,11 @@
         <ExistingTroopTransferRatio value="0.90"/>
         <MinimumOwnSurplusDelivery value="20"/>
         <MinimumFiefRecruitBatch value="25"/>
+        <!-- 非边境至少保留50%正规驻军，边境至少保留90%，不计算民兵。 -->
+        <InteriorDefenseRatio value="0.50"/>
+        <BorderDefenseRatio value="0.90"/>
+        <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->
+        <ReinforcementForecastDays value="7"/>
         <EnableAutomaticSwap value="false"/>
         <EnableAutomaticReinforcement value="false"/>
       </ForceManagement>

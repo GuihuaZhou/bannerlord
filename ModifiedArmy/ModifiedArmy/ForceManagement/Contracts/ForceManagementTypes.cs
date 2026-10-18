@@ -25,14 +25,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
         Reinforcement
     }
 
-    public enum ReinforcementPriority
-    {
-        None,
-        Routine,
-        Urgent,
-        Emergency
-    }
-
     public enum ReinforcementMissionState
     {
         Requested,
@@ -103,17 +95,19 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public float LocalSevenDayRecoveryValue { get; set; }
         public float SimulatedFoodDays { get; set; }
         public bool HasVerifiedActualFoodConsumption { get; set; }
+        public bool IsEnemyBorder { get; set; }
     }
 
     public sealed class ReinforcementNeedResult
     {
-        public ReinforcementPriority Priority { get; set; }
+        public bool IsRequested { get; set; }
         public string ReasonCode { get; set; }
+        public int RequestedTroops { get; set; }
 
         public static ReinforcementNeedResult NoRequest(string reason) =>
             new ReinforcementNeedResult
             {
-                Priority = ReinforcementPriority.None,
+                IsRequested = false,
                 ReasonCode = reason
             };
     }

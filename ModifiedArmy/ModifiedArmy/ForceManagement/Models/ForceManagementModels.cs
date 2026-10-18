@@ -1,6 +1,7 @@
 using ModifiedArmy.common;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Models;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -177,10 +178,23 @@ namespace ModifiedArmy.ForceManagement.Models
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             int current = garrison?.Party.NumberOfRegularMembers ?? 0;
             int hardLimit = garrison?.Party.PartySizeLimit ?? 0;
-            int minimum = GarrisonTransferPolicyModel
-                .IsEnemyBorderFortification(settlement)
-                    ? Math.Max(current, (int)Math.Ceiling(hardLimit * 0.5f))
-                    : (int)Math.Ceiling(hardLimit * 0.4f);
+            ForceManagementConfig config = MilitaryConfigManager.Instance
+                .RequireActiveConfig().AiRecruitment.ForceManagement;
+            bool enemyBorder = GarrisonTransferPolicyModel
+                .IsEnemyBorderFortification(settlement);
+            float defenseRatio = enemyBorder
+                ? config.BorderDefenseRatio
+                : config.InteriorDefenseRatio;
+            int minimum = Math.Min(
+                hardLimit,
+                (int)Math.Ceiling(hardLimit * defenseRatio));
+            int forecastDays = config.ReinforcementForecastDays;
+            int predictedDaily = settlement?.Town == null
+                ? 0
+                : GarrisonRecruitFromPrisonersBehavior
+                    .GetPredictedDailyRecruitmentCount(settlement.Town);
+            GarrisonLogisticsStatus logistics = GarrisonLogisticsModel
+                .Calculate(settlement?.Town);
             return new GarrisonDefenseSnapshot
             {
                 Settlement = settlement,
@@ -190,6 +204,11 @@ namespace ModifiedArmy.ForceManagement.Models
                 HardLimit = hardLimit,
                 EscortReservedCount = GarrisonRecruitmentCapacity
                     .GetActiveSupplyEscortCount(settlement),
+                LocalSevenDayRecoveryValue = Math.Max(
+                    0,
+                    predictedDaily * forecastDays),
+                SimulatedFoodDays = logistics.FoodSupplyDays,
+                IsEnemyBorder = enemyBorder,
                 HasVerifiedActualFoodConsumption = false
             };
         }
@@ -198,9 +217,7 @@ namespace ModifiedArmy.ForceManagement.Models
             GarrisonDefenseSnapshot snapshot,
             TroopRoster roster)
         {
-            if (snapshot == null || roster == null ||
-                GarrisonTransferPolicyModel.IsEnemyBorderFortification(
-                    snapshot.Settlement))
+            if (snapshot == null || roster == null)
             {
                 return 0;
             }
@@ -210,14 +227,55 @@ namespace ModifiedArmy.ForceManagement.Models
                 snapshot.CurrentRegularCount -
                     (int)Math.Ceiling(snapshot.RequiredDefenseValue));
         }
+
     }
 
-    public sealed class ExternalReinforcementNeedStubModel
+    public sealed class ExternalReinforcementNeedModel
         : IExternalReinforcementNeedModel
     {
         public ReinforcementNeedResult Evaluate(GarrisonDefenseSnapshot snapshot)
-            => ReinforcementNeedResult.NoRequest(
-                "ThresholdPolicyNotImplemented");
+        {
+            if (snapshot?.Settlement?.Town == null)
+            {
+                return ReinforcementNeedResult.NoRequest("InvalidSettlement");
+            }
+
+            int required = Math.Max(
+                0,
+                (int)Math.Ceiling(snapshot.RequiredDefenseValue));
+            int current = Math.Max(0, snapshot.CurrentRegularCount);
+            int projected = current + Math.Max(
+                0,
+                (int)Math.Floor(snapshot.LocalSevenDayRecoveryValue));
+            int currentDeficit = Math.Max(0, required - current);
+            int projectedDeficit = Math.Max(0, required - projected);
+
+            if (projectedDeficit > 0)
+            {
+                return Request(
+                    projectedDeficit,
+                    snapshot.IsEnemyBorder
+                        ? "BorderGarrisonBelowMinimum"
+                        : "InteriorGarrisonBelowMinimum");
+            }
+
+            return ReinforcementNeedResult.NoRequest(
+                currentDeficit > 0
+                    ? "LocalRecoveryExpected"
+                    : "DefenseRequirementMet");
+        }
+
+        private static ReinforcementNeedResult Request(
+            int requestedTroops,
+            string reason)
+        {
+            return new ReinforcementNeedResult
+            {
+                IsRequested = true,
+                RequestedTroops = Math.Max(0, requestedTroops),
+                ReasonCode = reason
+            };
+        }
     }
 
     public sealed class ReinforcementRouteStubModel

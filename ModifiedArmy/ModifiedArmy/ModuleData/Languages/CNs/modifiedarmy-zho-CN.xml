@@ -128,6 +128,15 @@
     <string id="ModifiedArmy_DisbandMergeOverflow" text="[驻军编制] 定居点={SETTLEMENT_ID}发生解散部队并入超编：普通士兵={REGULARS}，英雄={HEROES}，征粮队预留={RESERVED}，上限={LIMIT}，超编={EXCESS}。" />
     <string id="ModifiedArmy_ForceDispositionFallback" text="[兵力管理] 没能读到家族{CLAN_ID}的战争倾向，本次按中立态度处理。" />
     <string id="ModifiedArmy_ForceTarget" text="[兵力管理] {PARTY_NAME}目前处于{SCENARIO}状态，战争倾向为{DISPOSITION}。部队现在有{CURRENT}人，准备补到{TARGET}人，编制最多容纳{LIMIT}人。还缺{GAP}人，当前判断为{REASON}。" />
+    <string id="ModifiedArmy_GarrisonDefenseEvaluation" text="[兵力管理] {SETTLEMENT_NAME}属于{LOCATION}，现有{CURRENT}名正规守军，至少应保留{REQUIRED}人。预计本地在观察期内可以补充{RECOVERY}人。当前决定为{DECISION}，计划请求{REQUESTED}名援兵，原因是{REASON}。" />
+    <string id="ModifiedArmy_GarrisonLocationBorder" text="边境定居点" />
+    <string id="ModifiedArmy_GarrisonLocationInterior" text="非边境定居点" />
+    <string id="ModifiedArmy_ReinforcementDecisionRequest" text="请求增援" />
+    <string id="ModifiedArmy_ReinforcementDecisionWait" text="暂不请求增援" />
+    <string id="ModifiedArmy_ReinforcementReasonBorder" text="预计补员后仍低于边境最低驻军" />
+    <string id="ModifiedArmy_ReinforcementReasonInterior" text="预计补员后仍低于非边境最低驻军" />
+    <string id="ModifiedArmy_ReinforcementReasonRecovery" text="预计本地招募足以补上缺口" />
+    <string id="ModifiedArmy_ReinforcementReasonMet" text="目前已经达到防御要求" />
     <string id="ModifiedArmy_ForceScenarioPeace" text="和平" />
     <string id="ModifiedArmy_ForceScenarioWarRoutine" text="常规战争" />
     <string id="ModifiedArmy_ForceScenarioArmyGathering" text="军团集结" />

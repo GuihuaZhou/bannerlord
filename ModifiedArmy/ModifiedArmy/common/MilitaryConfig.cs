@@ -107,6 +107,9 @@ namespace ModifiedArmy.common
         public float ExistingTroopTransferRatio { get; internal set; } = 0.90f;
         public int MinimumOwnSurplusDelivery { get; internal set; } = 20;
         public int MinimumFiefRecruitBatch { get; internal set; } = 25;
+        public float InteriorDefenseRatio { get; internal set; } = 0.50f;
+        public float BorderDefenseRatio { get; internal set; } = 0.90f;
+        public int ReinforcementForecastDays { get; internal set; } = 7;
         public bool EnableAutomaticSwap { get; internal set; }
         public bool EnableAutomaticReinforcement { get; internal set; }
     }
@@ -265,6 +268,14 @@ namespace ModifiedArmy.common
                 node,
                 "MinimumFiefRecruitBatch",
                 value.MinimumFiefRecruitBatch);
+            value.InteriorDefenseRatio = RatioValue(
+                node, "InteriorDefenseRatio", value.InteriorDefenseRatio);
+            value.BorderDefenseRatio = RatioValue(
+                node, "BorderDefenseRatio", value.BorderDefenseRatio);
+            value.ReinforcementForecastDays = NonNegativeValue(
+                node,
+                "ReinforcementForecastDays",
+                value.ReinforcementForecastDays);
             value.EnableAutomaticSwap = BooleanValue(
                 node, "EnableAutomaticSwap", false);
             value.EnableAutomaticReinforcement = BooleanValue(
