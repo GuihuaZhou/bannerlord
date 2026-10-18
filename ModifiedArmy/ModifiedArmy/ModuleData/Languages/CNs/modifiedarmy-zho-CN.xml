@@ -74,6 +74,7 @@
     <string id="ModifiedArmy_GarrisonTargetFood" text="目标粮食" />
     <string id="ModifiedArmy_GarrisonFoodDeficit" text="粮食缺口" />
     <string id="ModifiedArmy_GarrisonLocalProductionAllocation" text="驻军粮仓分配" />
+    <string id="ModifiedArmy_GarrisonWeeklyAdjustment" text="[驻军整编] {SETTLEMENT_NAME}驻军完成每周检查，移除了{DISMISSED}名不符合驻军资格的成员。" />
     <string id="ModifiedArmy_SupplyPartyName" text="{SETTLEMENT}的运粮队" />
     <string id="ModifiedArmy_SupplyPartyGreeting" text="我们正在为{HOME_SETTLEMENT}运送补给." />
     <string id="ModifiedArmy_SupplyPartyCarryOn" text="继续执行任务. 再会." />

@@ -6,7 +6,8 @@ namespace ModifiedArmy.Recruitment.Models
 {
     /// <summary>
     /// Defines role and quality ratio ranges for one culture and party type.
-    /// Minimums affect priority; maximums are hard recruitment limits.
+    /// Minimums raise shortage priority; maximums apply a small excess
+    /// penalty. Neither bound limits recruitment or dismisses troops.
     /// </summary>
     public sealed class ArmyCompositionTemplate
     {

@@ -589,55 +589,52 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 : RecruitmentSimulationState.Create(garrison);
             for (int i = 0; i < count && weightedCycle.Count > 0; i++)
             {
-                List<TroopProductionEntry> eligibleCycle = state == null
-                    ? weightedCycle
-                    : weightedCycle.Where(entry =>
-                        IsCompositionEligible(garrison, entry.Troop, state))
-                        .ToList();
-                if (eligibleCycle.Count == 0)
+                TroopProductionEntry selected;
+                RecruitmentEvaluationResult selectedEvaluation = null;
+                if (state == null)
                 {
-                    break;
+                    selected = weightedCycle[
+                        Math.Abs(day + i) % weightedCycle.Count];
+                }
+                else
+                {
+                    var evaluated = weightedCycle.Select(entry => new
+                    {
+                        Entry = entry,
+                        Evaluation = RecruitmentModelManager.Model
+                            .EvaluateRecruitment(
+                                garrison,
+                                entry.Troop,
+                                1,
+                                RecruitmentSource.ProfessionalProduction,
+                                state)
+                    }).ToList();
+                    float bestPriority = evaluated.Max(item =>
+                        item.Evaluation.Priority);
+                    var preferred = evaluated.Where(item =>
+                            Math.Abs(
+                                item.Evaluation.Priority - bestPriority) <
+                            0.0001f)
+                        .ToList();
+                    var choice = preferred[
+                        Math.Abs(day + i) % preferred.Count];
+                    selected = choice.Entry;
+                    selectedEvaluation = choice.Evaluation;
                 }
 
-                TroopProductionEntry selected = eligibleCycle[
-                    Math.Abs(day + i) % eligibleCycle.Count];
                 result[selected.Troop] = result.TryGetValue(
                     selected.Troop,
                     out int value) ? value + 1 : 1;
-                if (state != null)
+                if (selectedEvaluation?.RecruitableCount > 0)
                 {
-                    RecruitmentEvaluationResult evaluation =
-                        RecruitmentModelManager.Model.EvaluateRecruitment(
-                            garrison,
-                            selected.Troop,
-                            1,
-                            RecruitmentSource.ProfessionalProduction,
-                            state);
                     state.Commit(
                         selected.Troop,
                         1,
-                        evaluation.UnitDailyWage,
-                        evaluation.UnitRecruitmentCost);
+                        selectedEvaluation.UnitDailyWage,
+                        selectedEvaluation.UnitRecruitmentCost);
                 }
             }
             return result;
-        }
-
-        private static bool IsCompositionEligible(
-            MobileParty garrison,
-            CharacterObject troop,
-            RecruitmentSimulationState state)
-        {
-            RecruitmentEvaluationResult evaluation =
-                RecruitmentModelManager.Model.EvaluateRecruitment(
-                    garrison,
-                    troop,
-                    1,
-                    RecruitmentSource.ProfessionalProduction,
-                    state);
-            return evaluation.AllowedByPartySize > 0 &&
-                evaluation.AllowedByCombatRole > 0 &&
-                evaluation.AllowedByQuality > 0;
         }
 
         public static float CalculateVillageSupply(Village village, int assignedFiefCount)

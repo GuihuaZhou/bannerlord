@@ -146,7 +146,7 @@
     <string id="str_modifiedarmy_disband_garrison_merge"
         text="{=ModifiedArmy_DisbandGarrisonMerge}[驻军整编] {PARTY_NAME}解散后, {SETTLEMENT_NAME}驻军接收了{ACCEPTED}名士兵, 其余{DISMISSED}人离队." />
     <string id="str_modifiedarmy_garrison_weekly_adjustment"
-        text="{=ModifiedArmy_GarrisonWeeklyAdjustment}[驻军整编] {SETTLEMENT_NAME}驻军完成每周检查, 解散了{DISMISSED}名非正规军或超过模板比例的士兵." />
+        text="{=ModifiedArmy_GarrisonWeeklyAdjustment}[Garrison Review] {SETTLEMENT_NAME} removed {DISMISSED} invalid garrison members during its weekly review." />
     <string id="str_modifiedarmy_garrison_withdrawal"
         text="{=ModifiedArmy_GarrisonWithdrawal}[驻军调拨] {PARTY_NAME}从{SETTLEMENT_NAME}驻军取走了{COUNT}名士兵." />
     <string id="str_modifiedarmy_professional_template_unknown_troop"

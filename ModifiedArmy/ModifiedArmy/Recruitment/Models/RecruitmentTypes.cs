@@ -30,7 +30,8 @@ namespace ModifiedArmy.Recruitment.Models
     }
 
     /// <summary>
-    /// A soft minimum and hard maximum expressed as fractions from zero to one.
+    /// A preferred composition interval expressed as fractions from zero to
+    /// one. Both bounds affect ordering only and never determine eligibility.
     /// </summary>
     public sealed class RatioRange
     {

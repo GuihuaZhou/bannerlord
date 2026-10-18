@@ -26,9 +26,13 @@ namespace ModifiedArmy.Recruitment.Models
 
         public int AllowedByPartySize { get; set; }
 
-        public int AllowedByCombatRole { get; set; }
+        public float RoleShortageScore { get; set; }
 
-        public int AllowedByQuality { get; set; }
+        public float QualityShortageScore { get; set; }
+
+        public float RoleExcessScore { get; set; }
+
+        public float QualityExcessScore { get; set; }
 
         public int AllowedByWageLimit { get; set; }
 

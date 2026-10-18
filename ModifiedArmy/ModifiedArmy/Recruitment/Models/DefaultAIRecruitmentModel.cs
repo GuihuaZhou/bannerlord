@@ -11,7 +11,8 @@ namespace ModifiedArmy.Recruitment.Models
 {
     /// <summary>
     /// Builds culture-aware recruitment plans constrained by party capacity,
-    /// composition ratios, wage limits and combined thirty-day affordability.
+    /// wage limits and combined thirty-day affordability. Composition ranges
+    /// affect candidate preference but are not recruitment limits.
     /// </summary>
     public sealed class DefaultAIRecruitmentModel : AIRecruitmentModel
     {
@@ -183,6 +184,24 @@ namespace ModifiedArmy.Recruitment.Models
                 troop,
                 source,
                 state);
+            RatioRange roleRange = template.GetRange(role);
+            RatioRange qualityRange = template.GetRange(quality);
+            result.RoleShortageScore = GetNormalizedShortage(
+                state.PartySizeLimit,
+                state.GetCount(role),
+                roleRange);
+            result.QualityShortageScore = GetNormalizedShortage(
+                state.PartySizeLimit,
+                state.GetCount(quality),
+                qualityRange);
+            result.RoleExcessScore = GetNormalizedExcess(
+                state.PartySizeLimit,
+                state.GetCount(role),
+                roleRange);
+            result.QualityExcessScore = GetNormalizedExcess(
+                state.PartySizeLimit,
+                state.GetCount(quality),
+                qualityRange);
             int safePartySize = Math.Max(
                 0,
                 (int)Math.Floor(
@@ -191,14 +210,6 @@ namespace ModifiedArmy.Recruitment.Models
             result.AllowedByPartySize = Math.Max(
                 0,
                 safePartySize - state.ProjectedMemberCount);
-            result.AllowedByCombatRole = GetAllowedByMaximum(
-                state.PartySizeLimit,
-                state.GetCount(role),
-                template.GetRange(role));
-            result.AllowedByQuality = GetAllowedByMaximum(
-                state.PartySizeLimit,
-                state.GetCount(quality),
-                template.GetRange(quality));
             result.AllowedByWageLimit = GetAllowedByWageLimit(
                 state,
                 unitWage);
@@ -213,8 +224,6 @@ namespace ModifiedArmy.Recruitment.Models
             result.RecruitableCount = Minimum(
                 result.RequestedCount,
                 result.AllowedByPartySize,
-                result.AllowedByCombatRole,
-                result.AllowedByQuality,
                 result.AllowedByWageLimit,
                 result.AllowedByRecruitmentCost,
                 result.AllowedByMaintenance);
@@ -264,7 +273,21 @@ namespace ModifiedArmy.Recruitment.Models
                 ? 0.10f
                 : 0f;
 
-            return roleNeed + qualityNeed + tierPreference - sourcePenalty;
+            float roleExcess = GetNormalizedExcess(
+                state.PartySizeLimit,
+                state.GetCount(role),
+                template.GetRange(role));
+            float qualityExcess = GetNormalizedExcess(
+                state.PartySizeLimit,
+                state.GetCount(quality),
+                template.GetRange(quality));
+
+            return 2f * roleNeed
+                + qualityNeed
+                - 0.5f * roleExcess
+                - 0.2f * qualityExcess
+                + tierPreference
+                - sourcePenalty;
         }
 
         private static RecruitmentEvaluationResult CreateBaseResult(
@@ -278,20 +301,6 @@ namespace ModifiedArmy.Recruitment.Models
                 Source = source,
                 RequestedCount = Math.Max(0, availableCount)
             };
-        }
-
-        /// <summary>
-        /// Converts a hard maximum ratio into remaining recruitable headcount.
-        /// Counts are based on PartySizeLimit rather than current party size.
-        /// </summary>
-        private static int GetAllowedByMaximum(
-            int sizeLimit,
-            int currentCount,
-            RatioRange range)
-        {
-            int maximumCount = (int)Math.Floor(
-                sizeLimit * range.MaximumRatio);
-            return Math.Max(0, maximumCount - currentCount);
         }
 
         /// <summary>
@@ -313,6 +322,28 @@ namespace ModifiedArmy.Recruitment.Models
 
             return Math.Max(0, minimumCount - currentCount)
                 / (float)minimumCount;
+        }
+
+        /// <summary>
+        /// Returns a normalized excess above the preferred maximum. Excess
+        /// lowers ordering priority but never reduces the approved quantity.
+        /// </summary>
+        private static float GetNormalizedExcess(
+            int sizeLimit,
+            int currentCount,
+            RatioRange range)
+        {
+            if (sizeLimit <= 0)
+            {
+                return 0f;
+            }
+
+            int maximumCount = (int)Math.Floor(
+                sizeLimit * range.MaximumRatio);
+            return Math.Min(
+                1f,
+                Math.Max(0, currentCount - maximumCount) /
+                    (float)sizeLimit);
         }
 
         /// <summary>
@@ -426,16 +457,6 @@ namespace ModifiedArmy.Recruitment.Models
             if (result.RecruitableCount == result.AllowedByPartySize)
             {
                 return RecruitmentLimitReason.PartySize;
-            }
-
-            if (result.RecruitableCount == result.AllowedByCombatRole)
-            {
-                return RecruitmentLimitReason.CombatRole;
-            }
-
-            if (result.RecruitableCount == result.AllowedByQuality)
-            {
-                return RecruitmentLimitReason.Quality;
             }
 
             if (result.RecruitableCount == result.AllowedByWageLimit)

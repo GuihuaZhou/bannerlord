@@ -3,9 +3,10 @@
   <!--
     AI party composition templates.
 
-    min is a soft target used to prioritize missing troop groups.
-    max is a hard recruitment limit. Values are percentages of the party's
-    size limit, not fixed troop counts.
+    min and max form a soft preference interval. Groups below min receive a
+    strong priority bonus; groups above max receive a small priority penalty.
+    Neither value blocks recruitment or dismisses existing troops. Values are
+    percentages of the party's size limit, not fixed troop counts.
 
     culture must be a Bannerlord object reference such as Culture.aserai.
     partyType accepts mobileParty or garrison.

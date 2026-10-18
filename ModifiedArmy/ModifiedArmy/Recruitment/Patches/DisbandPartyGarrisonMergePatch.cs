@@ -20,8 +20,9 @@ namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
     /// Replaces the native all-or-nothing merge of a disbanding lord party
-    /// into a fortification. Regular troops must pass the same composition,
-    /// establishment, wage and clan-budget rules as every other AI recruit.
+    /// into a fortification. Regular troops must pass the same establishment,
+    /// wage and clan-budget rules as every other AI recruit. Composition only
+    /// affects transfer order and never rejects otherwise valid soldiers.
     /// </summary>
     [HarmonyPatch(
         typeof(DisbandPartyCampaignBehavior),

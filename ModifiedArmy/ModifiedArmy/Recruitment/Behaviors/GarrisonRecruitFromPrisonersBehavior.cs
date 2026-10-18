@@ -492,9 +492,10 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// Selects only prisoners that fill a current minimum-ratio shortage,
-        /// sells every surplus or non-military prisoner, then adds one day of
-        /// conformity to the retained targets. A
+        /// Retains eligible military prisoners within the prison reserve and
+        /// adds one day of conformity to retained targets. Low-tier prisoners
+        /// keep the existing economic sale policy unless they fill a preferred
+        /// composition shortage. A
         /// settlement party has no MobileParty, so the native hourly method
         /// cannot be called safely. The same base rate, governor leadership
         /// bonus and active model threshold are applied directly to the
@@ -644,10 +645,6 @@ namespace ModifiedArmy.Models
                 capacity * roleRange.MinimumRatio);
             int qualityMinimum = (int)Math.Ceiling(
                 capacity * qualityRange.MinimumRatio);
-            int roleMaximum = (int)Math.Floor(
-                capacity * roleRange.MaximumRatio);
-            int qualityMaximum = (int)Math.Floor(
-                capacity * qualityRange.MaximumRatio);
             int roleShortage = Math.Max(
                 0,
                 roleMinimum - roleCounts[role]);
@@ -665,24 +662,10 @@ namespace ModifiedArmy.Models
                     return 0;
                 }
 
-                return Math.Max(
-                    0,
-                    Math.Min(
-                        availableCount,
-                        Math.Min(
-                            roleMaximum - roleCounts[role],
-                            qualityMaximum - qualityCounts[quality])));
+                return availableCount;
             }
 
-            return Math.Max(
-                0,
-                Math.Min(
-                    availableCount,
-                    Math.Min(
-                        Math.Max(roleShortage, qualityShortage),
-                        Math.Min(
-                            roleMaximum - roleCounts[role],
-                            qualityMaximum - qualityCounts[quality]))));
+            return availableCount;
         }
 
         private static int CalculateDailyConformity(
@@ -923,10 +906,8 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// Removes non-military characters unconditionally, then repeatedly
-        /// removes the lowest-tier soldier contributing to a hard template
-        /// maximum. Establishment, wages and wounds do not independently
-        /// select a soldier for this weekly composition adjustment.
+        /// Removes only characters that are not valid garrison soldiers.
+        /// Composition ranges are preferences and never dismiss legal troops.
         /// </summary>
         private static int NormalizeGarrison(MobileParty garrison)
         {
@@ -954,70 +935,6 @@ namespace ModifiedArmy.Models
                 dismissed += element.Number;
             }
 
-            ArmyCompositionTemplate template =
-                GetGarrisonTemplate(garrison);
-            int capacity = Math.Max(0, garrison.Party.PartySizeLimit);
-            int remainingSafetyIterations = roster.TotalRegulars;
-
-            while (remainingSafetyIterations-- > 0)
-            {
-                List<TroopRosterElement> troops = roster.GetTroopRoster()
-                    .Where(element =>
-                        element.Character != null &&
-                        !element.Character.IsHero &&
-                        IsRegularGarrisonTroop(element.Character) &&
-                        element.Number > 0)
-                    .ToList();
-
-                if (troops.Count == 0)
-                {
-                    break;
-                }
-
-                TroopRosterElement? removal = troops
-                    .Where(element =>
-                        ExceedsRoleMaximum(
-                            troops,
-                            element.Character,
-                            capacity,
-                            template) ||
-                        ExceedsQualityMaximum(
-                            troops,
-                            element.Character,
-                            capacity,
-                            template))
-                    // Every candidate already violates at least one hard
-                    // maximum. Remove lower-tier troops first; the excess
-                    // score only breaks ties between troops of equal tier.
-                    .OrderBy(element => element.Character.Tier)
-                    .ThenByDescending(element =>
-                        GetExcessScore(
-                            troops,
-                            element.Character,
-                            capacity,
-                            template))
-                    .Cast<TroopRosterElement?>()
-                    .FirstOrDefault();
-
-                if (!removal.HasValue)
-                {
-                    break;
-                }
-
-                TroopRosterElement selected = removal.Value;
-                int healthy = selected.Number - selected.WoundedNumber;
-                int wounded = healthy > 0 ? 0 : 1;
-                roster.AddToCounts(
-                    selected.Character,
-                    -1,
-                    false,
-                    -wounded,
-                    0,
-                    true,
-                    -1);
-                dismissed++;
-            }
-
             return dismissed;
         }
 
@@ -1027,63 +944,6 @@ namespace ModifiedArmy.Models
                 !troop.IsHero &&
                 (troop.Occupation == Occupation.Soldier ||
                     troop.Occupation == Occupation.Mercenary);
-        }
-
-        private static int GetExcessScore(
-            IEnumerable<TroopRosterElement> troops,
-            CharacterObject troop,
-            int capacity,
-            ArmyCompositionTemplate template)
-        {
-            int score = 0;
-
-            if (ExceedsRoleMaximum(troops, troop, capacity, template))
-            {
-                score++;
-            }
-
-            if (ExceedsQualityMaximum(troops, troop, capacity, template))
-            {
-                score++;
-            }
-
-            return score;
-        }
-
-        private static bool ExceedsRoleMaximum(
-            IEnumerable<TroopRosterElement> troops,
-            CharacterObject troop,
-            int capacity,
-            ArmyCompositionTemplate template)
-        {
-            CombatRole role =
-                RecruitmentTroopClassifier.GetCombatRole(troop);
-            int count = troops
-                .Where(element =>
-                    RecruitmentTroopClassifier.GetCombatRole(
-                        element.Character) == role)
-                .Sum(element => element.Number);
-            int maximum = (int)Math.Floor(
-                capacity * template.GetRange(role).MaximumRatio);
-            return count > maximum;
-        }
-
-        private static bool ExceedsQualityMaximum(
-            IEnumerable<TroopRosterElement> troops,
-            CharacterObject troop,
-            int capacity,
-            ArmyCompositionTemplate template)
-        {
-            TroopQuality quality =
-                RecruitmentTroopClassifier.GetQuality(troop);
-            int count = troops
-                .Where(element =>
-                    RecruitmentTroopClassifier.GetQuality(
-                        element.Character) == quality)
-                .Sum(element => element.Number);
-            int maximum = (int)Math.Floor(
-                capacity * template.GetRange(quality).MaximumRatio);
-            return count > maximum;
         }
 
         private static void LogWeeklyAdjustment(
