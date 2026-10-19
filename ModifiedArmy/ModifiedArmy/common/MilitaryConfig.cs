@@ -101,13 +101,11 @@ namespace ModifiedArmy.common
         public float PeaceTargetRatio { get; internal set; } = 0.35f;
         public int PeaceMinimumCount { get; internal set; } = 50;
         public float AggressiveWarDispositionThreshold { get; internal set; } = 20f;
-        public float ArmyGatheringTargetRatio { get; internal set; } = 0.90f;
         public float OwnFiefDefenseTargetRatio { get; internal set; } = 1f;
         public float InteriorGarrisonUpperRatio { get; internal set; } = 0.80f;
         public float BorderGarrisonUpperRatio { get; internal set; } = 0.95f;
         public float InteriorGarrisonLowerRatio { get; internal set; } = 0.50f;
         public float BorderGarrisonLowerRatio { get; internal set; } = 0.75f;
-        public float ExistingTroopTransferRatio { get; internal set; } = 0.90f;
         public int MinimumOwnSurplusDelivery { get; internal set; } = 20;
         public int MinimumFiefRecruitBatch { get; internal set; } = 25;
         public int ReinforcementForecastDays { get; internal set; } = 7;
@@ -245,10 +243,6 @@ namespace ModifiedArmy.common
                 node,
                 "AggressiveWarDispositionThreshold",
                 value.AggressiveWarDispositionThreshold);
-            value.ArmyGatheringTargetRatio = RatioValue(
-                node,
-                "ArmyGatheringTargetRatio",
-                value.ArmyGatheringTargetRatio);
             value.OwnFiefDefenseTargetRatio = RatioValue(
                 node,
                 "OwnFiefDefenseTargetRatio",
@@ -277,10 +271,6 @@ namespace ModifiedArmy.common
                 throw new InvalidOperationException(
                     "Garrison lower ratios cannot exceed upper ratios.");
             }
-            value.ExistingTroopTransferRatio = RatioValue(
-                node,
-                "ExistingTroopTransferRatio",
-                value.ExistingTroopTransferRatio);
             value.MinimumOwnSurplusDelivery = NonNegativeValue(
                 node,
                 "MinimumOwnSurplusDelivery",

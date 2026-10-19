@@ -11,7 +11,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
     {
         Peace,
         WarRoutine,
-        ArmyGathering,
         OwnFiefDefense
     }
 
@@ -52,7 +51,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public sealed class PartyForceContext
     {
         public MobileParty Party { get; set; }
-        public bool IsArmyGathering { get; set; }
         public bool IsOwnFiefDefense { get; set; }
     }
 

@@ -92,13 +92,11 @@
         <PeaceTargetRatio value="0.35"/>
         <PeaceMinimumCount value="50"/>
         <AggressiveWarDispositionThreshold value="20"/>
-        <ArmyGatheringTargetRatio value="0.90"/>
         <OwnFiefDefenseTargetRatio value="1.00"/>
         <InteriorGarrisonUpperRatio value="0.80"/>
         <BorderGarrisonUpperRatio value="0.95"/>
         <InteriorGarrisonLowerRatio value="0.50"/>
         <BorderGarrisonLowerRatio value="0.75"/>
-        <ExistingTroopTransferRatio value="0.90"/>
         <MinimumOwnSurplusDelivery value="20"/>
         <MinimumFiefRecruitBatch value="25"/>
         <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->

@@ -50,7 +50,6 @@ namespace ModifiedArmy.ForceManagement.Services
             return PartyTargets.Evaluate(new PartyForceContext
             {
                 Party = party,
-                IsArmyGathering = party?.Army != null,
                 IsOwnFiefDefense = ownDefense
             });
         }

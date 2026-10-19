@@ -224,13 +224,19 @@ namespace ModifiedArmy.Recruitment.Models
             result.AllowedByWageLimit = GetAllowedByWageLimit(
                 state,
                 unitWage);
-            result.AllowedByRecruitmentCost = GetAllowedByRecruitmentCost(
-                state,
-                result.UnitRecruitmentCost);
-            result.AllowedByMaintenance = GetAllowedByMaintenance(
-                state,
-                unitWage,
-                result.UnitRecruitmentCost);
+            bool isExistingTroopTransfer =
+                source == RecruitmentSource.Transfer;
+            result.AllowedByRecruitmentCost = isExistingTroopTransfer
+                ? int.MaxValue
+                : GetAllowedByRecruitmentCost(
+                    state,
+                    result.UnitRecruitmentCost);
+            result.AllowedByMaintenance = isExistingTroopTransfer
+                ? int.MaxValue
+                : GetAllowedByMaintenance(
+                    state,
+                    unitWage,
+                    result.UnitRecruitmentCost);
 
             result.RecruitableCount = Minimum(
                 result.RequestedCount,
@@ -239,11 +245,13 @@ namespace ModifiedArmy.Recruitment.Models
                 result.AllowedByRecruitmentCost,
                 result.AllowedByMaintenance);
             result.PrimaryLimit = FindPrimaryLimit(result);
-            result.SustainableDays = GetSustainableDays(
-                state,
-                result.RecruitableCount,
-                unitWage,
-                result.UnitRecruitmentCost);
+            result.SustainableDays = isExistingTroopTransfer
+                ? int.MaxValue
+                : GetSustainableDays(
+                    state,
+                    result.RecruitableCount,
+                    unitWage,
+                    result.UnitRecruitmentCost);
             return result;
         }
 
@@ -496,7 +504,11 @@ namespace ModifiedArmy.Recruitment.Models
 
             if (source == RecruitmentSource.Transfer)
             {
-                return state.PartySizeLimit;
+                PartyForceTargetResult transferTarget =
+                    ForceManagementFacade.Current.GetPartyTarget(party);
+                return Math.Min(
+                    state.PartySizeLimit,
+                    transferTarget.TargetCount);
             }
 
             PartyForceTargetResult target = ForceManagementFacade.Current

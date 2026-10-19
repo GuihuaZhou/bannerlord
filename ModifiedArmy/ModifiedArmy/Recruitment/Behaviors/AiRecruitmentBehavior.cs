@@ -9,6 +9,7 @@ using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Garrison.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -586,11 +587,8 @@ namespace ModifiedArmy.Models
                     continue;
                 }
 
-                int minimumGarrison = settlement.IsTown ? 125 : 75;
-                int healthyGarrison = Math.Max(
-                    0,
-                    (settlement.Town.GarrisonParty?.Party
-                        .NumberOfRegularMembers ?? 0) - minimumGarrison);
+                int healthyGarrison = GarrisonTransferPolicyModel
+                    .GetTransferableGarrisonTroopCount(settlement);
                 int prisonSpace = Math.Max(
                     0,
                     settlement.Party.PrisonerSizeLimit -
@@ -624,9 +622,8 @@ namespace ModifiedArmy.Models
 
             if (!settlement.IsFortification) return false;
 
-            int minimumGarrison = settlement.IsTown ? 125 : 75;
-            return (settlement.Town?.GarrisonParty?.Party
-                .NumberOfRegularMembers ?? 0) > minimumGarrison;
+            return GarrisonTransferPolicyModel
+                .GetTransferableGarrisonTroopCount(settlement) > 0;
         }
 
         /// <summary>

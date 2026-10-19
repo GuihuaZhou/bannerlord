@@ -195,10 +195,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     return new TextObject(
                         "{=ModifiedArmy_ForceScenarioWarRoutine}" +
                         "Routine war");
-                case ForceScenario.ArmyGathering:
-                    return new TextObject(
-                        "{=ModifiedArmy_ForceScenarioArmyGathering}" +
-                        "Army gathering");
                 case ForceScenario.OwnFiefDefense:
                     return new TextObject(
                         "{=ModifiedArmy_ForceScenarioOwnFiefDefense}" +

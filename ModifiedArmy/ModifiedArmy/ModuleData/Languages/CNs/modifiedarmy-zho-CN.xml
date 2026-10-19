@@ -139,7 +139,6 @@
     <string id="ModifiedArmy_ReinforcementReasonMet" text="目前已经达到防御要求" />
     <string id="ModifiedArmy_ForceScenarioPeace" text="和平" />
     <string id="ModifiedArmy_ForceScenarioWarRoutine" text="常规战争" />
-    <string id="ModifiedArmy_ForceScenarioArmyGathering" text="军团集结" />
     <string id="ModifiedArmy_ForceScenarioOwnFiefDefense" text="自家封邑防守" />
     <string id="ModifiedArmy_ForceReasonBelowTarget" text="低于目标" />
     <string id="ModifiedArmy_ForceReasonTargetReached" text="已达目标" />

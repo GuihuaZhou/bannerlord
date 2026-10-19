@@ -43,13 +43,6 @@ namespace ModifiedArmy.ForceManagement.Models
                 scenario = ForceScenario.OwnFiefDefense;
                 ratio = config.OwnFiefDefenseTargetRatio;
             }
-            else if (context?.IsArmyGathering == true)
-            {
-                scenario = ForceScenario.ArmyGathering;
-                ratio = Math.Max(
-                    config.ArmyGatheringTargetRatio,
-                    atWar ? GetWarTargetRatio(disposition) : 0f);
-            }
             else if (atWar)
             {
                 scenario = ForceScenario.WarRoutine;
@@ -138,22 +131,12 @@ namespace ModifiedArmy.ForceManagement.Models
                 };
             }
 
-            ForceManagementConfig config = MilitaryConfigManager.Instance
-                .RequireActiveConfig().AiRecruitment.ForceManagement;
             int ceiling;
             if (context.Operation == ForceOperation.NewRecruitment ||
-                context.Operation == ForceOperation.FieldToGarrison)
+                context.Operation == ForceOperation.FieldToGarrison ||
+                context.Operation == ForceOperation.GarrisonToField)
             {
                 ceiling = Math.Min(context.HardLimit, context.TargetCount);
-            }
-            else if (context.Operation == ForceOperation.GarrisonToField ||
-                context.Operation == ForceOperation.Swap)
-            {
-                ceiling = Math.Min(
-                    context.HardLimit,
-                    (int)Math.Floor(
-                        context.HardLimit *
-                            config.ExistingTroopTransferRatio));
             }
             else
             {

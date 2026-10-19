@@ -1,7 +1,6 @@
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
-using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;
@@ -119,11 +118,6 @@ namespace ModifiedArmy.ForceManagement.Services
                     0,
                     true,
                     -1);
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    garrison,
-                    count,
-                    0f,
-                    evaluation.UnitDailyWage);
                 transferred += count;
                 if (transferred >= allowed)
                 {

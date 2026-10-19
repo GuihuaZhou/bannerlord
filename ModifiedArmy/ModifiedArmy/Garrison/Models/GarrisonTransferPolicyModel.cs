@@ -1,8 +1,8 @@
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
-using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -112,11 +112,20 @@ namespace ModifiedArmy.Garrison.Models
         {
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             if (receivingParty == null || garrison == null ||
-                requestedCount <= 0)
+                requestedCount <= 0 || receivingParty.ActualClan == null ||
+                receivingParty.ActualClan != settlement.OwnerClan)
             {
                 return 0;
             }
 
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            // Soldiers serving at their home fief return before ordinary
+            // garrison stock is considered. Other fief-service soldiers stay
+            // protected in the garrison and cannot silently change employer.
+            manager?.ReturnTroopsToSettlementWithResult(
+                settlement,
+                garrison);
             GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
                 .GarrisonDefense.Evaluate(settlement);
             int safeTransferCount = ForceManagementFacade.Current
@@ -129,14 +138,25 @@ namespace ModifiedArmy.Garrison.Models
                 return 0;
             }
 
+            Dictionary<CharacterObject, int> protectedFiefTroops = manager?
+                .GetServingTroopCounts(garrison) ?? new();
             List<RecruitmentCandidate> candidates = garrison.MemberRoster
                 .GetTroopRoster()
                 .Where(element => element.Character != null &&
                     !element.Character.IsHero && element.Number > 0)
-                .Select(element => new RecruitmentCandidate(
-                    element.Character,
-                    element.Number,
-                    RecruitmentSource.Transfer))
+                .Select(element =>
+                {
+                    int protectedCount = protectedFiefTroops.TryGetValue(
+                        element.Character,
+                        out int servingCount)
+                            ? Math.Max(0, servingCount)
+                            : 0;
+                    return new RecruitmentCandidate(
+                        element.Character,
+                        Math.Max(0, element.Number - protectedCount),
+                        RecruitmentSource.Transfer);
+                })
+                .Where(candidate => candidate.AvailableCount > 0)
                 .ToList();
             RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
                 receivingParty,
@@ -149,7 +169,14 @@ namespace ModifiedArmy.Garrison.Models
                 CharacterObject troop = evaluation.Troop;
                 int available = troop == null
                     ? 0
-                    : garrison.MemberRoster.GetTroopCount(troop);
+                    : Math.Max(
+                        0,
+                        garrison.MemberRoster.GetTroopCount(troop) -
+                            (protectedFiefTroops.TryGetValue(
+                                troop,
+                                out int protectedCount)
+                                    ? protectedCount
+                                    : 0));
                 int count = Math.Min(
                     remainingRequest,
                     Math.Min(evaluation.RecruitableCount, available));
@@ -172,11 +199,6 @@ namespace ModifiedArmy.Garrison.Models
                     troop, count, false, wounded, 0, true, -1);
                 garrison.MemberRoster.AddToCounts(
                     troop, -count, false, -wounded, 0, true, -1);
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    receivingParty,
-                    count,
-                    0f,
-                    evaluation.UnitDailyWage);
                 remainingRequest -= count;
                 transferred += count;
                 if (remainingRequest <= 0)
@@ -186,6 +208,39 @@ namespace ModifiedArmy.Garrison.Models
             }
 
             return transferred;
+        }
+
+        public static int GetTransferableGarrisonTroopCount(
+            Settlement settlement)
+        {
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            if (garrison == null)
+            {
+                return 0;
+            }
+
+            GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
+                .GarrisonDefense.Evaluate(settlement);
+            int safeByEstablishment = ForceManagementFacade.Current
+                .GarrisonDefense.GetSafeTransferOutCount(
+                    defense,
+                    garrison.MemberRoster);
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            Dictionary<CharacterObject, int> protectedFiefTroops = manager?
+                .GetServingTroopCounts(garrison) ?? new();
+            int ordinaryTroops = garrison.MemberRoster.GetTroopRoster()
+                .Where(element => element.Character != null &&
+                    !element.Character.IsHero && element.Number > 0)
+                .Sum(element => Math.Max(
+                    0,
+                    element.Number -
+                        (protectedFiefTroops.TryGetValue(
+                            element.Character,
+                            out int protectedCount)
+                                ? protectedCount
+                                : 0)));
+            return Math.Min(safeByEstablishment, ordinaryTroops);
         }
     }
 }
