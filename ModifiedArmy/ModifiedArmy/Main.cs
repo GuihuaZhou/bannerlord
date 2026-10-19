@@ -194,6 +194,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new PartyGarrisonExchangeBehavior());
                 campaignStarter.AddBehavior(
+                    new ReinforcementMissionBehavior());
+                campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
 

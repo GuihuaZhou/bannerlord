@@ -27,6 +27,9 @@ namespace ModifiedArmy.ForceManagement.Services
         public ITroopValueModel TroopValues { get; }
         public IDemobilizationPolicy Demobilization { get; }
         public TroopTransferService TroopTransfers { get; }
+        public ReinforcementCargoService ReinforcementCargo { get; }
+        public FoodTransferService FoodTransfers { get; }
+        public ReinforcementMissionService ReinforcementMissions { get; }
         public IArmyMissionProtectionModel ArmyMissionProtection { get; }
 
         private ForceManagementFacade()
@@ -41,7 +44,10 @@ namespace ModifiedArmy.ForceManagement.Services
             Exchanges = new DisabledPartyGarrisonExchangeModel();
             Demobilization = new DisabledDemobilizationPolicy();
             TroopTransfers = new TroopTransferService();
-            ArmyMissionProtection = new ReinforcementMissionService();
+            ReinforcementCargo = new ReinforcementCargoService();
+            FoodTransfers = new FoodTransferService();
+            ReinforcementMissions = new ReinforcementMissionService();
+            ArmyMissionProtection = ReinforcementMissions;
         }
 
         public PartyForceTargetResult GetPartyTarget(MobileParty party)

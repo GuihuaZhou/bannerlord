@@ -4,6 +4,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.SaveSystem;
 
 namespace ModifiedArmy.ForceManagement.Contracts
 {
@@ -200,33 +201,25 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public string ReasonCode { get; set; }
     }
 
-    public sealed class TroopCargoManifest
-    {
-        public Dictionary<CharacterObject, int> OwnTroops { get; } =
-            new Dictionary<CharacterObject, int>();
-        public Dictionary<CharacterObject, int> GarrisonTroops { get; } =
-            new Dictionary<CharacterObject, int>();
-    }
-
-    public sealed class FoodCargoManifest
-    {
-        public Dictionary<ItemObject, int> PlannedItems { get; } =
-            new Dictionary<ItemObject, int>();
-        public int LoadedFood { get; set; }
-        public int DeliveredFood { get; set; }
-    }
-
+    [SaveableRootClass(8)]
     public sealed class ReinforcementMission
     {
+        [SaveableProperty(1)]
         public MobileParty Carrier { get; set; }
-        public Settlement Source { get; set; }
+        [SaveableProperty(2)]
         public Settlement Destination { get; set; }
+        [SaveableProperty(3)]
+        public int RequestedTroopCount { get; set; }
+        [SaveableProperty(4)]
+        public int RequestedFoodCount { get; set; }
+        [SaveableProperty(5)]
         public ReinforcementMissionState State { get; set; }
-        public ReinforcementCancelReason CancelReason { get; set; }
-        public TroopCargoManifest Troops { get; } =
-            new TroopCargoManifest();
-        public FoodCargoManifest Food { get; } =
-            new FoodCargoManifest();
+        [SaveableProperty(6)]
+        public CampaignTime Deadline { get; set; }
+
+        // Runtime-only routing decisions. They are recalculated after loading.
+        public Settlement TroopSource { get; set; }
+        public Settlement FoodSource { get; set; }
 
         public bool IsActive =>
             State != ReinforcementMissionState.Completed &&
