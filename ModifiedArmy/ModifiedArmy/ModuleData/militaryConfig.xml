@@ -84,7 +84,8 @@
       <!--
         AI兵力管理：
         和平时以35%且至少50人为目标；正式战争中只有战争倾向高于20的Clan
-        才会主动扩军到60%以上。驻军自动生成新兵只补到80%，普通现有士兵转移最多到90%。
+        才会主动扩军到60%以上。边境驻军上限95%/下限75%，内陆驻军上限80%/下限50%；
+        上限约束自动补员和正常接收，下限约束从驻军抽调。
         自动换兵和跨城增援的安全策略尚未完成，因此默认保持关闭。
       -->
       <ForceManagement>
@@ -93,13 +94,13 @@
         <AggressiveWarDispositionThreshold value="20"/>
         <ArmyGatheringTargetRatio value="0.90"/>
         <OwnFiefDefenseTargetRatio value="1.00"/>
-        <GarrisonAutoRecruitmentRatio value="0.80"/>
+        <InteriorGarrisonUpperRatio value="0.80"/>
+        <BorderGarrisonUpperRatio value="0.95"/>
+        <InteriorGarrisonLowerRatio value="0.50"/>
+        <BorderGarrisonLowerRatio value="0.75"/>
         <ExistingTroopTransferRatio value="0.90"/>
         <MinimumOwnSurplusDelivery value="20"/>
         <MinimumFiefRecruitBatch value="25"/>
-        <!-- 非边境至少保留50%正规驻军，边境至少保留90%，不计算民兵。 -->
-        <InteriorDefenseRatio value="0.50"/>
-        <BorderDefenseRatio value="0.90"/>
         <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->
         <ReinforcementForecastDays value="7"/>
         <EnableAutomaticSwap value="false"/>

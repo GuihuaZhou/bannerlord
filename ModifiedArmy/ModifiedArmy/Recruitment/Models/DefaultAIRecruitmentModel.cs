@@ -488,15 +488,15 @@ namespace ModifiedArmy.Recruitment.Models
             RecruitmentSimulationState state,
             RecruitmentSource source)
         {
-            if (source == RecruitmentSource.Transfer)
-            {
-                return state.PartySizeLimit;
-            }
-
             if (party?.IsGarrison == true)
             {
                 return GarrisonRecruitmentCapacity
-                    .GetAutomaticRecruitmentTarget(state.PartySizeLimit);
+                    .GetAutomaticRecruitmentTarget(party);
+            }
+
+            if (source == RecruitmentSource.Transfer)
+            {
+                return state.PartySizeLimit;
             }
 
             PartyForceTargetResult target = ForceManagementFacade.Current

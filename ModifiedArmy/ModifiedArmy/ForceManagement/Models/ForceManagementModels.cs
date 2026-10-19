@@ -141,12 +141,12 @@ namespace ModifiedArmy.ForceManagement.Models
             ForceManagementConfig config = MilitaryConfigManager.Instance
                 .RequireActiveConfig().AiRecruitment.ForceManagement;
             int ceiling;
-            if (context.Operation == ForceOperation.NewRecruitment)
+            if (context.Operation == ForceOperation.NewRecruitment ||
+                context.Operation == ForceOperation.FieldToGarrison)
             {
                 ceiling = Math.Min(context.HardLimit, context.TargetCount);
             }
-            else if (context.Operation == ForceOperation.FieldToGarrison ||
-                context.Operation == ForceOperation.GarrisonToField ||
+            else if (context.Operation == ForceOperation.GarrisonToField ||
                 context.Operation == ForceOperation.Swap)
             {
                 ceiling = Math.Min(
@@ -176,18 +176,20 @@ namespace ModifiedArmy.ForceManagement.Models
         public GarrisonDefenseSnapshot Evaluate(Settlement settlement)
         {
             MobileParty garrison = settlement?.Town?.GarrisonParty;
-            int current = garrison?.Party.NumberOfRegularMembers ?? 0;
             int hardLimit = garrison?.Party.PartySizeLimit ?? 0;
-            ForceManagementConfig config = MilitaryConfigManager.Instance
-                .RequireActiveConfig().AiRecruitment.ForceManagement;
             bool enemyBorder = GarrisonTransferPolicyModel
                 .IsEnemyBorderFortification(settlement);
-            float defenseRatio = enemyBorder
-                ? config.BorderDefenseRatio
-                : config.InteriorDefenseRatio;
             int minimum = Math.Min(
                 hardLimit,
-                (int)Math.Ceiling(hardLimit * defenseRatio));
+                GarrisonRecruitmentCapacity.GetLowerTarget(
+                    settlement,
+                    hardLimit));
+            int escortReserved = GarrisonRecruitmentCapacity
+                .GetActiveSupplyEscortCount(settlement);
+            int effectiveCurrent = GarrisonRecruitmentCapacity
+                .GetEffectiveMemberCount(garrison, escortReserved);
+            ForceManagementConfig config = MilitaryConfigManager.Instance
+                .RequireActiveConfig().AiRecruitment.ForceManagement;
             int forecastDays = config.ReinforcementForecastDays;
             int predictedDaily = settlement?.Town == null
                 ? 0
@@ -198,12 +200,11 @@ namespace ModifiedArmy.ForceManagement.Models
             return new GarrisonDefenseSnapshot
             {
                 Settlement = settlement,
-                CurrentDefenseValue = current,
+                CurrentDefenseValue = effectiveCurrent,
                 RequiredDefenseValue = minimum,
-                CurrentRegularCount = current,
+                CurrentRegularCount = effectiveCurrent,
                 HardLimit = hardLimit,
-                EscortReservedCount = GarrisonRecruitmentCapacity
-                    .GetActiveSupplyEscortCount(settlement),
+                EscortReservedCount = escortReserved,
                 LocalSevenDayRecoveryValue = Math.Max(
                     0,
                     predictedDaily * forecastDays),

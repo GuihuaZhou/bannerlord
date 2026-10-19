@@ -103,12 +103,13 @@ namespace ModifiedArmy.common
         public float AggressiveWarDispositionThreshold { get; internal set; } = 20f;
         public float ArmyGatheringTargetRatio { get; internal set; } = 0.90f;
         public float OwnFiefDefenseTargetRatio { get; internal set; } = 1f;
-        public float GarrisonAutoRecruitmentRatio { get; internal set; } = 0.80f;
+        public float InteriorGarrisonUpperRatio { get; internal set; } = 0.80f;
+        public float BorderGarrisonUpperRatio { get; internal set; } = 0.95f;
+        public float InteriorGarrisonLowerRatio { get; internal set; } = 0.50f;
+        public float BorderGarrisonLowerRatio { get; internal set; } = 0.75f;
         public float ExistingTroopTransferRatio { get; internal set; } = 0.90f;
         public int MinimumOwnSurplusDelivery { get; internal set; } = 20;
         public int MinimumFiefRecruitBatch { get; internal set; } = 25;
-        public float InteriorDefenseRatio { get; internal set; } = 0.50f;
-        public float BorderDefenseRatio { get; internal set; } = 0.90f;
         public int ReinforcementForecastDays { get; internal set; } = 7;
         public bool EnableAutomaticSwap { get; internal set; }
         public bool EnableAutomaticReinforcement { get; internal set; }
@@ -252,10 +253,30 @@ namespace ModifiedArmy.common
                 node,
                 "OwnFiefDefenseTargetRatio",
                 value.OwnFiefDefenseTargetRatio);
-            value.GarrisonAutoRecruitmentRatio = RatioValue(
+            value.InteriorGarrisonUpperRatio = RatioValue(
                 node,
-                "GarrisonAutoRecruitmentRatio",
-                value.GarrisonAutoRecruitmentRatio);
+                "InteriorGarrisonUpperRatio",
+                value.InteriorGarrisonUpperRatio);
+            value.BorderGarrisonUpperRatio = RatioValue(
+                node,
+                "BorderGarrisonUpperRatio",
+                value.BorderGarrisonUpperRatio);
+            value.InteriorGarrisonLowerRatio = RatioValue(
+                node,
+                "InteriorGarrisonLowerRatio",
+                value.InteriorGarrisonLowerRatio);
+            value.BorderGarrisonLowerRatio = RatioValue(
+                node,
+                "BorderGarrisonLowerRatio",
+                value.BorderGarrisonLowerRatio);
+            if (value.InteriorGarrisonLowerRatio >
+                    value.InteriorGarrisonUpperRatio ||
+                value.BorderGarrisonLowerRatio >
+                    value.BorderGarrisonUpperRatio)
+            {
+                throw new InvalidOperationException(
+                    "Garrison lower ratios cannot exceed upper ratios.");
+            }
             value.ExistingTroopTransferRatio = RatioValue(
                 node,
                 "ExistingTroopTransferRatio",
@@ -268,10 +289,6 @@ namespace ModifiedArmy.common
                 node,
                 "MinimumFiefRecruitBatch",
                 value.MinimumFiefRecruitBatch);
-            value.InteriorDefenseRatio = RatioValue(
-                node, "InteriorDefenseRatio", value.InteriorDefenseRatio);
-            value.BorderDefenseRatio = RatioValue(
-                node, "BorderDefenseRatio", value.BorderDefenseRatio);
             value.ReinforcementForecastDays = NonNegativeValue(
                 node,
                 "ReinforcementForecastDays",

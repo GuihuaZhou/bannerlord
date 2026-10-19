@@ -21,7 +21,8 @@ namespace ModifiedArmy.Garrison.Models
         private static readonly HashSet<string> ReportedMultipleParties =
             new HashSet<string>();
 
-        public const int DefaultRecruitmentFillPercentage = 80;
+        public const int DefaultInteriorUpperPercentage = 80;
+        public const int DefaultBorderUpperPercentage = 95;
 
         public static int GetActiveSupplyEscortCount(Settlement home)
         {
@@ -143,7 +144,8 @@ namespace ModifiedArmy.Garrison.Models
                 return 0;
             }
 
-            int safePartySize = GetAutomaticRecruitmentTarget(
+            int safePartySize = GetUpperTarget(
+                garrison.CurrentSettlement,
                 garrison.Party.PartySizeLimit);
             return Math.Max(
                 0,
@@ -169,12 +171,9 @@ namespace ModifiedArmy.Garrison.Models
                 return 0;
             }
 
-            float ratio = MilitaryConfigManager.Instance.GetActiveConfig()?
-                .AiRecruitment.ForceManagement
-                .ExistingTroopTransferRatio ?? 0.90f;
-            int transferLimit = Math.Max(
-                0,
-                (int)Math.Floor(garrison.Party.PartySizeLimit * ratio));
+            int transferLimit = GetUpperTarget(
+                garrison.CurrentSettlement,
+                garrison.Party.PartySizeLimit);
             return Math.Max(
                 0,
                 transferLimit - GetEffectiveMemberCount(
@@ -182,15 +181,45 @@ namespace ModifiedArmy.Garrison.Models
                     reservedReturningMembers));
         }
 
-        public static int GetAutomaticRecruitmentTarget(int hardLimit)
+        public static int GetAutomaticRecruitmentTarget(MobileParty garrison)
         {
-            float ratio = MilitaryConfigManager.Instance.GetActiveConfig()?
-                .AiRecruitment.ForceManagement
-                .GarrisonAutoRecruitmentRatio ??
-                    DefaultRecruitmentFillPercentage / 100f;
+            return GetUpperTarget(
+                garrison?.CurrentSettlement,
+                garrison?.Party.PartySizeLimit ?? 0);
+        }
+
+        public static int GetUpperTarget(
+            Settlement settlement,
+            int hardLimit)
+        {
+            ForceManagementConfig config = MilitaryConfigManager.Instance
+                .GetActiveConfig()?.AiRecruitment.ForceManagement;
+            bool isBorder = GarrisonTransferPolicyModel
+                .IsEnemyBorderFortification(settlement);
+            float ratio = isBorder
+                ? config?.BorderGarrisonUpperRatio ??
+                    DefaultBorderUpperPercentage / 100f
+                : config?.InteriorGarrisonUpperRatio ??
+                    DefaultInteriorUpperPercentage / 100f;
             return Math.Max(
                 0,
                 (int)Math.Floor(Math.Max(0, hardLimit) * ratio));
+        }
+
+        public static int GetLowerTarget(
+            Settlement settlement,
+            int hardLimit)
+        {
+            ForceManagementConfig config = MilitaryConfigManager.Instance
+                .GetActiveConfig()?.AiRecruitment.ForceManagement;
+            bool isBorder = GarrisonTransferPolicyModel
+                .IsEnemyBorderFortification(settlement);
+            float ratio = isBorder
+                ? config?.BorderGarrisonLowerRatio ?? 0.75f
+                : config?.InteriorGarrisonLowerRatio ?? 0.50f;
+            return Math.Max(
+                0,
+                (int)Math.Ceiling(Math.Max(0, hardLimit) * ratio));
         }
     }
 }
