@@ -6,6 +6,7 @@ using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.ForceManagement.Behaviors;
 using System.Collections.Generic;
 using System.Linq;
 using System;
@@ -68,6 +69,15 @@ namespace ModifiedArmy.Garrison.Patches
             }
 
             return true;
+        }
+
+        public static void Postfix(
+            MobileParty mobileParty,
+            Settlement settlement)
+        {
+            Campaign.Current?.GetCampaignBehavior<
+                PartyGarrisonExchangeBehavior>()?
+                .OnNaturalVisit(mobileParty, settlement);
         }
     }
 

@@ -122,9 +122,76 @@ namespace ModifiedArmy.ForceManagement.Contracts
     {
         public bool ShouldExecute { get; set; }
         public string ReasonCode { get; set; }
+        public MobileParty FieldParty { get; set; }
+        public MobileParty GarrisonParty { get; set; }
+        public Settlement Settlement { get; set; }
+        public Clan Clan { get; set; }
+        public string FieldRosterFingerprint { get; set; }
+        public string GarrisonRosterFingerprint { get; set; }
+        public int ExpectedFieldCount { get; set; }
+        public int ExpectedGarrisonCount { get; set; }
+        public int ExpectedFieldTarget { get; set; }
+        public int ExpectedFieldHardLimit { get; set; }
+        public int ExpectedGarrisonMinimum { get; set; }
+        public int ExpectedGarrisonUpperTarget { get; set; }
+        public int ExpectedGarrisonEscortCount { get; set; }
+        public float BenefitScore { get; set; }
+        public TroopExchangeManifest FieldToGarrison { get; } =
+            new TroopExchangeManifest();
+        public TroopExchangeManifest GarrisonToField { get; } =
+            new TroopExchangeManifest();
 
         public static ExchangePlan NoExchange(string reason) =>
             new ExchangePlan { ReasonCode = reason };
+    }
+
+    public sealed class TroopExchangeAmount
+    {
+        public int Count { get; set; }
+        public int WoundedCount { get; set; }
+    }
+
+    public sealed class TroopExchangeManifest
+    {
+        public Dictionary<CharacterObject, TroopExchangeAmount> Troops { get; } =
+            new Dictionary<CharacterObject, TroopExchangeAmount>();
+
+        public int TotalCount
+        {
+            get
+            {
+                int total = 0;
+                foreach (TroopExchangeAmount amount in Troops.Values)
+                {
+                    total += System.Math.Max(0, amount?.Count ?? 0);
+                }
+                return total;
+            }
+        }
+    }
+
+    public sealed class ExchangeValidationResult
+    {
+        public bool IsValid { get; set; }
+        public string ReasonCode { get; set; }
+
+        public static ExchangeValidationResult Valid() =>
+            new ExchangeValidationResult
+            {
+                IsValid = true,
+                ReasonCode = "Valid"
+            };
+
+        public static ExchangeValidationResult Invalid(string reason) =>
+            new ExchangeValidationResult { ReasonCode = reason };
+    }
+
+    public sealed class ExchangeExecutionResult
+    {
+        public bool Executed { get; set; }
+        public string ReasonCode { get; set; }
+        public int FieldToGarrisonCount { get; set; }
+        public int GarrisonToFieldCount { get; set; }
     }
 
     public sealed class RouteEvaluation
