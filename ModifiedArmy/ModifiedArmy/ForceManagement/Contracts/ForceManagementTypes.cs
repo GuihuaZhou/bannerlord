@@ -85,12 +85,12 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public sealed class GarrisonDefenseSnapshot
     {
         public Settlement Settlement { get; set; }
-        public float CurrentDefenseValue { get; set; }
-        public float RequiredDefenseValue { get; set; }
-        public int CurrentRegularCount { get; set; }
+        public int ResidentCount { get; set; }
+        public int EffectiveGarrisonCount { get; set; }
+        public int MinimumCount { get; set; }
         public int HardLimit { get; set; }
-        public int EscortReservedCount { get; set; }
-        public float LocalSevenDayRecoveryValue { get; set; }
+        public int ActiveSupplyEscortCount { get; set; }
+        public int PredictedSevenDayRecruitment { get; set; }
         public float SimulatedFoodDays { get; set; }
         public bool HasVerifiedActualFoodConsumption { get; set; }
         public bool IsEnemyBorder { get; set; }

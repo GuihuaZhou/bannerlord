@@ -112,7 +112,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     "|",
                     need.IsRequested,
                     need.ReasonCode,
-                    (int)System.Math.Ceiling(snapshot.RequiredDefenseValue),
+                    snapshot.EffectiveGarrisonCount,
+                    snapshot.MinimumCount,
+                    snapshot.PredictedSevenDayRecruitment,
+                    need.RequestedTroops,
                     snapshot.IsEnemyBorder);
                 string id = settlement.StringId ?? settlement.Name.ToString();
                 if (_garrisonStates.TryGetValue(id, out string previous) &&
@@ -127,11 +130,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
                 message.SetTextVariable(
                     "CURRENT",
-                    snapshot.CurrentRegularCount);
+                    snapshot.EffectiveGarrisonCount);
                 message.SetTextVariable(
                     "REQUIRED",
-                    (int)System.Math.Ceiling(
-                        snapshot.RequiredDefenseValue));
+                    snapshot.MinimumCount);
                 message.SetTextVariable(
                     "LOCATION",
                     snapshot.IsEnemyBorder
@@ -143,8 +145,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                             "interior settlement"));
                 message.SetTextVariable(
                     "RECOVERY",
-                    (int)System.Math.Floor(
-                        snapshot.LocalSevenDayRecoveryValue));
+                    snapshot.PredictedSevenDayRecruitment);
                 message.SetTextVariable(
                     "REQUESTED",
                     need.RequestedTroops);
@@ -168,15 +169,15 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             switch (reason)
             {
-                case "BorderGarrisonBelowMinimum":
+                case "BorderBelowMinimum":
                     return new TextObject(
                         "{=ModifiedArmy_ReinforcementReasonBorder}" +
-                        "the border garrison remains below its minimum");
-                case "InteriorGarrisonBelowMinimum":
+                        "the current border garrison is below its minimum");
+                case "InteriorBelowMinimumAfterForecast":
                     return new TextObject(
                         "{=ModifiedArmy_ReinforcementReasonInterior}" +
-                        "the interior garrison remains below its minimum");
-                case "LocalRecoveryExpected":
+                        "the interior garrison remains below its minimum after forecast recruitment");
+                case "InteriorForecastCoversMinimum":
                     return new TextObject(
                         "{=ModifiedArmy_ReinforcementReasonRecovery}" +
                         "local recruitment should cover the shortage");

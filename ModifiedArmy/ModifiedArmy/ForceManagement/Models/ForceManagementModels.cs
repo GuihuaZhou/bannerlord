@@ -174,7 +174,7 @@ namespace ModifiedArmy.ForceManagement.Models
             ForceManagementConfig config = MilitaryConfigManager.Instance
                 .RequireActiveConfig().AiRecruitment.ForceManagement;
             int forecastDays = config.ReinforcementForecastDays;
-            int predictedDaily = settlement?.Town == null
+            int predictedDaily = enemyBorder || settlement?.Town == null
                 ? 0
                 : GarrisonRecruitFromPrisonersBehavior
                     .GetPredictedDailyRecruitmentCount(settlement.Town);
@@ -183,12 +183,14 @@ namespace ModifiedArmy.ForceManagement.Models
             return new GarrisonDefenseSnapshot
             {
                 Settlement = settlement,
-                CurrentDefenseValue = effectiveCurrent,
-                RequiredDefenseValue = minimum,
-                CurrentRegularCount = effectiveCurrent,
+                ResidentCount = Math.Max(
+                    0,
+                    garrison?.Party.NumberOfAllMembers ?? 0),
+                EffectiveGarrisonCount = effectiveCurrent,
+                MinimumCount = minimum,
                 HardLimit = hardLimit,
-                EscortReservedCount = escortReserved,
-                LocalSevenDayRecoveryValue = Math.Max(
+                ActiveSupplyEscortCount = escortReserved,
+                PredictedSevenDayRecruitment = Math.Max(
                     0,
                     predictedDaily * forecastDays),
                 SimulatedFoodDays = logistics.FoodSupplyDays,
@@ -206,10 +208,12 @@ namespace ModifiedArmy.ForceManagement.Models
                 return 0;
             }
 
-            return Math.Max(
+            int establishmentSurplus = Math.Max(
                 0,
-                snapshot.CurrentRegularCount -
-                    (int)Math.Ceiling(snapshot.RequiredDefenseValue));
+                snapshot.EffectiveGarrisonCount - snapshot.MinimumCount);
+            return Math.Min(
+                establishmentSurplus,
+                Math.Max(0, roster.TotalRegulars));
         }
 
     }
@@ -224,29 +228,30 @@ namespace ModifiedArmy.ForceManagement.Models
                 return ReinforcementNeedResult.NoRequest("InvalidSettlement");
             }
 
-            int required = Math.Max(
+            int shortage = Math.Max(
                 0,
-                (int)Math.Ceiling(snapshot.RequiredDefenseValue));
-            int current = Math.Max(0, snapshot.CurrentRegularCount);
-            int projected = current + Math.Max(
-                0,
-                (int)Math.Floor(snapshot.LocalSevenDayRecoveryValue));
-            int currentDeficit = Math.Max(0, required - current);
-            int projectedDeficit = Math.Max(0, required - projected);
-
-            if (projectedDeficit > 0)
+                snapshot.MinimumCount - snapshot.EffectiveGarrisonCount);
+            if (shortage <= 0)
             {
-                return Request(
-                    projectedDeficit,
-                    snapshot.IsEnemyBorder
-                        ? "BorderGarrisonBelowMinimum"
-                        : "InteriorGarrisonBelowMinimum");
+                return ReinforcementNeedResult.NoRequest("MinimumCovered");
             }
 
-            return ReinforcementNeedResult.NoRequest(
-                currentDeficit > 0
-                    ? "LocalRecoveryExpected"
-                    : "DefenseRequirementMet");
+            if (snapshot.IsEnemyBorder)
+            {
+                return Request(
+                    shortage,
+                    "BorderBelowMinimum");
+            }
+
+            int forecastShortage = Math.Max(
+                0,
+                shortage - snapshot.PredictedSevenDayRecruitment);
+            return forecastShortage > 0
+                ? Request(
+                    forecastShortage,
+                    "InteriorBelowMinimumAfterForecast")
+                : ReinforcementNeedResult.NoRequest(
+                    "InteriorForecastCoversMinimum");
         }
 
         private static ReinforcementNeedResult Request(

@@ -206,7 +206,7 @@
     <string id="str_modifiedarmy_force_target"
         text="{=ModifiedArmy_ForceTarget}[Force Management] {PARTY_NAME} is in the {SCENARIO} situation. Its war disposition is {DISPOSITION}. It currently has {CURRENT} troops, aims for {TARGET}, and may hold up to {LIMIT}. It still needs {GAP} troops because it is {REASON}." />
     <string id="str_modifiedarmy_garrison_defense_evaluation"
-        text="{=ModifiedArmy_GarrisonDefenseEvaluation}[Force Management] {SETTLEMENT_NAME} is a {LOCATION}. It has {CURRENT} regular defenders and should retain at least {REQUIRED}. Local recruitment may add {RECOVERY} troops during the forecast period. The current decision is to {DECISION}; the requested amount is {REQUESTED}, because {REASON}." />
+        text="{=ModifiedArmy_GarrisonDefenseEvaluation}[Force Management] {SETTLEMENT_NAME} is a {LOCATION}. It has {CURRENT} effective defenders and should retain at least {REQUIRED}. The seven-day recruitment forecast used by this decision is {RECOVERY}. The current decision is to {DECISION}; the requested amount is {REQUESTED}, because {REASON}." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
         text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"
