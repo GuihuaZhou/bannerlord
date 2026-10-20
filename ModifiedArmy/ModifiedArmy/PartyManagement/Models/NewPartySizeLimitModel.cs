@@ -1,6 +1,7 @@
 ﻿using Helpers;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Supply;
+using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
@@ -38,6 +39,17 @@ namespace ModifiedArmy.Models
                     new TextObject(
                         "{=ModifiedArmy_SupplyPartyEscortLimit}" +
                         "Supply escort"));
+            }
+
+            if (party?.MobileParty?.PartyComponent
+                is ReinforcementPartyComponent)
+            {
+                return new ExplainedNumber(
+                    ReinforcementDispatchModel.MaximumPartySize,
+                    includeDescriptions,
+                    new TextObject(
+                        "{=ModifiedArmy_ReinforcementPartyLimit}" +
+                        "Reinforcement party"));
             }
 
             return base.GetPartyMemberSizeLimit(

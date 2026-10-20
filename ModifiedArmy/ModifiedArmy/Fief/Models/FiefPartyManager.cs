@@ -3,6 +3,7 @@ using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Transport;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -45,6 +46,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(FiefServiceBatch), 6);
             base.AddClassDefinition(typeof(FiefReturnBatch), 7);
             base.AddClassDefinition(typeof(ReinforcementMission), 8);
+            base.AddClassDefinition(typeof(ReinforcementPartyComponent), 9);
         }
 
         protected override void DefineContainerDefinitions()

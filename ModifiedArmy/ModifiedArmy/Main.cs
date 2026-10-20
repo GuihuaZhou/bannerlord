@@ -13,6 +13,7 @@ using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.ForceManagement.Behaviors;
+using ModifiedArmy.ForceManagement.Transport;
 using System.Collections.Generic;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -195,6 +196,8 @@ namespace ModifiedArmy
                     new PartyGarrisonExchangeBehavior());
                 campaignStarter.AddBehavior(
                     new ReinforcementMissionBehavior());
+                campaignStarter.AddBehavior(
+                    new ReinforcementTransportBehavior());
                 campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
