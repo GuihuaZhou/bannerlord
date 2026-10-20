@@ -1,3 +1,4 @@
+using ModifiedArmy.common;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -47,6 +48,9 @@ namespace ModifiedArmy.Garrison.Supply
         [SaveableProperty(9)]
         public Settlement RecoverySettlement { get; private set; }
 
+        [SaveableProperty(10)]
+        public CampaignTime Deadline { get; private set; }
+
         [CachedData]
         private TextObject _cachedName;
 
@@ -67,6 +71,8 @@ namespace ModifiedArmy.Garrison.Supply
 
         public override Settlement HomeSettlement =>
             SupplyHomeSettlement;
+
+        public override bool AvoidHostileActions => false;
 
         public override TextObject Name
         {
@@ -117,6 +123,10 @@ namespace ModifiedArmy.Garrison.Supply
             DispatchClan = dispatchClan;
             MissionStateValue =
                 (int)SupplyPartyMissionState.DeliveringAid;
+            Deadline = CampaignTime.Now + CampaignTime.Days(Math.Max(1,
+                MilitaryConfigManager.Instance.GetActiveConfig()?
+                    .AiRecruitment.ForceManagement
+                    .TransportMissionDeadlineDays ?? 20));
         }
 
         /// <summary>
@@ -281,9 +291,7 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty.ActualClan = IsAidMission
                 ? DispatchClan
                 : SupplyHomeSettlement.OwnerClan;
-            // Supply parties follow a fixed logistics mission. Native party
-            // AI must not replace their destination between hourly checks.
-            MobileParty.Ai.SetDoNotMakeNewDecisions(true);
+            MobileParty.Ai.SetDoNotMakeNewDecisions(false);
 
             if (_initializationArgs != null)
             {

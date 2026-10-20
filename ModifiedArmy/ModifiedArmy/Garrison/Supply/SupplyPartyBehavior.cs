@@ -49,6 +49,8 @@ namespace ModifiedArmy.Garrison.Supply
         private Dictionary<Settlement, CampaignTime>
             _nextDispatchTimes =
                 new Dictionary<Settlement, CampaignTime>();
+        private readonly HashSet<string> _avoidingThreat =
+            new HashSet<string>();
 
         public override void RegisterEvents()
         {
@@ -86,6 +88,9 @@ namespace ModifiedArmy.Garrison.Supply
             if (!IsValidAidRoute(source, destination) ||
                 requestedFood <= 0 || CanOrganizeLocalForaging(destination))
                 return null;
+            RouteEvaluation route = ForceManagementFacade.Current
+                .ReinforcementRoutes.Evaluate(null, source, destination);
+            if (!route.IsSafe) return null;
 
             int deficit = GetRemainingAidNeed(destination,
                 destination.OwnerClan);
@@ -152,6 +157,25 @@ namespace ModifiedArmy.Garrison.Supply
             }
         }
 
+        public MobileParty TryDispatchBestAid(
+            Settlement destination,
+            int requestedFood)
+        {
+            if (destination?.OwnerClan == null || requestedFood <= 0)
+                return null;
+            foreach (Settlement source in Settlement.All
+                .Where(candidate => IsValidAidRoute(candidate, destination))
+                .OrderByDescending(GetAidFoodAvailable)
+                .ThenBy(candidate => candidate.GetPosition2D.DistanceSquared(
+                    destination.GetPosition2D)))
+            {
+                MobileParty party = TryDispatchControlledAid(source,
+                    destination, requestedFood);
+                if (party != null) return party;
+            }
+            return null;
+        }
+
         private void OnDailySettlementTick(Settlement settlement)
         {
             if (!CanDispatchFrom(settlement)
@@ -197,6 +221,8 @@ namespace ModifiedArmy.Garrison.Supply
             {
                 return;
             }
+
+            if (ShouldPauseForThreat(party, component)) return;
 
             if (component.IsAidMission)
             {
@@ -436,7 +462,7 @@ namespace ModifiedArmy.Garrison.Supply
                 // This flag is not saveable in every game version. Restore
                 // it after loading so native AI cannot compete with the
                 // supply mission route controller.
-                party.Ai.SetDoNotMakeNewDecisions(true);
+                party.Ai.SetDoNotMakeNewDecisions(false);
 
                 if (component.IsAidMission)
                 {
@@ -462,9 +488,28 @@ namespace ModifiedArmy.Garrison.Supply
         {
             if (party?.IsActive != true || party.MapEvent != null) return;
             component.SynchronizeOwnership();
+            if (component.Deadline != CampaignTime.Zero &&
+                component.Deadline.IsPast &&
+                component.MissionState ==
+                    SupplyPartyMissionState.DeliveringAid)
+            {
+                component.BeginAidReturn();
+                LogAid("DeadlineExpired", party, 0);
+            }
             if (component.MissionState ==
                 SupplyPartyMissionState.DeliveringAid)
             {
+                RouteEvaluation route = ForceManagementFacade.Current
+                    .ReinforcementRoutes.Evaluate(party,
+                        component.SupplyHomeSettlement,
+                        component.AidDestination);
+                if (!route.IsSafe && route.ReasonCode == "RouteBlocked")
+                {
+                    component.BeginAidReturn();
+                    LogAid("RouteBlocked", party, 0);
+                    AdvanceAidMission(party, component);
+                    return;
+                }
                 if (!IsValidAidHome(component))
                 {
                     BeginOrContinueAidRecovery(party, component);
@@ -498,6 +543,40 @@ namespace ModifiedArmy.Garrison.Supply
             if (component.MissionState ==
                 SupplyPartyMissionState.Recovering)
                 BeginOrContinueAidRecovery(party, component);
+        }
+
+        private bool ShouldPauseForThreat(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            bool threatened =
+                TransportThreatModel.IsNativeAvoidanceActive(party) ||
+                TransportThreatModel.HasSuperiorEnemy(party,
+                    party.Position, party.MapFaction);
+            if (threatened)
+            {
+                if (_avoidingThreat.Add(party.StringId))
+                    LogSupplyRoute("AvoidingThreat", party, component);
+                return true;
+            }
+            if (_avoidingThreat.Remove(party.StringId))
+                LogSupplyRoute("RouteResumed", party, component);
+            return false;
+        }
+
+        private static void LogSupplyRoute(
+            string state,
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            ModLogger.FileNotice(string.Format(
+                "Supply route {0}: Party={1}, Mode={2}, State={3}, " +
+                "Source={4}, Destination={5}", state,
+                party?.StringId ?? "-", component?.MissionModeValue ?? -1,
+                component?.MissionStateValue ?? -1,
+                component?.SupplyHomeSettlement?.StringId ?? "-",
+                component?.AidDestination?.StringId ??
+                    component?.SourceSettlement?.StringId ?? "-"));
         }
 
         private void OnAidSettlementEntered(
@@ -585,9 +664,12 @@ namespace ModifiedArmy.Garrison.Supply
 
         private bool CanOrganizeLocalForaging(Settlement destination)
         {
-            if (!CanDispatchFrom(destination) ||
-                FindSupplyPartyForHome(destination) != null ||
-                IsDispatchCoolingDown(destination)) return false;
+            if (!CanDispatchFrom(destination)) return false;
+            MobileParty active = FindSupplyPartyForHome(destination);
+            if (active?.PartyComponent is SupplyPartyComponent component &&
+                !component.IsAidMission)
+                return true;
+            if (IsDispatchCoolingDown(destination)) return true;
             GarrisonLogisticsStatus status =
                 GarrisonLogisticsModel.Calculate(destination.Town);
             return GarrisonLogisticsModel.NeedsReplenishment(status) &&
@@ -773,12 +855,18 @@ namespace ModifiedArmy.Garrison.Supply
         {
             SupplyPartyComponent component = GetComponent(party);
             ModLogger.FileNotice(string.Format(
-                "Supply aid {0}: Party={1}, Clan={2}, Source={3}, " +
-                "Destination={4}, Food={5}", state,
+                "Transport: Mission={1}, Mode=FoodAid, Event={0}, " +
+                "State={5}, Clan={2}, Source={3}, Destination={4}, " +
+                "RequestedFood={6}, ActualTroops={7}, ActualFood={8}, " +
+                "EventAmount={9}", state,
                 party?.StringId ?? "-",
                 component?.DispatchClan?.StringId ?? "-",
                 component?.SupplyHomeSettlement?.StringId ?? "-",
-                component?.AidDestination?.StringId ?? "-", food));
+                component?.AidDestination?.StringId ?? "-",
+                component?.MissionStateValue ?? -1,
+                component?.RequestedFood ?? 0,
+                party?.MemberRoster?.TotalManCount ?? 0,
+                party?.ItemRoster?.TotalFood ?? 0, food));
         }
 
         private bool TryCreateSupplyParty(

@@ -86,7 +86,8 @@
         和平时以35%且至少50人为目标；正式战争中只有战争倾向高于20的Clan
         才会主动扩军到60%以上。边境驻军上限95%/下限75%，内陆驻军上限80%/下限50%；
         上限约束自动补员和正常接收，下限约束从驻军抽调。
-        自动换兵和跨城增援的安全策略尚未完成，因此默认保持关闭。
+        跨城运输具备路线与遇敌安全控制；自动派遣仍默认关闭，
+        待实机遇敌、读档与长期运行验收后再显式启用。
       -->
       <ForceManagement>
         <PeaceTargetRatio value="0.35"/>
@@ -101,6 +102,7 @@
         <MinimumFiefRecruitBatch value="25"/>
         <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->
         <ReinforcementForecastDays value="7"/>
+        <TransportMissionDeadlineDays value="20"/>
         <EnableAutomaticSwap value="false"/>
         <EnableAutomaticReinforcement value="false"/>
       </ForceManagement>

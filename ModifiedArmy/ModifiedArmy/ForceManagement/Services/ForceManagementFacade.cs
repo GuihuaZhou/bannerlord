@@ -39,7 +39,7 @@ namespace ModifiedArmy.ForceManagement.Services
             RecruitmentAdmission = new RecruitmentAdmissionModel();
             GarrisonDefense = new GarrisonDefenseRequirementModel();
             ReinforcementNeed = new ExternalReinforcementNeedModel();
-            ReinforcementRoutes = new ReinforcementRouteStubModel();
+            ReinforcementRoutes = new ReinforcementRouteModel();
             TroopValues = new BasicTroopValueModel();
             Exchanges = new DisabledPartyGarrisonExchangeModel();
             Demobilization = new DisabledDemobilizationPolicy();

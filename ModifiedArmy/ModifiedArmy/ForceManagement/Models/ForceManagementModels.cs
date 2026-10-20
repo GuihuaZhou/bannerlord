@@ -1,5 +1,6 @@
 using ModifiedArmy.common;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models;
 using System;
@@ -267,17 +268,46 @@ namespace ModifiedArmy.ForceManagement.Models
         }
     }
 
-    public sealed class ReinforcementRouteStubModel
+    public sealed class ReinforcementRouteModel
         : IReinforcementRouteModel
     {
         public RouteEvaluation Evaluate(
             MobileParty carrier,
             Settlement source,
-            Settlement destination) => new RouteEvaluation
+            Settlement destination)
+        {
+            if (source == null || destination == null ||
+                source == destination || source.MapFaction == null ||
+                destination.MapFaction == null ||
+                source.MapFaction != destination.MapFaction)
+                return Unsafe("InvalidRoute");
+            float distance = Campaign.Current.Models.MapDistanceModel
+                .GetDistance(source, destination, false, false,
+                    carrier?.NavigationCapability ??
+                        MobileParty.NavigationType.Default);
+            if (distance <= 0f || float.IsNaN(distance) ||
+                float.IsInfinity(distance) || distance >= Campaign.MapDiagonal)
+                return Unsafe("RouteBlocked");
+            if (TransportThreatModel.HasSuperiorEnemy(carrier,
+                    carrier?.Position ?? source.GatePosition,
+                    source.MapFaction))
+                return Unsafe("EnemyThreat");
+            if (carrier == null &&
+                TransportThreatModel.HasSuperiorEnemy(null,
+                    destination.GatePosition, destination.MapFaction))
+                return Unsafe("EnemyThreat");
+            return new RouteEvaluation
+            {
+                IsSafe = true,
+                ReasonCode = "Safe"
+            };
+
+            RouteEvaluation Unsafe(string reason) => new RouteEvaluation
             {
                 IsSafe = false,
-                ReasonCode = "RouteUnsafeOrUnknown"
+                ReasonCode = reason
             };
+        }
     }
 
     public sealed class BasicTroopValueModel : ITroopValueModel

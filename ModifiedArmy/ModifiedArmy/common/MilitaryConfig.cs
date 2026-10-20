@@ -109,6 +109,7 @@ namespace ModifiedArmy.common
         public int MinimumOwnSurplusDelivery { get; internal set; } = 20;
         public int MinimumFiefRecruitBatch { get; internal set; } = 25;
         public int ReinforcementForecastDays { get; internal set; } = 7;
+        public int TransportMissionDeadlineDays { get; internal set; } = 20;
         public bool EnableAutomaticSwap { get; internal set; }
         public bool EnableAutomaticReinforcement { get; internal set; }
     }
@@ -283,6 +284,10 @@ namespace ModifiedArmy.common
                 node,
                 "ReinforcementForecastDays",
                 value.ReinforcementForecastDays);
+            value.TransportMissionDeadlineDays = NonNegativeValue(
+                node,
+                "TransportMissionDeadlineDays",
+                value.TransportMissionDeadlineDays);
             value.EnableAutomaticSwap = BooleanValue(
                 node, "EnableAutomaticSwap", false);
             value.EnableAutomaticReinforcement = BooleanValue(

@@ -1,3 +1,4 @@
+using ModifiedArmy.common;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -47,6 +48,8 @@ namespace ModifiedArmy.ForceManagement.Transport
             (ReinforcementTransportState)StateValue;
         public override Hero PartyOwner => DispatchClan?.Leader;
         public override Settlement HomeSettlement => SourceSettlement;
+
+        public override bool AvoidHostileActions => false;
         public override TextObject Name
         {
             get
@@ -97,7 +100,10 @@ namespace ModifiedArmy.ForceManagement.Transport
                 new ReinforcementPartyComponent(
                     source, destination, dispatchClan,
                     requestedTroops, requestedFood,
-                    CampaignTime.Now + CampaignTime.Days(20f), roster));
+                    CampaignTime.Now + CampaignTime.Days(Math.Max(1,
+                        MilitaryConfigManager.Instance.GetActiveConfig()?
+                            .AiRecruitment.ForceManagement
+                            .TransportMissionDeadlineDays ?? 20)), roster));
         }
 
         public void BeginUnloading() => StateValue =
@@ -121,7 +127,7 @@ namespace ModifiedArmy.ForceManagement.Transport
         {
             MobileParty.ActualClan = DispatchClan;
             MobileParty.Aggressiveness = 0f;
-            MobileParty.Ai.SetDoNotMakeNewDecisions(true);
+            MobileParty.Ai.SetDoNotMakeNewDecisions(false);
             if (_initializationArgs != null)
             {
                 MobileParty.InitializeMobilePartyAroundPosition(

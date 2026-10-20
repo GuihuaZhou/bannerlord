@@ -1,6 +1,13 @@
 using Helpers;
+using ModifiedArmy.common;
+using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Tool;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -14,11 +21,15 @@ namespace ModifiedArmy.ForceManagement.Transport
             new ReinforcementDispatchModel();
         private readonly ReinforcementTransferService _transfer =
             new ReinforcementTransferService();
+        private readonly HashSet<string> _avoidingThreat =
+            new HashSet<string>();
 
         public override void RegisterEvents()
         {
             CampaignEvents.HourlyTickPartyEvent.AddNonSerializedListener(
                 this, OnHourlyPartyTick);
+            CampaignEvents.DailyTickClanEvent.AddNonSerializedListener(
+                this, OnDailyClanTick);
             CampaignEvents.SettlementEntered.AddNonSerializedListener(
                 this, OnSettlementEntered);
             CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(
@@ -26,6 +37,50 @@ namespace ModifiedArmy.ForceManagement.Transport
         }
 
         public override void SyncData(IDataStore dataStore) { }
+
+        private void OnDailyClanTick(Clan clan)
+        {
+            if (clan == null || clan.IsEliminated ||
+                MilitaryConfigManager.Instance.GetActiveConfig()?
+                    .AiRecruitment.ForceManagement
+                    .EnableAutomaticReinforcement != true)
+                return;
+            SupplyPartyBehavior supply = Campaign.Current
+                ?.GetCampaignBehavior<SupplyPartyBehavior>();
+            int dispatchedTroops = 0;
+            int dispatchedAid = 0;
+            foreach (Settlement destination in clan.Settlements
+                .Where(settlement => settlement?.IsFortification == true &&
+                    settlement.Town?.GarrisonParty != null &&
+                    !settlement.IsUnderSiege).ToList())
+            {
+                ReinforcementNeedResult need = _dispatch.GetNeed(destination);
+                int foodDeficit = Math.Max(0, GarrisonLogisticsModel
+                    .Calculate(destination.Town).FoodDeficit);
+                if (need.IsRequested)
+                {
+                    ReinforcementDispatchPlan plan = _dispatch.FindBestSource(
+                        destination, need.RequestedTroops,
+                        Math.Min(SupplyPartyBehavior.MaximumRequestedFood,
+                            foodDeficit));
+                    if (plan.IsApproved && TryDispatchControlled(plan.Source,
+                            destination, plan.TroopCount,
+                            plan.FoodCount) != null)
+                        dispatchedTroops++;
+                }
+
+                int remainingFood = Math.Max(0, GarrisonLogisticsModel
+                    .Calculate(destination.Town).FoodDeficit);
+                if (remainingFood > 0 && supply?.TryDispatchBestAid(
+                        destination, Math.Min(
+                            SupplyPartyBehavior.MaximumRequestedFood,
+                            remainingFood)) != null)
+                    dispatchedAid++;
+            }
+            ModLogger.FileNotice(string.Format(
+                "Automatic transport scan: Clan={0}, Military={1}, Aid={2}",
+                clan.StringId ?? "-", dispatchedTroops, dispatchedAid));
+        }
 
         public MobileParty TryDispatchControlled(
             Settlement source,
@@ -63,6 +118,27 @@ namespace ModifiedArmy.ForceManagement.Transport
             ReinforcementPartyComponent component = GetComponent(party);
             if (component == null || !party.IsActive ||
                 party.MapEvent != null) return;
+            RouteEvaluation route = ForceManagementFacade.Current
+                .ReinforcementRoutes.Evaluate(party,
+                    component.SourceSettlement,
+                    component.State == ReinforcementTransportState.Recovering
+                        ? component.RecoverySettlement
+                        : component.Destination);
+            if (TransportThreatModel.IsNativeAvoidanceActive(party) ||
+                route.ReasonCode == "EnemyThreat")
+            {
+                if (_avoidingThreat.Add(party.StringId))
+                    Log("AvoidingThreat", party, 0);
+                return;
+            }
+            if (_avoidingThreat.Remove(party.StringId))
+                Log("RouteResumed", party, 0);
+            if (!route.IsSafe && route.ReasonCode == "RouteBlocked")
+            {
+                BeginOrContinueRecovery(party, component,
+                    "RouteBlocked");
+                return;
+            }
             if (component.State ==
                 ReinforcementTransportState.TravelingToDestination)
             {
@@ -188,7 +264,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                 ReinforcementPartyComponent component = GetComponent(party);
                 if (component == null || !party.IsActive) continue;
                 party.ActualClan = component.DispatchClan;
-                party.Ai.SetDoNotMakeNewDecisions(true);
+                party.Ai.SetDoNotMakeNewDecisions(false);
                 if (component.State ==
                     ReinforcementTransportState.TravelingToDestination)
                     EnsureMovingTo(party, component.Destination);
@@ -249,12 +325,19 @@ namespace ModifiedArmy.ForceManagement.Transport
         {
             ReinforcementPartyComponent component = GetComponent(party);
             ModLogger.FileNotice(string.Format(
-                "Reinforcement party {0}: Party={1}, Clan={2}, " +
-                "Source={3}, Destination={4}, Troops={5}",
+                "Transport: Mission={1}, Mode=Military, Event={0}, " +
+                "State={5}, Clan={2}, Source={3}, Destination={4}, " +
+                "RequestedTroops={6}, RequestedFood={7}, " +
+                "ActualTroops={8}, ActualFood={9}, EventAmount={10}",
                 state, party?.StringId ?? "-",
                 component?.DispatchClan?.StringId ?? "-",
                 component?.SourceSettlement?.StringId ?? "-",
-                component?.Destination?.StringId ?? "-", troops));
+                component?.Destination?.StringId ?? "-",
+                component?.StateValue ?? -1,
+                component?.RequestedTroopCount ?? 0,
+                component?.RequestedFoodCount ?? 0,
+                party?.MemberRoster?.TotalManCount ?? 0,
+                party?.ItemRoster?.TotalFood ?? 0, troops));
         }
     }
 }

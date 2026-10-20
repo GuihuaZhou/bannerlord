@@ -47,6 +47,13 @@ namespace ModifiedArmy.ForceManagement.Transport
                 plan.ReasonCode = "InvalidSameClanRoute";
                 return plan;
             }
+            RouteEvaluation route = ForceManagementFacade.Current
+                .ReinforcementRoutes.Evaluate(null, source, destination);
+            if (!route.IsSafe)
+            {
+                plan.ReasonCode = route.ReasonCode;
+                return plan;
+            }
             ReinforcementNeedResult need = GetNeed(destination);
             if (!need.IsRequested)
             {
