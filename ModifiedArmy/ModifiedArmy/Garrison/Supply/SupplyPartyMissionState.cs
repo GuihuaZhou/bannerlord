@@ -7,6 +7,15 @@ namespace ModifiedArmy.Garrison.Supply
     {
         TravelingToSource = 0,
         ReturningHome = 1,
-        Completed = 2
+        Completed = 2,
+        DeliveringAid = 3,
+        ReturningFromAid = 4,
+        Recovering = 5
+    }
+
+    public enum SupplyPartyMissionMode
+    {
+        LocalForaging = 0,
+        CrossSettlementAid = 1
     }
 }

@@ -37,8 +37,19 @@ namespace ModifiedArmy.Garrison.Models
             {
                 if (party == null || !party.IsActive ||
                     !(party.PartyComponent is SupplyPartyComponent component) ||
-                    component.SupplyHomeSettlement != home ||
                     component.MissionState == SupplyPartyMissionState.Completed)
+                {
+                    continue;
+                }
+
+                Settlement reservedHome = component.IsAidMission &&
+                    component.MissionState ==
+                        SupplyPartyMissionState.Recovering
+                    ? component.RecoverySettlement
+                    : component.SupplyHomeSettlement;
+                if (reservedHome != home ||
+                    (component.IsAidMission &&
+                     home.OwnerClan != component.DispatchClan))
                 {
                     continue;
                 }

@@ -1,5 +1,9 @@
 using Helpers;
+using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -38,6 +42,10 @@ namespace ModifiedArmy.Garrison.Supply
 
         private const int DestroyedPartyCooldownDays = 10;
 
+        private const int MinimumAidReturnFood = 10;
+
+        private const int SourceGranaryFoodReserve = 100;
+
         private Dictionary<Settlement, CampaignTime>
             _nextDispatchTimes =
                 new Dictionary<Settlement, CampaignTime>();
@@ -68,6 +76,80 @@ namespace ModifiedArmy.Garrison.Supply
 
             _nextDispatchTimes ??=
                 new Dictionary<Settlement, CampaignTime>();
+        }
+
+        public MobileParty TryDispatchControlledAid(
+            Settlement source,
+            Settlement destination,
+            int requestedFood)
+        {
+            if (!IsValidAidRoute(source, destination) ||
+                requestedFood <= 0 || CanOrganizeLocalForaging(destination))
+                return null;
+
+            int deficit = GetRemainingAidNeed(destination,
+                destination.OwnerClan);
+            int available = GetAidFoodAvailable(source);
+            int cargo = Math.Min(MaximumRequestedFood,
+                Math.Min(requestedFood, Math.Min(deficit, available)));
+            if (cargo <= 0 ||
+                CanAttachAidToMilitaryReinforcement(destination, cargo) ||
+                GetSafeAidEscortCount(source) < EscortSize)
+                return null;
+
+            MobileParty garrison = source.Town.GarrisonParty;
+            TroopRoster escort = ExtractAidEscortRoster(garrison);
+            if (escort.TotalHealthyCount < EscortSize)
+            {
+                RestoreTroops(escort, garrison.MemberRoster);
+                return null;
+            }
+
+            MobileParty party = null;
+            PackAnimalPreparationResult packAnimals =
+                new PackAnimalPreparationResult();
+            try
+            {
+                party = SupplyPartyComponent.CreateAidParty(source,
+                    destination, destination.OwnerClan, cargo, escort);
+                EnterSettlementAction.ApplyForParty(party, source);
+                packAnimals = PreparePackAnimals(garrison, party,
+                    source.OwnerClan?.Leader);
+                TransferRidingMountsFromGranary(garrison, party);
+                int returnFood = CalculateAidReturnFood(party);
+                int loaded = TransferFood(garrison.ItemRoster,
+                    party.ItemRoster, cargo + returnFood);
+                if (loaded < cargo + returnFood)
+                    throw new InvalidOperationException(
+                        "InsufficientAidFood");
+                MoveToSettlement(party, destination);
+                LogAid("Dispatched", party, cargo);
+                return party;
+            }
+            catch (Exception exception)
+            {
+                if (party?.IsActive == true)
+                {
+                    SupplyPartyComponent failed = GetComponent(party);
+                    failed?.CompleteMission();
+                    RestoreTroops(party.MemberRoster,
+                        garrison.MemberRoster);
+                    TransferAllItems(party.ItemRoster,
+                        garrison.ItemRoster);
+                    DestroyPartyAction.Apply(null, party);
+                }
+                else
+                {
+                    RestoreTroops(escort, garrison.MemberRoster);
+                }
+                if (packAnimals.GoldCost > 0 &&
+                    source.OwnerClan?.Leader != null)
+                    GiveGoldAction.ApplyBetweenCharacters(null,
+                        source.OwnerClan.Leader, packAnimals.GoldCost, true);
+                ModLogger.Error("Supply aid creation failed: " +
+                    exception.Message);
+                return null;
+            }
         }
 
         private void OnDailySettlementTick(Settlement settlement)
@@ -113,6 +195,12 @@ namespace ModifiedArmy.Garrison.Supply
                 || !party.IsActive
                 || party.MapEvent != null)
             {
+                return;
+            }
+
+            if (component.IsAidMission)
+            {
+                AdvanceAidMission(party, component);
                 return;
             }
 
@@ -162,6 +250,12 @@ namespace ModifiedArmy.Garrison.Supply
 
             if (component == null || !party.IsActive)
             {
+                return;
+            }
+
+            if (component.IsAidMission)
+            {
+                OnAidSettlementEntered(party, component, settlement);
                 return;
             }
 
@@ -271,12 +365,21 @@ namespace ModifiedArmy.Garrison.Supply
             Hero capturerHero,
             ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail detail)
         {
-            foreach (MobileParty party in MobileParty.All)
+            foreach (MobileParty party in MobileParty.All.ToList())
             {
                 SupplyPartyComponent component = GetComponent(party);
 
                 if (component == null)
                 {
+                    continue;
+                }
+
+                if (component.IsAidMission)
+                {
+                    if (component.SupplyHomeSettlement == settlement ||
+                        component.AidDestination == settlement ||
+                        component.RecoverySettlement == settlement)
+                        AdvanceAidMission(party, component);
                     continue;
                 }
 
@@ -335,6 +438,12 @@ namespace ModifiedArmy.Garrison.Supply
                 // supply mission route controller.
                 party.Ai.SetDoNotMakeNewDecisions(true);
 
+                if (component.IsAidMission)
+                {
+                    AdvanceAidMission(party, component);
+                    continue;
+                }
+
                 Settlement destination = component.MissionState
                     == SupplyPartyMissionState.TravelingToSource
                         ? component.SourceSettlement
@@ -345,6 +454,331 @@ namespace ModifiedArmy.Garrison.Supply
                     MoveToSettlement(party, destination);
                 }
             }
+        }
+
+        private void AdvanceAidMission(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            if (party?.IsActive != true || party.MapEvent != null) return;
+            component.SynchronizeOwnership();
+            if (component.MissionState ==
+                SupplyPartyMissionState.DeliveringAid)
+            {
+                if (!IsValidAidHome(component))
+                {
+                    BeginOrContinueAidRecovery(party, component);
+                    return;
+                }
+                if (!IsValidAidDestination(component))
+                {
+                    component.BeginAidReturn();
+                    LogAid("DestinationInvalid", party, 0);
+                }
+                else
+                {
+                    EnsureMovingTo(party, component.AidDestination);
+                    return;
+                }
+            }
+
+            if (component.MissionState ==
+                SupplyPartyMissionState.ReturningFromAid)
+            {
+                if (IsValidAidHome(component))
+                {
+                    EnsureMovingTo(party,
+                        component.SupplyHomeSettlement);
+                    return;
+                }
+                BeginOrContinueAidRecovery(party, component);
+                return;
+            }
+
+            if (component.MissionState ==
+                SupplyPartyMissionState.Recovering)
+                BeginOrContinueAidRecovery(party, component);
+        }
+
+        private void OnAidSettlementEntered(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement settlement)
+        {
+            if (component.MissionState ==
+                    SupplyPartyMissionState.DeliveringAid &&
+                settlement == component.AidDestination)
+            {
+                if (IsValidAidHome(component) &&
+                    IsValidAidDestination(component))
+                {
+                    int delivered = DeliverAidFood(party, component);
+                    LogAid("Delivered", party, delivered);
+                }
+                component.BeginAidReturn();
+                AdvanceAidMission(party, component);
+                return;
+            }
+
+            if (component.MissionState ==
+                    SupplyPartyMissionState.ReturningFromAid &&
+                settlement == component.SupplyHomeSettlement)
+            {
+                if (IsValidAidHome(component))
+                    CompleteAidReturn(party, component, settlement);
+                else
+                    BeginOrContinueAidRecovery(party, component);
+                return;
+            }
+
+            if (component.MissionState ==
+                    SupplyPartyMissionState.Recovering &&
+                settlement == component.RecoverySettlement)
+                CompleteAidReturn(party, component, settlement);
+        }
+
+        private void BeginOrContinueAidRecovery(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            Settlement recovery = component.RecoverySettlement;
+            if (!IsValidAidRecovery(recovery, component))
+            {
+                recovery = FindAidRecoverySettlement(party, component);
+                component.BeginRecovery(recovery);
+                LogAid("Recovering", party, 0);
+            }
+            if (recovery == null) return;
+            if (party.CurrentSettlement == recovery)
+                CompleteAidReturn(party, component, recovery);
+            else
+                EnsureMovingTo(party, recovery);
+        }
+
+        private void CompleteAidReturn(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement settlement)
+        {
+            if (!IsValidAidRecovery(settlement, component))
+            {
+                component.BeginRecovery(null);
+                return;
+            }
+            MobileParty garrison = settlement.Town.GarrisonParty;
+            int reservedEscort = party.MemberRoster.TotalManCount;
+            int moved = TransferTroopsLimited(party.MemberRoster,
+                garrison.MemberRoster,
+                GarrisonRecruitmentCapacity.GetHardFreeSlots(garrison) +
+                    reservedEscort);
+            if (party.MemberRoster.TotalManCount > 0)
+            {
+                component.BeginRecovery(null);
+                LogAid("RecoveryPartial", party, moved);
+                return;
+            }
+            TransferAllItems(party.ItemRoster, garrison.ItemRoster);
+            component.CompleteMission();
+            LogAid("Completed", party, moved);
+            DestroyPartyAction.Apply(null, party);
+        }
+
+        private bool CanOrganizeLocalForaging(Settlement destination)
+        {
+            if (!CanDispatchFrom(destination) ||
+                FindSupplyPartyForHome(destination) != null ||
+                IsDispatchCoolingDown(destination)) return false;
+            GarrisonLogisticsStatus status =
+                GarrisonLogisticsModel.Calculate(destination.Town);
+            return GarrisonLogisticsModel.NeedsReplenishment(status) &&
+                ShouldDispatchAfterLocalSupply(destination, status) &&
+                FindBestSource(destination, status.FoodDeficit, null) != null;
+        }
+
+        private static bool CanAttachAidToMilitaryReinforcement(
+            Settlement destination,
+            int requestedFood)
+        {
+            ReinforcementDispatchModel model =
+                new ReinforcementDispatchModel();
+            ReinforcementNeedResult need = model.GetNeed(destination);
+            if (!need.IsRequested) return false;
+            ReinforcementDispatchPlan plan = model.FindBestSource(
+                destination, need.RequestedTroops, requestedFood);
+            return plan.IsApproved &&
+                GetAidFoodAvailable(plan.Source) >= requestedFood;
+        }
+
+        private static bool IsValidAidRoute(
+            Settlement source,
+            Settlement destination) =>
+            source?.Town?.GarrisonParty != null &&
+            destination?.Town?.GarrisonParty != null &&
+            source != destination && source.OwnerClan != null &&
+            source.OwnerClan == destination.OwnerClan &&
+            !source.IsUnderSiege && !destination.IsUnderSiege;
+
+        private static bool IsValidAidDestination(
+            SupplyPartyComponent component) =>
+            component?.DispatchClan != null &&
+            component.AidDestination?.Town?.GarrisonParty != null &&
+            component.AidDestination.OwnerClan == component.DispatchClan &&
+            !component.AidDestination.IsUnderSiege;
+
+        private static bool IsValidAidHome(
+            SupplyPartyComponent component) =>
+            IsValidAidRecovery(component?.SupplyHomeSettlement, component);
+
+        private static bool IsValidAidRecovery(
+            Settlement settlement,
+            SupplyPartyComponent component) =>
+            component?.DispatchClan != null &&
+            settlement?.Town?.GarrisonParty != null &&
+            settlement.OwnerClan == component.DispatchClan &&
+            !settlement.IsUnderSiege;
+
+        private static Settlement FindAidRecoverySettlement(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            if (party == null || component?.DispatchClan == null) return null;
+            bool needsCapacity = party.MemberRoster.TotalManCount > 0;
+            return Settlement.All.Where(settlement =>
+                    IsValidAidRecovery(settlement, component) &&
+                    (!needsCapacity || GarrisonRecruitmentCapacity
+                        .GetHardFreeSlots(settlement.Town.GarrisonParty) > 0))
+                .OrderBy(settlement => party.Position.DistanceSquared(
+                    settlement.GatePosition))
+                .FirstOrDefault();
+        }
+
+        private static int GetAidFoodAvailable(Settlement source) =>
+            Math.Max(0, (source?.Town?.GarrisonParty?.ItemRoster.TotalFood ?? 0)
+                - SourceGranaryFoodReserve - MinimumAidReturnFood);
+
+        private static int GetRemainingAidNeed(
+            Settlement destination,
+            Clan dispatchClan)
+        {
+            if (destination?.Town == null || dispatchClan == null) return 0;
+            int deficit = Math.Max(0,
+                GarrisonLogisticsModel.Calculate(destination.Town).FoodDeficit);
+            int inboundAid = MobileParty.All.Where(party =>
+                    party?.IsActive == true &&
+                    party.PartyComponent is SupplyPartyComponent c &&
+                    c.IsAidMission && c.DispatchClan == dispatchClan &&
+                    c.AidDestination == destination &&
+                    c.MissionState ==
+                        SupplyPartyMissionState.DeliveringAid)
+                .Sum(party => Math.Max(0,
+                    party.ItemRoster.TotalFood -
+                        CalculateAidReturnFood(party)));
+            int inboundMilitary = MobileParty.All.Where(party =>
+                    party?.IsActive == true &&
+                    party.PartyComponent is ReinforcementPartyComponent c &&
+                    c.DispatchClan == dispatchClan &&
+                    c.Destination == destination &&
+                    (c.State == ReinforcementTransportState
+                        .TravelingToDestination ||
+                     c.State == ReinforcementTransportState.Unloading))
+                .Sum(party => Math.Max(0,
+                    party.ItemRoster.TotalFood -
+                        MinimumAidReturnFood));
+            return Math.Max(0, deficit - inboundAid - inboundMilitary);
+        }
+
+        private static int CalculateAidReturnFood(MobileParty party) =>
+            Math.Max(MinimumAidReturnFood, (int)Math.Ceiling(
+                Math.Abs(party?.FoodChange ?? 0f) * OutboundProvisionDays));
+
+        private static int GetSafeAidEscortCount(Settlement source)
+        {
+            MobileParty garrison = source?.Town?.GarrisonParty;
+            if (garrison == null) return 0;
+            GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
+                .GarrisonDefense.Evaluate(source);
+            int safe = Math.Max(0,
+                defense.ResidentCount - defense.MinimumCount);
+            Dictionary<CharacterObject, int> protectedCounts =
+                Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                    .GetServingTroopCounts(garrison) ??
+                new Dictionary<CharacterObject, int>();
+            int eligible = garrison.MemberRoster.GetTroopRoster()
+                .Where(x => x.Character != null && !x.Character.IsHero)
+                .Sum(x => Math.Max(0, x.Number - x.WoundedNumber -
+                    (protectedCounts.TryGetValue(x.Character, out int count)
+                        ? count : 0)));
+            return Math.Min(safe, eligible);
+        }
+
+        private static TroopRoster ExtractAidEscortRoster(
+            MobileParty garrison)
+        {
+            TroopRoster result = TroopRoster.CreateDummyTroopRoster();
+            Dictionary<CharacterObject, int> protectedCounts =
+                Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                    .GetServingTroopCounts(garrison) ??
+                new Dictionary<CharacterObject, int>();
+            int remaining = EscortSize;
+            foreach (TroopRosterElement element in garrison.MemberRoster
+                .GetTroopRoster().Where(x => x.Character != null &&
+                    !x.Character.IsHero).OrderBy(x => x.Character.Tier)
+                .ToList())
+            {
+                int protectedCount = protectedCounts.TryGetValue(
+                    element.Character, out int count) ? count : 0;
+                int eligible = Math.Max(0, element.Number -
+                    element.WoundedNumber - protectedCount);
+                int amount = Math.Min(remaining, eligible);
+                if (amount <= 0) continue;
+                garrison.MemberRoster.AddToCounts(element.Character,
+                    -amount, false, 0, 0, true, -1);
+                result.AddToCounts(element.Character, amount,
+                    false, 0, 0, true, -1);
+                remaining -= amount;
+                if (remaining <= 0) break;
+            }
+            return result;
+        }
+
+        private static int TransferTroopsLimited(
+            TroopRoster source,
+            TroopRoster destination,
+            int maximum)
+        {
+            int remaining = Math.Max(0, maximum);
+            int moved = 0;
+            foreach (TroopRosterElement element in source.GetTroopRoster()
+                .Where(x => x.Character != null && !x.Character.IsHero)
+                .ToList())
+            {
+                int amount = Math.Min(remaining, element.Number);
+                if (amount <= 0) continue;
+                int wounded = Math.Min(amount, element.WoundedNumber);
+                source.AddToCounts(element.Character, -amount, false,
+                    -wounded, 0, true, -1);
+                destination.AddToCounts(element.Character, amount, false,
+                    wounded, 0, true, -1);
+                moved += amount;
+                remaining -= amount;
+                if (remaining <= 0) break;
+            }
+            return moved;
+        }
+
+        private static void LogAid(
+            string state,
+            MobileParty party,
+            int food)
+        {
+            SupplyPartyComponent component = GetComponent(party);
+            ModLogger.FileNotice(string.Format(
+                "Supply aid {0}: Party={1}, Clan={2}, Source={3}, " +
+                "Destination={4}, Food={5}", state,
+                party?.StringId ?? "-",
+                component?.DispatchClan?.StringId ?? "-",
+                component?.SupplyHomeSettlement?.StringId ?? "-",
+                component?.AidDestination?.StringId ?? "-", food));
         }
 
         private bool TryCreateSupplyParty(

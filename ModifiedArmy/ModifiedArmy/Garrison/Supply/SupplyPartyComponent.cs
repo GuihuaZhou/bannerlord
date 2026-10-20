@@ -35,6 +35,18 @@ namespace ModifiedArmy.Garrison.Supply
         public List<Settlement> VisitedSettlements { get; private set; }
             = new List<Settlement>();
 
+        [SaveableProperty(6)]
+        public int MissionModeValue { get; private set; }
+
+        [SaveableProperty(7)]
+        public Settlement AidDestination { get; private set; }
+
+        [SaveableProperty(8)]
+        public Clan DispatchClan { get; private set; }
+
+        [SaveableProperty(9)]
+        public Settlement RecoverySettlement { get; private set; }
+
         [CachedData]
         private TextObject _cachedName;
 
@@ -43,8 +55,15 @@ namespace ModifiedArmy.Garrison.Supply
         public SupplyPartyMissionState MissionState =>
             (SupplyPartyMissionState)MissionStateValue;
 
+        public SupplyPartyMissionMode MissionMode =>
+            (SupplyPartyMissionMode)MissionModeValue;
+
+        public bool IsAidMission =>
+            MissionMode == SupplyPartyMissionMode.CrossSettlementAid;
+
         public override Hero PartyOwner =>
-            SupplyHomeSettlement?.OwnerClan?.Leader;
+            (IsAidMission ? DispatchClan :
+                SupplyHomeSettlement?.OwnerClan)?.Leader;
 
         public override Settlement HomeSettlement =>
             SupplyHomeSettlement;
@@ -83,6 +102,23 @@ namespace ModifiedArmy.Garrison.Supply
             _initializationArgs = initializationArgs;
         }
 
+        private SupplyPartyComponent(
+            Settlement sourceSettlement,
+            Settlement aidDestination,
+            Clan dispatchClan,
+            int requestedFood,
+            InitializationArgs initializationArgs)
+            : this(sourceSettlement, sourceSettlement, requestedFood,
+                initializationArgs)
+        {
+            MissionModeValue =
+                (int)SupplyPartyMissionMode.CrossSettlementAid;
+            AidDestination = aidDestination;
+            DispatchClan = dispatchClan;
+            MissionStateValue =
+                (int)SupplyPartyMissionState.DeliveringAid;
+        }
+
         /// <summary>
         /// Creates a supply party with troops already removed from the home
         /// garrison. The party starts at the home settlement gate.
@@ -105,6 +141,21 @@ namespace ModifiedArmy.Garrison.Supply
                     new InitializationArgs(escortRoster)));
         }
 
+        public static MobileParty CreateAidParty(
+            Settlement sourceSettlement,
+            Settlement aidDestination,
+            Clan dispatchClan,
+            int requestedFood,
+            TroopRoster escortRoster)
+        {
+            string stringId = "modifiedarmy_supply_aid_" +
+                Guid.NewGuid().ToString("N");
+            return MobileParty.CreateParty(stringId,
+                new SupplyPartyComponent(sourceSettlement,
+                    aidDestination, dispatchClan, requestedFood,
+                    new InitializationArgs(escortRoster)));
+        }
+
         public void BeginReturnJourney()
         {
             MissionStateValue =
@@ -115,6 +166,19 @@ namespace ModifiedArmy.Garrison.Supply
         {
             MissionStateValue =
                 (int)SupplyPartyMissionState.Completed;
+        }
+
+        public void BeginAidReturn()
+        {
+            MissionStateValue =
+                (int)SupplyPartyMissionState.ReturningFromAid;
+        }
+
+        public void BeginRecovery(Settlement settlement)
+        {
+            RecoverySettlement = settlement;
+            MissionStateValue =
+                (int)SupplyPartyMissionState.Recovering;
         }
 
         public void ChangeSource(Settlement sourceSettlement)
@@ -148,7 +212,9 @@ namespace ModifiedArmy.Garrison.Supply
         /// </summary>
         public void SynchronizeOwnership()
         {
-            Clan ownerClan = SupplyHomeSettlement?.OwnerClan;
+            Clan ownerClan = IsAidMission
+                ? DispatchClan
+                : SupplyHomeSettlement?.OwnerClan;
 
             if (MobileParty == null
                 || ownerClan == null
@@ -164,7 +230,7 @@ namespace ModifiedArmy.Garrison.Supply
 
         public override Banner GetDefaultComponentBanner()
         {
-            return SupplyHomeSettlement?.Banner;
+            return DispatchClan?.Banner ?? SupplyHomeSettlement?.Banner;
         }
 
         /// <summary>
@@ -212,7 +278,9 @@ namespace ModifiedArmy.Garrison.Supply
         protected override void OnMobilePartySetOnCreation()
         {
             MobileParty.Aggressiveness = 0f;
-            MobileParty.ActualClan = SupplyHomeSettlement.OwnerClan;
+            MobileParty.ActualClan = IsAidMission
+                ? DispatchClan
+                : SupplyHomeSettlement.OwnerClan;
             // Supply parties follow a fixed logistics mission. Native party
             // AI must not replace their destination between hourly checks.
             MobileParty.Ai.SetDoNotMakeNewDecisions(true);

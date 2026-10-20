@@ -1,3 +1,4 @@
+using ModifiedArmy.Garrison.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,6 +19,26 @@ namespace ModifiedArmy.Garrison.Supply
     public partial class SupplyPartyBehavior
     {
         private const float PackAnimalsPerEscort = 0.5f;
+
+        private static int DeliverAidFood(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            MobileParty target = component?.AidDestination?.Town
+                ?.GarrisonParty;
+            if (party == null || target == null ||
+                component.DispatchClan == null ||
+                component.AidDestination.OwnerClan !=
+                    component.DispatchClan)
+                return 0;
+            int deficit = Math.Max(0, GarrisonLogisticsModel
+                .Calculate(component.AidDestination.Town).FoodDeficit);
+            int deliverable = Math.Max(0,
+                party.ItemRoster.TotalFood - CalculateAidReturnFood(party));
+            int requested = Math.Min(component.RequestedFood, deficit);
+            return TransferFood(party.ItemRoster, target.ItemRoster,
+                Math.Min(deliverable, requested));
+        }
 
         private static SupplyAcquisitionResult AcquireFoodAtSource(
             MobileParty party,
