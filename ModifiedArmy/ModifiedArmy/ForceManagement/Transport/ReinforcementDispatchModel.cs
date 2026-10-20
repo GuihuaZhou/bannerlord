@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
@@ -52,10 +53,16 @@ namespace ModifiedArmy.ForceManagement.Transport
                 plan.ReasonCode = need.ReasonCode;
                 return plan;
             }
+            int inbound = GetInboundTroopCommitment(
+                destination, destination.OwnerClan);
+            int remainingNeed = Math.Max(0,
+                Math.Min(need.RequestedTroops,
+                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(
+                        destination.Town.GarrisonParty)) - inbound);
             int safe = GetSafeOrdinaryHealthyCount(source);
             plan.TroopCount = Math.Min(MaximumPartySize,
                 Math.Min(Math.Max(0, requestedTroops),
-                    Math.Min(need.RequestedTroops, safe)));
+                    Math.Min(remainingNeed, safe)));
             plan.ReasonCode = plan.IsApproved
                 ? "Approved" : "InsufficientSafeTroops";
             return plan;
@@ -107,6 +114,40 @@ namespace ModifiedArmy.ForceManagement.Transport
             ForceManagementFacade.Current.ReinforcementNeed.Evaluate(
                 ForceManagementFacade.Current.GarrisonDefense
                     .Evaluate(destination));
+
+        public int GetInboundTroopCommitment(
+            Settlement destination,
+            Clan dispatchClan)
+        {
+            if (destination == null || dispatchClan == null) return 0;
+            return MobileParty.All.Where(party => party?.IsActive == true &&
+                    party.PartyComponent is ReinforcementPartyComponent c &&
+                    c.DispatchClan == dispatchClan &&
+                    c.Destination == destination &&
+                    (c.State == ReinforcementTransportState
+                        .TravelingToDestination ||
+                     c.State == ReinforcementTransportState.Unloading))
+                .Sum(party => Math.Max(0,
+                    party.MemberRoster.TotalManCount));
+        }
+
+        public Settlement FindRecoverySettlement(
+            MobileParty party,
+            ReinforcementPartyComponent component)
+        {
+            if (party == null || component?.DispatchClan == null) return null;
+            bool needsTroopCapacity = party.MemberRoster.TotalManCount > 0;
+            return Settlement.All.Where(settlement =>
+                    settlement?.OwnerClan == component.DispatchClan &&
+                    settlement.Town?.GarrisonParty != null &&
+                    !settlement.IsUnderSiege &&
+                    (!needsTroopCapacity ||
+                     GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                         settlement.Town.GarrisonParty) > 0))
+                .OrderBy(settlement => party.Position.DistanceSquared(
+                    settlement.GatePosition))
+                .FirstOrDefault();
+        }
 
         private static bool IsSameClanRoute(
             Settlement source,

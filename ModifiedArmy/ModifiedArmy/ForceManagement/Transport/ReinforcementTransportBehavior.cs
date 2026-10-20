@@ -66,6 +66,14 @@ namespace ModifiedArmy.ForceManagement.Transport
             if (component.State ==
                 ReinforcementTransportState.TravelingToDestination)
             {
+                if (!IsMissionValidForDelivery(component) ||
+                    (component.Deadline != CampaignTime.Zero &&
+                        component.Deadline.IsPast))
+                {
+                    BeginOrContinueRecovery(party, component,
+                        "DestinationInvalidOrExpired");
+                    return;
+                }
                 EnsureMovingTo(party, component.Destination);
             }
             else if (component.State ==
@@ -73,6 +81,11 @@ namespace ModifiedArmy.ForceManagement.Transport
                 party.CurrentSettlement == component.Destination)
             {
                 CompleteAtDestination(party, component);
+            }
+            else if (component.State ==
+                ReinforcementTransportState.Recovering)
+            {
+                BeginOrContinueRecovery(party, component, "HourlyRecovery");
             }
         }
 
@@ -82,35 +95,90 @@ namespace ModifiedArmy.ForceManagement.Transport
             Hero hero)
         {
             ReinforcementPartyComponent component = GetComponent(party);
-            if (component == null || !party.IsActive ||
-                settlement != component.Destination ||
-                component.State != ReinforcementTransportState
-                    .TravelingToDestination) return;
-            component.BeginUnloading();
-            CompleteAtDestination(party, component);
+            if (component == null || !party.IsActive) return;
+            if (component.State == ReinforcementTransportState
+                    .TravelingToDestination &&
+                settlement == component.Destination)
+            {
+                component.BeginUnloading();
+                CompleteAtDestination(party, component);
+            }
+            else if (component.State ==
+                    ReinforcementTransportState.Recovering &&
+                settlement == component.RecoverySettlement)
+            {
+                CompleteRecovery(party, component, settlement);
+            }
         }
 
         private void CompleteAtDestination(
             MobileParty party,
             ReinforcementPartyComponent component)
         {
-            if (component.Destination?.OwnerClan !=
-                    component.DispatchClan ||
-                component.Destination.IsUnderSiege)
+            if (!IsMissionValidForDelivery(component))
             {
-                component.BeginRecovery(null);
-                Log("RecoveryRequired", party, 0);
+                BeginOrContinueRecovery(party, component,
+                    "DestinationInvalid");
                 return;
             }
             int delivered = _transfer.DeliverTroops(party, component);
-            _transfer.DeliverAllItems(party, component);
+            bool hasRemainingTroops =
+                party.MemberRoster.TotalManCount > 0;
+            _transfer.DeliverItemsAtDestination(
+                party, component, hasRemainingTroops);
             if (!_transfer.TryDestroyEmpty(party, component))
             {
-                component.BeginRecovery(null);
                 Log("PartialDelivery", party, delivered);
+                BeginOrContinueRecovery(party, component,
+                    "TargetCapacityReached");
                 return;
             }
             Log("Completed", party, delivered);
+        }
+
+        private void BeginOrContinueRecovery(
+            MobileParty party,
+            ReinforcementPartyComponent component,
+            string reason)
+        {
+            Settlement recovery = component.RecoverySettlement;
+            if (!IsValidRecovery(recovery, component))
+            {
+                recovery = _dispatch.FindRecoverySettlement(
+                    party, component);
+                component.BeginRecovery(recovery);
+                Log("Recovering:" + reason, party, 0);
+            }
+            if (recovery == null) return;
+            if (party.CurrentSettlement == recovery)
+            {
+                CompleteRecovery(party, component, recovery);
+                return;
+            }
+            EnsureMovingTo(party, recovery);
+        }
+
+        private void CompleteRecovery(
+            MobileParty party,
+            ReinforcementPartyComponent component,
+            Settlement recovery)
+        {
+            if (!IsValidRecovery(recovery, component))
+            {
+                component.BeginRecovery(null);
+                return;
+            }
+            int recovered = _transfer.RecoverTroops(
+                party, component, recovery);
+            if (party.MemberRoster.TotalManCount > 0)
+            {
+                component.BeginRecovery(null);
+                Log("RecoveryPartial", party, recovered);
+                return;
+            }
+            _transfer.RecoverAllItems(party, component, recovery);
+            if (_transfer.TryDestroyEmpty(party, component))
+                Log("Recovered", party, recovered);
         }
 
         private void OnGameLoadFinished()
@@ -124,8 +192,29 @@ namespace ModifiedArmy.ForceManagement.Transport
                 if (component.State ==
                     ReinforcementTransportState.TravelingToDestination)
                     EnsureMovingTo(party, component.Destination);
+                else if (component.State ==
+                    ReinforcementTransportState.Recovering)
+                    BeginOrContinueRecovery(
+                        party, component, "LoadRecovery");
             }
         }
+
+        private static bool IsMissionValidForDelivery(
+            ReinforcementPartyComponent component) =>
+            component?.Destination?.Town?.GarrisonParty != null &&
+            component.SourceSettlement?.OwnerClan ==
+                component.DispatchClan &&
+            component.DispatchClan != null &&
+            component.Destination.OwnerClan == component.DispatchClan &&
+            !component.Destination.IsUnderSiege;
+
+        private static bool IsValidRecovery(
+            Settlement settlement,
+            ReinforcementPartyComponent component) =>
+            settlement?.Town?.GarrisonParty != null &&
+            component?.DispatchClan != null &&
+            settlement.OwnerClan == component.DispatchClan &&
+            !settlement.IsUnderSiege;
 
         private static void EnsureMovingTo(
             MobileParty party,

@@ -41,7 +41,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                     plan.Source, plan.Destination, plan.Clan,
                     plan.TroopCount, plan.FoodCount, roster);
                 EnterSettlementAction.ApplyForParty(party, plan.Source);
-                int food = TransferFood(plan.Source.ItemRoster,
+                int food = TransferFood(garrison.ItemRoster,
                     party.ItemRoster,
                     Math.Max(MinimumTravelFood, plan.FoodCount));
                 if (food < MinimumTravelFood)
@@ -57,7 +57,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                         garrison.MemberRoster,
                         party.MemberRoster.TotalManCount);
                     TransferAllItems(party.ItemRoster,
-                        plan.Source.ItemRoster);
+                        garrison.ItemRoster);
                     DestroyPartyAction.Apply(null, party);
                 }
                 else
@@ -88,15 +88,43 @@ namespace ModifiedArmy.ForceManagement.Transport
                 Math.Min(free, requested));
         }
 
-        public void DeliverAllItems(
+        public void DeliverItemsAtDestination(
             MobileParty party,
-            ReinforcementPartyComponent component)
+            ReinforcementPartyComponent component,
+            bool keepTravelFood)
         {
-            if (party == null || component?.Destination?.ItemRoster == null ||
+            MobileParty target = component?.Destination?.Town?.GarrisonParty;
+            if (party == null || target == null ||
                 component.Destination.OwnerClan != component.DispatchClan)
                 return;
-            TransferAllItems(party.ItemRoster,
-                component.Destination.ItemRoster);
+            TransferFoodLeavingReserve(party.ItemRoster, target.ItemRoster,
+                keepTravelFood ? MinimumTravelFood : 0);
+            if (!keepTravelFood)
+                TransferAllItems(party.ItemRoster, target.ItemRoster);
+        }
+
+        public int RecoverTroops(
+            MobileParty party,
+            ReinforcementPartyComponent component,
+            Settlement recovery)
+        {
+            MobileParty target = recovery?.Town?.GarrisonParty;
+            if (party == null || target == null ||
+                recovery.OwnerClan != component?.DispatchClan ||
+                recovery.IsUnderSiege) return 0;
+            return TransferTroops(party.MemberRoster, target.MemberRoster,
+                GarrisonRecruitmentCapacity.GetHardFreeSlots(target));
+        }
+
+        public void RecoverAllItems(
+            MobileParty party,
+            ReinforcementPartyComponent component,
+            Settlement recovery)
+        {
+            MobileParty target = recovery?.Town?.GarrisonParty;
+            if (party == null || target == null ||
+                recovery.OwnerClan != component?.DispatchClan) return;
+            TransferAllItems(party.ItemRoster, target.ItemRoster);
         }
 
         public bool TryDestroyEmpty(
@@ -174,6 +202,26 @@ namespace ModifiedArmy.ForceManagement.Transport
         {
             int available = Math.Max(0, source.TotalFood - SourceFoodReserve);
             int remaining = Math.Min(Math.Max(0, requested), available);
+            int moved = 0;
+            foreach (ItemRosterElement element in source.ToList())
+            {
+                ItemObject item = element.EquipmentElement.Item;
+                if (item?.IsFood != true || remaining <= 0) continue;
+                int amount = Math.Min(remaining, element.Amount);
+                source.AddToCounts(item, -amount);
+                destination.AddToCounts(item, amount);
+                moved += amount;
+                remaining -= amount;
+            }
+            return moved;
+        }
+
+        private static int TransferFoodLeavingReserve(
+            ItemRoster source,
+            ItemRoster destination,
+            int reserve)
+        {
+            int remaining = Math.Max(0, source.TotalFood - reserve);
             int moved = 0;
             foreach (ItemRosterElement element in source.ToList())
             {
