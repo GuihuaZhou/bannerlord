@@ -49,8 +49,10 @@ namespace ModifiedArmy.Garrison.Supply
         private Dictionary<Settlement, CampaignTime>
             _nextDispatchTimes =
                 new Dictionary<Settlement, CampaignTime>();
-        private readonly HashSet<string> _avoidingThreat =
-            new HashSet<string>();
+        private const float ThreatRecoveryDelayHours = 6f;
+        private readonly Dictionary<string, CampaignTime>
+            _threatAvoidanceUntil =
+                new Dictionary<string, CampaignTime>();
 
         public override void RegisterEvents()
         {
@@ -354,6 +356,8 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty party,
             PartyBase destroyerParty)
         {
+            if (party != null)
+                _threatAvoidanceUntil.Remove(party.StringId);
             SupplyPartyComponent component = GetComponent(party);
 
             if (component == null
@@ -555,12 +559,19 @@ namespace ModifiedArmy.Garrison.Supply
                     party.Position, party.MapFaction);
             if (threatened)
             {
-                if (_avoidingThreat.Add(party.StringId))
+                if (!_threatAvoidanceUntil.ContainsKey(party.StringId))
                     LogSupplyRoute("AvoidingThreat", party, component);
+                _threatAvoidanceUntil[party.StringId] = CampaignTime.Now +
+                    CampaignTime.Hours(ThreatRecoveryDelayHours);
                 return true;
             }
-            if (_avoidingThreat.Remove(party.StringId))
+            if (_threatAvoidanceUntil.TryGetValue(party.StringId,
+                    out CampaignTime avoidanceUntil))
+            {
+                if (!avoidanceUntil.IsPast) return true;
+                _threatAvoidanceUntil.Remove(party.StringId);
                 LogSupplyRoute("RouteResumed", party, component);
+            }
             return false;
         }
 
@@ -569,14 +580,59 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty party,
             SupplyPartyComponent component)
         {
-            ModLogger.FileNotice(string.Format(
-                "Supply route {0}: Party={1}, Mode={2}, State={3}, " +
-                "Source={4}, Destination={5}", state,
-                party?.StringId ?? "-", component?.MissionModeValue ?? -1,
-                component?.MissionStateValue ?? -1,
-                component?.SupplyHomeSettlement?.StringId ?? "-",
-                component?.AidDestination?.StringId ??
-                    component?.SourceSettlement?.StringId ?? "-"));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_supply_route");
+            message.SetTextVariable("EVENT", TransportLogText.Event(state));
+            message.SetTextVariable("PARTY",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("MODE", GetSupplyModeText(component));
+            message.SetTextVariable("STATE", GetSupplyStateText(component));
+            message.SetTextVariable("SOURCE",
+                component?.SupplyHomeSettlement?.Name ??
+                    TextObject.GetEmpty());
+            message.SetTextVariable("DESTINATION",
+                component?.AidDestination?.Name ??
+                    component?.SourceSettlement?.Name ??
+                    TextObject.GetEmpty());
+            ModLogger.FileNotice(message.ToString());
+        }
+
+        private static TextObject GetSupplyModeText(
+            SupplyPartyComponent component) => component?.IsAidMission == true
+                ? new TextObject("{=ModifiedArmy_TransportModeFoodAid}" +
+                    "Food aid")
+                : new TextObject("{=ModifiedArmy_TransportModeLocalSupply}" +
+                    "Local foraging");
+
+        private static TextObject GetSupplyStateText(
+            SupplyPartyComponent component)
+        {
+            if (component == null) return new TextObject("-");
+            switch (component.MissionState)
+            {
+                case SupplyPartyMissionState.TravelingToSource:
+                    return new TextObject(
+                        "{=ModifiedArmy_TransportTravelingToSource}" +
+                        "Traveling to source");
+                case SupplyPartyMissionState.ReturningHome:
+                    return new TextObject(
+                        "{=ModifiedArmy_TransportReturningHome}" +
+                        "Returning home");
+                case SupplyPartyMissionState.DeliveringAid:
+                    return new TextObject(
+                        "{=ModifiedArmy_TransportDeliveringAid}" +
+                        "Delivering aid");
+                case SupplyPartyMissionState.ReturningFromAid:
+                    return new TextObject(
+                        "{=ModifiedArmy_TransportReturningFromAid}" +
+                        "Returning from aid");
+                case SupplyPartyMissionState.Recovering:
+                    return TransportLogText.Event("Recovering");
+                case SupplyPartyMissionState.Completed:
+                    return TransportLogText.Event("Completed");
+                default:
+                    return new TextObject("-");
+            }
         }
 
         private void OnAidSettlementEntered(
@@ -854,19 +910,33 @@ namespace ModifiedArmy.Garrison.Supply
             int food)
         {
             SupplyPartyComponent component = GetComponent(party);
-            ModLogger.FileNotice(string.Format(
-                "Transport: Mission={1}, Mode=FoodAid, Event={0}, " +
-                "State={5}, Clan={2}, Source={3}, Destination={4}, " +
-                "RequestedFood={6}, ActualTroops={7}, ActualFood={8}, " +
-                "EventAmount={9}", state,
-                party?.StringId ?? "-",
-                component?.DispatchClan?.StringId ?? "-",
-                component?.SupplyHomeSettlement?.StringId ?? "-",
-                component?.AidDestination?.StringId ?? "-",
-                component?.MissionStateValue ?? -1,
-                component?.RequestedFood ?? 0,
-                party?.MemberRoster?.TotalManCount ?? 0,
-                party?.ItemRoster?.TotalFood ?? 0, food));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_transport_event");
+            message.SetTextVariable("MISSION",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("MODE",
+                new TextObject("{=ModifiedArmy_TransportModeFoodAid}" +
+                    "Food aid"));
+            message.SetTextVariable("EVENT", TransportLogText.Event(state));
+            message.SetTextVariable("STATE",
+                component?.MissionStateValue ?? -1);
+            message.SetTextVariable("CLAN",
+                PartyLogFormatter.GetClanDisplayName(
+                    component?.DispatchClan));
+            message.SetTextVariable("SOURCE",
+                component?.SupplyHomeSettlement?.Name ??
+                    TextObject.GetEmpty());
+            message.SetTextVariable("DESTINATION",
+                component?.AidDestination?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("REQUESTED_TROOPS", 0);
+            message.SetTextVariable("REQUESTED_FOOD",
+                component?.RequestedFood ?? 0);
+            message.SetTextVariable("ACTUAL_TROOPS",
+                party?.MemberRoster?.TotalManCount ?? 0);
+            message.SetTextVariable("ACTUAL_FOOD",
+                party?.ItemRoster?.TotalFood ?? 0);
+            message.SetTextVariable("EVENT_AMOUNT", food);
+            ModLogger.FileNotice(message.ToString());
         }
 
         private bool TryCreateSupplyParty(

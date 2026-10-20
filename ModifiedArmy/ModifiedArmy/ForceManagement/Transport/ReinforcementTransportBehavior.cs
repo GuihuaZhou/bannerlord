@@ -12,6 +12,8 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Transport
 {
@@ -21,8 +23,10 @@ namespace ModifiedArmy.ForceManagement.Transport
             new ReinforcementDispatchModel();
         private readonly ReinforcementTransferService _transfer =
             new ReinforcementTransferService();
-        private readonly HashSet<string> _avoidingThreat =
-            new HashSet<string>();
+        private const float ThreatRecoveryDelayHours = 6f;
+        private readonly Dictionary<string, CampaignTime>
+            _threatAvoidanceUntil =
+                new Dictionary<string, CampaignTime>();
 
         public override void RegisterEvents()
         {
@@ -77,9 +81,13 @@ namespace ModifiedArmy.ForceManagement.Transport
                             remainingFood)) != null)
                     dispatchedAid++;
             }
-            ModLogger.FileNotice(string.Format(
-                "Automatic transport scan: Clan={0}, Military={1}, Aid={2}",
-                clan.StringId ?? "-", dispatchedTroops, dispatchedAid));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_transport_scan");
+            message.SetTextVariable("CLAN",
+                PartyLogFormatter.GetClanDisplayName(clan));
+            message.SetTextVariable("MILITARY", dispatchedTroops);
+            message.SetTextVariable("AID", dispatchedAid);
+            ModLogger.FileNotice(message.ToString());
         }
 
         public MobileParty TryDispatchControlled(
@@ -127,12 +135,19 @@ namespace ModifiedArmy.ForceManagement.Transport
             if (TransportThreatModel.IsNativeAvoidanceActive(party) ||
                 route.ReasonCode == "EnemyThreat")
             {
-                if (_avoidingThreat.Add(party.StringId))
+                if (!_threatAvoidanceUntil.ContainsKey(party.StringId))
                     Log("AvoidingThreat", party, 0);
+                _threatAvoidanceUntil[party.StringId] = CampaignTime.Now +
+                    CampaignTime.Hours(ThreatRecoveryDelayHours);
                 return;
             }
-            if (_avoidingThreat.Remove(party.StringId))
+            if (_threatAvoidanceUntil.TryGetValue(party.StringId,
+                    out CampaignTime avoidanceUntil))
+            {
+                if (!avoidanceUntil.IsPast) return;
+                _threatAvoidanceUntil.Remove(party.StringId);
                 Log("RouteResumed", party, 0);
+            }
             if (!route.IsSafe && route.ReasonCode == "RouteBlocked")
             {
                 BeginOrContinueRecovery(party, component,
@@ -209,6 +224,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                     "TargetCapacityReached");
                 return;
             }
+            _threatAvoidanceUntil.Remove(party.StringId);
             Log("Completed", party, delivered);
         }
 
@@ -254,7 +270,10 @@ namespace ModifiedArmy.ForceManagement.Transport
             }
             _transfer.RecoverAllItems(party, component, recovery);
             if (_transfer.TryDestroyEmpty(party, component))
+            {
+                _threatAvoidanceUntil.Remove(party.StringId);
                 Log("Recovered", party, recovered);
+            }
         }
 
         private void OnGameLoadFinished()
@@ -324,20 +343,32 @@ namespace ModifiedArmy.ForceManagement.Transport
             int troops)
         {
             ReinforcementPartyComponent component = GetComponent(party);
-            ModLogger.FileNotice(string.Format(
-                "Transport: Mission={1}, Mode=Military, Event={0}, " +
-                "State={5}, Clan={2}, Source={3}, Destination={4}, " +
-                "RequestedTroops={6}, RequestedFood={7}, " +
-                "ActualTroops={8}, ActualFood={9}, EventAmount={10}",
-                state, party?.StringId ?? "-",
-                component?.DispatchClan?.StringId ?? "-",
-                component?.SourceSettlement?.StringId ?? "-",
-                component?.Destination?.StringId ?? "-",
-                component?.StateValue ?? -1,
-                component?.RequestedTroopCount ?? 0,
-                component?.RequestedFoodCount ?? 0,
-                party?.MemberRoster?.TotalManCount ?? 0,
-                party?.ItemRoster?.TotalFood ?? 0, troops));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_transport_event");
+            message.SetTextVariable("MISSION",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("MODE",
+                new TextObject("{=ModifiedArmy_TransportModeMilitary}" +
+                    "Military reinforcement"));
+            message.SetTextVariable("EVENT", TransportLogText.Event(state));
+            message.SetTextVariable("STATE", component?.StateValue ?? -1);
+            message.SetTextVariable("CLAN",
+                PartyLogFormatter.GetClanDisplayName(
+                    component?.DispatchClan));
+            message.SetTextVariable("SOURCE",
+                component?.SourceSettlement?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("DESTINATION",
+                component?.Destination?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("REQUESTED_TROOPS",
+                component?.RequestedTroopCount ?? 0);
+            message.SetTextVariable("REQUESTED_FOOD",
+                component?.RequestedFoodCount ?? 0);
+            message.SetTextVariable("ACTUAL_TROOPS",
+                party?.MemberRoster?.TotalManCount ?? 0);
+            message.SetTextVariable("ACTUAL_FOOD",
+                party?.ItemRoster?.TotalFood ?? 0);
+            message.SetTextVariable("EVENT_AMOUNT", troops);
+            ModLogger.FileNotice(message.ToString());
         }
     }
 }

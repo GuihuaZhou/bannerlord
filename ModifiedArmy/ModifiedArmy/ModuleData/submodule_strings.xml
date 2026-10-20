@@ -195,6 +195,12 @@
         text="{=ModifiedArmy_SupplyPartyDispatched}[驻军后勤] {HOME_NAME}派出{ESCORT}人的征粮队前往{SOURCE_NAME}, 计划运回{REQUESTED}单位食物." />
     <string id="str_modifiedarmy_supply_party_returned"
         text="{=ModifiedArmy_SupplyPartyReturned}[驻军后勤] {HOME_NAME}征粮队带回{FOOD}单位食物." />
+    <string id="str_modifiedarmy_supply_route"
+        text="{=ModifiedArmy_SupplyRoute}[Supply Route] event={EVENT}, party={PARTY}, mode={MODE}, state={STATE}, source={SOURCE}, destination={DESTINATION}." />
+    <string id="str_modifiedarmy_transport_event"
+        text="{=ModifiedArmy_TransportEvent}[Transport] mission={MISSION}, mode={MODE}, event={EVENT}, state={STATE}, clan={CLAN}, source={SOURCE}, destination={DESTINATION}, requested troops={REQUESTED_TROOPS}, requested food={REQUESTED_FOOD}, actual troops={ACTUAL_TROOPS}, actual food={ACTUAL_FOOD}, event amount={EVENT_AMOUNT}." />
+    <string id="str_modifiedarmy_transport_scan"
+        text="{=ModifiedArmy_TransportScan}[Transport] Automatic scan for clan {CLAN}: military parties dispatched={MILITARY}, food-aid parties dispatched={AID}." />
     <string id="str_modifiedarmy_supply_escort_capacity"
         text="{=ModifiedArmy_SupplyEscortCapacity}[Garrison Capacity] settlement={SETTLEMENT_ID}, party={PARTY_ID}, before={GARRISON_BEFORE}, returning={RETURNING}, reserved before={RESERVED_BEFORE}, after={GARRISON_AFTER}, reserved after={RESERVED_AFTER}, limit={LIMIT}, excess={EXCESS}, mission state={MISSION_STATE}." />
     <string id="str_modifiedarmy_multiple_supply_parties"

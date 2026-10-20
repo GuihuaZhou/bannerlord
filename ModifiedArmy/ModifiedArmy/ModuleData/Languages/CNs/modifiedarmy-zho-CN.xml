@@ -142,5 +142,36 @@
     <string id="ModifiedArmy_ForceScenarioOwnFiefDefense" text="自家封邑防守" />
     <string id="ModifiedArmy_ForceReasonBelowTarget" text="低于目标" />
     <string id="ModifiedArmy_ForceReasonTargetReached" text="已达目标" />
+    <!-- 运输系统日志：日志模板。只调整text内容，不要修改id和{变量名}。 -->
+    <string id="ModifiedArmy_SupplyRoute" text="[运输路线] {PARTY}{EVENT}。这支队伍正在执行{MODE}任务，目前处于“{STATE}”阶段，原定从{SOURCE}前往{DESTINATION}。" />
+    <string id="ModifiedArmy_TransportEvent" text="[运输任务] {MISSION}{EVENT}。这支队伍正在执行{MODE}任务，属于{CLAN}，原定从{SOURCE}前往{DESTINATION}；出发时计划运送{REQUESTED_TROOPS}名士兵和{REQUESTED_FOOD}单位粮食，现在还剩{ACTUAL_TROOPS}人和{ACTUAL_FOOD}单位粮食。" />
+    <string id="ModifiedArmy_TransportScan" text="[运输调度] {CLAN}今天完成了运输安排，新派出{MILITARY}支军事增援队和{AID}支援粮队。" />
+
+    <!-- 运输系统日志：任务模式。 -->
+    <string id="ModifiedArmy_TransportModeMilitary" text="军事增援" />
+    <string id="ModifiedArmy_TransportModeFoodAid" text="跨城援粮" />
+    <string id="ModifiedArmy_TransportModeLocalSupply" text="本地征粮" />
+
+    <!-- 运输系统日志：任务当前状态。 -->
+    <string id="ModifiedArmy_TransportTravelingToSource" text="前往粮食来源地" />
+    <string id="ModifiedArmy_TransportReturningHome" text="正在返程" />
+    <string id="ModifiedArmy_TransportDeliveringAid" text="正在送往援粮目标" />
+    <string id="ModifiedArmy_TransportReturningFromAid" text="援粮完成后返程" />
+
+    <!-- 运输系统日志：本次发生的事件。 -->
+    <string id="ModifiedArmy_TransportDispatched" text="已经出发了" />
+    <string id="ModifiedArmy_TransportAvoidingThreat" text="发现附近有强敌，正在暂时绕开" />
+    <string id="ModifiedArmy_TransportRouteResumed" text="确认威胁已经解除，继续赶往原定目标" />
+    <string id="ModifiedArmy_TransportRouteBlocked" text="发现原定路线走不通，准备返回或改道" />
+    <string id="ModifiedArmy_TransportDestinationInvalid" text="发现目标已经不能接收物资，准备返回" />
+    <string id="ModifiedArmy_TransportDestinationInvalidOrExpired" text="因为目标失效或耽搁太久，正在寻找安全的回收地点" />
+    <string id="ModifiedArmy_TransportPartialDelivery" text="只交付了目标目前还能接收的部分" />
+    <string id="ModifiedArmy_TransportTargetCapacityReached" text="发现目标驻军已经满员，正在安置剩余人员" />
+    <string id="ModifiedArmy_TransportCompleted" text="已经完成任务" />
+    <string id="ModifiedArmy_TransportDelivered" text="已经把粮食送到了" />
+    <string id="ModifiedArmy_TransportDeadlineExpired" text="因为路上耽搁太久，正在返回" />
+    <string id="ModifiedArmy_TransportRecovering" text="正在把剩余人员和物资送往安全驻军" />
+    <string id="ModifiedArmy_TransportRecoveryPartial" text="暂时只安置了一部分人员，正在继续寻找接收地点" />
+    <string id="ModifiedArmy_TransportRecovered" text="已经妥善安置了剩余人员和物资" />
   </strings>
 </base>
