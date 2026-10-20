@@ -22,37 +22,19 @@ namespace ModifiedArmy.ForceManagement.Services
 
         public bool IsProtected(MobileParty party)
         {
-            return party != null &&
-                _missions.TryGetValue(party, out ReinforcementMission mission) &&
-                mission?.IsActive == true;
+            return false;
         }
 
         public bool MayStartReinforcement(MobileParty party)
         {
-            return IsEligibleCarrier(party) &&
-                MilitaryConfigManager.Instance.GetActiveConfig()?
-                    .AiRecruitment.ForceManagement
-                    .EnableAutomaticReinforcement == true;
+            return false;
         }
 
         public bool TryRegister(
             ReinforcementMission mission,
             bool controlledTest = false)
         {
-            MobileParty carrier = mission?.Carrier;
-            if ((!controlledTest && !MayStartReinforcement(carrier)) ||
-                (controlledTest && !IsEligibleCarrier(carrier)) ||
-                !IsValidMission(mission))
-            {
-                return false;
-            }
-
-            if (mission.Deadline == CampaignTime.Zero)
-            {
-                mission.Deadline = CampaignTime.Now + CampaignTime.Days(20f);
-            }
-            _missions[carrier] = mission;
-            return true;
+            return false;
         }
 
         public ReinforcementMission GetMission(MobileParty party)
