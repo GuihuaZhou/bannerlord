@@ -1,12 +1,8 @@
 using HarmonyLib;
+using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Models;
-using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Garrison.Models;
-using ModifiedArmy.Recruitment.Diagnostics;
-using ModifiedArmy.Recruitment.Finance;
-using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
-using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -21,19 +17,29 @@ namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
     /// Replaces the native all-or-nothing merge of a disbanding lord party
-    /// into a fortification. Regular troops must pass the same establishment,
-    /// wage and clan-budget rules as every other AI recruit. Composition only
-    /// affects transfer order and never rejects otherwise valid soldiers.
+    /// into a fortification. Eligible fief troops return first, remaining
+    /// service identities move only to a same-clan garrison, and ordinary
+    /// soldiers use the normal composition and capacity approval path.
     /// </summary>
     [HarmonyPatch(
         typeof(DisbandPartyCampaignBehavior),
         "MergeDisbandPartyToFortification")]
     public static class DisbandPartyGarrisonMergePatch
     {
+        /// <summary>
+        /// Preserves native prisoner and hero handling while delegating all
+        /// regular-soldier identity settlement to the D3 service.
+        /// </summary>
         private static bool Prefix(
             MobileParty disbandParty,
             Settlement relatedSettlement)
         {
+            if (disbandParty?.IsLordParty != true || disbandParty.IsMainParty ||
+                disbandParty.ActualClan == null)
+            {
+                return true;
+            }
+
             HandlePrisoners(disbandParty, relatedSettlement);
 
             if (disbandParty.MemberRoster.TotalManCount <= 0)
@@ -41,8 +47,10 @@ namespace ModifiedArmy.Recruitment.Patches
                 return false;
             }
 
-            int originalCount = disbandParty.MemberRoster.TotalRegulars;
-            int acceptedCount = 0;
+            DisbandSettlementResult settlementResult =
+                new DisbandSettlementService().SettleDisbandingParty(
+                    disbandParty,
+                    relatedSettlement);
 
             if (disbandParty.MapFaction == relatedSettlement.MapFaction)
             {
@@ -56,10 +64,10 @@ namespace ModifiedArmy.Recruitment.Patches
                 if (garrison != null)
                 {
                     TransferHeroes(disbandParty.MemberRoster, garrison);
-                    acceptedCount = TransferApprovedRegulars(
+                    ApplyInfluence(
                         disbandParty,
                         relatedSettlement,
-                        garrison);
+                        settlementResult.AcceptedTroops);
                     GarrisonRecruitFromPrisonersBehavior
                         .NormalizeGarrisonNow(relatedSettlement.Town);
                     LogMergeOverflow(relatedSettlement, garrison);
@@ -70,13 +78,14 @@ namespace ModifiedArmy.Recruitment.Patches
             // settlement merge. Troops rejected by the plan therefore leave
             // service instead of overflowing the garrison.
             disbandParty.MemberRoster.Clear();
-            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .ReconcilePartyFiefTroops(disbandParty);
             LogResult(
                 disbandParty,
                 relatedSettlement,
-                originalCount,
-                acceptedCount);
+                settlementResult ?? new DisbandSettlementResult
+                {
+                    PartyId = disbandParty.StringId,
+                    ReasonCode = "NoLegalGarrison"
+                });
             return false;
         }
 
@@ -160,139 +169,24 @@ namespace ModifiedArmy.Recruitment.Patches
             }
         }
 
-        private static int TransferApprovedRegulars(
-            MobileParty disbandParty,
-            Settlement settlement,
-            MobileParty garrison)
-        {
-            List<RecruitmentCandidate> candidates =
-                new List<RecruitmentCandidate>();
-
-            foreach (TroopRosterElement element in
-                disbandParty.MemberRoster.GetTroopRoster())
-            {
-                if (element.Character == null ||
-                    element.Character.IsHero ||
-                    element.Number <= 0)
-                {
-                    continue;
-                }
-
-                candidates.Add(new RecruitmentCandidate(
-                    element.Character,
-                    element.Number,
-                    RecruitmentSource.Transfer));
-            }
-
-            if (candidates.Count == 0)
-            {
-                return 0;
-            }
-
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
-                garrison,
-                candidates);
-            TroopRoster acceptedRoster =
-                TroopRoster.CreateDummyTroopRoster();
-            int acceptedCount = 0;
-            int reservedReturningMembers = GarrisonRecruitmentCapacity
-                .GetActiveSupplyEscortCount(settlement);
-
-            foreach (RecruitmentEvaluationResult evaluation in
-                plan.Evaluations)
-            {
-                CharacterObject troop = evaluation.Troop;
-                int availableCount = troop == null
-                    ? 0
-                    : disbandParty.MemberRoster.GetTroopCount(troop);
-                int count = Math.Min(
-                    evaluation.RecruitableCount,
-                    availableCount);
-                count = Math.Min(
-                    count,
-                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(
-                        garrison,
-                        reservedReturningMembers));
-
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                int woundedCount = GetWoundedCount(
-                    disbandParty.MemberRoster,
-                    troop,
-                    count);
-                garrison.MemberRoster.AddToCounts(
-                    troop,
-                    count,
-                    false,
-                    woundedCount,
-                    0,
-                    true,
-                    -1);
-                acceptedRoster.AddToCounts(
-                    troop,
-                    count,
-                    false,
-                    woundedCount,
-                    0,
-                    true,
-                    -1);
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    garrison,
-                    count,
-                    0f,
-                    evaluation.UnitDailyWage);
-                acceptedCount += count;
-            }
-
-            ApplyInfluence(
-                disbandParty,
-                settlement,
-                acceptedRoster);
-            Dictionary<CharacterObject, int> transferred = new();
-            foreach (TroopRosterElement element in acceptedRoster.GetTroopRoster())
-                if (element.Character != null && element.Number > 0)
-                    transferred[element.Character] = element.Number;
-            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .TransferFiefService(disbandParty, garrison, transferred);
-            return acceptedCount;
-        }
-
-        private static int GetWoundedCount(
-            TroopRoster roster,
-            CharacterObject troop,
-            int acceptedCount)
-        {
-            foreach (TroopRosterElement element in roster.GetTroopRoster())
-            {
-                if (element.Character == troop)
-                {
-                    return Math.Min(
-                        acceptedCount,
-                        element.WoundedNumber);
-                }
-            }
-
-            return 0;
-        }
-
+        /// <summary>
+        /// Grants influence only for soldiers actually accepted by the
+        /// destination garrison; returned or forcibly lost troops never count.
+        /// </summary>
         private static void ApplyInfluence(
             MobileParty disbandParty,
             Settlement settlement,
-            TroopRoster acceptedRoster)
+            IReadOnlyDictionary<CharacterObject, int> acceptedTroops)
         {
             float influenceValue = 0f;
 
-            foreach (TroopRosterElement element in
-                acceptedRoster.GetTroopRoster())
+            foreach (var pair in acceptedTroops)
             {
-                influenceValue += element.Number * Campaign.Current.Models
+                influenceValue += pair.Value * Campaign.Current.Models
                     .PrisonerDonationModel
                     .CalculateInfluenceGainAfterTroopDonation(
                         disbandParty.Party,
-                        element.Character,
+                        pair.Key,
                         settlement);
             }
 
@@ -304,20 +198,12 @@ namespace ModifiedArmy.Recruitment.Patches
             }
         }
 
+        /// <summary>Writes the complete fortification disband ledger.</summary>
         private static void LogResult(
             MobileParty disbandParty,
             Settlement settlement,
-            int originalCount,
-            int acceptedCount)
+            DisbandSettlementResult result)
         {
-            if (!RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
-            {
-                return;
-            }
-
-            int dismissedCount = Math.Max(
-                0,
-                originalCount - acceptedCount);
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_disband_garrison_merge");
             message.SetTextVariable(
@@ -326,10 +212,19 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable(
                 "SETTLEMENT_NAME",
                 settlement.Name);
-            message.SetTextVariable("ACCEPTED", acceptedCount);
-            message.SetTextVariable("DISMISSED", dismissedCount);
+            message.SetTextVariable("FIEF_RETURNED", result.FiefReturned);
+            message.SetTextVariable(
+                "FIEF_TRANSFERRED",
+                result.FiefTransferredWithService);
+            message.SetTextVariable(
+                "ORDINARY_ACCEPTED",
+                result.OrdinaryAccepted);
+            message.SetTextVariable("FIEF_LOST", result.FiefForcedLost);
+            message.SetTextVariable(
+                "ORDINARY_LOST",
+                result.OrdinaryForcedLost);
 
-            ModLogger.Notice(message.ToString());
+            ModLogger.FileNotice(message.ToString());
         }
 
         private static void LogMergeOverflow(
@@ -359,6 +254,59 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("LIMIT", limit);
             message.SetTextVariable("EXCESS", effective - limit);
             ModLogger.Debug(message.ToString());
+        }
+    }
+
+    /// <summary>
+    /// Settles fief-service identities for final disband destinations that do
+    /// not enter the fortification merge method, then lets native village or
+    /// no-target handling continue unchanged.
+    /// </summary>
+    [HarmonyPatch(typeof(DisbandPartyCampaignBehavior), "OnPartyDisbanded")]
+    public static class DisbandPartyFinalizationPatch
+    {
+        /// <summary>
+        /// Handles only final paths that will not invoke the fortification
+        /// merge prefix, preventing duplicate settlement of the same party.
+        /// </summary>
+        private static void Prefix(
+            MobileParty disbandParty,
+            Settlement relatedSettlement)
+        {
+            if (disbandParty?.IsLordParty != true || disbandParty.IsMainParty ||
+                disbandParty.ActualClan == null ||
+                relatedSettlement?.IsFortification == true &&
+                !relatedSettlement.IsUnderSiege)
+            {
+                return;
+            }
+            DisbandSettlementResult result = new DisbandSettlementService()
+                .SettleDisbandingParty(disbandParty, relatedSettlement);
+            LogFinalization(disbandParty, relatedSettlement, result);
+        }
+
+        /// <summary>Writes the non-fortification disband ledger.</summary>
+        private static void LogFinalization(
+            MobileParty party,
+            Settlement destination,
+            DisbandSettlementResult result)
+        {
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_disband_finalization");
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable(
+                "DESTINATION_NAME",
+                destination?.Name ?? new TextObject(
+                    "{=ModifiedArmy_NoValidDestination}" +
+                    "no valid destination"));
+            message.SetTextVariable("FIEF_RETURNED", result.FiefReturned);
+            message.SetTextVariable("FIEF_LOST", result.FiefForcedLost);
+            message.SetTextVariable(
+                "ORDINARY_LOST",
+                result.OrdinaryForcedLost);
+            ModLogger.FileNotice(message.ToString());
         }
     }
 }

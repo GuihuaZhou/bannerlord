@@ -727,6 +727,33 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
+        /// <summary>
+        /// Finalizes every service identity still attached to a party that is
+        /// about to be irreversibly destroyed. These soldiers are recorded as
+        /// losses: mobilization markers are released without restoring Hearth.
+        /// Normal returns must always use <see cref="TryReturnFiefTroops"/>.
+        /// </summary>
+        public int SettleRemainingFiefServiceAsLoss(MobileParty party)
+        {
+            if (party == null) return 0;
+            int lostTotal = 0;
+            foreach (ServingDetachmentRef item in GetServingDetachments(party)
+                .ToList())
+            {
+                int lost = item.Detachment?.GetTotalCount() ?? 0;
+                if (lost > 0)
+                {
+                    ReleaseFiefService(item.SourceFief, lost, false);
+                    lostTotal += lost;
+                }
+                GetFiefData(item.SourceFief)?.ServiceBatches
+                    .Remove(item.Detachment);
+                GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
+                UnregisterServingDetachment(item.SourceFief, item.Detachment);
+            }
+            return lostTotal;
+        }
+
         private void OnPartyRemoved(PartyBase partyBase)
         {
             MobileParty party = partyBase?.IsMobile == true
