@@ -8,7 +8,9 @@ using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using System;
 using System.Collections.Generic;
@@ -94,7 +96,21 @@ namespace ModifiedArmy.Models
                     {
                         MobileParty party = warParty.MobileParty;
 
-                        if (party == null || !party.IsLordParty || party.Army != null) continue;
+                        if (party == null || !party.IsLordParty) continue;
+
+                        DemobilizationBehavior demobilization = Campaign
+                            .Current.GetCampaignBehavior<
+                                DemobilizationBehavior>();
+                        if (demobilization?.ShouldCancelRouting(party) == true)
+                        {
+                            if (party.Army == null && party.MapEvent == null)
+                            {
+                                party.SetMovePatrolAroundPoint(
+                                    party.Position,
+                                    MobileParty.NavigationType.Default);
+                            }
+                        }
+                        if (party.Army != null) continue;
                         if (party.LeaderHero?.Culture == null) continue;
                         if (party.Party.IsStarving) continue;
 
@@ -122,6 +138,12 @@ namespace ModifiedArmy.Models
                             }
                             continue;
                         }
+
+                        // Peace demobilization routing is deliberately the
+                        // last non-random logistics purpose. Its model only
+                        // approves idle parties and the feature defaults off.
+                        if (TryDispatchPeaceDemobilization(party, clan))
+                            continue;
 
                         // 2. 随机概率门控（廉价检查，先过滤部分部队）
                         float roll = MBRandom.RandomFloat;
@@ -716,6 +738,115 @@ namespace ModifiedArmy.Models
                 return true;
 
             return false;
+        }
+
+        /// <summary>
+        /// Sends an approved idle party to the nearest safe same-clan
+        /// fortification that can actually settle at least one troop type.
+        /// </summary>
+        private bool TryDispatchPeaceDemobilization(
+            MobileParty party,
+            Clan clan)
+        {
+            DemobilizationBehavior behavior = Campaign.Current?
+                .GetCampaignBehavior<DemobilizationBehavior>();
+            PeaceDemobilizationDecision decision = behavior?
+                .EvaluateRouting(party);
+            if (decision?.CanDemobilize != true) return false;
+
+            Settlement target = FindBestDemobilizationSettlement(
+                party,
+                clan);
+            if (target == null) return false;
+
+            party.SetMoveGoToSettlement(
+                target,
+                MobileParty.NavigationType.Default,
+                isTargetingThePort: false);
+            behavior.RecordRouting(party, target);
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_demobilization_route");
+            message.SetTextVariable(
+                "PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("SETTLEMENT_NAME", target.Name);
+            message.SetTextVariable("CURRENT", decision.CurrentCount);
+            message.SetTextVariable("TARGET", decision.TargetCount);
+            message.SetTextVariable("APPROVED", decision.ApprovedToday);
+            ModLogger.FileNotice(message.ToString());
+            return true;
+        }
+
+        /// <summary>
+        /// Chooses the nearest safe destination only when a legal fief return
+        /// exists or its garrison has room for an ordinary soldier.
+        /// </summary>
+        private Settlement FindBestDemobilizationSettlement(
+            MobileParty party,
+            Clan clan)
+        {
+            if (party == null || clan == null) return null;
+            FiefPartyManager manager = _fiefPartyManager ?? Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            bool hasReturnableFiefTroops = manager?
+                .GetServingDetachments(party)
+                .Any(item => item.Detachment != null &&
+                    !item.Detachment.IsEmpty() &&
+                    item.SourceFief?.OwnerClan == clan) == true;
+            int protectedCount = manager?.GetServingTroopCounts(party)
+                .Values.Sum(value => Math.Max(0, value)) ?? 0;
+            int ordinaryCount = Math.Max(
+                0,
+                party.MemberRoster.TotalRegulars - protectedCount);
+
+            Settlement best = null;
+            float bestDistance = float.MaxValue;
+            foreach (Settlement settlement in clan.Settlements)
+            {
+                if (settlement?.IsFortification != true ||
+                    settlement == party.CurrentSettlement ||
+                    settlement.IsUnderSiege ||
+                    settlement.OwnerClan != clan ||
+                    settlement.MapFaction != party.MapFaction)
+                {
+                    continue;
+                }
+                MobileParty garrison = settlement.Town?.GarrisonParty;
+                bool acceptsOrdinary = ordinaryCount > 0 &&
+                    garrison?.IsActive == true &&
+                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(
+                        garrison) > 0;
+                if (!hasReturnableFiefTroops && !acceptsOrdinary)
+                    continue;
+                if (TransportThreatModel.HasSuperiorEnemy(
+                        null,
+                        settlement.GatePosition,
+                        settlement.MapFaction))
+                {
+                    continue;
+                }
+
+                float seaTravel;
+                float distance = Campaign.Current.Models.MapDistanceModel
+                    .GetDistance(
+                        party,
+                        settlement,
+                        false,
+                        party.NavigationCapability,
+                        out seaTravel);
+                if (distance <= 0f || float.IsNaN(distance) ||
+                    float.IsInfinity(distance) ||
+                    distance >= Campaign.MapDiagonal)
+                {
+                    continue;
+                }
+                if (distance < bestDistance)
+                {
+                    bestDistance = distance;
+                    best = settlement;
+                }
+            }
+            return best;
         }
     }
 }

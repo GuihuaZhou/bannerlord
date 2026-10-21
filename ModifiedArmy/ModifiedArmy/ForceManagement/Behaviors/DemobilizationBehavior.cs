@@ -5,6 +5,7 @@ using ModifiedArmy.common;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -21,6 +22,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private Dictionary<string, int> _clanPeaceSinceDay = new();
         private Dictionary<string, int> _partyLastDemobDay = new();
         private Dictionary<string, int> _partyDemobCountToday = new();
+        private readonly Dictionary<string, Settlement> _routingTargets =
+            new Dictionary<string, Settlement>();
 
         public override void RegisterEvents()
         {
@@ -28,6 +31,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 this, OnDailyClanTick);
             CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(
                 this, OnGameLoadFinished);
+            CampaignEvents.WarDeclared.AddNonSerializedListener(
+                this, OnWarDeclared);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -56,6 +61,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 party.ActualClan == null ||
                 party.ActualClan == Clan.PlayerClan ||
                 string.IsNullOrEmpty(party.StringId)) return;
+
+            _routingTargets.Remove(party.StringId);
 
             EnsureCollections();
             int today = CurrentDay();
@@ -90,6 +97,89 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         }
 
         /// <summary>
+        /// Returns the unified live decision used by the optional daily
+        /// low-priority routing pass. No roster or movement state is changed.
+        /// </summary>
+        public PeaceDemobilizationDecision EvaluateRouting(
+            MobileParty party,
+            bool isExistingRoute = false)
+        {
+            if (!IsEnabled() || party?.ActualClan == null ||
+                string.IsNullOrEmpty(party.StringId))
+            {
+                return new PeaceDemobilizationDecision
+                {
+                    ReasonCode = "AutomaticDemobilizationDisabled"
+                };
+            }
+            EnsureCollections();
+            int today = CurrentDay();
+            if (!_clanPeaceSinceDay.TryGetValue(
+                    party.ActualClan.StringId,
+                    out int peaceSinceDay))
+            {
+                return new PeaceDemobilizationDecision
+                {
+                    ReasonCode = "PeaceNotObserved"
+                };
+            }
+            return ForceManagementFacade.Current.PeaceDemobilization.Evaluate(
+                party,
+                new PeaceDemobilizationContext
+                {
+                    PeaceSinceDay = peaceSinceDay,
+                    Today = today,
+                    AlreadyDemobilizedToday = GetTodayCount(
+                        party.StringId,
+                        today),
+                    IsRoutingEvaluation = true,
+                    IsExistingDemobilizationRoute = isExistingRoute
+                });
+        }
+
+        /// <summary>
+        /// Marks the one movement order issued by D4-B so a later war or
+        /// threat can cancel only that order, without touching native tasks.
+        /// </summary>
+        public void RecordRouting(MobileParty party, Settlement destination)
+        {
+            if (party == null || destination == null ||
+                string.IsNullOrEmpty(party.StringId)) return;
+            _routingTargets[party.StringId] = destination;
+        }
+
+        /// <summary>
+        /// Returns true only when the still-active D4 route has become unsafe
+        /// or ineligible. Changed native orders are merely untracked.
+        /// </summary>
+        public bool ShouldCancelRouting(MobileParty party)
+        {
+            if (party == null || string.IsNullOrEmpty(party.StringId) ||
+                !_routingTargets.TryGetValue(
+                    party.StringId,
+                    out Settlement destination))
+            {
+                return false;
+            }
+            bool stillOwnsOrder = party.DefaultBehavior ==
+                    AiBehavior.GoToSettlement &&
+                party.TargetSettlement == destination;
+            if (!stillOwnsOrder)
+            {
+                _routingTargets.Remove(party.StringId);
+                return false;
+            }
+            bool destinationValid = destination.IsFortification &&
+                !destination.IsUnderSiege &&
+                destination.OwnerClan == party.ActualClan;
+            bool canContinue = destinationValid &&
+                EvaluateRouting(party, true).CanDemobilize;
+            if (canContinue) return false;
+            _routingTargets.Remove(party.StringId);
+            return true;
+        }
+
+        /// <summary>
         /// Starts or clears the clan stable-peace timer. Old saves begin on
         /// the first peaceful day observed after loading.
         /// </summary>
@@ -115,6 +205,45 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private void OnGameLoadFinished()
         {
             EnsureCollections();
+        }
+
+        /// <summary>
+        /// Invalidates peace timers immediately and releases only D4-owned
+        /// travel orders when either affected faction enters a new war.
+        /// </summary>
+        private void OnWarDeclared(
+            IFaction first,
+            IFaction second,
+            DeclareWarAction.DeclareWarDetail detail)
+        {
+            EnsureCollections();
+            foreach (Clan clan in Clan.All)
+            {
+                if (clan?.MapFaction == first || clan?.MapFaction == second)
+                    _clanPeaceSinceDay.Remove(clan.StringId);
+            }
+            foreach (MobileParty party in MobileParty.AllLordParties)
+            {
+                if (party?.MapFaction != first && party?.MapFaction != second)
+                    continue;
+                if (string.IsNullOrEmpty(party.StringId) ||
+                    !_routingTargets.TryGetValue(
+                        party.StringId,
+                        out Settlement destination))
+                {
+                    continue;
+                }
+                bool ownsOrder = party.DefaultBehavior ==
+                        AiBehavior.GoToSettlement &&
+                    party.TargetSettlement == destination;
+                _routingTargets.Remove(party.StringId);
+                if (ownsOrder && party.Army == null && party.MapEvent == null)
+                {
+                    party.SetMovePatrolAroundPoint(
+                        party.Position,
+                        MobileParty.NavigationType.Default);
+                }
+            }
         }
 
         /// <summary>Returns the actual amount charged to this party today.</summary>

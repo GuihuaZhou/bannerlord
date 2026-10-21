@@ -46,11 +46,25 @@ namespace ModifiedArmy.ForceManagement.Models
             {
                 return result;
             }
-            if (settlement?.IsFortification != true ||
-                party.CurrentSettlement != settlement ||
-                settlement.OwnerClan != clan || settlement.IsUnderSiege ||
-                party.MapEvent != null || party.Army != null ||
+            if (party.MapEvent != null || party.Army != null ||
                 party.CurrentSettlement?.SiegeEvent != null)
+            {
+                result.ReasonCode = "UnsafeMilitaryState";
+                return result;
+            }
+            if (context?.IsRoutingEvaluation == true)
+            {
+                if (config.EnableDemobilizationRouting != true ||
+                    (!context.IsExistingDemobilizationRoute &&
+                        !IsLowPriorityIdleBehavior(party)))
+                {
+                    result.ReasonCode = "RoutingDisabledOrBusy";
+                    return result;
+                }
+            }
+            else if (settlement?.IsFortification != true ||
+                party.CurrentSettlement != settlement ||
+                settlement.OwnerClan != clan || settlement.IsUnderSiege)
             {
                 result.ReasonCode = "UnsafeOrNotAtClanFortification";
                 return result;
@@ -114,6 +128,23 @@ namespace ModifiedArmy.ForceManagement.Models
                 ? "Approved"
                 : "DailyLimitReached";
             return result;
+        }
+
+        /// <summary>
+        /// Allows routing to replace only idle roaming orders, never military,
+        /// escort, settlement-operation or existing travel orders.
+        /// </summary>
+        private static bool IsLowPriorityIdleBehavior(MobileParty party)
+        {
+            if (party == null || party.TargetParty != null ||
+                party.ShortTermTargetParty != null ||
+                party.BesiegedSettlement != null)
+            {
+                return false;
+            }
+            return party.DefaultBehavior == AiBehavior.Hold ||
+                party.DefaultBehavior == AiBehavior.None ||
+                party.DefaultBehavior == AiBehavior.PatrolAroundPoint;
         }
     }
 }

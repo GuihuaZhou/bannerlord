@@ -37,6 +37,8 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public int Today { get; set; }
         public int AlreadyDemobilizedToday { get; set; }
         public Settlement VisitedSettlement { get; set; }
+        public bool IsRoutingEvaluation { get; set; }
+        public bool IsExistingDemobilizationRoute { get; set; }
     }
 
     public sealed class PeaceDemobilizationDecision

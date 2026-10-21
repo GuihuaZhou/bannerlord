@@ -207,6 +207,8 @@
         text="{=ModifiedArmy_OneWayTroopTransfer}[Garrison Transfer] {PARTY} requested to transfer {REQUESTED} soldiers to {SETTLEMENT}; {ACTUAL} were transferred, while {PROTECTED} fief-service soldiers remained protected. Result: {RESULT}." />
     <string id="str_modifiedarmy_peace_demobilization"
         text="{=ModifiedArmy_PeaceDemobilization}[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}办理复员。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；实际返乡{FIEF_RETURNED}名封邑兵，向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。结果：{RESULT}。" />
+    <string id="str_modifiedarmy_demobilization_route"
+        text="{=ModifiedArmy_DemobilizationRoute}[和平复员] {PARTY_NAME}目前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人，正在前往{SETTLEMENT_NAME}办理复员。" />
     <string id="str_modifiedarmy_supply_escort_capacity"
         text="{=ModifiedArmy_SupplyEscortCapacity}[Garrison Capacity] settlement={SETTLEMENT_ID}, party={PARTY_ID}, before={GARRISON_BEFORE}, returning={RETURNING}, reserved before={RESERVED_BEFORE}, after={GARRISON_AFTER}, reserved after={RESERVED_AFTER}, limit={LIMIT}, excess={EXCESS}, mission state={MISSION_STATE}." />
     <string id="str_modifiedarmy_multiple_supply_parties"
