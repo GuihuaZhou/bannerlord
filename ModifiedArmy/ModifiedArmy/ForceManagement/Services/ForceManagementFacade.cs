@@ -26,6 +26,8 @@ namespace ModifiedArmy.ForceManagement.Services
         public IPartyGarrisonExchangeModel Exchanges { get; }
         public ITroopValueModel TroopValues { get; }
         public IDemobilizationPolicy Demobilization { get; }
+        public IPeaceDemobilizationModel PeaceDemobilization { get; }
+        public DemobilizationService DemobilizationRunner { get; }
         public TroopTransferService TroopTransfers { get; }
         public ReinforcementCargoService ReinforcementCargo { get; }
         public FoodTransferService FoodTransfers { get; }
@@ -43,6 +45,8 @@ namespace ModifiedArmy.ForceManagement.Services
             TroopValues = new BasicTroopValueModel();
             Exchanges = new DisabledPartyGarrisonExchangeModel();
             Demobilization = new DisabledDemobilizationPolicy();
+            PeaceDemobilization = new PeaceDemobilizationModel();
+            DemobilizationRunner = new DemobilizationService();
             TroopTransfers = new TroopTransferService();
             ReinforcementCargo = new ReinforcementCargoService();
             FoodTransfers = new FoodTransferService();
@@ -67,6 +71,25 @@ namespace ModifiedArmy.ForceManagement.Services
             PartyForceTargetResult target = GetPartyTarget(party);
             return Math.Max(0, target.CurrentCount - target.TargetCount);
         }
+
+        /// <summary>
+        /// Reports whether the clan faction is formally at war with any live
+        /// kingdom. A low war disposition never counts as peace by itself.
+        /// </summary>
+        public static bool IsAtFormalWar(Clan clan)
+        {
+            IFaction faction = clan?.MapFaction;
+            if (faction == null) return false;
+            foreach (Kingdom kingdom in Kingdom.All)
+            {
+                if (kingdom != faction && !kingdom.IsEliminated &&
+                    FactionManager.IsAtWarAgainstFaction(faction, kingdom))
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
     }
 
     internal sealed class WarDispositionBridge : IWarDispositionProvider
@@ -80,7 +103,7 @@ namespace ModifiedArmy.ForceManagement.Services
             out bool atFormalWar)
         {
             disposition = 0f;
-            atFormalWar = IsAtWar(clan);
+            atFormalWar = ForceManagementFacade.IsAtFormalWar(clan);
             if (clan == null || Campaign.Current == null)
             {
                 return false;
@@ -97,25 +120,6 @@ namespace ModifiedArmy.ForceManagement.Services
             }
 
             LogFallback(clan);
-            return false;
-        }
-
-        private static bool IsAtWar(Clan clan)
-        {
-            IFaction faction = clan?.MapFaction;
-            if (faction == null)
-            {
-                return false;
-            }
-
-            foreach (Kingdom kingdom in Kingdom.All)
-            {
-                if (kingdom != faction && !kingdom.IsEliminated &&
-                    FactionManager.IsAtWarAgainstFaction(faction, kingdom))
-                {
-                    return true;
-                }
-            }
             return false;
         }
 

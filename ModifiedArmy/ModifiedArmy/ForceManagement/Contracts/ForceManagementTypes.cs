@@ -25,6 +25,30 @@ namespace ModifiedArmy.ForceManagement.Contracts
         Reinforcement
     }
 
+    public enum GarrisonDonationPurpose
+    {
+        NativeDonation,
+        PeaceDemobilization
+    }
+
+    public sealed class PeaceDemobilizationContext
+    {
+        public int PeaceSinceDay { get; set; }
+        public int Today { get; set; }
+        public int AlreadyDemobilizedToday { get; set; }
+        public Settlement VisitedSettlement { get; set; }
+    }
+
+    public sealed class PeaceDemobilizationDecision
+    {
+        public bool CanDemobilize { get; set; }
+        public int TargetCount { get; set; }
+        public int CurrentCount { get; set; }
+        public int SurplusCount { get; set; }
+        public int ApprovedToday { get; set; }
+        public string ReasonCode { get; set; }
+    }
+
     public enum ReinforcementMissionState
     {
         Requested,
@@ -290,5 +314,12 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public interface IDemobilizationPolicy
     {
         bool CanDismiss(MobileParty party, int count);
+    }
+
+    public interface IPeaceDemobilizationModel
+    {
+        PeaceDemobilizationDecision Evaluate(
+            MobileParty party,
+            PeaceDemobilizationContext context);
     }
 }

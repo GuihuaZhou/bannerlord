@@ -78,6 +78,9 @@ namespace ModifiedArmy.Garrison.Patches
             Campaign.Current?.GetCampaignBehavior<
                 PartyGarrisonExchangeBehavior>()?
                 .OnNaturalVisit(mobileParty, settlement);
+            Campaign.Current?.GetCampaignBehavior<
+                DemobilizationBehavior>()?
+                .OnNaturalVisit(mobileParty, settlement);
         }
     }
 

@@ -258,6 +258,24 @@ namespace ModifiedArmy.ForceManagement.Services
             Settlement destination,
             int requestedCount)
         {
+            return TransferFieldToGarrison(
+                source,
+                destination,
+                requestedCount,
+                GarrisonDonationPurpose.NativeDonation);
+        }
+
+        /// <summary>
+        /// Transfers ordinary soldiers for either native donation or an
+        /// explicitly approved peace demobilization. Fief-service identities
+        /// remain protected in both modes.
+        /// </summary>
+        public int TransferFieldToGarrison(
+            MobileParty source,
+            Settlement destination,
+            int requestedCount,
+            GarrisonDonationPurpose purpose)
+        {
             MobileParty garrison = destination?.Town?.GarrisonParty;
             if (source == null || garrison == null || requestedCount <= 0 ||
                 !source.IsActive || !garrison.IsActive ||
@@ -278,9 +296,14 @@ namespace ModifiedArmy.ForceManagement.Services
                 return 0;
             }
 
-            int allowed = GarrisonTransferPolicyModel.GetAllowedDonationCount(
-                source,
-                requestedCount);
+            int allowed = purpose ==
+                    GarrisonDonationPurpose.PeaceDemobilization
+                ? Math.Min(
+                    requestedCount,
+                    ForceManagementFacade.Current.GetSafeFieldSurplus(source))
+                : GarrisonTransferPolicyModel.GetAllowedDonationCount(
+                    source,
+                    requestedCount);
             allowed = Math.Min(
                 allowed,
                 GarrisonRecruitmentCapacity.GetTransferFreeSlots(garrison));

@@ -105,6 +105,13 @@
         <TransportMissionDeadlineDays value="20"/>
         <EnableAutomaticSwap value="false"/>
         <EnableAutomaticReinforcement value="false"/>
+        <Demobilization>
+          <EnableAutomaticDemobilization value="false"/>
+          <EnableDemobilizationRouting value="false"/>
+          <PeaceStabilityDays value="3"/>
+          <MaxDailyDemobilizationRatio value="0.20"/>
+          <MaxDailyDemobilizationCount value="30"/>
+        </Demobilization>
       </ForceManagement>
     </AiRecruitment>
 

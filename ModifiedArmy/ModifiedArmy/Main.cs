@@ -192,6 +192,7 @@ namespace ModifiedArmy
 
                 campaignStarter.AddBehavior(new AiRecruitmentBehavior());
                 campaignStarter.AddBehavior(new ForceManagementBehavior());
+                campaignStarter.AddBehavior(new DemobilizationBehavior());
                 campaignStarter.AddBehavior(
                     new PartyGarrisonExchangeBehavior());
                 campaignStarter.AddBehavior(

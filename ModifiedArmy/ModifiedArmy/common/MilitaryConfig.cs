@@ -112,6 +112,17 @@ namespace ModifiedArmy.common
         public int TransportMissionDeadlineDays { get; internal set; } = 20;
         public bool EnableAutomaticSwap { get; internal set; }
         public bool EnableAutomaticReinforcement { get; internal set; }
+        public DemobilizationConfig Demobilization { get; } =
+            new DemobilizationConfig();
+    }
+
+    public sealed class DemobilizationConfig
+    {
+        public bool EnableAutomaticDemobilization { get; internal set; }
+        public bool EnableDemobilizationRouting { get; internal set; }
+        public int PeaceStabilityDays { get; internal set; } = 3;
+        public float MaxDailyDemobilizationRatio { get; internal set; } = 0.20f;
+        public int MaxDailyDemobilizationCount { get; internal set; } = 30;
     }
 
     public sealed class MilitaryConfig : MBObjectBase
@@ -292,6 +303,33 @@ namespace ModifiedArmy.common
                 node, "EnableAutomaticSwap", false);
             value.EnableAutomaticReinforcement = BooleanValue(
                 node, "EnableAutomaticReinforcement", false);
+            XmlNode demobilization = node.SelectSingleNode("Demobilization");
+            if (demobilization != null)
+            {
+                value.Demobilization.EnableAutomaticDemobilization =
+                    BooleanValue(
+                        demobilization,
+                        "EnableAutomaticDemobilization",
+                        false);
+                value.Demobilization.EnableDemobilizationRouting =
+                    BooleanValue(
+                        demobilization,
+                        "EnableDemobilizationRouting",
+                        false);
+                value.Demobilization.PeaceStabilityDays = NonNegativeValue(
+                    demobilization,
+                    "PeaceStabilityDays",
+                    value.Demobilization.PeaceStabilityDays);
+                value.Demobilization.MaxDailyDemobilizationRatio = RatioValue(
+                    demobilization,
+                    "MaxDailyDemobilizationRatio",
+                    value.Demobilization.MaxDailyDemobilizationRatio);
+                value.Demobilization.MaxDailyDemobilizationCount =
+                    NonNegativeValue(
+                        demobilization,
+                        "MaxDailyDemobilizationCount",
+                        value.Demobilization.MaxDailyDemobilizationCount);
+            }
         }
 
         private static float RatioValue(
