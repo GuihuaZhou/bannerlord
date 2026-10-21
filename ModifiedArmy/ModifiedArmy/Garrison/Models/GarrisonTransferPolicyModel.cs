@@ -120,12 +120,9 @@ namespace ModifiedArmy.Garrison.Models
 
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
-            // Soldiers serving at their home fief return before ordinary
-            // garrison stock is considered. Other fief-service soldiers stay
-            // protected in the garrison and cannot silently change employer.
-            manager?.ReturnTroopsToSettlementWithResult(
-                settlement,
-                garrison);
+            // Reconcile identity records against the live roster, but do not
+            // end fief service merely because an ordinary withdrawal occurs.
+            manager?.ReconcilePartyFiefTroops(garrison);
             GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
                 .GarrisonDefense.Evaluate(settlement);
             int safeTransferCount = ForceManagementFacade.Current

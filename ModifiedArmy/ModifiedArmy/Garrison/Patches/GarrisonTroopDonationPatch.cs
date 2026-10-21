@@ -141,10 +141,6 @@ namespace ModifiedArmy.Garrison.Patches
                 return true;
             }
 
-            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .ReturnTroopsToSettlementWithResult(
-                    settlement,
-                    mobileParty);
             ForceManagementFacade.Current.TroopTransfers
                 .TransferFieldToGarrison(
                     mobileParty,

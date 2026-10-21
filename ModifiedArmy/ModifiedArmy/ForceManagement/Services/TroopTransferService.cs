@@ -259,10 +259,21 @@ namespace ModifiedArmy.ForceManagement.Services
         {
             MobileParty garrison = destination?.Town?.GarrisonParty;
             if (source == null || garrison == null || requestedCount <= 0 ||
+                !source.IsActive || !garrison.IsActive ||
                 source.ActualClan == null ||
                 source.ActualClan != destination.OwnerClan ||
-                source.MapEvent != null || destination.IsUnderSiege)
+                garrison.ActualClan != destination.OwnerClan ||
+                source.CurrentSettlement != destination ||
+                source.MapEvent != null || garrison.MapEvent != null ||
+                destination.IsUnderSiege)
             {
+                LogOneWayTransfer(
+                    source,
+                    destination,
+                    requestedCount,
+                    0,
+                    0,
+                    "InvalidOrUnsafeTransfer");
                 return 0;
             }
 
@@ -274,13 +285,23 @@ namespace ModifiedArmy.ForceManagement.Services
                 GarrisonRecruitmentCapacity.GetTransferFreeSlots(garrison));
             if (allowed <= 0)
             {
+                LogOneWayTransfer(
+                    source,
+                    destination,
+                    requestedCount,
+                    0,
+                    0,
+                    "NoApprovedCapacity");
                 return 0;
             }
 
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
+            manager?.ReconcilePartyFiefTroops(source);
             Dictionary<CharacterObject, int> reserved = manager?
                 .GetServingTroopCounts(source) ?? new();
+            int protectedFiefCount = reserved.Values.Sum(value =>
+                Math.Max(0, value));
             List<RecruitmentCandidate> candidates = source.MemberRoster
                 .GetTroopRoster()
                 .Where(item => item.Character != null &&
@@ -358,7 +379,34 @@ namespace ModifiedArmy.ForceManagement.Services
                 }
             }
 
+            LogOneWayTransfer(
+                source,
+                destination,
+                requestedCount,
+                transferred,
+                protectedFiefCount,
+                transferred > 0 ? "Completed" : "NoTransferableOrdinaryTroops");
             return transferred;
+        }
+
+        private static void LogOneWayTransfer(
+            MobileParty source,
+            Settlement destination,
+            int requested,
+            int actual,
+            int protectedFiefCount,
+            string reason)
+        {
+            ModLogger.FileNotice(string.Format(
+                "One-way troop transfer: direction=FieldToGarrison, " +
+                "party={0}, settlement={1}, requested={2}, actual={3}, " +
+                "protectedFiefCount={4}, reason={5}",
+                source?.StringId ?? "unknown",
+                destination?.StringId ?? "unknown",
+                Math.Max(0, requested),
+                Math.Max(0, actual),
+                Math.Max(0, protectedFiefCount),
+                reason ?? "unknown"));
         }
 
         public static string GetRosterFingerprint(MobileParty party)
