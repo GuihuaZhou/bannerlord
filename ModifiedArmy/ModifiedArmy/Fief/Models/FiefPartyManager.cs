@@ -370,6 +370,105 @@ namespace ModifiedArmy.Models.Fief
                 restoreHearth);
         }
 
+        /// <summary>
+        /// Counts only mobilization backed by concrete village Hearth markers.
+        /// Legacy untracked deficits are deliberately excluded because they
+        /// cannot safely restore Hearth during a normal return.
+        /// </summary>
+        internal int GetTrackedMobilizationCount(Settlement fief)
+        {
+            if (fief == null) return 0;
+            return _mobilizationOwners
+                .Where(pair => pair.Value == fief)
+                .Sum(pair => _mobilizedHearth.TryGetValue(
+                    pair.Key,
+                    out int count)
+                        ? Math.Max(0, count)
+                        : 0);
+        }
+
+        /// <summary>
+        /// Releases exactly <paramref name="count"/> tracked Hearth markers
+        /// and restores the corresponding village Hearth. The per-village
+        /// result is a rollback token for the surrounding return transaction.
+        /// No state changes are made when the tracked balance is insufficient.
+        /// </summary>
+        internal bool TryReleaseMobilizationExact(
+            Settlement fief,
+            int count,
+            out Dictionary<Settlement, int> releasedByVillage)
+        {
+            releasedByVillage = new Dictionary<Settlement, int>();
+            if (fief == null || count <= 0 ||
+                GetTrackedMobilizationCount(fief) < count)
+            {
+                return false;
+            }
+
+            List<Settlement> villages = _mobilizationOwners
+                .Where(pair => pair.Value == fief &&
+                    _mobilizedHearth.TryGetValue(pair.Key, out int value) &&
+                    value > 0)
+                .Select(pair => pair.Key)
+                .OrderBy(settlement => settlement.StringId)
+                .ToList();
+            int released = 0;
+            while (released < count)
+            {
+                foreach (Settlement village in villages)
+                {
+                    if (released >= count) break;
+                    if (!_mobilizedHearth.TryGetValue(
+                            village,
+                            out int current) || current <= 0)
+                    {
+                        continue;
+                    }
+                    _mobilizedHearth[village] = current - 1;
+                    if (village.Village != null) village.Village.Hearth += 1f;
+                    releasedByVillage[village] = releasedByVillage.TryGetValue(
+                        village,
+                        out int previous)
+                            ? previous + 1
+                            : 1;
+                    released++;
+                }
+            }
+            foreach (Settlement village in villages
+                .Where(item => _mobilizedHearth.TryGetValue(
+                    item,
+                    out int value) && value <= 0)
+                .ToList())
+            {
+                _mobilizedHearth.Remove(village);
+                _mobilizationOwners.Remove(village);
+            }
+            return released == count;
+        }
+
+        /// <summary>
+        /// Reverses a successful exact mobilization release after a later step
+        /// in the same return transaction fails.
+        /// </summary>
+        internal void RollbackMobilizationRelease(
+            Settlement fief,
+            IReadOnlyDictionary<Settlement, int> releasedByVillage)
+        {
+            if (fief == null || releasedByVillage == null) return;
+            foreach (var pair in releasedByVillage)
+            {
+                if (pair.Key == null || pair.Value <= 0) continue;
+                _mobilizedHearth[pair.Key] = _mobilizedHearth.TryGetValue(
+                    pair.Key,
+                    out int current)
+                        ? current + pair.Value
+                        : pair.Value;
+                _mobilizationOwners[pair.Key] = fief;
+                if (pair.Key.Village != null)
+                    pair.Key.Village.Hearth -= pair.Value;
+            }
+        }
+
         public void RebuildServingDetachmentIndex()
         {
             _servingDetachmentIndex.Clear();
@@ -432,6 +531,107 @@ namespace ModifiedArmy.Models.Fief
         public FiefReconciliationResult ReconcilePartyFiefTroops(MobileParty party)
         {
             return FiefServiceReconciler.Reconcile(this, party);
+        }
+
+        /// <summary>
+        /// Attempts a controlled partial return from one identified service
+        /// batch to its real source fief. The party is reconciled first, so
+        /// upgraded troops and confirmed battle losses are reflected before
+        /// the requested limit is evaluated.
+        /// </summary>
+        /// <param name="servingParty">Party currently carrying the batch.</param>
+        /// <param name="sourceFief">Authoritative source recorded for it.</param>
+        /// <param name="batchId">Stable ID of the batch to reduce.</param>
+        /// <param name="maximumCount">Maximum soldiers allowed to return.</param>
+        /// <returns>Actual committed result; rejected calls have no return side effects.</returns>
+        public FiefReturnResult TryReturnFiefTroops(
+            MobileParty servingParty,
+            Settlement sourceFief,
+            string batchId,
+            int maximumCount)
+        {
+            FiefReturnResult rejected = new FiefReturnResult
+            {
+                SourceFief = sourceFief,
+                BatchId = batchId,
+                RequestedCount = Math.Max(0, maximumCount),
+                ReasonCode = "InvalidRequest"
+            };
+            if (servingParty == null || !servingParty.IsActive ||
+                servingParty.MapEvent != null || sourceFief == null ||
+                servingParty.ActualClan == null ||
+                sourceFief.OwnerClan != servingParty.ActualClan ||
+                string.IsNullOrEmpty(batchId) || maximumCount <= 0)
+            {
+                LogFiefReturn(servingParty, rejected, 0, 0);
+                return rejected;
+            }
+
+            AdvanceServiceDays(servingParty);
+            ReconcilePartyFiefTroops(servingParty);
+            ServingDetachmentRef selected = GetServingDetachments(servingParty)
+                .FirstOrDefault(item => item.SourceFief == sourceFief &&
+                    item.Detachment?.BatchId == batchId &&
+                    !item.Detachment.IsEmpty());
+            if (selected.Detachment == null ||
+                !_fiefDataMap.TryGetValue(sourceFief, out FiefPartyData data) ||
+                data == null)
+            {
+                rejected.ReasonCode = "NoEligibleBatch";
+                LogFiefReturn(servingParty, rejected, 0, 0);
+                return rejected;
+            }
+
+            int trackedMobilization = GetTrackedMobilizationCount(sourceFief);
+            if (trackedMobilization <= 0)
+            {
+                rejected.ReasonCode = "NoTrackedMobilization";
+                LogFiefReturn(
+                    servingParty,
+                    rejected,
+                    selected.Detachment.GetTotalCount(),
+                    0);
+                return rejected;
+            }
+
+            FiefReturnResult result = data.TryCommitFiefReturn(
+                this,
+                servingParty,
+                selected.Detachment,
+                maximumCount,
+                trackedMobilization);
+            LogFiefReturn(
+                servingParty,
+                result,
+                selected.Detachment.GetTotalCount(),
+                MilitaryConfigManager.Instance.RequireActiveConfig()
+                    .GetDoctrine(sourceFief).Service.ReturnCooldownWeeks);
+            return result;
+        }
+
+        /// <summary>
+        /// Writes one auditable result for both successful and rejected return
+        /// attempts without displaying a diagnostic UI message.
+        /// </summary>
+        private static void LogFiefReturn(
+            MobileParty party,
+            FiefReturnResult result,
+            int remainingBatch,
+            int cooldownWeeks)
+        {
+            ModLogger.FileNotice(string.Format(
+                "Fief return: party={0}, source={1}, batch={2}, " +
+                "requested={3}, returned={4}, remainingBatch={5}, " +
+                "restoredHearth={6}, cooldownWeeks={7}, reason={8}",
+                party?.StringId ?? "unknown",
+                result?.SourceFief?.StringId ?? "unknown",
+                result?.BatchId ?? "unknown",
+                result?.RequestedCount ?? 0,
+                result?.ActualReturnedCount ?? 0,
+                Math.Max(0, remainingBatch),
+                result?.ActualRestoredHearth ?? 0,
+                Math.Max(0, cooldownWeeks),
+                result?.ReasonCode ?? "unknown"));
         }
 
         public void ReconcileServingPartiesForClan(Clan clan)

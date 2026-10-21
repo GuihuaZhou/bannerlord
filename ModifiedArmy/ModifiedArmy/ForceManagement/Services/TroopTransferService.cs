@@ -15,6 +15,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Services
 {
@@ -389,6 +390,10 @@ namespace ModifiedArmy.ForceManagement.Services
             return transferred;
         }
 
+        /// <summary>
+        /// Records the requested and actual ordinary-soldier transfer while
+        /// exposing how many fief-service soldiers remained protected.
+        /// </summary>
         private static void LogOneWayTransfer(
             MobileParty source,
             Settlement destination,
@@ -397,16 +402,52 @@ namespace ModifiedArmy.ForceManagement.Services
             int protectedFiefCount,
             string reason)
         {
-            ModLogger.FileNotice(string.Format(
-                "One-way troop transfer: direction=FieldToGarrison, " +
-                "party={0}, settlement={1}, requested={2}, actual={3}, " +
-                "protectedFiefCount={4}, reason={5}",
-                source?.StringId ?? "unknown",
-                destination?.StringId ?? "unknown",
-                Math.Max(0, requested),
-                Math.Max(0, actual),
-                Math.Max(0, protectedFiefCount),
-                reason ?? "unknown"));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_one_way_troop_transfer");
+            message.SetTextVariable(
+                "PARTY",
+                PartyLogFormatter.GetDisplayName(source));
+            message.SetTextVariable(
+                "SETTLEMENT",
+                destination?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("REQUESTED", Math.Max(0, requested));
+            message.SetTextVariable("ACTUAL", Math.Max(0, actual));
+            message.SetTextVariable(
+                "PROTECTED",
+                Math.Max(0, protectedFiefCount));
+            message.SetTextVariable("RESULT", GetTransferResultText(reason));
+            ModLogger.FileNotice(message.ToString());
+        }
+
+        /// <summary>
+        /// Converts internal one-way transfer reason codes into localizable,
+        /// player-readable result text.
+        /// </summary>
+        private static TextObject GetTransferResultText(string reason)
+        {
+            switch (reason)
+            {
+                case "InvalidOrUnsafeTransfer":
+                    return new TextObject(
+                        "{=ModifiedArmy_TransferUnsafe}" +
+                        "the transfer conditions are currently unsafe");
+                case "NoApprovedCapacity":
+                    return new TextObject(
+                        "{=ModifiedArmy_TransferNoCapacity}" +
+                        "the garrison cannot receive more soldiers");
+                case "Completed":
+                    return new TextObject(
+                        "{=ModifiedArmy_TransferCompleted}" +
+                        "the transfer was completed");
+                case "NoTransferableOrdinaryTroops":
+                    return new TextObject(
+                        "{=ModifiedArmy_TransferNoOrdinaryTroops}" +
+                        "there are no ordinary soldiers available to transfer");
+                default:
+                    return new TextObject(
+                        "{=ModifiedArmy_TransferRejected}"+
+                        "the transfer was not completed");
+            }
         }
 
         public static string GetRosterFingerprint(MobileParty party)

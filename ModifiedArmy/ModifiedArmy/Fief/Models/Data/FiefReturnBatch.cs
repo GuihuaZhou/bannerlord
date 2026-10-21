@@ -41,6 +41,17 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
+        /// <summary>
+        /// Replaces the runtime roster while retaining this batch's saved
+        /// cooldown. Used to restore the exact pre-transaction state.
+        /// </summary>
+        public void ReplaceTroops(
+            IReadOnlyDictionary<CharacterObject, int> troops)
+        {
+            Troops.Clear();
+            AddTroops(troops);
+        }
+
         public void Tick()
         {
             if (WaitWeeks > 0) WaitWeeks--;

@@ -173,5 +173,11 @@
     <string id="ModifiedArmy_TransportRecovering" text="正在把剩余人员和物资送往安全驻军" />
     <string id="ModifiedArmy_TransportRecoveryPartial" text="暂时只安置了一部分人员，正在继续寻找接收地点" />
     <string id="ModifiedArmy_TransportRecovered" text="已经妥善安置了剩余人员和物资" />
+    <string id="ModifiedArmy_OneWayTroopTransfer" text="[驻军调拨] {PARTY}准备向{SETTLEMENT}移交{REQUESTED}名士兵，实际移交了{ACTUAL}人；另有{PROTECTED}名在役封建兵受到保护，没有参与调拨。结果：{RESULT}。" />
+    <string id="ModifiedArmy_TransferUnsafe" text="当前情况不适合调拨" />
+    <string id="ModifiedArmy_TransferNoCapacity" text="驻军目前无法再接收士兵" />
+    <string id="ModifiedArmy_TransferCompleted" text="调拨完成" />
+    <string id="ModifiedArmy_TransferNoOrdinaryTroops" text="队伍里没有可以移交的普通士兵" />
+    <string id="ModifiedArmy_TransferRejected" text="本次调拨没有完成" />
   </strings>
 </base>

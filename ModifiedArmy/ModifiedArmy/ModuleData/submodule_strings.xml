@@ -201,6 +201,8 @@
         text="{=ModifiedArmy_TransportEvent}[Transport] mission={MISSION}, mode={MODE}, event={EVENT}, state={STATE}, clan={CLAN}, source={SOURCE}, destination={DESTINATION}, requested troops={REQUESTED_TROOPS}, requested food={REQUESTED_FOOD}, actual troops={ACTUAL_TROOPS}, actual food={ACTUAL_FOOD}, event amount={EVENT_AMOUNT}." />
     <string id="str_modifiedarmy_transport_scan"
         text="{=ModifiedArmy_TransportScan}[Transport] Automatic scan for clan {CLAN}: military parties dispatched={MILITARY}, food-aid parties dispatched={AID}." />
+    <string id="str_modifiedarmy_one_way_troop_transfer"
+        text="{=ModifiedArmy_OneWayTroopTransfer}[Garrison Transfer] {PARTY} requested to transfer {REQUESTED} soldiers to {SETTLEMENT}; {ACTUAL} were transferred, while {PROTECTED} fief-service soldiers remained protected. Result: {RESULT}." />
     <string id="str_modifiedarmy_supply_escort_capacity"
         text="{=ModifiedArmy_SupplyEscortCapacity}[Garrison Capacity] settlement={SETTLEMENT_ID}, party={PARTY_ID}, before={GARRISON_BEFORE}, returning={RETURNING}, reserved before={RESERVED_BEFORE}, after={GARRISON_AFTER}, reserved after={RESERVED_AFTER}, limit={LIMIT}, excess={EXCESS}, mission state={MISSION_STATE}." />
     <string id="str_modifiedarmy_multiple_supply_parties"
