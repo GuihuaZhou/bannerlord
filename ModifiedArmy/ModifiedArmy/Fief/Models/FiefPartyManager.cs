@@ -2,6 +2,7 @@ using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
 using System;
@@ -803,7 +804,10 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// Recruits all available fief squads from a settlement into the target mobile party.
         /// </summary>
-        public int RecruitFiefTroopsFromSettlement(Settlement settlement, MobileParty targetParty)
+        public int RecruitFiefTroopsFromSettlement(
+            Settlement settlement,
+            MobileParty targetParty,
+            int maximumCount = int.MaxValue)
         {
             if (settlement == null || targetParty == null)
             {
@@ -812,9 +816,43 @@ namespace ModifiedArmy.Models.Fief
             }
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
-                return data.RecruitTroopsToParty(targetParty);
+                return data.RecruitTroopsToParty(targetParty, maximumCount);
             }
             return 0;
+        }
+
+        /// <summary>
+        /// Returns template-weighted fief offers for a pure exchange preview.
+        /// </summary>
+        public IReadOnlyList<RecruitmentCandidate>
+            PreviewFiefRecruitmentCandidates(
+                Settlement settlement,
+                MobileParty targetParty,
+                int maximumCount)
+        {
+            return settlement != null && targetParty != null &&
+                _fiefDataMap.TryGetValue(settlement, out FiefPartyData data) &&
+                data != null
+                    ? data.PreviewFiefRecruitmentCandidates(
+                        targetParty,
+                        maximumCount)
+                    : Array.Empty<RecruitmentCandidate>();
+        }
+
+        /// <summary>Returns the exact approved manifest without committing it.</summary>
+        public IReadOnlyDictionary<CharacterObject, int>
+            PreviewFiefRecruitmentApprovals(
+                Settlement settlement,
+                MobileParty targetParty,
+                int maximumCount)
+        {
+            return settlement != null && targetParty != null &&
+                _fiefDataMap.TryGetValue(settlement, out FiefPartyData data) &&
+                data != null
+                    ? data.PreviewFiefRecruitmentApprovals(
+                        targetParty,
+                        maximumCount)
+                    : new Dictionary<CharacterObject, int>();
         }
 
         /// <summary>

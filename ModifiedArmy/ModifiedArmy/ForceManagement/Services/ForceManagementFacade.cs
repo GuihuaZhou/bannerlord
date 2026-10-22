@@ -26,6 +26,7 @@ namespace ModifiedArmy.ForceManagement.Services
         public IPartyGarrisonExchangeModel Exchanges { get; }
         public IAiForcePlanningModel ForcePlanning { get; }
         public IPartyExchangeModel PartyExchange { get; }
+        public PartyExchangeService PartyExchangeRunner { get; }
         public IWarRestPolicyModel WarRest { get; }
         public ITroopValueModel TroopValues { get; }
         public IDemobilizationPolicy Demobilization { get; }
@@ -48,7 +49,8 @@ namespace ModifiedArmy.ForceManagement.Services
             TroopValues = new BasicTroopValueModel();
             Exchanges = new DisabledPartyGarrisonExchangeModel();
             ForcePlanning = new DisabledAiForcePlanningModel();
-            PartyExchange = new DisabledPartyExchangeModel();
+            PartyExchange = new PartyExchangeModel();
+            PartyExchangeRunner = new PartyExchangeService();
             WarRest = new DisabledWarRestPolicyModel();
             Demobilization = new DisabledDemobilizationPolicy();
             PeaceDemobilization = new PeaceDemobilizationModel();

@@ -197,6 +197,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// <summary>All read-only inputs for planning an existing-troop exchange.</summary>
     public sealed class PartyExchangeContext
     {
+        public string OperationId { get; set; }
         public MobileParty Initiator { get; set; }
         public PartyExchangeOperation Operation { get; set; }
         public PartyForceIntent Intent { get; set; }
@@ -226,6 +227,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// </summary>
     public sealed class PartyExchangePlan
     {
+        public string OperationId { get; set; }
         public bool ShouldExecute { get; set; }
         public string ReasonCode { get; set; }
         public PartyExchangeOperation Operation { get; set; }
@@ -233,6 +235,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public PartyExchangeExecutorKind Executor { get; set; }
         public PartyTroopSource Source { get; set; }
         public PartyTroopSource Destination { get; set; }
+        public Settlement TargetSettlement { get; set; }
         public TroopExchangeManifest SourceToDestination { get; } =
             new TroopExchangeManifest();
         public TroopExchangeManifest DestinationToSource { get; } =
@@ -253,6 +256,14 @@ namespace ModifiedArmy.ForceManagement.Contracts
                 ReasonCode = reason,
                 Executor = PartyExchangeExecutorKind.None
             };
+    }
+
+    /// <summary>Result of one guarded unified exchange execution.</summary>
+    public sealed class PartyExchangeExecutionResult
+    {
+        public bool Executed { get; set; }
+        public string ReasonCode { get; set; }
+        public int TransferredCount { get; set; }
     }
 
     public interface IAiForcePlanningModel

@@ -55,7 +55,9 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         /// <param name="targetParty">目标部队</param>
         /// <returns>总招募人数（必为 10 的倍数）</returns>
-        public int RecruitTroopsToParty(MobileParty targetParty)
+        public int RecruitTroopsToParty(
+            MobileParty targetParty,
+            int maximumCount = int.MaxValue)
         {
             if (targetParty == null || _fiefParty == null)
                 return 0;
@@ -68,7 +70,9 @@ namespace ModifiedArmy.Models.Fief
 
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
-            int remainSize = partySizeLimit - currentMembers;
+            int remainSize = Math.Min(
+                partySizeLimit - currentMembers,
+                Math.Max(0, maximumCount));
 
             // A full party cannot receive another fief detachment.
             if (remainSize <= 0)
@@ -308,6 +312,76 @@ namespace ModifiedArmy.Models.Fief
             }
 
             return totalRecruited;
+        }
+
+        /// <summary>
+        /// Builds the same template-weighted offers used by recruitment,
+        /// without changing the fief, party, budget, or service records.
+        /// </summary>
+        internal IReadOnlyList<RecruitmentCandidate>
+            PreviewFiefRecruitmentCandidates(
+                MobileParty targetParty,
+                int maximumCount)
+        {
+            var candidates = new List<RecruitmentCandidate>();
+            if (targetParty == null || _fiefParty == null ||
+                _soldierTypeWeights == null || _totalWeight <= 0)
+                return candidates;
+            int remainSize = Math.Min(
+                targetParty.Party.PartySizeLimit -
+                    targetParty.Party.NumberOfAllMembers,
+                Math.Max(0, maximumCount));
+            if (remainSize <= 0) return candidates;
+
+            Dictionary<SoldierType, int> offers = _soldierTypeWeights
+                .ToDictionary(
+                    pair => pair.Key,
+                    pair => (remainSize * pair.Value) / _totalWeight);
+            foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
+            {
+                CharacterObject troop = element.Character;
+                if (troop == null || element.Number <= 0 ||
+                    !SoldierTypeClassifier.IsFiefTroop(troop))
+                    continue;
+                SoldierType type = SoldierTypeClassifier.GetSoldierType(troop);
+                int count = offers.TryGetValue(type, out int available)
+                    ? Math.Min(element.Number, available)
+                    : 0;
+                if (count <= 0) continue;
+                candidates.Add(new RecruitmentCandidate(
+                    troop,
+                    count,
+                    RecruitmentSource.Fief));
+                offers[type] -= count;
+            }
+            return candidates;
+        }
+
+        /// <summary>
+        /// Evaluates the exact fief manifest that the authoritative commit
+        /// path would use, including player/AI finance and minimum-batch rules.
+        /// </summary>
+        internal IReadOnlyDictionary<CharacterObject, int>
+            PreviewFiefRecruitmentApprovals(
+                MobileParty targetParty,
+                int maximumCount)
+        {
+            IReadOnlyList<RecruitmentCandidate> candidates =
+                PreviewFiefRecruitmentCandidates(targetParty, maximumCount);
+            if (targetParty?.LeaderHero?.Clan == null || candidates.Count == 0)
+                return new Dictionary<CharacterObject, int>();
+            RecruitmentPlan ignored;
+            Dictionary<CharacterObject, int> result =
+                targetParty.LeaderHero.Clan == Clan.PlayerClan
+                    ? BuildPlayerFiefRecruitment(targetParty, candidates)
+                    : BuildAiFiefRecruitment(targetParty, candidates, out ignored);
+            int minimumBatch = MilitaryConfigManager.Instance
+                .RequireActiveConfig()
+                .AiRecruitment.ForceManagement.MinimumFiefRecruitBatch;
+            return targetParty.LeaderHero.Clan != Clan.PlayerClan &&
+                result.Values.Sum() > 0 && result.Values.Sum() < minimumBatch
+                    ? new Dictionary<CharacterObject, int>()
+                    : result;
         }
 
         /// <summary>
