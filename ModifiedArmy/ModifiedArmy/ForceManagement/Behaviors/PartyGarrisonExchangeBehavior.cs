@@ -11,7 +11,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     /// Owns the sole settlement-entry transaction for unified force tasks.
     /// Harmony patches only block competing native decisions.
     /// </summary>
-    public sealed class PartyExchangeBehavior : CampaignBehaviorBase
+    public sealed class PartyGarrisonExchangeBehavior : CampaignBehaviorBase
     {
         private Dictionary<string, int> _lastEvaluationDay =
             new Dictionary<string, int>();

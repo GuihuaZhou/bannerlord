@@ -175,6 +175,8 @@ namespace ModifiedArmy.ForceManagement.Services
                 return Result(false, "ManifestNoLongerAvailable", 0);
 
             var rollback = new List<Action>();
+            int sourceBefore = source.MemberRoster.TotalRegulars;
+            int destinationBefore = destination.MemberRoster.TotalRegulars;
             try
             {
                 foreach (var pair in plan.SourceToDestination.Troops)
@@ -191,6 +193,14 @@ namespace ModifiedArmy.ForceManagement.Services
                     rollback.Add(() => destination.MemberRoster.AddToCounts(
                         troop, -count, false, -wounded, 0, true, -1));
                 }
+                int moved = plan.SourceToDestination.TotalCount;
+                if (source.MemberRoster.TotalRegulars != sourceBefore - moved ||
+                    destination.MemberRoster.TotalRegulars !=
+                        destinationBefore + moved)
+                {
+                    throw new InvalidOperationException(
+                        "RosterConservationCheckFailed");
+                }
                 return Result(true, "Executed", plan.SourceToDestination.TotalCount);
             }
             catch (Exception exception)
@@ -199,9 +209,11 @@ namespace ModifiedArmy.ForceManagement.Services
                 {
                     try { rollback[index](); } catch { }
                 }
-                return Result(false,
-                    "ExecutionRolledBack:" + exception.GetType().Name,
-                    0);
+                string reason = exception.Message ==
+                        "RosterConservationCheckFailed"
+                    ? "RosterConservationCheckFailedRolledBack"
+                    : "ExecutionRolledBack:" + exception.GetType().Name;
+                return Result(false, reason, 0);
             }
         }
 

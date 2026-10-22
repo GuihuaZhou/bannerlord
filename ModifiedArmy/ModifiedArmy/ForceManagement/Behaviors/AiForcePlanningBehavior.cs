@@ -5,6 +5,7 @@ using ModifiedArmy.Tool;
 using ModifiedArmy.common;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -20,6 +21,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     public sealed class AiForcePlanningBehavior : CampaignBehaviorBase
     {
         private List<PartyForceTask> _tasks = new List<PartyForceTask>();
+        private Dictionary<string, int> _savedTaskRecords = new();
         private readonly PartyForceCandidateService _candidates =
             new PartyForceCandidateService();
         private readonly UnifiedRecruitmentExecutionService _recruitment =
@@ -31,15 +33,204 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(
                 this,
                 OnDailyTick);
+            CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(
+                this,
+                OnGameLoadFinished);
         }
 
         /// <summary>
-        /// Volatile route candidates are rebuilt after loading; no copied
-        /// roster or custom task graph is written into the save container.
+        /// Saves only task identifiers and scalar state. Volatile candidates,
+        /// roster snapshots and approvals are always rebuilt after loading.
         /// </summary>
         public override void SyncData(IDataStore dataStore)
         {
-            _tasks = _tasks ?? new List<PartyForceTask>();
+            if (!dataStore.IsLoading)
+                CaptureTaskSaveFields();
+            dataStore.SyncData(
+                "modifiedarmy_force_task_records_v1",
+                ref _savedTaskRecords);
+            EnsureSaveCollections();
+            if (dataStore.IsLoading)
+                RestoreTaskSaveFields();
+        }
+
+        /// <summary>
+        /// Converts live tasks into primitive dictionaries already supported
+        /// by the base save system; no custom Saveable class is registered.
+        /// </summary>
+        private void CaptureTaskSaveFields()
+        {
+            EnsureSaveCollections();
+            _savedTaskRecords.Clear();
+            foreach (PartyForceTask task in _tasks ??
+                Enumerable.Empty<PartyForceTask>())
+            {
+                string partyId = task?.Party?.StringId ?? task?.PartyId;
+                string targetId = task?.TargetSettlement?.StringId;
+                if (string.IsNullOrEmpty(partyId) ||
+                    string.IsNullOrEmpty(targetId) ||
+                    task.Status == PartyForceTaskStatus.Completed ||
+                    task.Status == PartyForceTaskStatus.Cancelled)
+                    continue;
+                string record = string.Join("\u001f", new[]
+                {
+                    partyId,
+                    targetId,
+                    task.SourceBatchId ?? string.Empty,
+                    ((int)task.Intent).ToString(CultureInfo.InvariantCulture),
+                    ((int)task.SourceKind).ToString(CultureInfo.InvariantCulture),
+                    task.Version.ToString(CultureInfo.InvariantCulture),
+                    task.CreatedDay.ToString(CultureInfo.InvariantCulture),
+                    ((int)task.Status).ToString(CultureInfo.InvariantCulture),
+                    task.Progress.ToString(CultureInfo.InvariantCulture)
+                });
+                _savedTaskRecords[record] = 1;
+            }
+        }
+
+        /// <summary>
+        /// Resolves saved identifiers back to live objects without replaying
+        /// movement or roster changes during loading.
+        /// </summary>
+        private void RestoreTaskSaveFields()
+        {
+            _tasks = new List<PartyForceTask>();
+            foreach (string record in _savedTaskRecords.Keys)
+            {
+                if (!TryParseRecord(record, out string partyId,
+                        out string targetId, out string batchId,
+                        out PartyForceIntent intent,
+                        out PartyForceSourceKind sourceKind,
+                        out int version, out int createdDay,
+                        out PartyForceTaskStatus status, out int progress))
+                    continue;
+                MobileParty party = MobileParty.All.FirstOrDefault(item =>
+                    item?.StringId == partyId);
+                Settlement target = Settlement.All.FirstOrDefault(item =>
+                    item?.StringId == targetId);
+                if (party == null || target == null) continue;
+                _tasks.Add(new PartyForceTask
+                {
+                    Party = party,
+                    PartyId = partyId,
+                    ClanId = party.ActualClan?.StringId,
+                    OwnerKey = "ModifiedArmy.AiForcePlanning",
+                    TargetSettlement = target,
+                    SourceBatchId = batchId,
+                    Intent = intent,
+                    SourceKind = sourceKind,
+                    Version = version,
+                    CreatedDay = createdDay,
+                    LastValidatedDay = createdDay,
+                    Status = status,
+                    Progress = progress,
+                    OwnsMovementOrder = false
+                });
+            }
+        }
+
+        /// <summary>Revalidates restored tasks once the campaign is fully loaded.</summary>
+        private void OnGameLoadFinished()
+        {
+            foreach (PartyForceTask task in _tasks.ToList())
+            {
+                MobileParty party = task.Party;
+                bool ownsRoute = party?.DefaultBehavior ==
+                        AiBehavior.GoToSettlement &&
+                    party.TargetSettlement == task.TargetSettlement;
+                bool valid = ManagedPartyPolicy.IsModManagedAiParty(party) &&
+                    task.TargetSettlement != null &&
+                    !task.TargetSettlement.IsUnderSiege &&
+                    ownsRoute;
+                if (valid && task.Intent == PartyForceIntent.WarRest)
+                {
+                    WarRestContext rest = ForceManagementFacade.Current
+                        .WarRestPlanning.BuildContext(
+                            party,
+                            ForceManagementFacade.Current.GetPartyTarget(party),
+                            false);
+                    valid = ForceManagementFacade.IsAtFormalWar(
+                            party.ActualClan) &&
+                        rest.FiefBatches.Any(batch =>
+                            batch.BatchId == task.SourceBatchId &&
+                            batch.SourceFief == task.TargetSettlement &&
+                            batch.IsSafe);
+                }
+                if (valid && task.Intent == PartyForceIntent.Recruit)
+                {
+                    PartyForcePlanningContext context = _candidates.BuildContext(
+                        party,
+                        task,
+                        true);
+                    valid = context.Candidates.Any(candidate =>
+                        candidate.Settlement == task.TargetSettlement &&
+                        candidate.SourceKind == task.SourceKind &&
+                        candidate.IsSafe);
+                }
+                task.LastValidatedDay = (int)CampaignTime.Now.ToDays;
+                task.OwnsMovementOrder = valid;
+                if (valid)
+                {
+                    task.Status = PartyForceTaskStatus.Traveling;
+                    ModLogger.FileNotice(string.Format(
+                        "[兵力任务恢复] {0}读档后继续前往{1}，任务类型为{2}。",
+                        PartyLogFormatter.GetDisplayName(party),
+                        task.TargetSettlement.Name,
+                        task.Intent));
+                }
+                else
+                {
+                    task.Status = PartyForceTaskStatus.Cancelled;
+                    task.ReasonCode = "SavedTaskFailedRevalidation";
+                    ModLogger.FileNotice(string.Format(
+                        "[兵力任务恢复] {0}原定前往{1}的{2}任务已经失效，" +
+                        "读档后已安全取消，没有调整兵员。",
+                        PartyLogFormatter.GetDisplayName(party),
+                        task.TargetSettlement?.Name?.ToString() ?? "未知定居点",
+                        task.Intent));
+                }
+            }
+        }
+
+        /// <summary>Repairs absent keys when loading an older save.</summary>
+        private void EnsureSaveCollections()
+        {
+            _savedTaskRecords ??= new Dictionary<string, int>();
+            _tasks ??= new List<PartyForceTask>();
+        }
+
+        /// <summary>Parses one versioned primitive task record defensively.</summary>
+        private static bool TryParseRecord(
+            string record, out string partyId, out string targetId,
+            out string batchId, out PartyForceIntent intent,
+            out PartyForceSourceKind sourceKind, out int version,
+            out int createdDay, out PartyForceTaskStatus status,
+            out int progress)
+        {
+            string[] parts = (record ?? string.Empty).Split('\u001f');
+            partyId = parts.Length > 0 ? parts[0] : null;
+            targetId = parts.Length > 1 ? parts[1] : null;
+            batchId = parts.Length > 2 ? parts[2] : null;
+            intent = PartyForceIntent.Suspended;
+            sourceKind = PartyForceSourceKind.None;
+            status = PartyForceTaskStatus.Suspended;
+            version = createdDay = progress = 0;
+            if (parts.Length != 9 || string.IsNullOrEmpty(partyId) ||
+                string.IsNullOrEmpty(targetId) ||
+                !int.TryParse(parts[3], out int intentValue) ||
+                !int.TryParse(parts[4], out int sourceValue) ||
+                !int.TryParse(parts[5], out version) ||
+                !int.TryParse(parts[6], out createdDay) ||
+                !int.TryParse(parts[7], out int statusValue) ||
+                !int.TryParse(parts[8], out progress) ||
+                !Enum.IsDefined(typeof(PartyForceIntent), intentValue) ||
+                !Enum.IsDefined(typeof(PartyForceSourceKind), sourceValue) ||
+                !Enum.IsDefined(typeof(PartyForceTaskStatus), statusValue))
+                return false;
+            intent = (PartyForceIntent)intentValue;
+            sourceKind = (PartyForceSourceKind)sourceValue;
+            status = (PartyForceTaskStatus)statusValue;
+            return true;
         }
 
         /// <summary>Runs the single daily planning pass and owns approved routes.</summary>
