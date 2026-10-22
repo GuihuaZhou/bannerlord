@@ -11,11 +11,11 @@ namespace ModifiedArmy.Recruitment
         static RecruitmentModelManager()
         {
             Templates = new RecruitmentTemplateRepository();
-            Model = new DefaultAIRecruitmentModel(Templates);
+            Model = new DefaultAiTroopRecruitmentModel(Templates);
         }
 
         public static RecruitmentTemplateRepository Templates { get; }
 
-        public static AIRecruitmentModel Model { get; }
+        public static AiTroopRecruitmentModel Model { get; }
     }
 }

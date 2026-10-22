@@ -17,11 +17,11 @@ namespace ModifiedArmy.Recruitment.Models
     /// wage limits and combined thirty-day affordability. Composition ranges
     /// affect candidate preference but are not recruitment limits.
     /// </summary>
-    public sealed class DefaultAIRecruitmentModel : AIRecruitmentModel
+    public class DefaultAiTroopRecruitmentModel : AiTroopRecruitmentModel
     {
         private readonly RecruitmentTemplateRepository _templates;
 
-        public DefaultAIRecruitmentModel(
+        public DefaultAiTroopRecruitmentModel(
             RecruitmentTemplateRepository templates)
         {
             _templates = templates
@@ -567,6 +567,23 @@ namespace ModifiedArmy.Recruitment.Models
             return party?.ActualClan?.Culture?.StringId
                 ?? party?.LeaderHero?.Culture?.StringId
                 ?? "default";
+        }
+    }
+
+    /// <summary>
+    /// Compatibility constructor for integrations compiled against the old
+    /// implementation name. All policy remains in the preferred base class.
+    /// </summary>
+    [Obsolete(
+        "Use DefaultAiTroopRecruitmentModel; this adapter will be removed during the atomic entry-point switch.")]
+    public sealed class DefaultAIRecruitmentModel
+        : DefaultAiTroopRecruitmentModel
+    {
+        /// <summary>Creates the compatibility adapter over the same repository.</summary>
+        public DefaultAIRecruitmentModel(
+            RecruitmentTemplateRepository templates)
+            : base(templates)
+        {
         }
     }
 }

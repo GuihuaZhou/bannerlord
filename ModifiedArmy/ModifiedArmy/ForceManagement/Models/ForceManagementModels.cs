@@ -335,6 +335,40 @@ namespace ModifiedArmy.ForceManagement.Models
             ExchangePlan.NoExchange("AutomaticSwapDisabled");
     }
 
+    /// <summary>
+    /// Phase-one planner boundary. It deliberately owns no live tasks until
+    /// the daily planning behavior is introduced in the later atomic switch.
+    /// </summary>
+    public sealed class DisabledAiForcePlanningModel
+        : IAiForcePlanningModel
+    {
+        /// <summary>Returns a visible non-executing result.</summary>
+        public PartyForcePlan BuildDailyPlan(
+            PartyForcePlanningContext context) =>
+            PartyForcePlan.NoPlan("UnifiedForcePlanningDisabled");
+    }
+
+    /// <summary>
+    /// Phase-one exchange boundary. Existing garrison and fief paths continue
+    /// to use their compatibility services until the phase-five switch.
+    /// </summary>
+    public sealed class DisabledPartyExchangeModel : IPartyExchangeModel
+    {
+        /// <summary>Rejects every new unified exchange request.</summary>
+        public PartyExchangePlan BuildPlan(PartyExchangeContext context) =>
+            PartyExchangePlan.Rejected("UnifiedPartyExchangeDisabled");
+    }
+
+    /// <summary>
+    /// Placeholder for the war-only rest policy defined in phase four.
+    /// </summary>
+    public sealed class DisabledWarRestPolicyModel : IWarRestPolicyModel
+    {
+        /// <summary>Refuses rest without inventing unapproved thresholds.</summary>
+        public WarRestDecision Evaluate(WarRestContext context) =>
+            WarRestDecision.Denied("WarRestPolicyDisabled");
+    }
+
     public sealed class DisabledDemobilizationPolicy
         : IDemobilizationPolicy
     {
