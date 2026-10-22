@@ -26,6 +26,18 @@ namespace ModifiedArmy.ForceManagement.Contracts
         Mercenary
     }
 
+    /// <summary>Lifecycle state of one persisted force-planning task.</summary>
+    public enum PartyForceTaskStatus
+    {
+        Planned,
+        Traveling,
+        Visiting,
+        Executing,
+        Completed,
+        Cancelled,
+        Suspended
+    }
+
     /// <summary>Supported movement of existing soldiers between resources.</summary>
     public enum PartyExchangeOperation
     {
@@ -93,6 +105,12 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public float PreferenceScore { get; set; }
         public float EffectScore { get; set; }
         public float Distance { get; set; }
+        public int GapCovered { get; set; }
+        public float CultureMatchFactor { get; set; }
+        public float TravelCost { get; set; }
+        public float RouteRisk { get; set; }
+        public float EconomicImpact { get; set; }
+        public float Score { get; set; }
         public bool IsSafe { get; set; }
         public string ReasonCode { get; set; }
     }
@@ -111,6 +129,12 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public PartyForceSourceKind SourceKind { get; set; }
         public Settlement TargetSettlement { get; set; }
         public string ReasonCode { get; set; }
+        public string PartyId { get; set; }
+        public string ClanId { get; set; }
+        public int LastValidatedDay { get; set; }
+        public PartyForceTaskStatus Status { get; set; }
+        public int Progress { get; set; }
+        public bool OwnsMovementOrder { get; set; }
     }
 
     /// <summary>All read-only inputs used to build a daily strategic plan.</summary>
@@ -125,6 +149,10 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public PartyForceSourceWeights SourceWeights { get; set; }
         public IReadOnlyList<PartyForceCandidate> Candidates { get; set; } =
             Array.Empty<PartyForceCandidate>();
+        public float RecruitmentNeedScore { get; set; }
+        public float RecruitmentNeedThreshold { get; set; }
+        public bool IsRandomGateOpen { get; set; }
+        public bool IsProtectedByHigherPriorityOrder { get; set; }
         public int Today { get; set; }
     }
 

@@ -48,7 +48,7 @@ namespace ModifiedArmy.ForceManagement.Services
             ReinforcementRoutes = new ReinforcementRouteModel();
             TroopValues = new BasicTroopValueModel();
             Exchanges = new DisabledPartyGarrisonExchangeModel();
-            ForcePlanning = new DisabledAiForcePlanningModel();
+            ForcePlanning = new AiForcePlanningModel();
             PartyExchange = new PartyExchangeModel();
             PartyExchangeRunner = new PartyExchangeService();
             WarRest = new DisabledWarRestPolicyModel();
