@@ -46,6 +46,16 @@ namespace ModifiedArmy.Garrison.Patches
             {
                 return false;
             }
+            if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty))
+            {
+                GarrisonCaptureSupplyBehavior capture = Campaign.Current
+                    .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
+                bool explicitCaptureDonation = settlement?.IsFortification == true &&
+                    capture?.CanDonateTroopsAfterCapture(
+                        mobileParty,
+                        settlement) == true;
+                return explicitCaptureDonation;
+            }
             if (mobileParty != null
                 && mobileParty.IsLordParty
                 && !mobileParty.IsDisbanding
@@ -75,12 +85,8 @@ namespace ModifiedArmy.Garrison.Patches
             MobileParty mobileParty,
             Settlement settlement)
         {
-            Campaign.Current?.GetCampaignBehavior<
-                PartyGarrisonExchangeBehavior>()?
-                .OnNaturalVisit(mobileParty, settlement);
-            Campaign.Current?.GetCampaignBehavior<
-                DemobilizationBehavior>()?
-                .OnNaturalVisit(mobileParty, settlement);
+            // The independent PartyExchangeBehavior owns SettlementEntered.
+            // Keeping this postfix empty avoids a second visit transaction.
         }
     }
 
@@ -120,6 +126,18 @@ namespace ModifiedArmy.Garrison.Patches
             ref int numberOfTroopsToLeave,
             out TransferState __state)
         {
+            Settlement current = mobileParty?.CurrentSettlement;
+            bool explicitCaptureDonation = current?.IsFortification == true &&
+                Campaign.Current?.GetCampaignBehavior<
+                    GarrisonCaptureSupplyBehavior>()?
+                .CanDonateTroopsAfterCapture(mobileParty, current) == true;
+            if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty) &&
+                !explicitCaptureDonation)
+            {
+                __state = null;
+                numberOfTroopsToLeave = 0;
+                return false;
+            }
             MobileParty garrison = mobileParty?.CurrentSettlement?.Town?.GarrisonParty;
             __state = new TransferState
             {
@@ -209,6 +227,9 @@ namespace ModifiedArmy.Garrison.Patches
         {
             __state = settlement?.Town?.GarrisonParty?.Party
                 .NumberOfRegularMembers ?? 0;
+
+            if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty))
+                return false;
 
             GarrisonTransferPolicyModel.TransferApprovedTroopsFromGarrison(
                 mobileParty,

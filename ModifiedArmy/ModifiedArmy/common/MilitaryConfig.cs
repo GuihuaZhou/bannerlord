@@ -98,6 +98,7 @@ namespace ModifiedArmy.common
 
     public sealed class ForceManagementConfig
     {
+        public bool EnableUnifiedAiForcePlanning { get; internal set; }
         public float PeaceTargetRatio { get; internal set; } = 0.35f;
         public int PeaceMinimumCount { get; internal set; } = 50;
         public float AggressiveWarDispositionThreshold { get; internal set; } = 20f;
@@ -246,6 +247,9 @@ namespace ModifiedArmy.common
             {
                 return;
             }
+
+            value.EnableUnifiedAiForcePlanning = BooleanValue(
+                node, "EnableUnifiedAiForcePlanning", false);
 
             value.PeaceTargetRatio = RatioValue(
                 node, "PeaceTargetRatio", value.PeaceTargetRatio);

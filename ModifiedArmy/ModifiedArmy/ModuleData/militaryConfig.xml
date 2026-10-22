@@ -103,6 +103,7 @@
         <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->
         <ReinforcementForecastDays value="7"/>
         <TransportMissionDeadlineDays value="20"/>
+        <EnableUnifiedAiForcePlanning value="true"/>
         <EnableAutomaticSwap value="false"/>
         <EnableAutomaticReinforcement value="false"/>
         <Demobilization>

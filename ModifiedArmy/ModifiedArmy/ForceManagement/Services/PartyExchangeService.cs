@@ -60,7 +60,10 @@ namespace ModifiedArmy.ForceManagement.Services
             string validation = Validate(plan);
             if (validation != "Valid")
             {
-                return Result(false, validation, 0);
+                PartyExchangeExecutionResult rejected = Result(
+                    false, validation, 0);
+                Log(plan, rejected);
+                return rejected;
             }
 
             PartyExchangeExecutionResult result;

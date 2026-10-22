@@ -13,6 +13,7 @@ using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.ForceManagement.Behaviors;
+using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
 using System.Collections.Generic;
 using System.Reflection;
@@ -190,11 +191,14 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefPartyManager());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
 
-                campaignStarter.AddBehavior(new AiRecruitmentBehavior());
+                if (ManagedPartyPolicy.IsEnabled())
+                    campaignStarter.AddBehavior(new AiForcePlanningBehavior());
+                else
+                    campaignStarter.AddBehavior(new AiRecruitmentBehavior());
                 campaignStarter.AddBehavior(new ForceManagementBehavior());
                 campaignStarter.AddBehavior(new DemobilizationBehavior());
                 campaignStarter.AddBehavior(
-                    new PartyGarrisonExchangeBehavior());
+                    new PartyExchangeBehavior());
                 campaignStarter.AddBehavior(
                     new ReinforcementMissionBehavior());
                 campaignStarter.AddBehavior(
@@ -202,6 +206,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
+
+                ForceEntryPatchAudit.LogActivePatches();
 
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 

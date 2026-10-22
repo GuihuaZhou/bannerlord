@@ -44,6 +44,12 @@ namespace ModifiedArmy.Recruitment.Patches
             MobileParty mobileParty, 
             Settlement settlement)
         {
+            // With the atomic switch active this patch is only a gate. The
+            // new settlement behavior owns every managed lord transaction;
+            // all parties outside that scope retain Bannerlord's behavior.
+            if (ManagedPartyPolicy.IsEnabled())
+                return !ManagedPartyPolicy.IsModManagedAiParty(mobileParty);
+
             // ==========================================
             // 1. 商队雇佣兵逻辑（原版 if 分支保留）
             // ==========================================
