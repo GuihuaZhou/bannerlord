@@ -243,6 +243,11 @@ namespace ModifiedArmy.ForceManagement.Services
                 approval.SourceFief,
                 approval.BatchId,
                 approval.ApprovedCount);
+            if (returned.ActualReturnedCount > 0 &&
+                plan.Purpose == PartyExchangePurpose.WarRest)
+                ForceManagementFacade.Current.WarRestPlanning.RecordCompleted(
+                    source,
+                    returned.ActualReturnedCount);
             return returned.ActualReturnedCount == approval.ApprovedCount
                 ? Result(true, "Executed", returned.ActualReturnedCount)
                 : Result(false,

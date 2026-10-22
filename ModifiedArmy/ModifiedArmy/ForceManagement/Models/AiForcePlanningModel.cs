@@ -16,6 +16,9 @@ namespace ModifiedArmy.ForceManagement.Models
         {
             if (context?.Party == null || !context.Party.IsActive)
                 return PartyForcePlan.NoPlan("InvalidParty");
+            if (context.CurrentTask?.Intent == PartyForceIntent.WarRest &&
+                !context.IsAtFormalWar)
+                return BuildMaintainPlan(context, "WarRestCancelledByPeace");
             if (context.IsProtectedByHigherPriorityOrder)
                 return PreserveOrSuspend(context, "HigherPriorityOrder");
             if (context.IsAtFormalWar && context.WarRest?.IsApproved == true)
@@ -74,7 +77,7 @@ namespace ModifiedArmy.ForceManagement.Models
         private static PartyForcePlan BuildWarRestPlan(
             PartyForcePlanningContext context)
         {
-            PartyForceCandidate candidate = (context.Candidates ??
+            PartyForceCandidate candidate = (context.WarRest.DestinationOptions ??
                     Array.Empty<PartyForceCandidate>())
                 .Where(item => item?.IsSafe == true && item.Settlement != null)
                 .OrderByDescending(item => item.Score)
@@ -82,14 +85,18 @@ namespace ModifiedArmy.ForceManagement.Models
                 .FirstOrDefault();
             if (candidate == null)
                 return PreserveOrSuspend(context, "NoWarRestDestination");
+            PartyForceTask task = CreateTask(
+                context,
+                PartyForceIntent.WarRest,
+                candidate.SourceKind,
+                candidate.Settlement,
+                context.WarRest.ReasonCode);
+            task.SourceBatchId = context.WarRest.CandidateFiefBatches
+                .FirstOrDefault(item => item.SourceFief == candidate.Settlement)?
+                .BatchId;
             return new PartyForcePlan
             {
-                Task = CreateTask(
-                    context,
-                    PartyForceIntent.WarRest,
-                    candidate.SourceKind,
-                    candidate.Settlement,
-                    context.WarRest.ReasonCode),
+                Task = task,
                 RankedCandidates = new[] { candidate },
                 ShouldReplaceCurrentTask = context.CurrentTask != null,
                 ReasonCode = "WarRestTaskPlanned"

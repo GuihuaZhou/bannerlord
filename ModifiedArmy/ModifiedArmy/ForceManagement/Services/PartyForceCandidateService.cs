@@ -46,13 +46,10 @@ namespace ModifiedArmy.ForceManagement.Services
                 ForceTarget = target,
                 IsAtFormalWar = atWar,
                 WarRest = ForceManagementFacade.Current.WarRest.Evaluate(
-                    new WarRestContext
-                    {
-                        Party = party,
-                        ForceTarget = target,
-                        IsAtFormalWar = atWar,
-                        Today = CurrentDay()
-                    }),
+                    ForceManagementFacade.Current.WarRestPlanning.BuildContext(
+                        party,
+                        target,
+                        IsProtected(party))),
                 Finance = GetFinance(party),
                 SourceWeights = weights,
                 Candidates = EnumerateCandidates(
@@ -66,7 +63,9 @@ namespace ModifiedArmy.ForceManagement.Services
                     config,
                     atWar),
                 RecruitmentNeedThreshold = config.AiNeedThreshold,
-                IsRandomGateOpen = randomGateOpen,
+                IsRandomGateOpen = randomGateOpen &&
+                    !ForceManagementFacade.Current.WarRestPlanning
+                        .ShouldSuppressRecruitment(party),
                 IsProtectedByHigherPriorityOrder = IsProtected(party),
                 Today = CurrentDay()
             };

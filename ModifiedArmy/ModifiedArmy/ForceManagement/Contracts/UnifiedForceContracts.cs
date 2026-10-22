@@ -127,6 +127,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public int CreatedDay { get; set; }
         public PartyForceIntent Intent { get; set; }
         public PartyForceSourceKind SourceKind { get; set; }
+        public string SourceBatchId { get; set; }
         public Settlement TargetSettlement { get; set; }
         public string ReasonCode { get; set; }
         public string PartyId { get; set; }
@@ -184,14 +185,57 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public MobileParty Party { get; set; }
         public PartyForceTargetResult ForceTarget { get; set; }
         public bool IsAtFormalWar { get; set; }
+        public bool IsOwnerValid { get; set; }
+        public bool IsMilitaryPriority { get; set; }
+        public ClanFinanceSnapshot Finance { get; set; }
+        public WarRestPolicySettings Settings { get; set; }
+        public IReadOnlyList<WarRestFiefBatchCandidate> FiefBatches
+            { get; set; } = Array.Empty<WarRestFiefBatchCandidate>();
+        public IReadOnlyList<PartyForceCandidate> DestinationOptions
+            { get; set; } = Array.Empty<PartyForceCandidate>();
+        public int CompletedToday { get; set; }
         public int Today { get; set; }
+    }
+
+    /// <summary>Explicit settings; automatic war rest remains disabled by default.</summary>
+    public sealed class WarRestPolicySettings
+    {
+        public bool Enabled { get; set; }
+        public int MaximumDailyCount { get; set; } = 30;
+        public float MinimumUrgencyScore { get; set; } = 0.75f;
+        public float DispositionWeight { get; set; } = 0.30f;
+        public float FinanceWeight { get; set; } = 0.30f;
+        public float ServiceWeight { get; set; } = 0.40f;
+    }
+
+    /// <summary>One real service batch and its only legal return destination.</summary>
+    public sealed class WarRestFiefBatchCandidate
+    {
+        public Settlement SourceFief { get; set; }
+        public string BatchId { get; set; }
+        public int AvailableCount { get; set; }
+        public int ServiceDays { get; set; }
+        public int FreeWageDays { get; set; }
+        public IReadOnlyDictionary<CharacterObject, int> Troops { get; set; } =
+            new Dictionary<CharacterObject, int>();
+        public float Distance { get; set; }
+        public bool IsSafe { get; set; }
+        public string ReasonCode { get; set; }
     }
 
     /// <summary>Pure approval returned by the war-rest policy.</summary>
     public sealed class WarRestDecision
     {
         public bool IsApproved { get; set; }
+        public bool CanRest => IsApproved;
+        public float UrgencyScore { get; set; }
+        public int MilitarySafeFloor { get; set; }
         public int ApprovedReturnCount { get; set; }
+        public int ApprovedRegularDonationCount { get; set; }
+        public IReadOnlyList<FiefBatchTransferApproval> CandidateFiefBatches
+            { get; set; } = Array.Empty<FiefBatchTransferApproval>();
+        public IReadOnlyList<PartyForceCandidate> DestinationOptions
+            { get; set; } = Array.Empty<PartyForceCandidate>();
         public string ReasonCode { get; set; }
 
         /// <summary>Creates an explicit refusal without side effects.</summary>
