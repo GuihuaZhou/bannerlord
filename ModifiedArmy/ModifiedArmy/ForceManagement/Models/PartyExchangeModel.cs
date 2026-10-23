@@ -4,6 +4,7 @@ using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +13,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Models
 {
@@ -522,8 +524,27 @@ namespace ModifiedArmy.ForceManagement.Models
             TroopRoster roster,
             int count)
         {
+            // A plan is only valid for troops present in the exact source
+            // snapshot. Keep this final boundary defensive because previews
+            // and rosters may originate from different game systems.
+            if (manifest == null || troop == null || roster == null || count <= 0)
+            {
+                ModLogger.Error(GameTexts.FindText(
+                    "str_modifiedarmy_force_manifest_invalid").ToString());
+                return;
+            }
             TroopRosterElement element = roster.GetTroopRoster()
                 .FirstOrDefault(item => item.Character == troop);
+            if (element.Character == null || element.Number <= 0)
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_force_manifest_missing_troop");
+                message.SetTextVariable(
+                    "TROOP_ID", troop.StringId ?? "<unknown>");
+                ModLogger.Error(message.ToString());
+                return;
+            }
+            count = Math.Min(count, element.Number);
             int healthy = Math.Max(0, element.Number - element.WoundedNumber);
             manifest.Troops[troop] = new TroopExchangeAmount
             {

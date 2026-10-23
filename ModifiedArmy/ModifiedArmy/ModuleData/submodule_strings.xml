@@ -279,4 +279,14 @@
         text="{=ModifiedArmy_FiefDailyProsperityLoss}[封邑] {SETTLEMENT_NAME}因维持{RECRUITED_COUNT}名被征召的封邑兵, 今日损失{PROSPERITY_LOSS}点繁荣度." />
     <string id="str_modifiedarmy_fief_prisoner_recruited"
         text="{=ModifiedArmy_FiefPrisonerRecruited}[封邑] {SETTLEMENT_NAME}的封邑部队从俘虏中招募了{COUNT}名{TROOP_NAME}." />
+    <string id="str_modifiedarmy_force_manifest_invalid"
+        text="{=ModifiedArmy_ForceManifestInvalid}[统一调兵] 调兵清单项无效：兵种、来源名册、清单或数量不合法，本次清单项已拒绝。" />
+    <string id="str_modifiedarmy_force_manifest_missing_troop"
+        text="{=ModifiedArmy_ForceManifestMissingTroop}[统一调兵] 来源名册中不存在兵种{TROOP_ID}，本次清单项已拒绝。" />
+    <string id="str_modifiedarmy_force_visit_failed"
+        text="{=ModifiedArmy_ForceVisitFailed}[统一调兵] 部队{PARTY_ID}在定居点{SETTLEMENT_ID}执行到访调兵时发生异常，本次交易已停止。异常：{EXCEPTION}" />
+    <string id="str_modifiedarmy_force_saved_task_failed"
+        text="{=ModifiedArmy_ForceSavedTaskFailed}[统一调兵] 部队{PARTY_ID}的存档任务重新验证时发生异常，该任务已取消。异常：{EXCEPTION}" />
+    <string id="str_modifiedarmy_force_daily_plan_failed"
+        text="{=ModifiedArmy_ForceDailyPlanFailed}[统一调兵] 部队{PARTY_ID}执行每日兵力规划时发生异常，该部队的当前任务已取消。异常：{EXCEPTION}" />
 </strings>

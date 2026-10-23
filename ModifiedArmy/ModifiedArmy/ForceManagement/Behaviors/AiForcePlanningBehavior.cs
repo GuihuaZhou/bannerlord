@@ -137,11 +137,46 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             foreach (PartyForceTask task in _tasks.ToList())
             {
+                try
+                {
+                    RevalidateLoadedTask(task);
+                }
+                catch (Exception ex)
+                {
+                    if (task != null)
+                    {
+                        task.Status = PartyForceTaskStatus.Cancelled;
+                        task.OwnsMovementOrder = false;
+                        task.ReasonCode = "SavedTaskRevalidationException";
+                    }
+                    if (RecruitmentLogFilter.ShouldLog(task?.Party))
+                    {
+                        TextObject message = GameTexts.FindText(
+                            "str_modifiedarmy_force_saved_task_failed");
+                        message.SetTextVariable(
+                            "PARTY_ID", task?.PartyId ?? "<unknown>");
+                        message.SetTextVariable("EXCEPTION", ex.ToString());
+                        ModLogger.Error(message.ToString());
+                    }
+                }
+            }
+            PruneTerminalTasks();
+        }
+
+        /// <summary>
+        /// Rebuilds volatile approvals after loading and never replays a saved
+        /// roster mutation. Invalid ownership, routes, or source batches cancel
+        /// the task conservatively.
+        /// </summary>
+        private void RevalidateLoadedTask(PartyForceTask task)
+        {
                 MobileParty party = task.Party;
                 bool ownsRoute = party?.DefaultBehavior ==
                         AiBehavior.GoToSettlement &&
                     party.TargetSettlement == task.TargetSettlement;
                 bool valid = ManagedPartyPolicy.IsModManagedAiParty(party) &&
+                    task.OwnerKey == "ModifiedArmy.AiForcePlanning" &&
+                    task.ClanId == party.ActualClan?.StringId &&
                     task.TargetSettlement != null &&
                     !task.TargetSettlement.IsUnderSiege &&
                     ownsRoute;
@@ -175,7 +210,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 if (valid)
                 {
                     task.Status = PartyForceTaskStatus.Traveling;
-                    if (!RecruitmentLogFilter.ShouldLog(party)) continue;
+                    if (!RecruitmentLogFilter.ShouldLog(party)) return;
                     TextObject resumed = GameTexts.FindText(
                         "str_modifiedarmy_force_task_resumed");
                     resumed.SetTextVariable(
@@ -190,7 +225,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 {
                     task.Status = PartyForceTaskStatus.Cancelled;
                     task.ReasonCode = "SavedTaskFailedRevalidation";
-                    if (!RecruitmentLogFilter.ShouldLog(party)) continue;
+                    if (!RecruitmentLogFilter.ShouldLog(party)) return;
                     TextObject cancelled = GameTexts.FindText(
                         "str_modifiedarmy_force_task_cancelled_on_load");
                     cancelled.SetTextVariable(
@@ -203,7 +238,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         "INTENT", GetIntentText(task.Intent));
                     ModLogger.FileNotice(cancelled.ToString());
                 }
-            }
         }
 
         /// <summary>Repairs absent keys when loading an older save.</summary>
@@ -253,6 +287,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MilitaryConfig config = MilitaryConfigManager.Instance
                 .GetActiveConfig();
             if (Campaign.Current == null || config == null) return;
+            PruneTerminalTasks();
             foreach (Kingdom kingdom in Kingdom.All)
             {
                 if (kingdom.IsEliminated) continue;
@@ -266,10 +301,47 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                             continue;
                         bool gate = MBRandom.RandomFloat <=
                             config.AiRecruitRandomChance;
-                        EvaluateParty(party, gate);
+                        try
+                        {
+                            EvaluateParty(party, gate);
+                        }
+                        catch (Exception ex)
+                        {
+                            PartyForceTask task = FindTask(party);
+                            if (task != null)
+                            {
+                                task.Status = PartyForceTaskStatus.Cancelled;
+                                task.OwnsMovementOrder = false;
+                                task.ReasonCode = "DailyPlanningException";
+                            }
+                            if (RecruitmentLogFilter.ShouldLog(party))
+                            {
+                                TextObject message = GameTexts.FindText(
+                                    "str_modifiedarmy_force_daily_plan_failed");
+                                message.SetTextVariable(
+                                    "PARTY_ID", party.StringId ?? "<unknown>");
+                                message.SetTextVariable(
+                                    "EXCEPTION", ex.ToString());
+                                ModLogger.Error(message.ToString());
+                            }
+                        }
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Removes completed, cancelled, missing, and stale task records. This
+        /// keeps both memory and the primitive save payload bounded.
+        /// </summary>
+        private void PruneTerminalTasks()
+        {
+            int today = (int)CampaignTime.Now.ToDays;
+            _tasks.RemoveAll(task => task == null || task.Party == null ||
+                !task.Party.IsActive ||
+                task.Status == PartyForceTaskStatus.Completed ||
+                task.Status == PartyForceTaskStatus.Cancelled ||
+                today - task.LastValidatedDay > 7);
         }
 
         /// <summary>

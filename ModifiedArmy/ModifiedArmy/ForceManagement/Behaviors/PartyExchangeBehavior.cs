@@ -1,9 +1,14 @@
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Behaviors;
+using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Tool;
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Behaviors
 {
@@ -15,6 +20,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     {
         private Dictionary<string, int> _lastEvaluationDay =
             new Dictionary<string, int>();
+        private int _lastCleanupDay = -1;
 
         public override void RegisterEvents()
         {
@@ -70,6 +76,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             string key = (party.StringId ?? string.Empty) + "|" +
                 (settlement.StringId ?? string.Empty);
             int day = (int)CampaignTime.Now.ToDays;
+            CleanupOldVisitKeys(day);
             if (_lastEvaluationDay.TryGetValue(key, out int lastDay) &&
                 lastDay == day)
             {
@@ -78,25 +85,62 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             _lastEvaluationDay[key] = day;
             if (ManagedPartyPolicy.IsModManagedAiParty(party))
             {
-                GarrisonCaptureSupplyBehavior capture = Campaign.Current?
-                    .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
-                // The capture permit is queried without side effects and is
-                // consumed only by the unified transaction below.
-                if (capture?.CanDonateTroopsAfterCapture(
-                        party, settlement) == true)
+                try
                 {
-                    Campaign.Current?.GetCampaignBehavior<
-                        AiForcePlanningBehavior>()?.ExecuteCaptureDonation(
-                            party, settlement, capture);
+                    GarrisonCaptureSupplyBehavior capture = Campaign.Current?
+                        .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
+                    // The capture permit is queried without side effects and is
+                    // consumed only by the unified transaction below.
+                    if (capture?.CanDonateTroopsAfterCapture(
+                            party, settlement) == true)
+                    {
+                        Campaign.Current?.GetCampaignBehavior<
+                            AiForcePlanningBehavior>()?.ExecuteCaptureDonation(
+                                party, settlement, capture);
+                        return;
+                    }
+                    Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>()?
+                        .ExecuteAtSettlement(party, settlement);
                     return;
                 }
-                Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>()?
-                    .ExecuteAtSettlement(party, settlement);
-                return;
+                catch (Exception ex)
+                {
+                    // One malformed party or legacy roster must not abort the
+                    // campaign tick. The transaction has its own validation,
+                    // so a failed visit can be retried on a later day.
+                    if (RecruitmentLogFilter.ShouldLog(party))
+                    {
+                        TextObject message = GameTexts.FindText(
+                            "str_modifiedarmy_force_visit_failed");
+                        message.SetTextVariable(
+                            "PARTY_ID", party.StringId ?? "<unknown>");
+                        message.SetTextVariable(
+                            "SETTLEMENT_ID", settlement.StringId ?? "<unknown>");
+                        message.SetTextVariable("EXCEPTION", ex.ToString());
+                        ModLogger.Error(message.ToString());
+                    }
+                    return;
+                }
             }
 
             // Parties outside the managed scope remain entirely native. This
             // event listener must not add a second transaction for them.
+        }
+
+        /// <summary>
+        /// Bounds the compatibility dictionary so long campaigns do not save
+        /// every historical party/settlement visit forever.
+        /// </summary>
+        private void CleanupOldVisitKeys(int today)
+        {
+            if (_lastCleanupDay == today) return;
+            _lastCleanupDay = today;
+            int oldestRetainedDay = today - 2;
+            foreach (string key in new List<string>(_lastEvaluationDay.Keys))
+            {
+                if (_lastEvaluationDay[key] < oldestRetainedDay)
+                    _lastEvaluationDay.Remove(key);
+            }
         }
     }
 }

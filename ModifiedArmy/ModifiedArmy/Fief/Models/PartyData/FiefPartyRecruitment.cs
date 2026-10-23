@@ -130,7 +130,10 @@ namespace ModifiedArmy.Models.Fief
                 if (troop == null || count <= 0)
                     continue;
 
-                if (!SoldierTypeClassifier.IsFiefTroop(troop))
+                // Recruitment from this fief must use the settlement's own
+                // template. The global SoldierType classifier also contains
+                // professional troops and therefore is not an ownership test.
+                if (_fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
 
                 var type =
@@ -340,8 +343,11 @@ namespace ModifiedArmy.Models.Fief
             foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
             {
                 CharacterObject troop = element.Character;
+                // Preview and commit must expose the same troop universe.
+                // Otherwise the planner can approve a professional troop that
+                // GetFiefTroopRoster intentionally filtered out.
                 if (troop == null || element.Number <= 0 ||
-                    !SoldierTypeClassifier.IsFiefTroop(troop))
+                    _fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
                 SoldierType type = SoldierTypeClassifier.GetSoldierType(troop);
                 int count = offers.TryGetValue(type, out int available)
@@ -606,7 +612,10 @@ namespace ModifiedArmy.Models.Fief
                     : 0;
                 if (troop == null || count <= 0) continue;
 
-                if (!SoldierTypeClassifier.IsFiefTroop(troop))
+                // A selected troop is recruitable only when it belongs to this
+                // exact fief template, not merely to a globally classified
+                // militia/sergeant/retinue category.
+                if (_fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
 
                 var type = SoldierTypeClassifier.GetSoldierType(troop);
