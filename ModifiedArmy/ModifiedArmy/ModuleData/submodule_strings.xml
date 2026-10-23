@@ -106,6 +106,7 @@
     <string id="str_modifiedarmy_unified_mercenary_recruited" text="{=ModifiedArmy_UnifiedMercenaryRecruited}[统一招兵] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{COUNT}名{TROOP_NAME}，本次花费{COST}第纳尔。" />
     <string id="str_modifiedarmy_force_task_resumed" text="{=ModifiedArmy_ForceTaskResumed}[兵力任务恢复] {PARTY_NAME}读档后继续前往{SETTLEMENT_NAME}，任务类型为{INTENT}。" />
     <string id="str_modifiedarmy_force_task_cancelled_on_load" text="{=ModifiedArmy_ForceTaskCancelledOnLoad}[兵力任务恢复] {PARTY_NAME}原定前往{SETTLEMENT_NAME}的{INTENT}任务已经失效，读档后已安全取消，没有调整兵员。" />
+    <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力统一调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。" />
     <string id="str_modifiedarmy_force_plan_decision" text="{=ModifiedArmy_ForcePlanDecision}[兵力统一调度] {PARTY_NAME}今日决定为{INTENT}；目标是{SETTLEMENT_NAME}，计划使用{SOURCE}，内部原因为{REASON_CODE}。本次共比较了{CANDIDATE_COUNT}个可行方案。" />
     <string id="str_modifiedarmy_force_intent_recruit" text="{=ModifiedArmy_ForceIntentRecruit}补充兵力" />
     <string id="str_modifiedarmy_force_intent_war_rest" text="{=ModifiedArmy_ForceIntentWarRest}战时休整" />

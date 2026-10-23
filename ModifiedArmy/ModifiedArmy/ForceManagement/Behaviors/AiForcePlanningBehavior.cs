@@ -1,5 +1,7 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using ModifiedArmy.common;
@@ -282,6 +284,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (current?.OwnsMovementOrder == true &&
                 party.TargetSettlement != current.TargetSettlement)
             {
+                // Another game system has already replaced our route. Drop
+                // ownership without touching that newer order.
+                current.OwnsMovementOrder = false;
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "MovementOrderChangedExternally";
             }
@@ -306,17 +311,24 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             int today)
         {
             PartyForceTask next = plan?.Task;
-            if (next == null) return;
             if (next == current)
             {
                 current.LastValidatedDay = today;
+                if (current.Status == PartyForceTaskStatus.Completed ||
+                    current.Status == PartyForceTaskStatus.Cancelled ||
+                    current.TargetSettlement == null)
+                    ReleaseOwnedMovementOrder(party, current);
                 return;
             }
             if (current != null)
             {
+                ReleaseOwnedMovementOrder(party, current);
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "ReplacedByDailyPlan";
             }
+            // A planner result with no replacement is still a cancellation;
+            // the old route was released above if this behavior owned it.
+            if (next == null) return;
             if (next.Status == PartyForceTaskStatus.Completed ||
                 next.TargetSettlement == null)
                 return;
@@ -327,7 +339,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             next.OwnsMovementOrder = false;
             _tasks.Add(next);
             if (ManagedPartyPolicy.IsModManagedAiParty(party) &&
-                party.Army == null && party.MapEvent == null)
+                party.Army == null && party.MapEvent == null &&
+                !TransportThreatModel.IsNativeAvoidanceActive(party))
             {
                 party.SetMoveGoToSettlement(
                     next.TargetSettlement,
@@ -336,6 +349,34 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 next.OwnsMovementOrder = true;
                 next.Status = PartyForceTaskStatus.Traveling;
             }
+        }
+
+        /// <summary>
+        /// Clears only the exact GoToSettlement order previously issued by
+        /// this behavior. Army, combat, avoidance, or externally replaced
+        /// orders are never taken over.
+        /// </summary>
+        private static void ReleaseOwnedMovementOrder(
+            MobileParty party,
+            PartyForceTask task)
+        {
+            if (task?.OwnsMovementOrder != true || party == null)
+                return;
+            bool stillOurOrder = party.Army == null && party.MapEvent == null &&
+                !TransportThreatModel.IsNativeAvoidanceActive(party) &&
+                party.DefaultBehavior == AiBehavior.GoToSettlement &&
+                party.TargetSettlement == task.TargetSettlement;
+            task.OwnsMovementOrder = false;
+            if (!stillOurOrder) return;
+            party.SetMoveModeHold();
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_force_route_released");
+            message.SetTextVariable(
+                "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable(
+                "SETTLEMENT_NAME", task.TargetSettlement.Name);
+            ModLogger.FileNotice(message.ToString());
         }
 
         /// <summary>
@@ -432,11 +473,70 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 Source = source,
                 Destination = destination,
                 TargetSettlement = settlement,
-                SourceSnapshot = runner.CaptureSnapshot(source),
-                DestinationSnapshot = runner.CaptureSnapshot(destination),
                 RequestedCount = surplus,
                 Today = (int)CampaignTime.Now.ToDays
             };
+            runner.PrepareContext(context);
+            PartyExchangePlan plan = ForceManagementFacade.Current
+                .PartyExchange.BuildPlan(context);
+            return runner.Execute(plan);
+        }
+
+        /// <summary>
+        /// Consumes and executes the one-shot post-conquest donation through
+        /// the same model/service boundary as every other managed transfer.
+        /// The target may belong to another clan, but must remain in the
+        /// capturing party's kingdom and use the real settlement garrison.
+        /// </summary>
+        public PartyExchangeExecutionResult ExecuteCaptureDonation(
+            MobileParty party,
+            Settlement settlement,
+            GarrisonCaptureSupplyBehavior capture)
+        {
+            if (capture?.TryConsumeTroopDonationPermit(
+                    party, settlement) != true)
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "CapturePermitUnavailable" };
+
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            int requested = ForceManagementFacade.Current
+                .GetSafeFieldSurplus(party);
+            if (garrison == null || requested <= 0)
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "NoSafeDonationSurplus" };
+
+            PartyExchangeService runner = ForceManagementFacade.Current
+                .PartyExchangeRunner;
+            PartyExchangeContext context = new PartyExchangeContext
+            {
+                OperationId = string.Format(
+                    "capture:{0}:{1}:{2}",
+                    party.StringId,
+                    settlement.StringId,
+                    (int)CampaignTime.Now.ToDays),
+                Initiator = party,
+                Operation = PartyExchangeOperation.FieldToGarrison,
+                Intent = PartyForceIntent.Maintain,
+                Purpose = PartyExchangePurpose.NewlyCapturedSettlement,
+                Source = new PartyTroopSource
+                {
+                    Kind = PartyTroopSourceKind.Mobile,
+                    Party = party,
+                    Settlement = settlement,
+                    Roster = party.MemberRoster
+                },
+                Destination = new PartyTroopSource
+                {
+                    Kind = PartyTroopSourceKind.Garrison,
+                    Party = garrison,
+                    Settlement = settlement,
+                    Roster = garrison.MemberRoster
+                },
+                TargetSettlement = settlement,
+                RequestedCount = requested,
+                Today = (int)CampaignTime.Now.ToDays
+            };
+            runner.PrepareContext(context);
             PartyExchangePlan plan = ForceManagementFacade.Current
                 .PartyExchange.BuildPlan(context);
             return runner.Execute(plan);
@@ -462,10 +562,12 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (context == null)
                 return new PartyExchangeExecutionResult
                     { ReasonCode = "WarRestNoLongerApproved" };
+            PartyExchangeService runner = ForceManagementFacade.Current
+                .PartyExchangeRunner;
+            runner.PrepareContext(context);
             PartyExchangePlan plan = ForceManagementFacade.Current
                 .PartyExchange.BuildPlan(context);
-            return ForceManagementFacade.Current.PartyExchangeRunner
-                .Execute(plan);
+            return runner.Execute(plan);
         }
 
         /// <summary>Runs peaceful demobilization only when no force task owns the visit.</summary>

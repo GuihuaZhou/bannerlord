@@ -1,5 +1,6 @@
 using HarmonyLib;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyFinance.Models;
@@ -88,7 +89,8 @@ namespace ModifiedArmy.ForceManagement.Services
                 .OrderBy(item => item.StringId, StringComparer.Ordinal))
             {
                 if (settlement.IsUnderSiege) continue;
-                float distance = party.Position.Distance(settlement.GatePosition);
+                if (!TryGetTravelDistance(party, settlement, out float distance))
+                    continue;
                 if (settlement.OwnerClan == party.ActualClan &&
                     settlement.IsFortification)
                 {
@@ -362,7 +364,38 @@ namespace ModifiedArmy.ForceManagement.Services
             party == MobileParty.MainParty || !party.IsLordParty ||
             party.IsDisbanding || party.Army != null || party.MapEvent != null ||
             party.TargetParty != null || party.ShortTermTargetParty != null ||
-            party.Party.IsStarving || party.CurrentSettlement?.SiegeEvent != null;
+            party.Party.IsStarving || party.CurrentSettlement?.SiegeEvent != null ||
+            TransportThreatModel.IsNativeAvoidanceActive(party);
+
+        /// <summary>
+        /// Uses Bannerlord's navigation-aware distance model and treats an
+        /// invalid/infinite result as unreachable. No parallel pathfinder is
+        /// introduced by the force planner.
+        /// </summary>
+        private static bool TryGetTravelDistance(
+            MobileParty party,
+            Settlement settlement,
+            out float distance)
+        {
+            distance = float.MaxValue;
+            if (party == null || settlement == null || Campaign.Current == null)
+                return false;
+            try
+            {
+                distance = Campaign.Current.Models.MapDistanceModel.GetDistance(
+                    party,
+                    settlement,
+                    false,
+                    party.NavigationCapability,
+                    out float _);
+                return !float.IsNaN(distance) &&
+                    !float.IsInfinity(distance) && distance < float.MaxValue;
+            }
+            catch
+            {
+                return false;
+            }
+        }
 
         /// <summary>Checks whether a mercenary town is friendly and in range.</summary>
         private static bool IsMercenaryDestinationAllowed(

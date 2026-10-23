@@ -181,6 +181,7 @@ namespace ModifiedArmy.ForceManagement.Services
         private static PartyExchangeExecutionResult BuildAndExecute(
             PartyExchangeContext context)
         {
+            Runner.PrepareContext(context);
             PartyExchangePlan plan = ForceManagementFacade.Current
                 .PartyExchange.BuildPlan(context);
             return Runner.Execute(plan);

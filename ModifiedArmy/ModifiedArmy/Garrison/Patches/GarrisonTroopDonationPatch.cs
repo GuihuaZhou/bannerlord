@@ -48,13 +48,9 @@ namespace ModifiedArmy.Garrison.Patches
             }
             if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty))
             {
-                GarrisonCaptureSupplyBehavior capture = Campaign.Current
-                    .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
-                bool explicitCaptureDonation = settlement?.IsFortification == true &&
-                    capture?.CanDonateTroopsAfterCapture(
-                        mobileParty,
-                        settlement) == true;
-                return explicitCaptureDonation;
+                // Managed parties always use PartyExchangeModel. Letting the
+                // native capture branch run would bypass unified approval.
+                return false;
             }
             if (mobileParty != null
                 && mobileParty.IsLordParty
@@ -126,13 +122,7 @@ namespace ModifiedArmy.Garrison.Patches
             ref int numberOfTroopsToLeave,
             out TransferState __state)
         {
-            Settlement current = mobileParty?.CurrentSettlement;
-            bool explicitCaptureDonation = current?.IsFortification == true &&
-                Campaign.Current?.GetCampaignBehavior<
-                    GarrisonCaptureSupplyBehavior>()?
-                .CanDonateTroopsAfterCapture(mobileParty, current) == true;
-            if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty) &&
-                !explicitCaptureDonation)
+            if (ManagedPartyPolicy.IsModManagedAiParty(mobileParty))
             {
                 __state = null;
                 numberOfTroopsToLeave = 0;
@@ -151,6 +141,13 @@ namespace ModifiedArmy.Garrison.Patches
             {
                 return true;
             }
+
+            // This prefix is the first native hook that actually performs the
+            // transfer. Consume the permit here, never in earlier query-only
+            // prefixes that Bannerlord may invoke repeatedly.
+            Campaign.Current?.GetCampaignBehavior<
+                GarrisonCaptureSupplyBehavior>()?
+                .TryConsumeTroopDonationPermit(mobileParty, settlement);
 
             if (mobileParty.ActualClan != settlement.OwnerClan)
             {

@@ -56,6 +56,25 @@ namespace ModifiedArmy.ForceManagement.Services
             };
         }
 
+        /// <summary>
+        /// Performs the mutable fief-identity reconciliation before planning,
+        /// then refreshes both fingerprints. Models remain side-effect free and
+        /// execution can reliably reject any later roster change.
+        /// </summary>
+        public void PrepareContext(PartyExchangeContext context)
+        {
+            if (context == null) return;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (context.Source?.Party != null)
+                manager?.ReconcilePartyFiefTroops(context.Source.Party);
+            if (context.Destination?.Party != null &&
+                context.Destination.Party != context.Source?.Party)
+                manager?.ReconcilePartyFiefTroops(context.Destination.Party);
+            context.SourceSnapshot = CaptureSnapshot(context.Source);
+            context.DestinationSnapshot = CaptureSnapshot(context.Destination);
+        }
+
         /// <summary>Executes an approved plan once, with stale-state checks.</summary>
         public PartyExchangeExecutionResult Execute(PartyExchangePlan plan)
         {
@@ -130,8 +149,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 : destination;
             if (source == null || destination == null || garrison == null ||
                 field?.CurrentSettlement != settlement || settlement.IsUnderSiege ||
-                source.ActualClan == null || source.ActualClan != destination.ActualClan ||
-                source.ActualClan != settlement.OwnerClan)
+                !IsAuthorizedRosterPair(plan, source, destination, settlement))
                 return "UnsafeAtExecution";
             int count = plan.SourceToDestination.TotalCount;
             if (plan.Operation == PartyExchangeOperation.FieldToGarrison)
@@ -166,7 +184,9 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty source = plan.Source?.Party;
             MobileParty destination = plan.Destination?.Party;
             if (source == null || destination == null || !source.IsActive ||
-                !destination.IsActive || source.ActualClan != destination.ActualClan ||
+                !destination.IsActive ||
+                !IsAuthorizedRosterPair(
+                    plan, source, destination, plan.TargetSettlement) ||
                 source.MapEvent != null || destination.MapEvent != null)
                 return Result(false, "UnsafeAtExecution", 0);
 
@@ -220,6 +240,23 @@ namespace ModifiedArmy.ForceManagement.Services
                     : "ExecutionRolledBack:" + exception.GetType().Name;
                 return Result(false, reason, 0);
             }
+        }
+
+        /// <summary>Rechecks the narrow ownership exception for captured fiefs.</summary>
+        private static bool IsAuthorizedRosterPair(
+            PartyExchangePlan plan,
+            MobileParty source,
+            MobileParty destination,
+            Settlement settlement)
+        {
+            if (source?.ActualClan != null &&
+                source.ActualClan == destination?.ActualClan &&
+                source.ActualClan == settlement?.OwnerClan)
+                return true;
+            return plan?.Purpose == PartyExchangePurpose.NewlyCapturedSettlement &&
+                source?.ActualClan?.Kingdom != null &&
+                source.ActualClan.Kingdom == settlement?.OwnerClan?.Kingdom &&
+                destination == settlement?.Town?.GarrisonParty;
         }
 
         /// <summary>Uses the authoritative fief transaction after revalidation.</summary>

@@ -86,10 +86,9 @@ namespace ModifiedArmy.Garrison.Behaviors
         }
 
         /// <summary>
-        /// Allows the army that captured a fortification to use the native
-        /// post-conquest troop donation path once, when its leader enters the
-        /// settlement. Other allied armies remain subject to the normal
-        /// owner-only transfer restriction.
+        /// Purely checks whether the capturing army leader still owns the
+        /// one-shot post-conquest donation permit. Harmony prefixes may query
+        /// this more than once, so a query must never consume the permit.
         /// </summary>
         public bool CanDonateTroopsAfterCapture(
             MobileParty party,
@@ -111,8 +110,24 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return false;
             }
 
-            _pendingCaptures.Remove(settlement);
             return true;
+        }
+
+        /// <summary>
+        /// Consumes the capture permit immediately before the unified exchange
+        /// path attempts the donation. A failed approval still consumes it so
+        /// repeated settlement events cannot create a second transfer.
+        /// </summary>
+        public bool TryConsumeTroopDonationPermit(
+            MobileParty party,
+            Settlement settlement)
+        {
+            if (!CanDonateTroopsAfterCapture(party, settlement))
+            {
+                return false;
+            }
+
+            return _pendingCaptures.Remove(settlement);
         }
 
         private static bool IsCapturingArmyLeader(

@@ -71,13 +71,18 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             _lastEvaluationDay[key] = day;
             if (ManagedPartyPolicy.IsModManagedAiParty(party))
             {
-                // The capture behavior owns this explicit post-conquest
-                // donation window; running the routine visit path as well
-                // would create a second transaction for the same arrival.
-                if (Campaign.Current?.GetCampaignBehavior<
-                        GarrisonCaptureSupplyBehavior>()?
-                    .CanDonateTroopsAfterCapture(party, settlement) == true)
+                GarrisonCaptureSupplyBehavior capture = Campaign.Current?
+                    .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
+                // The capture permit is queried without side effects and is
+                // consumed only by the unified transaction below.
+                if (capture?.CanDonateTroopsAfterCapture(
+                        party, settlement) == true)
+                {
+                    Campaign.Current?.GetCampaignBehavior<
+                        AiForcePlanningBehavior>()?.ExecuteCaptureDonation(
+                            party, settlement, capture);
                     return;
+                }
                 Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>()?
                     .ExecuteAtSettlement(party, settlement);
                 return;

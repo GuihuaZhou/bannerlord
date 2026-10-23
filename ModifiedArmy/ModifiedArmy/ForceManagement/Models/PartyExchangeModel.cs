@@ -70,7 +70,8 @@ namespace ModifiedArmy.ForceManagement.Models
                     context.Destination?.Kind == PartyTroopSourceKind.Mobile &&
                     source == garrison;
             if (!kindsMatch || field?.CurrentSettlement != settlement ||
-                !IsLocalClanPair(source, destination, settlement))
+                !IsAuthorizedRosterPair(
+                    source, destination, settlement, context.Purpose))
             {
                 return Reject(context, "InvalidOrUnsafeTransfer");
             }
@@ -99,7 +100,6 @@ namespace ModifiedArmy.ForceManagement.Models
 
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
-            manager?.ReconcilePartyFiefTroops(source);
             Dictionary<CharacterObject, int> protectedCounts = manager?
                 .GetServingTroopCounts(source) ?? new Dictionary<CharacterObject, int>();
             List<RecruitmentCandidate> candidates = source.MemberRoster
@@ -539,14 +539,35 @@ namespace ModifiedArmy.ForceManagement.Models
             counts.TryGetValue(troop, out int value) ? Math.Max(0, value) : 0;
 
         /// <summary>Checks the shared ownership and safety boundary of roster moves.</summary>
-        private static bool IsLocalClanPair(
+        private static bool IsAuthorizedRosterPair(
             MobileParty source,
             MobileParty destination,
-            Settlement settlement) => source != null && destination != null &&
-            settlement?.Town != null && source.IsActive && destination.IsActive &&
-            source.ActualClan != null && source.ActualClan == destination.ActualClan &&
-            source.ActualClan == settlement.OwnerClan && source.MapEvent == null &&
-            destination.MapEvent == null && !settlement.IsUnderSiege;
+            Settlement settlement,
+            PartyExchangePurpose purpose)
+        {
+            if (source == null || destination == null || settlement?.Town == null ||
+                !source.IsActive || !destination.IsActive ||
+                source.MapEvent != null || destination.MapEvent != null ||
+                settlement.IsUnderSiege)
+            {
+                return false;
+            }
+
+            if (source.ActualClan != null &&
+                source.ActualClan == destination.ActualClan &&
+                source.ActualClan == settlement.OwnerClan)
+            {
+                return true;
+            }
+
+            // A newly captured fief can belong to another clan in the same
+            // kingdom. Only this explicit one-shot purpose crosses the normal
+            // clan boundary, and only into that settlement's real garrison.
+            return purpose == PartyExchangePurpose.NewlyCapturedSettlement &&
+                source.ActualClan?.Kingdom != null &&
+                source.ActualClan.Kingdom == settlement.OwnerClan?.Kingdom &&
+                destination == settlement.Town.GarrisonParty;
+        }
 
         /// <summary>Creates a rejection while retaining request identity for diagnostics.</summary>
         private static PartyExchangePlan Reject(
