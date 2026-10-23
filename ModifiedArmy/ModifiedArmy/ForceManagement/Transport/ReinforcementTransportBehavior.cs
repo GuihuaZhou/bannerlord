@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Garrison.Supply;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -342,7 +343,12 @@ namespace ModifiedArmy.ForceManagement.Transport
             MobileParty party,
             int troops)
         {
+            // Military transport events can be very frequent; foreign
+            // kingdoms remain silent unless a separate global audit is added.
             ReinforcementPartyComponent component = GetComponent(party);
+            if (!RecruitmentLogFilter.ShouldLog(party) &&
+                !RecruitmentLogFilter.ShouldLog(component?.DispatchClan))
+                return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_transport_event");
             message.SetTextVariable("MISSION",

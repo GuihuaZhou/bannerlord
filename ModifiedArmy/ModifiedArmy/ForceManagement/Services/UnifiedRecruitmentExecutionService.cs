@@ -14,6 +14,7 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Services
 {
@@ -156,13 +157,18 @@ namespace ModifiedArmy.ForceManagement.Services
                 count);
             ClanRecruitmentBudgetManager.CommitRecruitment(
                 party, count, cost, approval.UnitDailyWage);
-            ModLogger.FileNotice(string.Format(
-                "[统一招兵] {0}在{1}招募了{2}名{3}，本次花费{4}第纳尔。",
-                PartyLogFormatter.GetDisplayName(party),
-                settlement.Name,
-                count,
-                market.TroopType.Name,
-                count * cost));
+            if (RecruitmentLogFilter.ShouldLog(party))
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_unified_mercenary_recruited");
+                message.SetTextVariable(
+                    "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+                message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
+                message.SetTextVariable("COUNT", count);
+                message.SetTextVariable("TROOP_NAME", market.TroopType.Name);
+                message.SetTextVariable("COST", count * cost);
+                ModLogger.FileNotice(message.ToString());
+            }
             return new PartyExchangeExecutionResult
             {
                 Executed = true,

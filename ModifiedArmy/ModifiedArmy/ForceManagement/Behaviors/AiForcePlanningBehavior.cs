@@ -12,6 +12,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Library;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Behaviors
 {
@@ -172,22 +173,33 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 if (valid)
                 {
                     task.Status = PartyForceTaskStatus.Traveling;
-                    ModLogger.FileNotice(string.Format(
-                        "[兵力任务恢复] {0}读档后继续前往{1}，任务类型为{2}。",
-                        PartyLogFormatter.GetDisplayName(party),
-                        task.TargetSettlement.Name,
-                        task.Intent));
+                    if (!RecruitmentLogFilter.ShouldLog(party)) continue;
+                    TextObject resumed = GameTexts.FindText(
+                        "str_modifiedarmy_force_task_resumed");
+                    resumed.SetTextVariable(
+                        "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+                    resumed.SetTextVariable(
+                        "SETTLEMENT_NAME", task.TargetSettlement.Name);
+                    resumed.SetTextVariable(
+                        "INTENT", GetIntentText(task.Intent));
+                    ModLogger.FileNotice(resumed.ToString());
                 }
                 else
                 {
                     task.Status = PartyForceTaskStatus.Cancelled;
                     task.ReasonCode = "SavedTaskFailedRevalidation";
-                    ModLogger.FileNotice(string.Format(
-                        "[兵力任务恢复] {0}原定前往{1}的{2}任务已经失效，" +
-                        "读档后已安全取消，没有调整兵员。",
-                        PartyLogFormatter.GetDisplayName(party),
-                        task.TargetSettlement?.Name?.ToString() ?? "未知定居点",
-                        task.Intent));
+                    if (!RecruitmentLogFilter.ShouldLog(party)) continue;
+                    TextObject cancelled = GameTexts.FindText(
+                        "str_modifiedarmy_force_task_cancelled_on_load");
+                    cancelled.SetTextVariable(
+                        "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+                    cancelled.SetTextVariable(
+                        "SETTLEMENT_NAME",
+                        task.TargetSettlement?.Name ??
+                            new TextObject("Unknown settlement"));
+                    cancelled.SetTextVariable(
+                        "INTENT", GetIntentText(task.Intent));
+                    ModLogger.FileNotice(cancelled.ToString());
                 }
             }
         }
@@ -482,15 +494,59 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
             PartyForceTask task = plan?.Task;
-            ModLogger.Debug(string.Format(
-                "[兵力统一调度] {0}今日决定为{1}；目标是{2}，计划使用{3}，原因是{4}。" +
-                "本次共比较了{5}个可行方案。",
-                PartyLogFormatter.GetDisplayName(party),
-                task?.Intent.ToString() ?? "无计划",
-                task?.TargetSettlement?.Name?.ToString() ?? "无",
-                task?.SourceKind.ToString() ?? "无",
-                plan?.ReasonCode ?? "unknown",
-                plan?.RankedCandidates?.Count ?? 0));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_force_plan_decision");
+            message.SetTextVariable(
+                "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable(
+                "INTENT", GetIntentText(task?.Intent));
+            message.SetTextVariable(
+                "SETTLEMENT_NAME",
+                task?.TargetSettlement?.Name ?? GetNoneText());
+            message.SetTextVariable(
+                "SOURCE", GetSourceText(task?.SourceKind));
+            message.SetTextVariable("REASON_CODE", plan?.ReasonCode ?? "Unknown");
+            message.SetTextVariable(
+                "CANDIDATE_COUNT", plan?.RankedCandidates?.Count ?? 0);
+            ModLogger.Debug(message.ToString());
         }
+
+        /// <summary>Returns localized text for a force-task intent.</summary>
+        private static TextObject GetIntentText(PartyForceIntent? intent)
+        {
+            switch (intent)
+            {
+                case PartyForceIntent.Recruit:
+                    return GameTexts.FindText("str_modifiedarmy_force_intent_recruit");
+                case PartyForceIntent.WarRest:
+                    return GameTexts.FindText("str_modifiedarmy_force_intent_war_rest");
+                case PartyForceIntent.Maintain:
+                    return GameTexts.FindText("str_modifiedarmy_force_intent_maintain");
+                case PartyForceIntent.Suspended:
+                    return GameTexts.FindText("str_modifiedarmy_force_intent_suspended");
+                default:
+                    return GetNoneText();
+            }
+        }
+
+        /// <summary>Returns localized text for the selected troop source.</summary>
+        private static TextObject GetSourceText(PartyForceSourceKind? source)
+        {
+            switch (source)
+            {
+                case PartyForceSourceKind.Fief:
+                    return GameTexts.FindText("str_modifiedarmy_force_source_fief");
+                case PartyForceSourceKind.Professional:
+                    return GameTexts.FindText("str_modifiedarmy_force_source_professional");
+                case PartyForceSourceKind.Mercenary:
+                    return GameTexts.FindText("str_modifiedarmy_force_source_mercenary");
+                default:
+                    return GetNoneText();
+            }
+        }
+
+        /// <summary>Returns the shared localized empty-value label.</summary>
+        private static TextObject GetNoneText() => GameTexts.FindText(
+            "str_modifiedarmy_common_none");
     }
 }

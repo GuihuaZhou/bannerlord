@@ -1,6 +1,7 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Services
 {
@@ -93,9 +95,12 @@ namespace ModifiedArmy.ForceManagement.Services
         /// <summary>Rejects replayed, empty, or stale plans before any mutation.</summary>
         private string Validate(PartyExchangePlan plan)
         {
-            if (plan?.ShouldExecute != true ||
-                string.IsNullOrWhiteSpace(plan.OperationId))
+            if (plan == null || string.IsNullOrWhiteSpace(plan.OperationId))
                 return "MissingApprovedPlan";
+            if (!plan.ShouldExecute)
+                return string.IsNullOrWhiteSpace(plan.ReasonCode)
+                    ? "PlanRejected"
+                    : plan.ReasonCode;
             if (_completedOperationIds.Contains(plan.OperationId))
                 return "OperationAlreadyCompleted";
             if (plan.Operation == PartyExchangeOperation.BidirectionalSwap)
@@ -337,48 +342,128 @@ namespace ModifiedArmy.ForceManagement.Services
             PartyExchangePlan plan,
             PartyExchangeExecutionResult result)
         {
-            ModLogger.FileNotice(string.Format(
-                "[统一调兵] 任务={0}，类型={1}，家族={2}，从{3}调往{4}；" +
-                "计划={5}，实际={6}人，执行结果={7}；" +
-                "来源计划前={8}，来源当前={9}，目标计划前={10}，目标当前={11}。",
-                plan?.OperationId ?? "unknown",
-                plan?.Operation.ToString() ?? "unknown",
-                plan?.Source?.Party?.ActualClan?.Name?.ToString() ??
-                    plan?.Source?.Settlement?.OwnerClan?.Name?.ToString() ??
-                    "unknown",
-                plan?.Source?.Party?.Name?.ToString() ??
-                    plan?.Source?.Settlement?.Name?.ToString() ?? "unknown",
-                plan?.Destination?.Party?.Name?.ToString() ??
-                    plan?.Destination?.Settlement?.Name?.ToString() ?? "unknown",
-                FormatManifest(plan?.SourceToDestination),
-                result?.TransferredCount ?? 0,
-                result?.ReasonCode ?? "unknown",
-                plan?.ExpectedSource?.Fingerprint ?? "none",
-                CurrentFingerprint(plan?.Source),
-                plan?.ExpectedDestination?.Fingerprint ?? "none",
-                CurrentFingerprint(plan?.Destination)));
+            MobileParty party = plan?.Initiator ??
+                plan?.Destination?.Party ?? plan?.Source?.Party;
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            if (result?.Executed != true &&
+                plan?.OperationId?.StartsWith(
+                    "visit:", StringComparison.Ordinal) == true &&
+                (result.ReasonCode == "NoApprovedCapacity" ||
+                 result.ReasonCode == "NoApprovedTroops" ||
+                 result.ReasonCode == "EmptyManifest"))
+                return;
+            TextObject partyName = PartyLogFormatter.GetDisplayName(party);
+            TextObject settlementName = plan?.TargetSettlement?.Name ??
+                plan?.Source?.Settlement?.Name ??
+                plan?.Destination?.Settlement?.Name ??
+                new TextObject("Unknown settlement");
+            if (result?.Executed == true)
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_exchange_executed");
+                message.SetTextVariable("PARTY_NAME", partyName);
+                message.SetTextVariable("SETTLEMENT_NAME", settlementName);
+                message.SetTextVariable(
+                    "OPERATION", GetOperationText(plan.Operation));
+                message.SetTextVariable(
+                    "MANIFEST", FormatManifest(plan.SourceToDestination));
+                message.SetTextVariable("ACTUAL", result.TransferredCount);
+                ModLogger.FileNotice(message.ToString());
+                return;
+            }
+            TextObject rejected = GameTexts.FindText(
+                "str_modifiedarmy_exchange_rejected");
+            rejected.SetTextVariable("PARTY_NAME", partyName);
+            rejected.SetTextVariable("SETTLEMENT_NAME", settlementName);
+            rejected.SetTextVariable(
+                "REASON", GetReasonText(result?.ReasonCode));
+            ModLogger.FileNotice(rejected.ToString());
+        }
+
+        /// <summary>Converts an internal operation into a short spoken phrase.</summary>
+        private static TextObject GetOperationText(
+            PartyExchangeOperation operation)
+        {
+            switch (operation)
+            {
+                case PartyExchangeOperation.FieldToGarrison:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_exchange_operation_donate");
+                case PartyExchangeOperation.GarrisonToField:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_exchange_operation_withdraw");
+                case PartyExchangeOperation.FiefMobilization:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_exchange_operation_mobilize");
+                case PartyExchangeOperation.FiefReturn:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_exchange_operation_return");
+                default:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_exchange_operation_adjust");
+            }
+        }
+
+        /// <summary>Converts common refusal codes into readable Chinese.</summary>
+        private static TextObject GetReasonText(string reason)
+        {
+            string key;
+            switch (reason)
+            {
+                case "NoApprovedCapacity":
+                case "NoApprovedTroops":
+                case "EmptyManifest":
+                    key = "str_modifiedarmy_exchange_reason_no_troops";
+                    break;
+                case "RosterChanged":
+                    key = "str_modifiedarmy_exchange_reason_roster_changed";
+                    break;
+                case "OperationAlreadyCompleted":
+                    key = "str_modifiedarmy_exchange_reason_completed";
+                    break;
+                case "UnsafeAtExecution":
+                case "InvalidOrUnsafeTransfer":
+                    key = "str_modifiedarmy_exchange_reason_unsafe";
+                    break;
+                case "CapacityChanged":
+                    key = "str_modifiedarmy_exchange_reason_capacity";
+                    break;
+                case "ManifestNoLongerAvailable":
+                    key = "str_modifiedarmy_exchange_reason_unavailable";
+                    break;
+                case "MissingApprovedPlan":
+                    key = "str_modifiedarmy_exchange_reason_missing_plan";
+                    break;
+                default:
+                    TextObject fallback = GameTexts.FindText(
+                        "str_modifiedarmy_exchange_reason_other");
+                    fallback.SetTextVariable("REASON_CODE", reason ?? "Unknown");
+                    return fallback;
+            }
+            return GameTexts.FindText(key);
         }
 
         /// <summary>Formats approved troop types and wounded counts for audit.</summary>
         private static string FormatManifest(TroopExchangeManifest manifest)
         {
             if (manifest?.Troops == null || manifest.Troops.Count == 0)
-                return "无";
+                return GameTexts.FindText(
+                    "str_modifiedarmy_exchange_manifest_none").ToString();
             return string.Join(", ", manifest.Troops
                 .OrderBy(pair => pair.Key?.StringId, StringComparer.Ordinal)
-                .Select(pair => string.Format(
-                    "{0}×{1}(伤{2})",
-                    pair.Key?.Name?.ToString() ?? "unknown",
-                    pair.Value?.Count ?? 0,
-                    pair.Value?.WoundedCount ?? 0)));
+                .Select(pair =>
+                {
+                    TextObject item = GameTexts.FindText(
+                        "str_modifiedarmy_exchange_manifest_item");
+                    item.SetTextVariable(
+                        "TROOP_NAME",
+                        pair.Key?.Name ?? new TextObject("Unknown troop"));
+                    item.SetTextVariable("COUNT", pair.Value?.Count ?? 0);
+                    item.SetTextVariable(
+                        "WOUNDED", pair.Value?.WoundedCount ?? 0);
+                    return item.ToString();
+                }));
         }
 
-        /// <summary>Reads the post-attempt fingerprint for conservation logs.</summary>
-        private static string CurrentFingerprint(PartyTroopSource source)
-        {
-            if (source?.Party != null)
-                return TroopTransferService.GetRosterFingerprint(source.Party);
-            return source?.Roster != null ? GetFingerprint(source.Roster) : "none";
-        }
     }
 }

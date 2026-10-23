@@ -299,6 +299,8 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// </summary>
     public sealed class PartyExchangePlan
     {
+        /// <summary>The party whose approved business operation created this plan.</summary>
+        public MobileParty Initiator { get; set; }
         public string OperationId { get; set; }
         public bool ShouldExecute { get; set; }
         public string ReasonCode { get; set; }

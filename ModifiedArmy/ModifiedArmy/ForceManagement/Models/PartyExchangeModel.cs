@@ -213,6 +213,7 @@ namespace ModifiedArmy.ForceManagement.Models
             PartyExchangeContext context,
             PartyExchangeExecutorKind executor) => new PartyExchangePlan
         {
+            Initiator = context.Initiator,
             OperationId = context.OperationId,
             Operation = context.Operation,
             Purpose = context.Purpose,
@@ -306,9 +307,15 @@ namespace ModifiedArmy.ForceManagement.Models
             string reason)
         {
             PartyExchangePlan plan = PartyExchangePlan.Rejected(reason);
+            plan.Initiator = context?.Initiator;
             plan.OperationId = context?.OperationId;
             plan.Operation = context?.Operation ?? PartyExchangeOperation.None;
             plan.Purpose = context?.Purpose ?? PartyExchangePurpose.NaturalVisit;
+            plan.Source = context?.Source;
+            plan.Destination = context?.Destination;
+            plan.TargetSettlement = context?.TargetSettlement;
+            plan.ExpectedSource = context?.SourceSnapshot;
+            plan.ExpectedDestination = context?.DestinationSnapshot;
             return plan;
         }
     }

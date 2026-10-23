@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using ModifiedArmy.common;
 using System;
@@ -280,6 +281,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             int today,
             DemobilizationExecutionResult result)
         {
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
             PeaceDemobilizationDecision decision = result.Decision ??
                 new PeaceDemobilizationDecision();
             TextObject message = GameTexts.FindText(
@@ -310,30 +312,30 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             switch (reason)
             {
                 case "Completed":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationCompleted}本次复员已经办完");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_completed");
                 case "PeaceNotStable":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationPeaceUnstable}和平时间还不够长");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_peace_unstable");
                 case "NoSurplus":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationNoSurplus}部队没有超出和平编制");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_no_surplus");
                 case "DailyLimitReached":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationDailyLimit}今天的复员额度已经用完");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_daily_limit");
                 case "NoEligibleTroopsOrCapacity":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationNoCapacity}没有能返乡的封邑兵，驻军也接收不了更多普通兵");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_no_capacity");
                 case "AtFormalWar":
                 case "NotPeaceScenario":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationAtWar}当前仍处于战争状态");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_at_war");
                 case "HigherPriorityMilitaryTask":
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationMilitaryTask}部队正在执行更重要的军事任务");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_military_task");
                 default:
-                    return new TextObject(
-                        "{=ModifiedArmy_DemobilizationUnsafe}当前不适合办理复员");
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_demobilization_reason_unsafe");
             }
         }
     }

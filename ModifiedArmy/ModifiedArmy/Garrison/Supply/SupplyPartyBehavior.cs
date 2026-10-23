@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -580,6 +581,12 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty party,
             SupplyPartyComponent component)
         {
+            // Route state changes are frequent across the whole map. Keep the
+            // file log focused on transports belonging to the player's kingdom.
+            if (!RecruitmentLogFilter.ShouldLog(party) &&
+                !RecruitmentLogFilter.ShouldLog(
+                    component?.SupplyHomeSettlement?.OwnerClan))
+                return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_supply_route");
             message.SetTextVariable("EVENT", TransportLogText.Event(state));

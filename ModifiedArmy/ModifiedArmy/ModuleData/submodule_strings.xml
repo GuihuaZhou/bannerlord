@@ -84,6 +84,48 @@
     <string id="str_modifiedarmy_ai_recruitment_mercenary_evaluation"
         text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名{TROOP_NAME}." />
 
+    <!-- Unified force exchange and arrival recruitment logs. -->
+    <string id="str_modifiedarmy_exchange_executed" text="{=ModifiedArmy_ExchangeExecuted}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}{OPERATION}，计划调动{MANIFEST}，实际完成{ACTUAL}人。" />
+    <string id="str_modifiedarmy_exchange_rejected" text="{=ModifiedArmy_ExchangeRejected}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}没有进行调兵：{REASON}。" />
+    <string id="str_modifiedarmy_exchange_operation_donate" text="{=ModifiedArmy_ExchangeOperationDonate}向驻军补充兵力" />
+    <string id="str_modifiedarmy_exchange_operation_withdraw" text="{=ModifiedArmy_ExchangeOperationWithdraw}从驻军补充部队" />
+    <string id="str_modifiedarmy_exchange_operation_mobilize" text="{=ModifiedArmy_ExchangeOperationMobilize}征召封邑兵" />
+    <string id="str_modifiedarmy_exchange_operation_return" text="{=ModifiedArmy_ExchangeOperationReturn}安排封邑兵返乡" />
+    <string id="str_modifiedarmy_exchange_operation_adjust" text="{=ModifiedArmy_ExchangeOperationAdjust}调整兵力" />
+    <string id="str_modifiedarmy_exchange_reason_no_troops" text="{=ModifiedArmy_ExchangeReasonNoTroops}当前没有可以安全调动的士兵" />
+    <string id="str_modifiedarmy_exchange_reason_roster_changed" text="{=ModifiedArmy_ExchangeReasonRosterChanged}兵员情况已经变化，需要下次重新评估" />
+    <string id="str_modifiedarmy_exchange_reason_completed" text="{=ModifiedArmy_ExchangeReasonCompleted}本次调兵已经办理过" />
+    <string id="str_modifiedarmy_exchange_reason_unsafe" text="{=ModifiedArmy_ExchangeReasonUnsafe}当前驻留、归属或安全条件不允许调兵" />
+    <string id="str_modifiedarmy_exchange_reason_capacity" text="{=ModifiedArmy_ExchangeReasonCapacity}部队或驻军已经没有足够容量" />
+    <string id="str_modifiedarmy_exchange_reason_unavailable" text="{=ModifiedArmy_ExchangeReasonUnavailable}原计划中的士兵已经无法调出" />
+    <string id="str_modifiedarmy_exchange_reason_missing_plan" text="{=ModifiedArmy_ExchangeReasonMissingPlan}没有形成有效的调兵方案" />
+    <string id="str_modifiedarmy_exchange_reason_other" text="{=ModifiedArmy_ExchangeReasonOther}调兵审批未通过（{REASON_CODE}）" />
+    <string id="str_modifiedarmy_exchange_manifest_none" text="{=ModifiedArmy_ExchangeManifestNone}无" />
+    <string id="str_modifiedarmy_exchange_manifest_item" text="{=ModifiedArmy_ExchangeManifestItem}{TROOP_NAME}×{COUNT}（伤员{WOUNDED}）" />
+    <string id="str_modifiedarmy_unified_mercenary_recruited" text="{=ModifiedArmy_UnifiedMercenaryRecruited}[统一招兵] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{COUNT}名{TROOP_NAME}，本次花费{COST}第纳尔。" />
+    <string id="str_modifiedarmy_force_task_resumed" text="{=ModifiedArmy_ForceTaskResumed}[兵力任务恢复] {PARTY_NAME}读档后继续前往{SETTLEMENT_NAME}，任务类型为{INTENT}。" />
+    <string id="str_modifiedarmy_force_task_cancelled_on_load" text="{=ModifiedArmy_ForceTaskCancelledOnLoad}[兵力任务恢复] {PARTY_NAME}原定前往{SETTLEMENT_NAME}的{INTENT}任务已经失效，读档后已安全取消，没有调整兵员。" />
+    <string id="str_modifiedarmy_force_plan_decision" text="{=ModifiedArmy_ForcePlanDecision}[兵力统一调度] {PARTY_NAME}今日决定为{INTENT}；目标是{SETTLEMENT_NAME}，计划使用{SOURCE}，内部原因为{REASON_CODE}。本次共比较了{CANDIDATE_COUNT}个可行方案。" />
+    <string id="str_modifiedarmy_force_intent_recruit" text="{=ModifiedArmy_ForceIntentRecruit}补充兵力" />
+    <string id="str_modifiedarmy_force_intent_war_rest" text="{=ModifiedArmy_ForceIntentWarRest}战时休整" />
+    <string id="str_modifiedarmy_force_intent_maintain" text="{=ModifiedArmy_ForceIntentMaintain}维持现状" />
+    <string id="str_modifiedarmy_force_intent_suspended" text="{=ModifiedArmy_ForceIntentSuspended}暂缓处理" />
+    <string id="str_modifiedarmy_force_source_fief" text="{=ModifiedArmy_ForceSourceFief}封邑兵" />
+    <string id="str_modifiedarmy_force_source_professional" text="{=ModifiedArmy_ForceSourceProfessional}驻军职业兵" />
+    <string id="str_modifiedarmy_force_source_mercenary" text="{=ModifiedArmy_ForceSourceMercenary}雇佣兵" />
+    <string id="str_modifiedarmy_common_none" text="{=ModifiedArmy_CommonNone}无" />
+    <string id="str_modifiedarmy_force_patch_audit" text="{=ModifiedArmy_ForcePatchAudit}[兵力入口检查] {TYPE_NAME}.{METHOD_NAME}当前补丁：{PATCHES}。" />
+    <string id="str_modifiedarmy_force_patch_none" text="{=ModifiedArmy_ForcePatchNone}无补丁" />
+    <string id="str_modifiedarmy_force_patch_item" text="{=ModifiedArmy_ForcePatchItem}{OWNER}（优先级{PRIORITY}）" />
+    <string id="str_modifiedarmy_demobilization_reason_completed" text="{=ModifiedArmy_DemobilizationCompleted}本次复员已经办完" />
+    <string id="str_modifiedarmy_demobilization_reason_peace_unstable" text="{=ModifiedArmy_DemobilizationPeaceUnstable}和平时间还不够长" />
+    <string id="str_modifiedarmy_demobilization_reason_no_surplus" text="{=ModifiedArmy_DemobilizationNoSurplus}部队没有超出和平编制" />
+    <string id="str_modifiedarmy_demobilization_reason_daily_limit" text="{=ModifiedArmy_DemobilizationDailyLimit}今天的复员额度已经用完" />
+    <string id="str_modifiedarmy_demobilization_reason_no_capacity" text="{=ModifiedArmy_DemobilizationNoCapacity}没有能返乡的封邑兵，驻军也接收不了更多普通兵" />
+    <string id="str_modifiedarmy_demobilization_reason_at_war" text="{=ModifiedArmy_DemobilizationAtWar}当前仍处于战争状态" />
+    <string id="str_modifiedarmy_demobilization_reason_military_task" text="{=ModifiedArmy_DemobilizationMilitaryTask}部队正在执行更重要的军事任务" />
+    <string id="str_modifiedarmy_demobilization_reason_unsafe" text="{=ModifiedArmy_DemobilizationUnsafe}当前不适合办理复员" />
+
     <string id="str_modifiedarmy_mercenary_market_refreshed"
         text="{=ModifiedArmy_MercenaryMarketRefreshed}[雇佣兵市场] {SETTLEMENT_NAME}出现了{COUNT}名{TROOP_NAME}." />
 
