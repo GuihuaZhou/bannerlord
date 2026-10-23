@@ -80,6 +80,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     troopNode,
                     "weight",
                     1);
+                // Zero is a supported opt-out value. Negative values are also
+                // normalized to zero by TroopProductionEntry.
                 _troopEntries.Add(new TroopProductionEntry(
                     troop,
                     weight,

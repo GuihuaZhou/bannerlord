@@ -1,10 +1,9 @@
 using ModifiedArmy.Recruitment.Pools.Models;
-using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Diagnostics;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
@@ -183,10 +182,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
             return BuildDailyProfessionalOffers(
                 template,
-                settlement?.Town?.GarrisonParty,
+                settlement,
                 forecast.AllowedRecruitmentLevel,
                 predictedCount,
-                (int)CampaignTime.Now.ToDays + 1);
+                data,
+                false);
         }
 
         /// <summary>
@@ -303,13 +303,20 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             bool succeeded,
             TextObject detail)
         {
+            if (!RecruitmentLogFilter.ShouldLog(settlement?.OwnerClan))
+            {
+                return;
+            }
+
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_manpower_consume");
             message.SetTextVariable("DAY", (int)CampaignTime.Now.ToDays);
             message.SetTextVariable(
-                "SETTLEMENT_ID",
-                settlement?.StringId ?? "null");
-            message.SetTextVariable("TROOP_ID", troop?.StringId ?? "null");
+                "SETTLEMENT_NAME",
+                settlement?.Name ?? new TextObject("-"));
+            message.SetTextVariable(
+                "TROOP_NAME",
+                troop?.Name ?? new TextObject("-"));
             message.SetTextVariable("COUNT", count);
             message.SetTextVariable(
                 "OUTCOME",
@@ -376,13 +383,16 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             RecruitmentProductionForecast forecast = GetProductionForecast(settlement);
             if (forecast == null || forecast.SharedSupply <= 0f)
             {
-                TextObject noSupplyMessage = GameTexts.FindText(
-                    "str_modifiedarmy_manpower_produce_no_supply");
-                noSupplyMessage.SetTextVariable("DAY", day);
-                noSupplyMessage.SetTextVariable(
-                    "SETTLEMENT_ID",
-                    settlement.StringId);
-                ModLogger.Debug(noSupplyMessage.ToString());
+                if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
+                {
+                    TextObject noSupplyMessage = GameTexts.FindText(
+                        "str_modifiedarmy_manpower_produce_no_supply");
+                    noSupplyMessage.SetTextVariable("DAY", day);
+                    noSupplyMessage.SetTextVariable(
+                        "SETTLEMENT_NAME",
+                        settlement.Name);
+                    ModLogger.Debug(noSupplyMessage.ToString());
+                }
                 return;
             }
 
@@ -404,10 +414,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 Dictionary<CharacterObject, int> offers =
                     BuildDailyProfessionalOffers(
                     professionalTemplate,
-                    settlement.Town.GarrisonParty,
+                    settlement,
                     forecast.AllowedRecruitmentLevel,
                     professionalCount,
-                    day);
+                    data,
+                    true);
                 offeredCount = offers.Values.Sum();
                 if (offeredCount > 0)
                 {
@@ -432,24 +443,38 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 }
             }
 
-            TextObject productionMessage = GameTexts.FindText(
-                "str_modifiedarmy_manpower_produce");
-            productionMessage.SetTextVariable("DAY", day);
-            productionMessage.SetTextVariable(
-                "SETTLEMENT_ID",
-                settlement.StringId);
-            productionMessage.SetTextVariable(
-                "SUPPLY",
-                forecast.SharedSupply.ToString("F2"));
-            productionMessage.SetTextVariable(
-                "TRAINING",
-                forecast.ProfessionalTrainingCapacity.ToString("F2"));
-            productionMessage.SetTextVariable(
-                "ALLOCATION",
-                forecast.ProfessionalAllocation.ToString("F2"));
-            productionMessage.SetTextVariable("REQUESTED", professionalCount);
-            productionMessage.SetTextVariable("OFFERED", offeredCount);
-            ModLogger.Debug(productionMessage.ToString());
+            // Zero-output days are routine for fractional production. Logging
+            // only completed batches keeps player-kingdom diagnostics useful.
+            if (offeredCount > 0 &&
+                RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
+            {
+                TextObject productionMessage = GameTexts.FindText(
+                    "str_modifiedarmy_manpower_produce");
+                productionMessage.SetTextVariable("DAY", day);
+                productionMessage.SetTextVariable(
+                    "SETTLEMENT_NAME",
+                    settlement.Name);
+                productionMessage.SetTextVariable(
+                    "SUPPLY",
+                    forecast.SharedSupply.ToString("F2"));
+                productionMessage.SetTextVariable(
+                    "TRAINING",
+                    forecast.ProfessionalTrainingCapacity.ToString("F2"));
+                productionMessage.SetTextVariable(
+                    "ALLOCATION",
+                    forecast.ProfessionalAllocation.ToString("F2"));
+                productionMessage.SetTextVariable(
+                    "REQUESTED",
+                    professionalCount);
+                productionMessage.SetTextVariable("OFFERED", offeredCount);
+                productionMessage.SetTextVariable(
+                    "MANIFEST",
+                    FormatOfferManifest(offers: _dailyProfessionalOffers
+                        .TryGetValue(settlement, out var producedOffers)
+                            ? producedOffers
+                            : null));
+                ModLogger.Debug(productionMessage.ToString());
+            }
         }
 
         /// <summary>
@@ -562,79 +587,151 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return count;
         }
 
+        /// <summary>
+        /// Allocates concrete troops by the largest weighted historical
+        /// deficit. Repeating this calculation for batches of one still
+        /// converges on XML weights, unlike independent daily rounding.
+        /// Prediction receives a detached ledger and never commits it.
+        /// </summary>
         private static Dictionary<CharacterObject, int> BuildDailyProfessionalOffers(
             ProfessionalTroopTemplate template,
-            MobileParty garrison,
+            Settlement settlement,
             int allowedRecruitmentLevel,
             int count,
-            int day)
+            SettlementManpowerProductionData data,
+            bool commitLedger)
         {
             Dictionary<CharacterObject, int> result = new();
             List<TroopProductionEntry> entries = template.TroopEntries
                 .Where(e => e?.Troop != null &&
+                    e.Weight > 0 &&
                     e.RequiredBarracksLevel <= allowedRecruitmentLevel)
                 .OrderBy(e => e.Troop.StringId)
                 .ToList();
-            List<TroopProductionEntry> weightedCycle = new();
-            foreach (TroopProductionEntry entry in entries)
+
+            if (count <= 0 || entries.Count == 0)
             {
-                for (int i = 0; i < Math.Max(1, entry.Weight); i++)
-                {
-                    weightedCycle.Add(entry);
-                }
+                return result;
             }
 
-            RecruitmentSimulationState state = garrison == null
-                ? null
-                : RecruitmentSimulationState.Create(garrison);
-            for (int i = 0; i < count && weightedCycle.Count > 0; i++)
+            string signature = BuildProductionSignature(
+                template,
+                settlement,
+                entries);
+            bool rebuiltLedger = data != null &&
+                !data.IsProfessionalLedgerCurrent(signature);
+            Dictionary<CharacterObject, int> ledger = data
+                ?.CopyProfessionalLedger(signature)
+                ?? new Dictionary<CharacterObject, int>();
+            int totalWeight = entries.Sum(entry => entry.Weight);
+            long historicalTotal = entries.Sum(entry =>
+                (long)GetLedgerCount(ledger, entry.Troop));
+
+            for (int i = 0; i < count; i++)
             {
-                TroopProductionEntry selected;
-                RecruitmentEvaluationResult selectedEvaluation = null;
-                if (state == null)
-                {
-                    selected = weightedCycle[
-                        Math.Abs(day + i) % weightedCycle.Count];
-                }
-                else
-                {
-                    var evaluated = weightedCycle.Select(entry => new
-                    {
-                        Entry = entry,
-                        Evaluation = RecruitmentModelManager.Model
-                            .EvaluateRecruitment(
-                                garrison,
-                                entry.Troop,
-                                1,
-                                RecruitmentSource.ProfessionalProduction,
-                                state)
-                    }).ToList();
-                    float bestPriority = evaluated.Max(item =>
-                        item.Evaluation.Priority);
-                    var preferred = evaluated.Where(item =>
-                            Math.Abs(
-                                item.Evaluation.Priority - bestPriority) <
-                            0.0001f)
-                        .ToList();
-                    var choice = preferred[
-                        Math.Abs(day + i) % preferred.Count];
-                    selected = choice.Entry;
-                    selectedEvaluation = choice.Evaluation;
-                }
+                long nextTotal = historicalTotal + 1;
+                TroopProductionEntry selected = entries
+                    .OrderByDescending(entry =>
+                        nextTotal * (double)entry.Weight / totalWeight -
+                        GetLedgerCount(ledger, entry.Troop))
+                    .ThenBy(entry => entry.Troop.StringId)
+                    .First();
 
                 result[selected.Troop] = result.TryGetValue(
                     selected.Troop,
                     out int value) ? value + 1 : 1;
-                if (selectedEvaluation?.RecruitableCount > 0)
+                ledger[selected.Troop] =
+                    GetLedgerCount(ledger, selected.Troop) + 1;
+                historicalTotal = nextTotal;
+            }
+
+            if (commitLedger)
+            {
+                data?.CommitProfessionalLedger(signature, ledger);
+                if (rebuiltLedger &&
+                    RecruitmentLogFilter.ShouldLog(settlement?.OwnerClan))
                 {
-                    state.Commit(
-                        selected.Troop,
-                        1,
-                        selectedEvaluation.UnitDailyWage,
-                        selectedEvaluation.UnitRecruitmentCost);
+                    TextObject resetMessage = GameTexts.FindText(
+                        "str_modifiedarmy_manpower_ledger_rebuilt");
+                    resetMessage.SetTextVariable(
+                        "SETTLEMENT_NAME",
+                        settlement.Name);
+                    resetMessage.SetTextVariable(
+                        "TEMPLATE_ID",
+                        template.TemplateId);
+                    ModLogger.Debug(resetMessage.ToString());
                 }
             }
+
             return result;
+        }
+
+        /// <summary>
+        /// Includes all inputs that define the eligible weighted pool. A
+        /// changed template, culture resolution or barracks eligibility set
+        /// therefore rebuilds history safely on the next real production.
+        /// </summary>
+        private static string BuildProductionSignature(
+            ProfessionalTroopTemplate template,
+            Settlement settlement,
+            IEnumerable<TroopProductionEntry> entries)
+        {
+            return (template?.TemplateId ?? "unknown") + "|" +
+                (settlement?.OwnerClan?.StringId ?? "no_owner") + "|" +
+                (settlement?.OwnerClan?.Culture?.StringId ??
+                    settlement?.Culture?.StringId ?? "no_culture") + "|" +
+                string.Join(
+                    ";",
+                    entries.Select(entry =>
+                        entry.Troop.StringId + ":" + entry.Weight));
+        }
+
+        /// <summary>
+        /// Reads a non-negative historical count without exposing missing or
+        /// corrupted save values to the weighted allocator.
+        /// </summary>
+        private static int GetLedgerCount(
+            IReadOnlyDictionary<CharacterObject, int> ledger,
+            CharacterObject troop)
+        {
+            return ledger != null && troop != null &&
+                ledger.TryGetValue(troop, out int count)
+                    ? Math.Max(0, count)
+                    : 0;
+        }
+
+        /// <summary>
+        /// Produces a compact localized-name manifest for player-kingdom debug
+        /// logs without exposing internal character identifiers.
+        /// </summary>
+        private static string FormatOfferManifest(
+            IReadOnlyDictionary<CharacterObject, int> offers)
+        {
+            if (offers == null || offers.Count == 0)
+            {
+                return GameTexts.FindText(
+                    "str_modifiedarmy_manpower_manifest_empty").ToString();
+            }
+
+            return string.Join(
+                ", ",
+                offers.Where(entry => entry.Key != null && entry.Value > 0)
+                    .OrderBy(entry => entry.Key.StringId)
+                    .Select(entry => FormatOfferManifestEntry(
+                        entry.Key,
+                        entry.Value)));
+        }
+
+        /// <summary>Formats one troop/count pair through localization XML.</summary>
+        private static string FormatOfferManifestEntry(
+            CharacterObject troop,
+            int count)
+        {
+            TextObject entry = GameTexts.FindText(
+                "str_modifiedarmy_manpower_manifest_entry");
+            entry.SetTextVariable("TROOP_NAME", troop.Name);
+            entry.SetTextVariable("COUNT", count);
+            return entry.ToString();
         }
 
         public static float CalculateVillageSupply(Village village, int assignedFiefCount)

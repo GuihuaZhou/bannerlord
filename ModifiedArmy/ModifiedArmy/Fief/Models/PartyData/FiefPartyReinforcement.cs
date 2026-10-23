@@ -48,6 +48,7 @@ namespace ModifiedArmy.Models.Fief
             List<TroopProductionEntry> eligible = _fiefPartyTemplate
                 .TroopEntries
                 .Where(entry => entry?.Troop != null &&
+                    entry.Weight > 0 &&
                     entry.RequiredBarracksLevel <= barracksLevel)
                 .ToList();
             int remainingTotal = maximumCount;

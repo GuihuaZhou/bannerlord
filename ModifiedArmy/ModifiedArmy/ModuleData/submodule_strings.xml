@@ -140,33 +140,39 @@
     <string id="str_modifiedarmy_garrison_professional_recruitment"
         text="{=ModifiedArmy_GarrisonProfessionalRecruitment}[驻军招募] {SETTLEMENT_NAME}今日没有补充职业兵, 当时可训练{OFFERED}人, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_manpower_consume"
-        text="{=ModifiedArmy_ManpowerConsume}[Manpower][Offer consumption] Day={DAY} Settlement={SETTLEMENT_ID} Troop={TROOP_ID} Count={COUNT} Outcome={OUTCOME} Detail={DETAIL}" />
+        text="{=ModifiedArmy_ManpowerConsume}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}处理{COUNT}名{TROOP_NAME}：{OUTCOME}，{DETAIL}。" />
     <string id="str_modifiedarmy_manpower_outcome_success"
-        text="{=ModifiedArmy_ManpowerOutcomeSuccess}Success" />
+        text="{=ModifiedArmy_ManpowerOutcomeSuccess}处理成功" />
     <string id="str_modifiedarmy_manpower_outcome_failure"
-        text="{=ModifiedArmy_ManpowerOutcomeFailure}Failure" />
+        text="{=ModifiedArmy_ManpowerOutcomeFailure}处理失败" />
     <string id="str_modifiedarmy_manpower_reason_invalid_troop"
-        text="{=ModifiedArmy_ManpowerReasonInvalidTroop}Invalid troop or count" />
+        text="{=ModifiedArmy_ManpowerReasonInvalidTroop}兵种或人数无效" />
     <string id="str_modifiedarmy_manpower_reason_offer_not_today"
-        text="{=ModifiedArmy_ManpowerReasonOfferNotToday}No offer is available today" />
+        text="{=ModifiedArmy_ManpowerReasonOfferNotToday}这不是今日生成的职业兵" />
     <string id="str_modifiedarmy_manpower_reason_offer_missing"
-        text="{=ModifiedArmy_ManpowerReasonOfferMissing}Offer collection is missing" />
+        text="{=ModifiedArmy_ManpowerReasonOfferMissing}今日的职业兵记录不存在" />
     <string id="str_modifiedarmy_manpower_reason_offer_insufficient"
-        text="{=ModifiedArmy_ManpowerReasonOfferInsufficient}Insufficient offers; available={AVAILABLE}" />
+        text="{=ModifiedArmy_ManpowerReasonOfferInsufficient}可用人数不足，目前只有{AVAILABLE}人" />
     <string id="str_modifiedarmy_manpower_reason_manager_unavailable"
-        text="{=ModifiedArmy_ManpowerReasonManagerUnavailable}Fief manager is unavailable" />
+        text="{=ModifiedArmy_ManpowerReasonManagerUnavailable}封邑管理器尚未就绪" />
     <string id="str_modifiedarmy_manpower_reason_hearth"
-        text="{=ModifiedArmy_ManpowerReasonHearth}Insufficient village hearth" />
+        text="{=ModifiedArmy_ManpowerReasonHearth}所属村庄的户数不足" />
     <string id="str_modifiedarmy_manpower_reason_remaining"
-        text="{=ModifiedArmy_ManpowerReasonRemaining}Remaining={REMAINING}" />
+        text="{=ModifiedArmy_ManpowerReasonRemaining}处理后还剩{REMAINING}人" />
     <string id="str_modifiedarmy_manpower_produce_no_supply"
-        text="{=ModifiedArmy_ManpowerProduceNoSupply}[Manpower][Production] Day={DAY} Settlement={SETTLEMENT_ID} Offers=0 Reason=No available base manpower" />
+        text="{=ModifiedArmy_ManpowerProduceNoSupply}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}没有可用兵源，今日没有生成职业兵。" />
     <string id="str_modifiedarmy_manpower_produce"
-        text="{=ModifiedArmy_ManpowerProduce}[Manpower][Production] Day={DAY} Settlement={SETTLEMENT_ID} BaseManpower={SUPPLY} Training={TRAINING} Allocation={ALLOCATION} Requested={REQUESTED} Offers={OFFERED}" />
+        text="{=ModifiedArmy_ManpowerProduce}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}分配到{ALLOCATION}点训练产能，计划生成{REQUESTED}人，实际生成{OFFERED}人：{MANIFEST}。当前可用兵源为{SUPPLY}，训练上限为{TRAINING}。" />
+    <string id="str_modifiedarmy_manpower_manifest_empty"
+        text="{=ModifiedArmy_ManpowerManifestEmpty}无" />
+    <string id="str_modifiedarmy_manpower_manifest_entry"
+        text="{=ModifiedArmy_ManpowerManifestEntry}{TROOP_NAME}×{COUNT}" />
+    <string id="str_modifiedarmy_manpower_ledger_rebuilt"
+        text="{=ModifiedArmy_ManpowerLedgerRebuilt}[职业兵生产] {SETTLEMENT_NAME}的生产条件发生变化，已按模板{TEMPLATE_ID}重新开始统计各兵种的生产份额。" />
     <string id="str_modifiedarmy_manpower_recruitment_blocked"
-        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[Manpower][Recruitment blocked] Day={DAY} Settlement={SETTLEMENT_ID} Offers={OFFERS} Garrison={GARRISON} Owner={OWNER} AutoRecruit={AUTO_RECRUIT} MapEvent={MAP_EVENT} Siege={SIEGE}" />
+        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[驻军招募] 第{DAY}天，{SETTLEMENT_NAME}有{OFFERS}名职业兵可用，但今日无法招募。驻军存在：{GARRISON}，领主存在：{OWNER}，自动招募：{AUTO_RECRUIT}，正在战斗：{MAP_EVENT}，正在围城：{SIEGE}。" />
     <string id="str_modifiedarmy_manpower_recruitment"
-        text="{=ModifiedArmy_ManpowerRecruitment}[Manpower][Recruitment] Day={DAY} Settlement={SETTLEMENT_ID} GarrisonBefore={GARRISON_BEFORE} Offers={OFFERS} DailyLimit={DAILY_LIMIT} Approved={APPROVED} ProfessionalActual={PROFESSIONAL_ACTUAL} PrisonerActual={PRISONER_ACTUAL} GarrisonAfter={GARRISON_AFTER}" />
+        text="{=ModifiedArmy_ManpowerRecruitment}[驻军招募] 第{DAY}天，{SETTLEMENT_NAME}原有{GARRISON_BEFORE}人，职业兵池提供{OFFERS}人，每日最多招募{DAILY_LIMIT}人，审核通过{APPROVED}人；实际招募职业兵{PROFESSIONAL_ACTUAL}人、归顺俘虏{PRISONER_ACTUAL}人，驻军现有{GARRISON_AFTER}人。" />
     <string id="str_modifiedarmy_recruits_unavailable"
         text="{=ModifiedArmy_RecruitsUnavailable}部分士兵已无法招募, 请重新选择." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"

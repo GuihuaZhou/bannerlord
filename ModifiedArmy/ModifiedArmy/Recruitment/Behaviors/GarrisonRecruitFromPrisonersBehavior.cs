@@ -77,14 +77,15 @@ namespace ModifiedArmy.Models
                 settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
-                if (availableProfessionalOffers > 0)
+                if (availableProfessionalOffers > 0 &&
+                    RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
                 {
                     TextObject blockedMessage = GameTexts.FindText(
                         "str_modifiedarmy_manpower_recruitment_blocked");
                     blockedMessage.SetTextVariable("DAY", day);
                     blockedMessage.SetTextVariable(
-                        "SETTLEMENT_ID",
-                        settlement.StringId);
+                        "SETTLEMENT_NAME",
+                        settlement.Name);
                     blockedMessage.SetTextVariable(
                         "OFFERS",
                         availableProfessionalOffers);
@@ -165,14 +166,15 @@ namespace ModifiedArmy.Models
                 .Where(evaluation => evaluation.Source ==
                     RecruitmentSource.ProfessionalProduction)
                 .Sum(evaluation => evaluation.RecruitableCount) ?? 0;
-            if (professionalOffered > 0)
+            if (professionalOffered > 0 &&
+                RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
             {
                 TextObject recruitmentMessage = GameTexts.FindText(
                     "str_modifiedarmy_manpower_recruitment");
                 recruitmentMessage.SetTextVariable("DAY", day);
                 recruitmentMessage.SetTextVariable(
-                    "SETTLEMENT_ID",
-                    settlement.StringId);
+                    "SETTLEMENT_NAME",
+                    settlement.Name);
                 recruitmentMessage.SetTextVariable(
                     "GARRISON_BEFORE",
                     town.GarrisonParty.MemberRoster.TotalManCount - recruited);

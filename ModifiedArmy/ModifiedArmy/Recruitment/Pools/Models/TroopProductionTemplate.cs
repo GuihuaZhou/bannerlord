@@ -32,7 +32,9 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             int requiredBarracksLevel)
         {
             Troop = troop;
-            Weight = Math.Max(1, weight);
+            // A zero weight explicitly disables production. Do not silently
+            // turn it into one, because that would contradict the XML author.
+            Weight = Math.Max(0, weight);
             RequiredBarracksLevel = Math.Max(0, requiredBarracksLevel);
         }
 
