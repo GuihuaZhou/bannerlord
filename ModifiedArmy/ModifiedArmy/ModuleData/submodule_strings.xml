@@ -171,8 +171,8 @@
         text="{=ModifiedArmy_RecruitsUnavailable}部分士兵已无法招募, 请重新选择." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"
         text="{=ModifiedArmy_GarrisonPrisonerSkipped}[驻军招募] {SETTLEMENT_NAME}今日没有招募俘虏. 原有{INITIAL}名普通俘虏, 出售了{SOLD}名多余俘虏, 原因是{REASON}." />
-    <string id="str_modifiedarmy_garrison_prisoner_no_template_target"
-        text="{=ModifiedArmy_GarrisonPrisonerNoTemplateTarget}没有俘虏能够补足驻军模板缺口" />
+    <string id="str_modifiedarmy_garrison_prisoner_no_retention_target"
+        text="{=ModifiedArmy_GarrisonPrisonerNoRetentionTarget}没有符合留用条件的俘虏" />
     <string id="str_modifiedarmy_garrison_prisoner_no_conformity"
         text="{=ModifiedArmy_GarrisonPrisonerNoConformity}保留的俘虏尚未积累足够驯服度" />
     <string id="str_modifiedarmy_garrison_prisoner_no_daily_capacity"
@@ -196,19 +196,10 @@
     <string id="str_modifiedarmy_professional_template_unknown_troop"
         text="{=ModifiedArmy_ProfessionalTemplateUnknownTroop}[兵源池] 职业兵模板'{TEMPLATE_ID}'无法解析兵种'{TROOP_ID}'." />
 
-    <string id="str_modifiedarmy_recruit_role_infantry" text="{=ModifiedArmy_RecruitRoleInfantry}步兵" />
-    <string id="str_modifiedarmy_recruit_role_ranged" text="{=ModifiedArmy_RecruitRoleRanged}射手" />
-    <string id="str_modifiedarmy_recruit_role_cavalry" text="{=ModifiedArmy_RecruitRoleCavalry}骑兵" />
-    <string id="str_modifiedarmy_recruit_role_horse_archer" text="{=ModifiedArmy_RecruitRoleHorseArcher}骑射手" />
-    <string id="str_modifiedarmy_recruit_quality_low" text="{=ModifiedArmy_RecruitQualityLow}低阶" />
-    <string id="str_modifiedarmy_recruit_quality_middle" text="{=ModifiedArmy_RecruitQualityMiddle}中阶" />
-    <string id="str_modifiedarmy_recruit_quality_top" text="{=ModifiedArmy_RecruitQualityTop}高阶" />
     <string id="str_modifiedarmy_recruit_limit_none" text="{=ModifiedArmy_RecruitLimit_None}无" />
     <string id="str_modifiedarmy_recruit_limit_invalid_party" text="{=ModifiedArmy_RecruitLimit_InvalidParty}无效部队" />
     <string id="str_modifiedarmy_recruit_limit_invalid_troop" text="{=ModifiedArmy_RecruitLimit_InvalidTroop}无效士兵" />
     <string id="str_modifiedarmy_recruit_limit_party_size" text="{=ModifiedArmy_RecruitLimit_PartySize}部队人数" />
-    <string id="str_modifiedarmy_recruit_limit_combat_role" text="{=ModifiedArmy_RecruitLimit_CombatRole}兵种比例" />
-    <string id="str_modifiedarmy_recruit_limit_quality" text="{=ModifiedArmy_RecruitLimit_Quality}质量比例" />
     <string id="str_modifiedarmy_recruit_limit_wage" text="{=ModifiedArmy_RecruitLimit_WageLimit}工资上限" />
     <string id="str_modifiedarmy_recruit_limit_cost" text="{=ModifiedArmy_RecruitLimit_RecruitmentCost}招募费用" />
     <string id="str_modifiedarmy_recruit_limit_maintenance" text="{=ModifiedArmy_RecruitLimit_MaintenanceFunds}维持资金" />

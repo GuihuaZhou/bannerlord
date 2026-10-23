@@ -140,19 +140,6 @@ namespace ModifiedArmy
                     false);
                 MBObjectManager.Instance.LoadXML("MercenaryTemplates", true);
 
-                // Culture-specific AI party composition is data-driven. Each
-                // XML object registers itself with the shared repository after
-                // all nested role and quality ranges have been deserialized.
-                game.ObjectManager.RegisterType<AIRecruitmentTemplate>(
-                    "AIRecruitmentTemplate",
-                    "AIRecruitmentTemplates",
-                    100U,
-                    true,
-                    false);
-                MBObjectManager.Instance.LoadXML(
-                    "AIRecruitmentTemplates",
-                    true);
-
                 campaignStarter.AddBehavior(new CampaignReadyBehavior());
                 campaignStarter.AddBehavior(new GarrisonWageLimitBehavior());
                 campaignStarter.AddBehavior(new GarrisonGranaryMenuBehavior());

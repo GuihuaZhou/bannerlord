@@ -55,15 +55,6 @@
 				<GameType value="EditorGame" />
 			</IncludedGameTypes>
 		</XmlNode>  
-		<XmlNode>
-			<XmlName id="AIRecruitmentTemplates" path="aiRecruitmentTemplates" />
-			<IncludedGameTypes>
-				<GameType value="Campaign" />
-				<GameType value="CampaignStoryMode" />
-				<GameType value="CustomGame" />
-				<GameType value="EditorGame" />
-			</IncludedGameTypes>
-		</XmlNode>
 		<XmlNode>                
 			<XmlName id="GameText" path="submodule_strings" />
 		</XmlNode>  

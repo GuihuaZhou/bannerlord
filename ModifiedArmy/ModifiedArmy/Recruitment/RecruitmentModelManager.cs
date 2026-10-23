@@ -10,11 +10,8 @@ namespace ModifiedArmy.Recruitment
     {
         static RecruitmentModelManager()
         {
-            Templates = new RecruitmentTemplateRepository();
-            Model = new DefaultAiTroopRecruitmentModel(Templates);
+            Model = new DefaultAiTroopRecruitmentModel();
         }
-
-        public static RecruitmentTemplateRepository Templates { get; }
 
         public static AiTroopRecruitmentModel Model { get; }
     }

@@ -1,6 +1,4 @@
-using ModifiedArmy.Recruitment.Classification;
 using TaleWorlds.CampaignSystem;
-using TaleWorlds.Core;
 
 namespace ModifiedArmy.Recruitment.Models
 {
@@ -16,23 +14,11 @@ namespace ModifiedArmy.Recruitment.Models
 
         public RecruitmentSource Source { get; set; }
 
-        public CombatRole CombatRole { get; set; }
-
-        public TroopQuality Quality { get; set; }
-
         public int RequestedCount { get; set; }
 
         public int RecruitableCount { get; set; }
 
         public int AllowedByPartySize { get; set; }
-
-        public float RoleShortageScore { get; set; }
-
-        public float QualityShortageScore { get; set; }
-
-        public float RoleExcessScore { get; set; }
-
-        public float QualityExcessScore { get; set; }
 
         public int AllowedByWageLimit { get; set; }
 

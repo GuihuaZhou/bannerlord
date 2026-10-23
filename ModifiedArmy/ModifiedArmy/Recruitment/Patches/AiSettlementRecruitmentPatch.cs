@@ -5,7 +5,6 @@ using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment;
-using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -393,12 +392,6 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("CULTURE_ID", plan.CultureId);
             message.SetTextVariable("TROOP_NAME", evaluation.Troop.Name);
             message.SetTextVariable("TIER", evaluation.Troop.Tier);
-            message.SetTextVariable(
-                "ROLE",
-                GetCombatRoleText(evaluation.CombatRole));
-            message.SetTextVariable(
-                "QUALITY",
-                GetQualityText(evaluation.Quality));
             message.SetTextVariable("REQUESTED", evaluation.RequestedCount);
             message.SetTextVariable("APPROVED", evaluation.RecruitableCount);
             message.SetTextVariable(
@@ -410,42 +403,6 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable("UNIT_WAGE", evaluation.UnitDailyWage);
             message.SetTextVariable("DAYS", evaluation.SustainableDays);
             ModLogger.FileNotice(message.ToString());
-        }
-
-        /// <summary>
-        /// Converts internal diagnostic enums to localized player-facing text.
-        /// </summary>
-        private static TextObject GetCombatRoleText(
-            CombatRole role)
-        {
-            switch (role)
-            {
-                case CombatRole.Ranged:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_role_ranged");
-                case CombatRole.Cavalry:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_role_cavalry");
-                case CombatRole.HorseArcher:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_role_horse_archer");
-                default:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_role_infantry");
-            }
-        }
-
-        /// <summary>
-        /// Converts a Tier-based quality group to localized diagnostic text.
-        /// </summary>
-        private static TextObject GetQualityText(
-            TroopQuality quality)
-        {
-            switch (quality)
-            {
-                case TroopQuality.MiddleTier:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_middle");
-                case TroopQuality.TopTier:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_top");
-                default:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_quality_low");
-            }
         }
 
         /// <summary>
@@ -468,10 +425,6 @@ namespace ModifiedArmy.Recruitment.Patches
                     return "str_modifiedarmy_recruit_limit_invalid_troop";
                 case RecruitmentLimitReason.PartySize:
                     return "str_modifiedarmy_recruit_limit_party_size";
-                case RecruitmentLimitReason.CombatRole:
-                    return "str_modifiedarmy_recruit_limit_combat_role";
-                case RecruitmentLimitReason.Quality:
-                    return "str_modifiedarmy_recruit_limit_quality";
                 case RecruitmentLimitReason.WageLimit:
                     return "str_modifiedarmy_recruit_limit_wage";
                 case RecruitmentLimitReason.RecruitmentCost:

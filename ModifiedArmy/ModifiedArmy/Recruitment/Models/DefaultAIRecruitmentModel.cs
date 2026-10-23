@@ -1,5 +1,4 @@
 using ModifiedArmy.PartyFinance.Models;
-using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;
@@ -13,21 +12,13 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Recruitment.Models
 {
     /// <summary>
-    /// Builds culture-aware recruitment plans constrained by party capacity,
-    /// wage limits and combined thirty-day affordability. Composition ranges
-    /// affect candidate preference but are not recruitment limits.
+    /// Builds recruitment plans constrained by party capacity, wage limits
+    /// and combined thirty-day affordability. Troop composition is deliberately
+    /// not decided here: available legal troops compete on their own cost and
+    /// tier, without a hidden role or quality quota.
     /// </summary>
     public class DefaultAiTroopRecruitmentModel : AiTroopRecruitmentModel
     {
-        private readonly RecruitmentTemplateRepository _templates;
-
-        public DefaultAiTroopRecruitmentModel(
-            RecruitmentTemplateRepository templates)
-        {
-            _templates = templates
-                ?? throw new ArgumentNullException(nameof(templates));
-        }
-
         /// <summary>
         /// Sorts all candidates once, evaluates them against a shared simulated
         /// state, and commits only approved quantities to that simulation. The
@@ -148,14 +139,6 @@ namespace ModifiedArmy.Recruitment.Models
                 return result;
             }
 
-            RecruitmentPartyType partyType = GetPartyType(party);
-            ArmyCompositionTemplate template = _templates.GetTemplate(
-                GetCultureId(party, partyType),
-                partyType);
-            CombatRole role =
-                RecruitmentTroopClassifier.GetCombatRole(troop);
-            TroopQuality quality =
-                RecruitmentTroopClassifier.GetQuality(troop);
             float unitWage =
                 AiRecruitmentFinancialModel.EstimateUnitDailyWage(
                     party,
@@ -191,8 +174,6 @@ namespace ModifiedArmy.Recruitment.Models
                     .RoundedResultNumber;
             }
 
-            result.CombatRole = role;
-            result.Quality = quality;
             result.UnitDailyWage = unitWage;
             result.UnitRecruitmentCost = Math.Max(0, unitCost);
             result.Priority = GetPriority(
@@ -200,24 +181,6 @@ namespace ModifiedArmy.Recruitment.Models
                 troop,
                 source,
                 state);
-            RatioRange roleRange = template.GetRange(role);
-            RatioRange qualityRange = template.GetRange(quality);
-            result.RoleShortageScore = GetNormalizedShortage(
-                state.PartySizeLimit,
-                state.GetCount(role),
-                roleRange);
-            result.QualityShortageScore = GetNormalizedShortage(
-                state.PartySizeLimit,
-                state.GetCount(quality),
-                qualityRange);
-            result.RoleExcessScore = GetNormalizedExcess(
-                state.PartySizeLimit,
-                state.GetCount(role),
-                roleRange);
-            result.QualityExcessScore = GetNormalizedExcess(
-                state.PartySizeLimit,
-                state.GetCount(quality),
-                qualityRange);
             result.AllowedByPartySize = Math.Max(
                 0,
                 capacityApproval.ApprovedCount);
@@ -256,9 +219,9 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
-        /// Gives priority to missing combat roles and quality groups. Tier is
-        /// a small tie-breaker, while mercenaries receive a small penalty so
-        /// equal ordinary troops are considered first.
+        /// Uses only properties of the offered troop and its source. This is
+        /// intentionally independent of the party's current composition, so
+        /// two equal-tier troops are not ranked differently by a deleted quota.
         /// </summary>
         private float GetPriority(
             MobileParty party,
@@ -271,42 +234,12 @@ namespace ModifiedArmy.Recruitment.Models
                 return float.MinValue;
             }
 
-            RecruitmentPartyType partyType = GetPartyType(party);
-            ArmyCompositionTemplate template = _templates.GetTemplate(
-                GetCultureId(party, partyType),
-                partyType);
-            CombatRole role =
-                RecruitmentTroopClassifier.GetCombatRole(troop);
-            TroopQuality quality =
-                RecruitmentTroopClassifier.GetQuality(troop);
-            float roleNeed = GetNormalizedShortage(
-                state.PartySizeLimit,
-                state.GetCount(role),
-                template.GetRange(role));
-            float qualityNeed = GetNormalizedShortage(
-                state.PartySizeLimit,
-                state.GetCount(quality),
-                template.GetRange(quality));
-            float tierPreference = Math.Max(0, troop.Tier) * 0.05f;
+            float tierPreference = Math.Max(0, troop.Tier);
             float sourcePenalty = source == RecruitmentSource.Mercenary
-                ? 0.10f
+                ? 0.01f
                 : 0f;
 
-            float roleExcess = GetNormalizedExcess(
-                state.PartySizeLimit,
-                state.GetCount(role),
-                template.GetRange(role));
-            float qualityExcess = GetNormalizedExcess(
-                state.PartySizeLimit,
-                state.GetCount(quality),
-                template.GetRange(quality));
-
-            return 2f * roleNeed
-                + qualityNeed
-                - 0.5f * roleExcess
-                - 0.2f * qualityExcess
-                + tierPreference
-                - sourcePenalty;
+            return tierPreference - sourcePenalty;
         }
 
         private static RecruitmentEvaluationResult CreateBaseResult(
@@ -320,49 +253,6 @@ namespace ModifiedArmy.Recruitment.Models
                 Source = source,
                 RequestedCount = Math.Max(0, availableCount)
             };
-        }
-
-        /// <summary>
-        /// Returns a normalized value from zero to one for the unfilled soft
-        /// minimum. This affects ordering but never forces recruitment.
-        /// </summary>
-        private static float GetNormalizedShortage(
-            int sizeLimit,
-            int currentCount,
-            RatioRange range)
-        {
-            int minimumCount = (int)Math.Floor(
-                sizeLimit * range.MinimumRatio);
-
-            if (minimumCount <= 0)
-            {
-                return 0f;
-            }
-
-            return Math.Max(0, minimumCount - currentCount)
-                / (float)minimumCount;
-        }
-
-        /// <summary>
-        /// Returns a normalized excess above the preferred maximum. Excess
-        /// lowers ordering priority but never reduces the approved quantity.
-        /// </summary>
-        private static float GetNormalizedExcess(
-            int sizeLimit,
-            int currentCount,
-            RatioRange range)
-        {
-            if (sizeLimit <= 0)
-            {
-                return 0f;
-            }
-
-            int maximumCount = (int)Math.Floor(
-                sizeLimit * range.MaximumRatio);
-            return Math.Min(
-                1f,
-                Math.Max(0, currentCount - maximumCount) /
-                    (float)sizeLimit);
         }
 
         /// <summary>
@@ -529,7 +419,7 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
-        /// Resolves which of the two supported composition templates applies.
+        /// Resolves the diagnostic party category recorded in the plan.
         /// </summary>
         private static RecruitmentPartyType GetPartyType(MobileParty party)
         {
@@ -571,18 +461,15 @@ namespace ModifiedArmy.Recruitment.Models
     }
 
     /// <summary>
-    /// Compatibility constructor for integrations compiled against the old
-    /// implementation name. All policy remains in the preferred base class.
+    /// Compatibility name for integrations compiled against the old class.
     /// </summary>
     [Obsolete(
         "Use DefaultAiTroopRecruitmentModel; this adapter will be removed during the atomic entry-point switch.")]
     public sealed class DefaultAIRecruitmentModel
         : DefaultAiTroopRecruitmentModel
     {
-        /// <summary>Creates the compatibility adapter over the same repository.</summary>
-        public DefaultAIRecruitmentModel(
-            RecruitmentTemplateRepository templates)
-            : base(templates)
+        /// <summary>Creates the compatibility adapter.</summary>
+        public DefaultAIRecruitmentModel()
         {
         }
     }

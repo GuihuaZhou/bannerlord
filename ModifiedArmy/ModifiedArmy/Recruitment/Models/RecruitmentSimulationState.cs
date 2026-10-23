@@ -1,11 +1,7 @@
 using ModifiedArmy.Garrison.Models;
-using ModifiedArmy.Recruitment.Classification;
 using System;
-using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.CampaignSystem.Roster;
-using TaleWorlds.Core;
 
 namespace ModifiedArmy.Recruitment.Models
 {
@@ -15,11 +11,6 @@ namespace ModifiedArmy.Recruitment.Models
     /// </summary>
     public sealed class RecruitmentSimulationState
     {
-        private readonly Dictionary<CombatRole, int> _roleCounts =
-            new Dictionary<CombatRole, int>();
-        private readonly Dictionary<TroopQuality, int> _qualityCounts =
-            new Dictionary<TroopQuality, int>();
-
         private RecruitmentSimulationState()
         {
         }
@@ -58,37 +49,8 @@ namespace ModifiedArmy.Recruitment.Models
             result.ProjectedDailyWage =
                 result.Budget.CurrentLongTermWage;
 
-            if (party?.MemberRoster == null)
-            {
-                return result;
-            }
-
-            foreach (TroopRosterElement element in
-                party.MemberRoster.GetTroopRoster())
-            {
-                CharacterObject troop = element.Character;
-
-                if (troop == null || troop.IsHero || element.Number <= 0)
-                {
-                    continue;
-                }
-
-                result.AddCount(
-                    RecruitmentTroopClassifier.GetCombatRole(troop),
-                    element.Number);
-                result.AddCount(
-                    RecruitmentTroopClassifier.GetQuality(troop),
-                    element.Number);
-            }
-
             return result;
         }
-
-        public int GetCount(CombatRole role) =>
-            _roleCounts.TryGetValue(role, out int count) ? count : 0;
-
-        public int GetCount(TroopQuality quality) =>
-            _qualityCounts.TryGetValue(quality, out int count) ? count : 0;
 
         /// <summary>
         /// Applies an approved candidate only to the projected state. The live
@@ -109,18 +71,6 @@ namespace ModifiedArmy.Recruitment.Models
             ProjectedMemberCount += count;
             ProjectedDailyWage += count * unitDailyWage;
             CommittedRecruitmentCost += count * unitRecruitmentCost;
-            AddCount(RecruitmentTroopClassifier.GetCombatRole(troop), count);
-            AddCount(RecruitmentTroopClassifier.GetQuality(troop), count);
-        }
-
-        private void AddCount(CombatRole role, int count)
-        {
-            _roleCounts[role] = GetCount(role) + count;
-        }
-
-        private void AddCount(TroopQuality quality, int count)
-        {
-            _qualityCounts[quality] = GetCount(quality) + count;
         }
     }
 }

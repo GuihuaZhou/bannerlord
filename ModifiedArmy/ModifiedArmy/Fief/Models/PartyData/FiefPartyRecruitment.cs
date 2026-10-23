@@ -528,10 +528,6 @@ namespace ModifiedArmy.Models.Fief
                     return GameTexts.FindText("str_modifiedarmy_recruit_limit_invalid_troop");
                 case RecruitmentLimitReason.PartySize:
                     return GameTexts.FindText("str_modifiedarmy_recruit_limit_party_size");
-                case RecruitmentLimitReason.CombatRole:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_combat_role");
-                case RecruitmentLimitReason.Quality:
-                    return GameTexts.FindText("str_modifiedarmy_recruit_limit_quality");
                 case RecruitmentLimitReason.WageLimit:
                     return GameTexts.FindText("str_modifiedarmy_recruit_limit_wage");
                 case RecruitmentLimitReason.RecruitmentCost:

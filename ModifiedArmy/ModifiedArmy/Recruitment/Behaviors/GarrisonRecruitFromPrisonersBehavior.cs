@@ -1,6 +1,5 @@
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Garrison.Models;
-using ModifiedArmy.Recruitment.Classification;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
@@ -24,8 +23,9 @@ namespace ModifiedArmy.Models
 {
     /// <summary>
     /// Lets AI fortifications absorb eligible non-bandit prisoners into their
-    /// garrisons. Every offered prisoner is evaluated by the same composition,
-    /// wage and clan-budget rules used by the other AI recruitment sources.
+    /// garrisons. Prisoner retention has its own simple legality and quality
+    /// policy; every ready recruit still passes the shared capacity, wage and
+    /// clan-budget rules used by the other AI recruitment sources.
     /// </summary>
     public class GarrisonRecruitFromPrisonersBehavior : CampaignBehaviorBase
     {
@@ -121,7 +121,6 @@ namespace ModifiedArmy.Models
             List<RecruitmentCandidate> prisonerCandidates =
                 SelectAndPreparePrisonerCandidates(
                     settlement,
-                    town.GarrisonParty,
                     out targetCount,
                     out readyCount,
                     out sold);
@@ -498,9 +497,10 @@ namespace ModifiedArmy.Models
 
         /// <summary>
         /// Retains eligible military prisoners within the prison reserve and
-        /// adds one day of conformity to retained targets. Low-tier prisoners
-        /// keep the existing economic sale policy unless they fill a preferred
-        /// composition shortage. A
+        /// adds one day of conformity to retained targets. The retention rule
+        /// is intentionally independent of army composition: legal troops of
+        /// tier three or higher are kept, while lower tiers remain available
+        /// to the existing economic sale policy. A
         /// settlement party has no MobileParty, so the native hourly method
         /// cannot be called safely. The same base rate, governor leadership
         /// bonus and active model threshold are applied directly to the
@@ -509,7 +509,6 @@ namespace ModifiedArmy.Models
         private static List<RecruitmentCandidate>
             SelectAndPreparePrisonerCandidates(
                 Settlement settlement,
-                MobileParty garrison,
                 out int targetCount,
                 out int readyCount,
                 out int soldCount)
@@ -529,12 +528,6 @@ namespace ModifiedArmy.Models
                 return result;
             }
 
-            ArmyCompositionTemplate template = GetGarrisonTemplate(garrison);
-            int capacity = Math.Max(0, garrison.Party.PartySizeLimit);
-            Dictionary<CombatRole, int> roleCounts =
-                CreateRoleCounts(garrison.MemberRoster);
-            Dictionary<TroopQuality, int> qualityCounts =
-                CreateQualityCounts(garrison.MemberRoster);
             // Hero prisoners are never sold. Their occupied capacity is
             // deducted first so retained regular prisoners keep the whole
             // prison roster as close as possible to half of its limit.
@@ -555,11 +548,7 @@ namespace ModifiedArmy.Models
 
                 int retainedCount = GetTargetRetentionCount(
                     troop,
-                    Math.Min(element.Number, remainingRetentionCapacity),
-                    capacity,
-                    template,
-                    roleCounts,
-                    qualityCounts);
+                    Math.Min(element.Number, remainingRetentionCapacity));
                 int sellCount = allowAutomaticSale
                     ? element.Number - retainedCount
                     : 0;
@@ -581,12 +570,6 @@ namespace ModifiedArmy.Models
                     continue;
                 }
 
-                CombatRole role =
-                    RecruitmentTroopClassifier.GetCombatRole(troop);
-                TroopQuality quality =
-                    RecruitmentTroopClassifier.GetQuality(troop);
-                roleCounts[role] += retainedCount;
-                qualityCounts[quality] += retainedCount;
                 remainingRetentionCapacity -= retainedCount;
                 targetCount += retainedCount;
                 int dailyConformity = CalculateDailyConformity(settlement);
@@ -629,48 +612,17 @@ namespace ModifiedArmy.Models
 
         private static int GetTargetRetentionCount(
             CharacterObject troop,
-            int availableCount,
-            int capacity,
-            ArmyCompositionTemplate template,
-            IDictionary<CombatRole, int> roleCounts,
-            IDictionary<TroopQuality, int> qualityCounts)
+            int availableCount)
         {
             if (!IsRegularGarrisonTroop(troop) || availableCount <= 0)
             {
                 return 0;
             }
 
-            CombatRole role =
-                RecruitmentTroopClassifier.GetCombatRole(troop);
-            TroopQuality quality =
-                RecruitmentTroopClassifier.GetQuality(troop);
-            RatioRange roleRange = template.GetRange(role);
-            RatioRange qualityRange = template.GetRange(quality);
-            int roleMinimum = (int)Math.Ceiling(
-                capacity * roleRange.MinimumRatio);
-            int qualityMinimum = (int)Math.Ceiling(
-                capacity * qualityRange.MinimumRatio);
-            int roleShortage = Math.Max(
-                0,
-                roleMinimum - roleCounts[role]);
-            int qualityShortage = Math.Max(
-                0,
-                qualityMinimum - qualityCounts[quality]);
-
-            if (roleShortage <= 0 && qualityShortage <= 0)
-            {
-                // Useful prisoners remain a future recruitment reserve even
-                // when today's minimum ratios are already satisfied. Low-tier
-                // prisoners still fall through to the sale policy.
-                if (troop.Tier < 3)
-                {
-                    return 0;
-                }
-
-                return availableCount;
-            }
-
-            return availableCount;
+            // This threshold is a prisoner-retention economy rule, not a
+            // desired army ratio. It prevents cheap low-tier captives from
+            // occupying the reserve while preserving useful trained troops.
+            return troop.Tier >= 3 ? availableCount : 0;
         }
 
         private static int CalculateDailyConformity(
@@ -807,7 +759,7 @@ namespace ModifiedArmy.Models
             if (targetCount <= 0)
             {
                 reason = GameTexts.FindText(
-                    "str_modifiedarmy_garrison_prisoner_no_template_target");
+                    "str_modifiedarmy_garrison_prisoner_no_retention_target");
             }
             else if (readyCount <= 0)
             {
@@ -854,65 +806,9 @@ namespace ModifiedArmy.Models
                 "str_modifiedarmy_garrison_prisoner_plan_rejected");
         }
 
-        private static ArmyCompositionTemplate GetGarrisonTemplate(
-            MobileParty garrison)
-        {
-            string cultureId = garrison.CurrentSettlement?.OwnerClan
-                ?.Culture?.StringId
-                ?? garrison.CurrentSettlement?.Culture?.StringId
-                ?? "default";
-            return RecruitmentModelManager.Templates.GetTemplate(
-                cultureId,
-                RecruitmentPartyType.Garrison);
-        }
-
-        private static Dictionary<CombatRole, int> CreateRoleCounts(
-            TroopRoster roster)
-        {
-            Dictionary<CombatRole, int> result = Enum
-                .GetValues(typeof(CombatRole))
-                .Cast<CombatRole>()
-                .ToDictionary(role => role, role => 0);
-
-            foreach (TroopRosterElement element in roster.GetTroopRoster())
-            {
-                if (!IsRegularGarrisonTroop(element.Character))
-                {
-                    continue;
-                }
-
-                result[RecruitmentTroopClassifier.GetCombatRole(
-                    element.Character)] += element.Number;
-            }
-
-            return result;
-        }
-
-        private static Dictionary<TroopQuality, int> CreateQualityCounts(
-            TroopRoster roster)
-        {
-            Dictionary<TroopQuality, int> result = Enum
-                .GetValues(typeof(TroopQuality))
-                .Cast<TroopQuality>()
-                .ToDictionary(quality => quality, quality => 0);
-
-            foreach (TroopRosterElement element in roster.GetTroopRoster())
-            {
-                if (!IsRegularGarrisonTroop(element.Character))
-                {
-                    continue;
-                }
-
-                result[RecruitmentTroopClassifier.GetQuality(
-                    element.Character)] += element.Number;
-            }
-
-            return result;
-        }
-
         /// <summary>
         /// Removes only characters that are not valid garrison soldiers.
-        /// Composition ranges are preferences and never dismiss legal troops.
+        /// The prisoner retention policy never dismisses existing legal troops.
         /// </summary>
         private static int NormalizeGarrison(MobileParty garrison)
         {
@@ -982,12 +878,6 @@ namespace ModifiedArmy.Models
                 case RecruitmentLimitReason.PartySize:
                     return GameTexts.FindText(
                         "str_modifiedarmy_recruit_limit_party_size");
-                case RecruitmentLimitReason.CombatRole:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_recruit_limit_combat_role");
-                case RecruitmentLimitReason.Quality:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_recruit_limit_quality");
                 case RecruitmentLimitReason.WageLimit:
                     return GameTexts.FindText(
                         "str_modifiedarmy_recruit_limit_wage");
