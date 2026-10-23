@@ -4,6 +4,7 @@
     ModifiedArmy 军事系统的统一配置入口。
     当前只能存在一个 MilitaryConfig；id 用于对象系统注册，不代表文化。
   -->
+  <!-- id：配置对象的唯一标识；当前固定使用 default。 -->
   <MilitaryConfig id="default">
     <!-- AI 领主在封邑兵、驻军调拨和雇佣兵之间进行招募决策时使用的通用参数。 -->
     <AiRecruitment>
@@ -16,13 +17,21 @@
         EconomicWeeks 表示计算经济承受力时需要预留的工资周期。
       -->
       <NeedScore>
+        <!-- ManpowerWeight：兵力缺口在招募需求总分中的权重。 -->
         <ManpowerWeight value="0.4"/>
+        <!-- WarUrgencyWeight：战争紧迫度在招募需求总分中的权重。 -->
         <WarUrgencyWeight value="0.35"/>
+        <!-- EconomicWeight：经济承受力在招募需求总分中的权重。 -->
         <EconomicWeight value="0.25"/>
+        <!-- Threshold：需求总分达到该值后，AI才允许规划补员。 -->
         <Threshold value="0.25"/>
+        <!-- PeaceUrgency：和平时期采用的基础紧迫度。 -->
         <PeaceUrgency value="0.1"/>
+        <!-- WarUrgency：正式战争时期采用的基础紧迫度。 -->
         <WarUrgency value="0.7"/>
+        <!-- SiegeUrgency：己方领地被围攻时采用的最高紧迫度。 -->
         <SiegeUrgency value="1.0"/>
+        <!-- EconomicWeeks：评估经济能力时要求资金可覆盖的工资周数。 -->
         <EconomicWeeks value="10.0"/>
       </NeedScore>
 
@@ -32,7 +41,9 @@
         MismatchGarrisonTransferPenalty：领主与驻军所在地文化不一致时，降低驻军调拨分数。
       -->
       <CulturalIdentity>
+        <!-- MatchFiefBonus：领主与封邑文化一致时的封邑兵候选得分乘数。 -->
         <MatchFiefBonus value="1.3"/>
+        <!-- MismatchGarrisonTransferPenalty：领主与定居点文化不同时的驻军调拨得分乘数。 -->
         <MismatchGarrisonTransferPenalty value="0.5"/>
       </CulturalIdentity>
 
@@ -45,21 +56,33 @@
         GarrisonTransfer 对应常备驻军调拨渠道，即文化制度中的 professional 权重。
       -->
       <SituationalModifiers>
+        <!-- id=siege：己方领地面临围攻时；三项字段分别乘到封邑兵、职业驻军兵和雇佣兵权重。 -->
         <Situation id="siege">
+          <!-- Fief：围攻情境下的封邑兵权重乘数。GarrisonTransfer：职业驻军兵权重乘数。Mercenary：雇佣兵权重乘数。 -->
           <Fief value="0.3"/><GarrisonTransfer value="0.5"/><Mercenary value="2.0"/>
         </Situation>
+        <!-- id=broke：Clan资金不足时；Threshold表示可用资金低于当前日工资的多少倍即进入该情境。 -->
         <Situation id="broke">
+          <!-- Fief：贫困情境下的封邑兵权重乘数。GarrisonTransfer：职业驻军兵权重乘数。Mercenary：雇佣兵权重乘数。 -->
           <Fief value="1.2"/><GarrisonTransfer value="1.0"/><Mercenary value="0.3"/>
+          <!-- Threshold：资金少于当前日工资乘以该值时判定为资金不足。 -->
           <Threshold value="3.0"/>
         </Situation>
+        <!-- id=critical：部队兵力比例过低时；Threshold定义触发该情境的兵力比例。 -->
         <Situation id="critical">
+          <!-- Fief：危急情境下的封邑兵权重乘数。GarrisonTransfer：职业驻军兵权重乘数。Mercenary：雇佣兵权重乘数。 -->
           <Fief value="0.5"/><GarrisonTransfer value="1.0"/><Mercenary value="1.5"/>
+          <!-- Threshold：当前人数/编制上限低于该比例时判定为兵力危急。 -->
           <Threshold value="0.3"/>
         </Situation>
+        <!-- id=peace：正式和平时期使用的三种兵源权重乘数。 -->
         <Situation id="peace">
+          <!-- Fief：和平时封邑兵权重乘数。GarrisonTransfer：职业驻军兵权重乘数。Mercenary：雇佣兵权重乘数。 -->
           <Fief value="1.0"/><GarrisonTransfer value="1.2"/><Mercenary value="0.5"/>
         </Situation>
+        <!-- id=war：正式战争时期使用的三种兵源权重乘数。 -->
         <Situation id="war">
+          <!-- Fief：战争时封邑兵权重乘数。GarrisonTransfer：职业驻军兵权重乘数。Mercenary：雇佣兵权重乘数。 -->
           <Fief value="1.0"/><GarrisonTransfer value="0.8"/><Mercenary value="1.2"/>
         </Situation>
       </SituationalModifiers>
@@ -68,7 +91,9 @@
         敌情检测：在 Radius 范围内，敌军总实力超过己方人数 × StrengthRatio 时视为威胁。
       -->
       <EnemyDetection>
+        <!-- Radius：运输或调度任务检查附近敌军时采用的地图半径。 -->
         <Radius value="50.0"/>
+        <!-- StrengthRatio：敌军人数超过己方人数乘以该值时判定为强敌。 -->
         <StrengthRatio value="0.5"/>
       </EnemyDetection>
 
@@ -77,7 +102,9 @@
         MercenarySearchRadius：搜索非本国、非敌对城镇雇佣兵时的最大距离；本国城镇不受此距离限制。
       -->
       <RecruitmentLimits>
+        <!-- RandomChance：每支受管理AI队伍每天通过随机规划门槛的概率。 -->
         <RandomChance value="0.8"/>
+        <!-- MercenarySearchRadius：允许搜索中立城镇雇佣兵的最大导航距离。 -->
         <MercenarySearchRadius value="150"/>
       </RecruitmentLimits>
 
@@ -90,27 +117,45 @@
         待实机遇敌、读档与长期运行验收后再显式启用。
       -->
       <ForceManagement>
+        <!-- PeaceTargetRatio：和平时目标兵力占队伍编制上限的比例。 -->
         <PeaceTargetRatio value="0.35"/>
+        <!-- PeaceMinimumCount：和平目标的最低人数；仍不会突破实际编制上限。 -->
         <PeaceMinimumCount value="50"/>
-        <AggressiveWarDispositionThreshold value="20"/>
+        <!-- AggressiveWarDispositionThreshold：超过该战争倾向后按积极战争目标扩军；可填 -100～100。 -->
+        <AggressiveWarDispositionThreshold value="-50"/>
+        <!-- OwnFiefDefenseTargetRatio：赶赴防守自有被围封邑时的目标编制比例。 -->
         <OwnFiefDefenseTargetRatio value="1.00"/>
+        <!-- InteriorGarrisonUpperRatio：内陆驻军自动接收兵员时允许达到的编制上限比例。 -->
         <InteriorGarrisonUpperRatio value="0.80"/>
+        <!-- BorderGarrisonUpperRatio：边境驻军自动接收兵员时允许达到的编制上限比例。 -->
         <BorderGarrisonUpperRatio value="0.95"/>
+        <!-- InteriorGarrisonLowerRatio：内陆驻军允许调出兵员后必须保留的最低编制比例。 -->
         <InteriorGarrisonLowerRatio value="0.50"/>
+        <!-- BorderGarrisonLowerRatio：边境驻军允许调出兵员后必须保留的最低编制比例。 -->
         <BorderGarrisonLowerRatio value="0.75"/>
+        <!-- MinimumOwnSurplusDelivery：自有兵源至少达到该富余人数后才值得建立运输任务。 -->
         <MinimumOwnSurplusDelivery value="20"/>
+        <!-- MinimumFiefRecruitBatch：封邑兵候选达到该最低批量后才值得创建招募行程。 -->
         <MinimumFiefRecruitBatch value="25"/>
         <!-- 判断本地能否自行恢复时，预测未来七天的驻军补充。 -->
         <ReinforcementForecastDays value="7"/>
+        <!-- TransportMissionDeadlineDays：运输任务从创建到超时取消的最长游戏天数。 -->
         <TransportMissionDeadlineDays value="20"/>
+        <!-- EnableUnifiedAiForcePlanning：是否启用Mod统一AI兵力规划；关闭时完整回退本体逻辑。 -->
         <EnableUnifiedAiForcePlanning value="true"/>
-        <EnableAutomaticSwap value="false"/>
+        <!-- EnableAutomaticReinforcement：是否允许系统自动创建跨定居点增援运输任务。 -->
         <EnableAutomaticReinforcement value="false"/>
+        <!-- 和平复员配置；复员政策与主动路线分别设有独立开关。 -->
         <Demobilization>
+          <!-- EnableAutomaticDemobilization：是否允许和平期自动计算并执行复员。 -->
           <EnableAutomaticDemobilization value="false"/>
+          <!-- EnableDemobilizationRouting：是否允许为了复员主动下达前往返乡定居点的路线。 -->
           <EnableDemobilizationRouting value="false"/>
+          <!-- PeaceStabilityDays：连续和平达到该天数后才允许启动自动复员。 -->
           <PeaceStabilityDays value="3"/>
+          <!-- MaxDailyDemobilizationRatio：单日最多复员当前部队人数的比例。 -->
           <MaxDailyDemobilizationRatio value="0.20"/>
+          <!-- MaxDailyDemobilizationCount：单支部队每天允许复员的绝对人数上限。 -->
           <MaxDailyDemobilizationCount value="30"/>
         </Demobilization>
       </ForceManagement>
@@ -134,127 +179,177 @@
     -->
     <Cultures>
       <!-- 帝国：高度依赖常备驻军体系，本地兵源中职业兵占 80%。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.empire">
+        <!-- fief/professional/mercenary：帝国选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="1" professional="4" mercenary="3"/>
         <Professional>
           <Training>
+            <!-- Town：帝国城镇每日基础职业兵产能；barracksStep为每级有效兵营增加的产能。 -->
             <Town base="1.30" barracksStep="0.90"/>
+            <!-- Castle：帝国城堡每日基础职业兵产能；barracksStep为每级有效兵营增加的产能。 -->
             <Castle base="1.45" barracksStep="0.85"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：帝国封邑兵免薪天数；returnCooldownWeeks：返乡后重新可征召的冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：帝国城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+            <!-- Castle：帝国城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 瓦兰迪亚：以封邑兵为核心；免薪期较长，征召规模大但成本较高。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.vlandia">
+        <!-- fief/professional/mercenary：瓦兰迪亚选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="7" professional="2" mercenary="1"/>
         <Professional>
           <Training>
+            <!-- Town：瓦兰迪亚城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.00" barracksStep="0.20"/>
+            <!-- Castle：瓦兰迪亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.25"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：瓦兰迪亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="42" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：瓦兰迪亚城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="120" villageBonus="30" dailyRate="4.00" prosperityCostPerTroop="10" hearthCostPerTroop="1"/>
+            <!-- Castle：瓦兰迪亚城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="80" villageBonus="25" dailyRate="4.00" prosperityCostPerTroop="4" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 阿塞莱：常备军与雇佣兵并重，城堡职业兵训练效率较高。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.aserai">
+        <!-- fief/professional/mercenary：阿塞莱选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="2" professional="3" mercenary="5"/>
         <Professional>
           <Training>
+            <!-- Town：阿塞莱城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.25" barracksStep="0.85"/>
+            <!-- Castle：阿塞莱城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.35" barracksStep="0.85"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：阿塞莱封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：阿塞莱城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="50" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="5" hearthCostPerTroop="1"/>
+            <!-- Castle：阿塞莱城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="40" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="2" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 斯特吉亚：封邑兵占主导，同时保持较强的职业兵训练能力。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.sturgia">
+        <!-- fief/professional/mercenary：斯特吉亚选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="6" professional="4" mercenary="1"/>
         <Professional>
           <Training>
+            <!-- Town：斯特吉亚城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.05" barracksStep="0.15"/>
+            <!-- Castle：斯特吉亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.20"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：斯特吉亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：斯特吉亚城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <!-- Castle：斯特吉亚城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 巴旦尼亚：依赖乡村封邑兵；港口城镇容量高于普通城镇，因此单独覆盖 TownPort。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.battania">
+        <!-- fief/professional/mercenary：巴旦尼亚选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="3" professional="1" mercenary="1"/>
         <Professional>
           <Training>
+            <!-- Town：巴旦尼亚城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.00" barracksStep="0.10"/>
+            <!-- Castle：巴旦尼亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.00" barracksStep="0.15"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：巴旦尼亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：巴旦尼亚普通城镇封邑兵基础容量、每村容量、每日补员率及每兵资源成本。 -->
             <Town baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+            <!-- TownPort：巴旦尼亚港口城镇对Town的容量、补员率和每兵资源成本覆盖。 -->
             <TownPort baseLimit="80" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7" hearthCostPerTroop="1"/>
+            <!-- Castle：巴旦尼亚城堡封邑兵基础容量、每村容量、每日补员率及每兵资源成本。 -->
             <Castle baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 库赛特：封邑兵周转快，归还冷却仅一周；城堡的村庄容量加成更高。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.khuzait">
+        <!-- fief/professional/mercenary：库赛特选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="5" professional="3" mercenary="2"/>
         <Professional>
           <Training>
+            <!-- Town：库赛特城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.05" barracksStep="0.15"/>
+            <!-- Castle：库赛特城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.20"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：库赛特封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="1"/>
           <Production>
+            <!-- Town：库赛特城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="70" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <!-- Castle：库赛特城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="70" villageBonus="40" dailyRate="1.90" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>
       </Culture>
 
       <!-- 诺德：常备驻军权重略高于封邑兵，职业兵训练能力较强。 -->
+      <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.nord">
+        <!-- fief/professional/mercenary：诺德选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
         <MilitaryDoctrine fief="4" professional="5" mercenary="1"/>
         <Professional>
           <Training>
+            <!-- Town：诺德城镇基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Town base="1.01" barracksStep="0.03"/>
+            <!-- Castle：诺德城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.05"/>
           </Training>
         </Professional>
         <Fief>
+          <!-- freeWageDays：诺德封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
+            <!-- Town：诺德城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Town baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="8" hearthCostPerTroop="1"/>
+            <!-- Castle：诺德城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
             <Castle baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="3" hearthCostPerTroop="1"/>
           </Production>
         </Fief>

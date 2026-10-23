@@ -178,14 +178,11 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefPartyManager());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
 
-                if (ManagedPartyPolicy.IsEnabled())
-                    campaignStarter.AddBehavior(new AiForcePlanningBehavior());
-                else
-                    campaignStarter.AddBehavior(new AiRecruitmentBehavior());
+                campaignStarter.AddBehavior(new AiForcePlanningBehavior());
                 campaignStarter.AddBehavior(new ForceManagementBehavior());
                 campaignStarter.AddBehavior(new DemobilizationBehavior());
                 campaignStarter.AddBehavior(
-                    new PartyGarrisonExchangeBehavior());
+                    new PartyExchangeBehavior());
                 campaignStarter.AddBehavior(
                     new ReinforcementMissionBehavior());
                 campaignStarter.AddBehavior(

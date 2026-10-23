@@ -14,7 +14,18 @@ namespace ModifiedArmy.ForceManagement.Services
         /// <summary>Audits the two native methods blocked by the atomic switch.</summary>
         public static void LogActivePatches()
         {
-            if (!ManagedPartyPolicy.IsEnabled()) return;
+            bool enabled = ManagedPartyPolicy.IsEnabled();
+            // One startup line makes the rollback boundary explicit without
+            // producing per-party noise throughout the campaign.
+            TextObject mode = GameTexts.FindText(
+                "str_modifiedarmy_force_entry_mode");
+            mode.SetTextVariable(
+                "MODE",
+                GameTexts.FindText(enabled
+                    ? "str_modifiedarmy_force_entry_mode_unified"
+                    : "str_modifiedarmy_force_entry_mode_native"));
+            ModLogger.FileNotice(mode.ToString());
+            if (!enabled) return;
             LogMethod(AccessTools.Method(
                 typeof(GarrisonTroopsCampaignBehavior),
                 "OnSettlementEntered"));

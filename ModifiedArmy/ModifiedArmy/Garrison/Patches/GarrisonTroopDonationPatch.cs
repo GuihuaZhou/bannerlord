@@ -81,7 +81,7 @@ namespace ModifiedArmy.Garrison.Patches
             MobileParty mobileParty,
             Settlement settlement)
         {
-            // The independent PartyGarrisonExchangeBehavior owns SettlementEntered.
+            // The independent PartyExchangeBehavior owns SettlementEntered.
             // Keeping this postfix empty avoids a second visit transaction.
         }
     }

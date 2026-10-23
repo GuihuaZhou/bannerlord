@@ -119,6 +119,9 @@
     <string id="str_modifiedarmy_force_patch_audit" text="{=ModifiedArmy_ForcePatchAudit}[兵力入口检查] {TYPE_NAME}.{METHOD_NAME}当前补丁：{PATCHES}。" />
     <string id="str_modifiedarmy_force_patch_none" text="{=ModifiedArmy_ForcePatchNone}无补丁" />
     <string id="str_modifiedarmy_force_patch_item" text="{=ModifiedArmy_ForcePatchItem}{OWNER}（优先级{PRIORITY}）" />
+    <string id="str_modifiedarmy_force_entry_mode" text="{=ModifiedArmy_ForceEntryMode}[兵力入口检查] 当前使用{MODE}，同一次定居点访问不会同时运行新旧两套调兵逻辑。" />
+    <string id="str_modifiedarmy_force_entry_mode_unified" text="{=ModifiedArmy_ForceEntryModeUnified}Mod统一兵力调度" />
+    <string id="str_modifiedarmy_force_entry_mode_native" text="{=ModifiedArmy_ForceEntryModeNative}游戏本体兵力调度" />
     <string id="str_modifiedarmy_demobilization_reason_completed" text="{=ModifiedArmy_DemobilizationCompleted}本次复员已经办完" />
     <string id="str_modifiedarmy_demobilization_reason_peace_unstable" text="{=ModifiedArmy_DemobilizationPeaceUnstable}和平时间还不够长" />
     <string id="str_modifiedarmy_demobilization_reason_no_surplus" text="{=ModifiedArmy_DemobilizationNoSurplus}部队没有超出和平编制" />

@@ -111,7 +111,6 @@ namespace ModifiedArmy.common
         public int MinimumFiefRecruitBatch { get; internal set; } = 25;
         public int ReinforcementForecastDays { get; internal set; } = 7;
         public int TransportMissionDeadlineDays { get; internal set; } = 20;
-        public bool EnableAutomaticSwap { get; internal set; }
         public bool EnableAutomaticReinforcement { get; internal set; }
         public DemobilizationConfig Demobilization { get; } =
             new DemobilizationConfig();
@@ -255,10 +254,14 @@ namespace ModifiedArmy.common
                 node, "PeaceTargetRatio", value.PeaceTargetRatio);
             value.PeaceMinimumCount = NonNegativeValue(
                 node, "PeaceMinimumCount", value.PeaceMinimumCount);
-            value.AggressiveWarDispositionThreshold = OptionalValue(
+            // 战争倾向本身允许为负数，不能复用只接受非负数的
+            // OptionalValue，否则 -50 这类合法配置会在读档时抛出异常。
+            value.AggressiveWarDispositionThreshold = BoundedFloatValue(
                 node,
                 "AggressiveWarDispositionThreshold",
-                value.AggressiveWarDispositionThreshold);
+                value.AggressiveWarDispositionThreshold,
+                -100f,
+                100f);
             value.OwnFiefDefenseTargetRatio = RatioValue(
                 node,
                 "OwnFiefDefenseTargetRatio",
@@ -303,8 +306,6 @@ namespace ModifiedArmy.common
                 node,
                 "TransportMissionDeadlineDays",
                 value.TransportMissionDeadlineDays);
-            value.EnableAutomaticSwap = BooleanValue(
-                node, "EnableAutomaticSwap", false);
             value.EnableAutomaticReinforcement = BooleanValue(
                 node, "EnableAutomaticReinforcement", false);
             XmlNode demobilization = node.SelectSingleNode("Demobilization");
@@ -344,6 +345,42 @@ namespace ModifiedArmy.common
             return Math.Max(
                 0f,
                 Math.Min(1f, OptionalValue(parent, name, fallback)));
+        }
+
+        /// <summary>
+        /// Reads an optional signed floating-point setting and rejects values
+        /// outside the domain defined by that setting.
+        /// </summary>
+        private static float BoundedFloatValue(
+            XmlNode parent,
+            string name,
+            float fallback,
+            float minimum,
+            float maximum)
+        {
+            XmlNode node = parent?.SelectSingleNode(name);
+            if (node == null)
+            {
+                return fallback;
+            }
+
+            if (!float.TryParse(
+                    Attr(node, "value"),
+                    NumberStyles.Float,
+                    CultureInfo.InvariantCulture,
+                    out float value) ||
+                value < minimum ||
+                value > maximum)
+            {
+                throw new InvalidOperationException(
+                    "MilitaryConfig requires " + name +
+                    " to be between " +
+                    minimum.ToString(CultureInfo.InvariantCulture) +
+                    " and " +
+                    maximum.ToString(CultureInfo.InvariantCulture) + ".");
+            }
+
+            return value;
         }
 
         private static int NonNegativeValue(

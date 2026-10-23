@@ -137,41 +137,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
             };
     }
 
-    public sealed class PartyForceSnapshot
-    {
-        public MobileParty Party { get; set; }
-        public int CurrentCount { get; set; }
-        public int TargetCount { get; set; }
-        public int HardLimit { get; set; }
-    }
-
-    public sealed class ExchangePlan
-    {
-        public bool ShouldExecute { get; set; }
-        public string ReasonCode { get; set; }
-        public MobileParty FieldParty { get; set; }
-        public MobileParty GarrisonParty { get; set; }
-        public Settlement Settlement { get; set; }
-        public Clan Clan { get; set; }
-        public string FieldRosterFingerprint { get; set; }
-        public string GarrisonRosterFingerprint { get; set; }
-        public int ExpectedFieldCount { get; set; }
-        public int ExpectedGarrisonCount { get; set; }
-        public int ExpectedFieldTarget { get; set; }
-        public int ExpectedFieldHardLimit { get; set; }
-        public int ExpectedGarrisonMinimum { get; set; }
-        public int ExpectedGarrisonUpperTarget { get; set; }
-        public int ExpectedGarrisonEscortCount { get; set; }
-        public float BenefitScore { get; set; }
-        public TroopExchangeManifest FieldToGarrison { get; } =
-            new TroopExchangeManifest();
-        public TroopExchangeManifest GarrisonToField { get; } =
-            new TroopExchangeManifest();
-
-        public static ExchangePlan NoExchange(string reason) =>
-            new ExchangePlan { ReasonCode = reason };
-    }
-
     public sealed class TroopExchangeAmount
     {
         public int Count { get; set; }
@@ -195,30 +160,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
                 return total;
             }
         }
-    }
-
-    public sealed class ExchangeValidationResult
-    {
-        public bool IsValid { get; set; }
-        public string ReasonCode { get; set; }
-
-        public static ExchangeValidationResult Valid() =>
-            new ExchangeValidationResult
-            {
-                IsValid = true,
-                ReasonCode = "Valid"
-            };
-
-        public static ExchangeValidationResult Invalid(string reason) =>
-            new ExchangeValidationResult { ReasonCode = reason };
-    }
-
-    public sealed class ExchangeExecutionResult
-    {
-        public bool Executed { get; set; }
-        public string ReasonCode { get; set; }
-        public int FieldToGarrisonCount { get; set; }
-        public int GarrisonToFieldCount { get; set; }
     }
 
     public sealed class RouteEvaluation
@@ -278,25 +219,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public interface IExternalReinforcementNeedModel
     {
         ReinforcementNeedResult Evaluate(GarrisonDefenseSnapshot snapshot);
-    }
-
-    public interface ITroopValueModel
-    {
-        float GetFieldMarginalValue(
-            PartyForceSnapshot field,
-            CharacterObject troop,
-            int count);
-        float GetGarrisonMarginalValue(
-            GarrisonDefenseSnapshot garrison,
-            CharacterObject troop,
-            int count);
-    }
-
-    public interface IPartyGarrisonExchangeModel
-    {
-        ExchangePlan BuildPlan(
-            PartyForceSnapshot field,
-            GarrisonDefenseSnapshot garrison);
     }
 
     public interface IReinforcementRouteModel

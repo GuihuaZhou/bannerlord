@@ -11,7 +11,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     /// Owns the sole settlement-entry transaction for unified force tasks.
     /// Harmony patches only block competing native decisions.
     /// </summary>
-    public sealed class PartyGarrisonExchangeBehavior : CampaignBehaviorBase
+    public sealed class PartyExchangeBehavior : CampaignBehaviorBase
     {
         private Dictionary<string, int> _lastEvaluationDay =
             new Dictionary<string, int>();
@@ -54,6 +54,13 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MobileParty party,
             Settlement settlement)
         {
+            // When the atomic switch is off, this behavior is intentionally
+            // inert. Native Bannerlord handlers then provide the complete
+            // rollback path without competing with an old Mod transaction.
+            if (!ManagedPartyPolicy.IsEnabled())
+            {
+                return;
+            }
             if (party == null || settlement == null ||
                 party.CurrentSettlement != settlement)
             {
@@ -88,15 +95,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 return;
             }
 
-            // The legacy exchange remains available only while the atomic
-            // switch is disabled; managed AI never reaches both paths.
-            if (!ManagedPartyPolicy.IsEnabled())
-            {
-                ForceManagementFacade.Current.TroopTransfers
-                    .TryExecuteNaturalVisit(party, settlement);
-                Campaign.Current?.GetCampaignBehavior<DemobilizationBehavior>()?
-                    .OnNaturalVisit(party, settlement);
-            }
+            // Parties outside the managed scope remain entirely native. This
+            // event listener must not add a second transaction for them.
         }
     }
 }

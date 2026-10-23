@@ -23,14 +23,11 @@ namespace ModifiedArmy.ForceManagement.Services
         public IGarrisonDefenseRequirementModel GarrisonDefense { get; }
         public IExternalReinforcementNeedModel ReinforcementNeed { get; }
         public IReinforcementRouteModel ReinforcementRoutes { get; }
-        public IPartyGarrisonExchangeModel Exchanges { get; }
         public IAiForcePlanningModel ForcePlanning { get; }
         public IPartyExchangeModel PartyExchange { get; }
         public PartyExchangeService PartyExchangeRunner { get; }
         public IWarRestPolicyModel WarRest { get; }
         public WarRestPlanningService WarRestPlanning { get; }
-        public ITroopValueModel TroopValues { get; }
-        public IDemobilizationPolicy Demobilization { get; }
         public IPeaceDemobilizationModel PeaceDemobilization { get; }
         public DemobilizationService DemobilizationRunner { get; }
         public TroopTransferService TroopTransfers { get; }
@@ -47,14 +44,11 @@ namespace ModifiedArmy.ForceManagement.Services
             GarrisonDefense = new GarrisonDefenseRequirementModel();
             ReinforcementNeed = new ExternalReinforcementNeedModel();
             ReinforcementRoutes = new ReinforcementRouteModel();
-            TroopValues = new BasicTroopValueModel();
-            Exchanges = new DisabledPartyGarrisonExchangeModel();
             ForcePlanning = new AiForcePlanningModel();
             PartyExchange = new PartyExchangeModel();
             PartyExchangeRunner = new PartyExchangeService();
             WarRest = new WarRestPolicyModel();
             WarRestPlanning = new WarRestPlanningService();
-            Demobilization = new DisabledDemobilizationPolicy();
             PeaceDemobilization = new PeaceDemobilizationModel();
             DemobilizationRunner = new DemobilizationService();
             TroopTransfers = new TroopTransferService();
