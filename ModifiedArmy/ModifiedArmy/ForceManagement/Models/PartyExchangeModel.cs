@@ -111,19 +111,265 @@ namespace ModifiedArmy.ForceManagement.Models
                     RecruitmentSource.Transfer))
                 .Where(item => item.AvailableCount > 0)
                 .ToList();
-            RecruitmentPlan admission = RecruitmentModelManager.Model.BuildPlan(
-                destination,
-                candidates);
             PartyExchangePlan result = CreatePlan(
                 context,
                 PartyExchangeExecutorKind.MobileRosterTransfer);
-            FillApprovedManifest(
-                result.SourceToDestination,
-                source.MemberRoster,
-                admission,
-                allowed,
-                protectedCounts);
+            if (fieldToGarrison)
+            {
+                RecruitmentPlan admission = RecruitmentModelManager.Model
+                    .BuildPlan(destination, candidates);
+                FillApprovedManifest(
+                    result.SourceToDestination,
+                    source.MemberRoster,
+                    admission,
+                    allowed,
+                    protectedCounts);
+            }
+            else
+            {
+                FillSoftGarrisonWithdrawalManifest(
+                    result.SourceToDestination,
+                    source,
+                    destination,
+                    candidates,
+                    allowed,
+                    protectedCounts);
+            }
             return Finish(context, result);
+        }
+
+        /// <summary>
+        /// Selects garrison troops one at a time. Source abundance and receiver
+        /// usefulness are soft marginal preferences only: they influence which
+        /// legal soldier moves next but never introduce a role or tier quota.
+        /// Re-evaluating after every soldier prevents one initial ordering from
+        /// draining a branch before the model observes the changed rosters.
+        /// </summary>
+        private static void FillSoftGarrisonWithdrawalManifest(
+            TroopExchangeManifest manifest,
+            MobileParty source,
+            MobileParty destination,
+            IEnumerable<RecruitmentCandidate> candidates,
+            int limit,
+            IReadOnlyDictionary<CharacterObject, int> protectedCounts)
+        {
+            RecruitmentSimulationState destinationState =
+                RecruitmentSimulationState.Create(destination);
+            Dictionary<CharacterObject, int> available = candidates
+                .Where(candidate => candidate?.Troop != null &&
+                    candidate.AvailableCount > 0)
+                .GroupBy(candidate => candidate.Troop)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Sum(candidate => candidate.AvailableCount));
+            Dictionary<TransferRole, int> sourceRoles = CountRoles(
+                source.MemberRoster,
+                protectedCounts);
+            Dictionary<TransferRole, int> destinationRoles = CountRoles(
+                destination.MemberRoster,
+                null);
+            int sourceTotal = available.Values.Sum();
+            int remaining = Math.Max(0, limit);
+
+            while (remaining > 0 && available.Count > 0)
+            {
+                List<WithdrawalCandidate> approved = new List<WithdrawalCandidate>();
+                foreach (var pair in available)
+                {
+                    if (pair.Value <= 0)
+                    {
+                        continue;
+                    }
+
+                    RecruitmentEvaluationResult evaluation =
+                        RecruitmentModelManager.Model.EvaluateRecruitment(
+                            destination,
+                            pair.Key,
+                            1,
+                            RecruitmentSource.Transfer,
+                            destinationState);
+                    if (evaluation.RecruitableCount <= 0)
+                    {
+                        continue;
+                    }
+
+                    approved.Add(new WithdrawalCandidate
+                    {
+                        Troop = pair.Key,
+                        Evaluation = evaluation,
+                        Score = GetWithdrawalScore(
+                            pair.Key,
+                            pair.Value,
+                            sourceTotal,
+                            sourceRoles,
+                            destinationRoles)
+                    });
+                }
+
+                WithdrawalCandidate selected = approved
+                    .OrderByDescending(candidate => candidate.Score)
+                    .ThenBy(candidate => candidate.Troop.StringId)
+                    .FirstOrDefault();
+                if (selected == null)
+                {
+                    break;
+                }
+
+                int newManifestCount = GetManifestCount(
+                    manifest,
+                    selected.Troop) + 1;
+                AddAmount(
+                    manifest,
+                    selected.Troop,
+                    source.MemberRoster,
+                    newManifestCount);
+                available[selected.Troop]--;
+                if (available[selected.Troop] <= 0)
+                {
+                    available.Remove(selected.Troop);
+                }
+
+                TransferRole role = GetTransferRole(selected.Troop);
+                sourceRoles[role] = Math.Max(0, sourceRoles[role] - 1);
+                destinationRoles[role] = destinationRoles[role] + 1;
+                sourceTotal = Math.Max(0, sourceTotal - 1);
+                destinationState.Commit(
+                    selected.Troop,
+                    1,
+                    selected.Evaluation.UnitDailyWage,
+                    selected.Evaluation.UnitRecruitmentCost);
+                remaining--;
+            }
+        }
+
+        /// <summary>
+        /// Rewards troops that are common at the source and useful to a role
+        /// scarce at the receiver. Last-of-type and last-of-role penalties are
+        /// deliberately finite, so a valid transfer is never blocked solely
+        /// because the source roster is homogeneous.
+        /// </summary>
+        private static double GetWithdrawalScore(
+            CharacterObject troop,
+            int troopAvailable,
+            int sourceTotal,
+            IReadOnlyDictionary<TransferRole, int> sourceRoles,
+            IReadOnlyDictionary<TransferRole, int> destinationRoles)
+        {
+            TransferRole role = GetTransferRole(troop);
+            int sourceRoleCount = GetRoleCount(sourceRoles, role);
+            int destinationRoleCount = GetRoleCount(destinationRoles, role);
+            double denominator = Math.Max(1, sourceTotal);
+            double sourceTypeAbundance = troopAvailable / denominator;
+            double sourceRoleAbundance = sourceRoleCount / denominator;
+            double receiverNeed = 1d / (destinationRoleCount + 1d);
+            double lastTypePenalty = troopAvailable <= 1 ? 2d : 0d;
+            double lastRolePenalty = sourceRoleCount <= 1 ? 3d : 0d;
+
+            return sourceTypeAbundance * 2d +
+                sourceRoleAbundance * 2d +
+                receiverNeed +
+                Math.Max(0, troop?.Tier ?? 0) * 0.05d -
+                lastTypePenalty -
+                lastRolePenalty;
+        }
+
+        /// <summary>
+        /// Counts only transferable regulars. Protected fief-service soldiers
+        /// are excluded before rarity is evaluated, so identity protection and
+        /// diversity preference use the same source population.
+        /// </summary>
+        private static Dictionary<TransferRole, int> CountRoles(
+            TroopRoster roster,
+            IReadOnlyDictionary<CharacterObject, int> protectedCounts)
+        {
+            Dictionary<TransferRole, int> result = Enum
+                .GetValues(typeof(TransferRole))
+                .Cast<TransferRole>()
+                .ToDictionary(role => role, role => 0);
+            if (roster == null)
+            {
+                return result;
+            }
+
+            foreach (TroopRosterElement element in roster.GetTroopRoster())
+            {
+                if (element.Character == null || element.Character.IsHero)
+                {
+                    continue;
+                }
+
+                int count = Math.Max(
+                    0,
+                    element.Number - GetCount(
+                        protectedCounts,
+                        element.Character));
+                TransferRole role = GetTransferRole(element.Character);
+                result[role] += count;
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Uses broad battlefield traits only to compare marginal rarity. This
+        /// classification does not define a desired composition percentage.
+        /// </summary>
+        private static TransferRole GetTransferRole(CharacterObject troop)
+        {
+            if (troop?.IsMounted == true && troop.IsRanged)
+            {
+                return TransferRole.HorseArcher;
+            }
+            if (troop?.IsMounted == true)
+            {
+                return TransferRole.Cavalry;
+            }
+            return troop?.IsRanged == true
+                ? TransferRole.Ranged
+                : TransferRole.Infantry;
+        }
+
+        /// <summary>Reads one role count from a complete or partial map.</summary>
+        private static int GetRoleCount(
+            IReadOnlyDictionary<TransferRole, int> counts,
+            TransferRole role)
+        {
+            return counts != null && counts.TryGetValue(role, out int count)
+                ? Math.Max(0, count)
+                : 0;
+        }
+
+        /// <summary>Reads an already approved count from the manifest.</summary>
+        private static int GetManifestCount(
+            TroopExchangeManifest manifest,
+            CharacterObject troop)
+        {
+            return manifest?.Troops != null && troop != null &&
+                manifest.Troops.TryGetValue(troop, out TroopExchangeAmount amount)
+                    ? Math.Max(0, amount?.Count ?? 0)
+                    : 0;
+        }
+
+        /// <summary>
+        /// Broad traits used only for relative source rarity during one plan.
+        /// They are never persisted or interpreted as composition targets.
+        /// </summary>
+        private enum TransferRole
+        {
+            Infantry,
+            Ranged,
+            Cavalry,
+            HorseArcher
+        }
+
+        /// <summary>One currently legal marginal withdrawal choice.</summary>
+        private sealed class WithdrawalCandidate
+        {
+            public CharacterObject Troop { get; set; }
+
+            public RecruitmentEvaluationResult Evaluation { get; set; }
+
+            public double Score { get; set; }
         }
 
         /// <summary>Plans a fief mobilization without mutating Hearth or rosters.</summary>
@@ -218,6 +464,7 @@ namespace ModifiedArmy.ForceManagement.Models
             Operation = context.Operation,
             Purpose = context.Purpose,
             Executor = executor,
+            RequestedCount = Math.Max(0, context.RequestedCount),
             Source = context.Source,
             Destination = context.Destination,
             TargetSettlement = context.TargetSettlement,
@@ -311,6 +558,7 @@ namespace ModifiedArmy.ForceManagement.Models
             plan.OperationId = context?.OperationId;
             plan.Operation = context?.Operation ?? PartyExchangeOperation.None;
             plan.Purpose = context?.Purpose ?? PartyExchangePurpose.NaturalVisit;
+            plan.RequestedCount = Math.Max(0, context?.RequestedCount ?? 0);
             plan.Source = context?.Source;
             plan.Destination = context?.Destination;
             plan.TargetSettlement = context?.TargetSettlement;

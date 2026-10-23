@@ -364,10 +364,32 @@ namespace ModifiedArmy.ForceManagement.Services
                 message.SetTextVariable("PARTY_NAME", partyName);
                 message.SetTextVariable("SETTLEMENT_NAME", settlementName);
                 message.SetTextVariable(
+                    "SOURCE_NAME",
+                    GetSourceName(plan.Source));
+                message.SetTextVariable(
+                    "DESTINATION_NAME",
+                    GetSourceName(plan.Destination));
+                message.SetTextVariable(
                     "OPERATION", GetOperationText(plan.Operation));
                 message.SetTextVariable(
                     "MANIFEST", FormatManifest(plan.SourceToDestination));
+                message.SetTextVariable("REQUESTED", plan.RequestedCount);
+                message.SetTextVariable(
+                    "APPROVED",
+                    plan.SourceToDestination.TotalCount);
                 message.SetTextVariable("ACTUAL", result.TransferredCount);
+                message.SetTextVariable(
+                    "SOURCE_BEFORE",
+                    plan.ExpectedSource?.RegularCount ?? 0);
+                message.SetTextVariable(
+                    "SOURCE_AFTER",
+                    plan.ExpectedSourceFinalCount);
+                message.SetTextVariable(
+                    "DESTINATION_BEFORE",
+                    plan.ExpectedDestination?.RegularCount ?? 0);
+                message.SetTextVariable(
+                    "DESTINATION_AFTER",
+                    plan.ExpectedDestinationFinalCount);
                 ModLogger.FileNotice(message.ToString());
                 return;
             }
@@ -375,9 +397,31 @@ namespace ModifiedArmy.ForceManagement.Services
                 "str_modifiedarmy_exchange_rejected");
             rejected.SetTextVariable("PARTY_NAME", partyName);
             rejected.SetTextVariable("SETTLEMENT_NAME", settlementName);
+            rejected.SetTextVariable("REQUESTED", plan?.RequestedCount ?? 0);
+            rejected.SetTextVariable(
+                "APPROVED",
+                plan?.SourceToDestination?.TotalCount ?? 0);
             rejected.SetTextVariable(
                 "REASON", GetReasonText(result?.ReasonCode));
             ModLogger.FileNotice(rejected.ToString());
+        }
+
+        /// <summary>
+        /// Resolves a localized resource name without exposing internal party
+        /// or settlement identifiers in player-facing diagnostics.
+        /// </summary>
+        private static TextObject GetSourceName(PartyTroopSource source)
+        {
+            if (source?.Settlement != null)
+            {
+                return source.Settlement.Name;
+            }
+            if (source?.Party != null)
+            {
+                return PartyLogFormatter.GetDisplayName(source.Party);
+            }
+            return GameTexts.FindText(
+                "str_modifiedarmy_exchange_source_unknown");
         }
 
         /// <summary>Converts an internal operation into a short spoken phrase.</summary>

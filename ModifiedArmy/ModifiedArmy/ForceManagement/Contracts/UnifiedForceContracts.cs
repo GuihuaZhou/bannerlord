@@ -307,6 +307,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public PartyExchangeOperation Operation { get; set; }
         public PartyExchangePurpose Purpose { get; set; }
         public PartyExchangeExecutorKind Executor { get; set; }
+        public int RequestedCount { get; set; }
         public PartyTroopSource Source { get; set; }
         public PartyTroopSource Destination { get; set; }
         public Settlement TargetSettlement { get; set; }

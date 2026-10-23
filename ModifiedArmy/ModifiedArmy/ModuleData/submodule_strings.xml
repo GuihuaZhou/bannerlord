@@ -85,8 +85,9 @@
         text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名{TROOP_NAME}." />
 
     <!-- Unified force exchange and arrival recruitment logs. -->
-    <string id="str_modifiedarmy_exchange_executed" text="{=ModifiedArmy_ExchangeExecuted}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}{OPERATION}，计划调动{MANIFEST}，实际完成{ACTUAL}人。" />
-    <string id="str_modifiedarmy_exchange_rejected" text="{=ModifiedArmy_ExchangeRejected}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}没有进行调兵：{REASON}。" />
+    <string id="str_modifiedarmy_exchange_executed" text="{=ModifiedArmy_ExchangeExecuted}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}{OPERATION}。从{SOURCE_NAME}调往{DESTINATION_NAME}，请求{REQUESTED}人，批准{APPROVED}人，实际完成{ACTUAL}人；来源兵力从{SOURCE_BEFORE}变为{SOURCE_AFTER}，接收方从{DESTINATION_BEFORE}变为{DESTINATION_AFTER}。本次调动：{MANIFEST}。" />
+    <string id="str_modifiedarmy_exchange_rejected" text="{=ModifiedArmy_ExchangeRejected}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}请求调动{REQUESTED}人，批准{APPROVED}人，但没有执行：{REASON}。" />
+    <string id="str_modifiedarmy_exchange_source_unknown" text="{=ModifiedArmy_ExchangeSourceUnknown}未知地点" />
     <string id="str_modifiedarmy_exchange_operation_donate" text="{=ModifiedArmy_ExchangeOperationDonate}向驻军补充兵力" />
     <string id="str_modifiedarmy_exchange_operation_withdraw" text="{=ModifiedArmy_ExchangeOperationWithdraw}从驻军补充部队" />
     <string id="str_modifiedarmy_exchange_operation_mobilize" text="{=ModifiedArmy_ExchangeOperationMobilize}征召封邑兵" />
