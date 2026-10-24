@@ -1,0 +1,21 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#AA000000">
+      <Children>
+        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="720" SuggestedHeight="430" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Brush" RenderLate="true">
+          <Children>
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="70" MarginRight="70" MarginTop="55" MarginBottom="45" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" Brush="Kingdom.General.Title.Text" Text="@Title" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" Brush="Clan.RightPanel.Name.Text" Text="@HeroName" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="85" Brush="Kingdom.General.SecondaryText" Text="@Description" />
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="62" MarginTop="12" Brush="ButtonBrush2" Command.Click="ExecuteContinue" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@ContinueText" /></Children></ButtonWidget>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="52" HorizontalAlignment="Center" MarginTop="15" Brush="ButtonBrush2" Command.Click="ExecuteClose" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@CloseText" /></Children></ButtonWidget>
+              </Children>
+            </ListPanel>
+          </Children>
+        </BrushWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

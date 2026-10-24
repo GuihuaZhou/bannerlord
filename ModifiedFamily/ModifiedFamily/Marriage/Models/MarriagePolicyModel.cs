@@ -10,7 +10,8 @@ namespace ModifiedFamily.Marriage.Models
     public static class MarriagePolicyModel
     {
         public const bool AllowSameKingdomDifferentCulture = true;
-        public const bool EnableAiToPlayer = false;
+        // Enabled together with the recoverable M7.1 player inbox and map notification.
+        public const bool EnableAiToPlayer = true;
         public const int MaxNewProposalsPerClanTick = 1;
 
         public static bool CanUseVanillaMarriageBarter(Hero selectedHero)

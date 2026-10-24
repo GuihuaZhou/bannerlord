@@ -1,0 +1,30 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#AA000000" DoNotPassEventsToChildren="true">
+      <Children>
+        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="720" SuggestedHeight="520" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Brush" RenderLate="true">
+          <Children>
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="70" MarginRight="70" MarginTop="55" MarginBottom="55" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" Brush="Kingdom.General.Title.Text" Text="@Title" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" Brush="Kingdom.General.SecondaryText" Text="@Description" />
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" MarginTop="12" Brush="ButtonBrush2" Command.Click="ExecuteMarriage" UpdateChildrenStates="true">
+                  <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@MarriageText" /></Children>
+                </ButtonWidget>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" MarginTop="12" Brush="ButtonBrush2" Command.Click="ExecuteAdoption" UpdateChildrenStates="true">
+                  <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@AdoptionText" /></Children>
+                </ButtonWidget>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" MarginTop="12" Brush="ButtonBrush2" Command.Click="ExecuteInbox" UpdateChildrenStates="true">
+                  <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@InboxText" /></Children>
+                </ButtonWidget>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="55" HorizontalAlignment="Center" MarginTop="20" Brush="ButtonBrush2" Command.Click="ExecuteClose" UpdateChildrenStates="true">
+                  <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@CloseText" /></Children>
+                </ButtonWidget>
+              </Children>
+            </ListPanel>
+          </Children>
+        </BrushWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

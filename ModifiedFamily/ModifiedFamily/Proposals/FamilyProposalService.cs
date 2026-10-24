@@ -14,6 +14,7 @@ namespace ModifiedFamily.Proposals
 {
     public sealed class FamilyProposalService
     {
+        public event Action<FamilyProposal> ProposalCreated;
         private readonly IList<FamilyProposal> _proposals;
         private readonly IList<FamilyCooldownRecord> _cooldowns;
         private readonly MarriageProposalModel _marriageModel;
@@ -34,15 +35,34 @@ namespace ModifiedFamily.Proposals
         public FamilyResult TryCreateMarriageProposal(MarriageProposalDraft draft)
         {
             if (draft == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
-            Clan destination = draft.Direction == MarriageDirection.FemaleJoinsMaleClan ? (draft.HeroA.IsFemale ? draft.HeroB.Clan : draft.HeroA.Clan) : (draft.HeroA.IsFemale ? draft.HeroA.Clan : draft.HeroB.Clan);
-            // The absolute deadline is saved with the proposal and checked by the daily lifecycle tick.
-            var p = new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = Guid.NewGuid().ToString("N"), ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = draft.HeroA, HeroB = draft.HeroB, OriginClanA = draft.HeroA?.Clan, OriginClanB = draft.HeroB?.Clan, DestinationClan = destination, GoldPayerClan = draft.GoldPayerClan, GoldReceiverClan = draft.GiftAmount > 0 ? (draft.GoldPayerClan == draft.ProposerClan ? draft.ReceiverClan : draft.ProposerClan) : null, GiftAmount = draft.GiftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays), ExecutionStep = FamilyExecutionStep.NotStarted };
-            var valid = _marriageModel.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
-            if (IsLocked(p.HeroA) || IsLocked(p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.HeroLocked);
-            if (OnCooldown(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.PairCooldown);
+            var p = CreateMarriageProposal(draft);
+            var valid = ValidateNewMarriageProposal(p); if (!valid.IsAllowed) return valid;
             _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId;
             FamilyDiagnostics.Info(FamilyLogText.MarriageProposal(p, false));
+            ProposalCreated?.Invoke(p);
             return FamilyResult.Allow(p.ProposalId, valid.TemporaryBlockers.ToArray());
+        }
+
+        // Provides the exact non-mutating validation used by UI candidate discovery.
+        public FamilyResult CanCreateMarriageProposal(MarriageProposalDraft draft)
+        {
+            if (draft == null || draft.HeroA == null || draft.HeroB == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
+            return ValidateNewMarriageProposal(CreateMarriageProposal(draft));
+        }
+
+        private FamilyProposal CreateMarriageProposal(MarriageProposalDraft draft)
+        {
+            Clan destination = draft.Direction == MarriageDirection.FemaleJoinsMaleClan ? (draft.HeroA.IsFemale ? draft.HeroB.Clan : draft.HeroA.Clan) : (draft.HeroA.IsFemale ? draft.HeroA.Clan : draft.HeroB.Clan);
+            // The absolute deadline is saved with the proposal and checked by the daily lifecycle tick.
+            return new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = Guid.NewGuid().ToString("N"), ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = draft.HeroA, HeroB = draft.HeroB, OriginClanA = draft.HeroA?.Clan, OriginClanB = draft.HeroB?.Clan, DestinationClan = destination, GoldPayerClan = draft.GoldPayerClan, GoldReceiverClan = draft.GiftAmount > 0 ? (draft.GoldPayerClan == draft.ProposerClan ? draft.ReceiverClan : draft.ProposerClan) : null, GiftAmount = draft.GiftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays), ExecutionStep = FamilyExecutionStep.NotStarted };
+        }
+
+        private FamilyResult ValidateNewMarriageProposal(FamilyProposal proposal)
+        {
+            FamilyResult valid = _marriageModel.CanProposeMarriage(proposal); if (!valid.IsAllowed) return valid;
+            if (IsLocked(proposal.HeroA) || IsLocked(proposal.HeroB)) return FamilyResult.Deny(FamilyReasonCode.HeroLocked);
+            if (OnCooldown(proposal.HeroA, proposal.HeroB)) return FamilyResult.Deny(FamilyReasonCode.PairCooldown);
+            return valid;
         }
 
         public FamilyResult TryCreateAdoptionProposal(AdoptionProposalDraft draft)
@@ -61,6 +81,7 @@ namespace ModifiedFamily.Proposals
             };
             _proposals.Add(p); _locks[p.AdopteeHero] = p.ChainId;
             FamilyDiagnostics.Info(FamilyLogText.AdoptionProposal(p));
+            ProposalCreated?.Invoke(p);
             return FamilyResult.Allow(p.ProposalId);
         }
 
@@ -101,7 +122,7 @@ namespace ModifiedFamily.Proposals
             var p = new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = old.ChainId, ParentProposalId = old.ProposalId, CounterCount = 1, ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = old.HeroA, HeroB = old.HeroB, OriginClanA = old.OriginClanA, OriginClanB = old.OriginClanB, DestinationClan = destination, GoldPayerClan = goldPayer, GoldReceiverClan = giftAmount > 0 ? (goldPayer == old.OriginClanA ? old.OriginClanB : old.OriginClanA) : null, GiftAmount = giftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays) };
             var valid = _marriageModel.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
             // The old record and replacement share one chain, so hero locks transfer atomically.
-            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice(FamilyLogText.MarriageProposal(p, true)); return FamilyResult.Allow(p.ProposalId);
+            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice(FamilyLogText.MarriageProposal(p, true)); ProposalCreated?.Invoke(p); return FamilyResult.Allow(p.ProposalId);
         }
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();

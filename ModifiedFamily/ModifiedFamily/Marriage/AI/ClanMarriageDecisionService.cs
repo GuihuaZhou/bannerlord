@@ -46,7 +46,7 @@ namespace ModifiedFamily.Marriage.AI
 
         private static int MatchTier(Hero a, Hero b)
         {
-            bool sameCulture = a.Culture == b.Culture, sameKingdom = a.Clan.Kingdom != null && a.Clan.Kingdom == b.Clan.Kingdom;
+            bool sameCulture = a.Clan?.Culture == b.Clan?.Culture, sameKingdom = a.Clan.Kingdom != null && a.Clan.Kingdom == b.Clan.Kingdom;
             if (sameKingdom && sameCulture) return 1;
             if (!sameKingdom && sameCulture) return 2;
             if (sameKingdom && MarriagePolicyModel.AllowSameKingdomDifferentCulture) return 3;

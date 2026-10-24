@@ -1,0 +1,31 @@
+<Prefab>
+  <Constants>
+    <!-- Keep the shell dimensions and close-button sizing identical to the native encyclopedia. -->
+    <Constant Name="Encyclopedia.Frame.Width" BrushName="Encyclopedia.Frame" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Encyclopedia.Frame.Height" BrushName="Encyclopedia.Frame" BrushLayer="Default" BrushValueType="Height" />
+    <Constant Name="Popup.CloseButton.Width" BrushName="Popup.CloseButton" BrushLayer="Default" BrushValueType="Width" />
+    <Constant Name="Popup.CloseButton.Height" BrushName="Popup.CloseButton" BrushLayer="Default" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <!-- This is the native encyclopedia overlay brush. Brush.Color, rather than Widget.Color, preserves transparency. -->
+    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.SoundBrush" Sprite="BlankWhiteSquare_9" Brush.Color="#000000CC">
+      <Children>
+        <NavigationForcedScopeCollectionTargeter CollectionID="ModifiedFamilyMarriageForcedScopeCollection" UseRootAsTarget="true" />
+
+        <!-- Reuse the native encyclopedia frame so the shell scales exactly like an encyclopedia page. -->
+        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Encyclopedia.Frame.Width" SuggestedHeight="!Encyclopedia.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.Frame">
+          <Children>
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="576" SuggestedHeight="150" PositionYOffset="-17" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="StdAssets\tabbar_popup" DoNotAcceptEvents="true">
+              <Children>
+                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" PositionYOffset="-22" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="46" Text="@Title" />
+              </Children>
+            </Widget>
+          </Children>
+        </BrushWidget>
+
+        <!-- Native encyclopedia close-button placement and visuals, bound to this screen's close command. -->
+        <ButtonWidget Command.Click="ExecuteClose" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.CloseButton.Width" SuggestedHeight="!Popup.CloseButton.Height" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-465" MarginLeft="1465" Brush="Popup.CloseButton" />
+      </Children>
+    </BrushWidget>
+  </Window>
+</Prefab>

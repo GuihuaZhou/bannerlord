@@ -1,0 +1,49 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BarterScreen">
+      <Children>
+        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#F20B0A08" />
+        <BrushListPanel WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="610" HorizontalAlignment="Left" MarginLeft="40" MarginTop="80" MarginBottom="70" Brush="Frame1Brush" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <Children>
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="65" Brush="Kingdom.TitleMedium.Text" Text="@Title" />
+            <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="12" MarginRight="25" MarginBottom="12" InnerPanel="ClanClipRect\ClanList" ClipRect="ClanClipRect" MouseScrollAxis="Vertical" VerticalScrollbar="..\ClanScrollbar\Scrollbar" AutoHideScrollBars="true"><Children>
+              <Widget Id="ClanClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true"><Children>
+                <NavigatableListPanel Id="ClanList" DataSource="{Clans}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom"><ItemTemplate>
+                  <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="92" MarginBottom="4" Brush="ButtonBrush2" Command.Click="ExecuteSelect" IsSelected="@IsSelected" UpdateChildrenStates="true"><Children>
+                    <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="62" SuggestedHeight="74" MarginLeft="18" VerticalAlignment="Center" Brush="Kingdom.TornBanner.Small" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="360" MarginLeft="95" Brush="Kingdom.Clan.Name.Text" Text="@Name" />
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="70" HorizontalAlignment="Right" MarginRight="15" Brush="Kingdom.Clan.Name.Text" Text="@CandidateCountText" />
+                  </Children></ButtonWidget>
+                </ItemTemplate></NavigatableListPanel>
+              </Children></Widget>
+            </Children></ScrollablePanel>
+            <Standard.VerticalScrollbar Id="ClanScrollbar" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" MarginRight="4" />
+          </Children>
+        </BrushListPanel>
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="690" MarginRight="55" MarginTop="90" MarginBottom="165" IsVisible="@HasSelectedClan"><Children>
+          <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="VerticalTopToBottom"><Children>
+            <TextWidget DataSource="{SelectedClan}" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" Brush="Kingdom.TitleMedium.Text" Text="@Name" />
+            <MaskedTextureWidget DataSource="{SelectedClan\Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="107" SuggestedHeight="128" HorizontalAlignment="Center" MarginTop="10" Brush="Kingdom.TornBanner.Big" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" MarginTop="25" Brush="Kingdom.TitleMedium.Text" Text="@MembersText" />
+            <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="20" InnerPanel="HeroClipRect\HeroGrid" ClipRect="HeroClipRect" MouseScrollAxis="Vertical" VerticalScrollbar="..\HeroScrollbar\Scrollbar" AutoHideScrollBars="true"><Children>
+              <Widget Id="HeroClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true"><Children>
+                <NavigatableGridWidget Id="HeroGrid" DataSource="{Heroes}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" DefaultCellWidth="150" DefaultCellHeight="125" ColumnCount="6"><ItemTemplate>
+                  <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="140" SuggestedHeight="115" Brush="ButtonBrush2" Command.Click="ExecuteSelect" IsSelected="@IsSelected" UpdateChildrenStates="true"><Children>
+                    <ImageIdentifierWidget DataSource="{Visual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="82" SuggestedHeight="82" HorizontalAlignment="Center" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="28" VerticalAlignment="Bottom" Brush="Kingdom.ParagraphSmall.Text" Text="@Name" />
+                  </Children></ButtonWidget>
+                </ItemTemplate></NavigatableGridWidget>
+              </Children></Widget>
+            </Children></ScrollablePanel>
+            <Standard.VerticalScrollbar Id="HeroScrollbar" HeightSizePolicy="StretchToParent" HorizontalAlignment="Right" MarginRight="4" />
+          </Children></ListPanel>
+        </Children></Widget>
+        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="900" SuggestedHeight="120" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Kingdom.ParagraphSmall.Text" Brush.FontSize="28" Text="@NoCandidatesText" IsHidden="@HasClans" />
+        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="62" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginRight="85" MarginBottom="75" StackLayout.LayoutMethod="HorizontalLeftToRight"><Children>
+          <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="250" SuggestedHeight="58" MarginRight="18" Brush="ButtonBrush2" Command.Click="ExecuteClose" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@CloseText" /></Children></ButtonWidget>
+          <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="300" SuggestedHeight="58" Brush="ButtonBrush2" Command.Click="ExecuteContinue" IsEnabled="@CanContinue" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@ProposeText" /></Children></ButtonWidget>
+        </Children></ListPanel>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

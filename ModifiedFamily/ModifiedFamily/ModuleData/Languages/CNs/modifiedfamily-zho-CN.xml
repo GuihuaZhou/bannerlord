@@ -14,6 +14,56 @@
     <string id="MF_LogLevel_Warn" text="警告" />
     <string id="MF_LogLevel_Error" text="错误" />
     <string id="MF_LogLevel_Disabled" text="禁用" />
+    <string id="MF_UI_IncomingTitle" text="收到家族提议" />
+    <string id="MF_UI_IncomingDescription" text="一项家族事务正在等待您的决定。点击通知查看详细内容。" />
+    <string id="MF_UI_Accept" text="接受提议" />
+    <string id="MF_UI_Reject" text="拒绝提议" />
+    <string id="MF_UI_Counter" text="提出反提议" />
+    <string id="MF_UI_Confirm" text="确认" />
+    <string id="MF_UI_Close" text="关闭" />
+    <string id="MF_UI_CounterTitle" text="提出反提议" />
+    <string id="MF_UI_CounterDescription" text="请选择婚后家族归属与礼金条件。每条谈判链仅允许提出一次反提议。" />
+    <string id="MF_UI_CounterNormal" text="女方加入男方家族，不设礼金" />
+    <string id="MF_UI_CounterMatrilocal" text="男方加入女方家族，不设礼金" />
+    <string id="MF_UI_CounterPayGift" text="支付5,000第纳尔礼金" />
+    <string id="MF_UI_CounterRequestGift" text="要求对方支付5,000第纳尔礼金" />
+    <string id="MF_UI_MarriageDescription" text="{PROPOSER}提议由{HERO_A}与{HERO_B}成婚，婚后加入{DESTINATION}。礼金：{GOLD}第纳尔。回应期限剩余约{DAYS}天。" />
+    <string id="MF_UI_AdoptionDescription" text="{PROPOSER}提议由{ADOPTER}收养{ADOPTEE}，并将其纳入{DESTINATION}。回应期限剩余约{DAYS}天。" />
+    <string id="MF_UI_UnavailableTitle" text="提议已不可用" />
+    <string id="MF_UI_UnavailableDescription" text="该提议已经处理、失效或超过回应期限。" />
+    <string id="MF_UI_FamilyActions" text="家族事务" />
+    <string id="MF_UI_FamilyActionsDescription" text="请选择需要办理的家族事务。" />
+    <string id="MF_UI_ArrangeMarriage" text="安排家族联姻" />
+    <string id="MF_UI_AdoptCompanion" text="收养本家族同伴" />
+    <string id="MF_UI_RequestAdoption" text="向其他家族提出收养" />
+    <string id="MF_UI_OpenInbox" text="查看待处理提议" />
+    <string id="MF_UI_SelectOwnHero" text="选择本家族联姻成员" />
+    <string id="MF_UI_SelectOwnHeroDesc" text="请选择需要安排婚姻的家族成员。玩家主角的个人婚姻仍使用原版求爱流程。" />
+    <string id="MF_UI_SelectTargetClan" text="选择联姻家族" />
+    <string id="MF_UI_SelectTargetClanDesc" text="请选择准备提出联姻的目标家族。" />
+    <string id="MF_UI_SelectTargetHero" text="选择联姻对象" />
+    <string id="MF_UI_SelectTargetHeroDesc" text="请选择目标家族中的联姻对象。" />
+    <string id="MF_UI_SelectMarriageTerms" text="设置联姻条件" />
+    <string id="MF_UI_SelectMarriageTermsDesc" text="请选择婚后家族归属及礼金方向。礼金金额可在下一步填写。" />
+    <string id="MF_UI_GiftAmount" text="礼金金额" />
+    <string id="MF_UI_InvalidGift" text="请输入有效的非负金额；由玩家支付时还必须保证余额充足。" />
+    <string id="MF_UI_SelectCompanion" text="选择需要收养的同伴" />
+    <string id="MF_UI_SelectCompanionDesc" text="该同伴将退出同伴名册，并成为正式家族成员。" />
+    <string id="MF_UI_SelectAdoptionClan" text="选择目标家族" />
+    <string id="MF_UI_SelectAdoptionClanDesc" text="请选择被收养人当前所属的家族。" />
+    <string id="MF_UI_SelectAdoptee" text="选择被收养人" />
+    <string id="MF_UI_SelectAdopteeDesc" text="请选择希望纳入玩家家族的成员。" />
+    <string id="MF_UI_SelectAdopter" text="选择收养人" />
+    <string id="MF_UI_SelectAdopterDesc" text="请选择负责建立法定收养关系的家族成员。" />
+    <string id="MF_UI_InboxDesc" text="请选择需要查看的待处理提议。" />
+    <string id="MF_UI_NoCandidates" text="当前没有符合条件的对象。" />
+    <string id="MF_UI_DirectionNormal" text="女方加入男方家族" />
+    <string id="MF_UI_DirectionMatrilocal" text="男方加入女方家族" />
+    <string id="MF_UI_NoGift" text="不设礼金" />
+    <string id="MF_UI_PlayerPays" text="玩家家族支付礼金" />
+    <string id="MF_UI_OtherPays" text="要求对方家族支付礼金" />
+    <string id="MF_UI_RequestCreated" text="提议已成功提交。" />
+    <string id="MF_UI_RequestFailed" text="提议未能提交，请检查人物状态、家族关系、冷却或礼金条件。" />
     <string id="MF_Log_MarriageProposalPlain" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}。（请求：{ID}）" />
     <string id="MF_Log_MarriageProposalOfferingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并由提议方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
     <string id="MF_Log_MarriageProposalAskingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并要求接收方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
@@ -48,6 +98,7 @@
     <string id="MF_Reason_Fugitive" text="相关人物当前处于逃亡状态" />
     <string id="MF_Reason_TemporaryInactive" text="相关人物当前无法正常行动" />
     <string id="MF_Reason_ExternalMarriage" text="相关人物已经通过其他方式成婚" />
+    <string id="MF_Reason_PlayerDeclined" text="接收方决定不接受该提议" />
     <string id="MF_Reason_Default" text="当前条件已经不再符合约定" />
     <string id="MF_Log_PatchesInstalled" text="婚姻系统已接管原版自动配婚入口。" />
     <string id="MF_Log_PatchFailed" text="原版婚姻入口接管失败，为避免两套配婚系统同时运行，家族 AI 已停用。" />
@@ -63,6 +114,27 @@
     <string id="MF_Log_LegacyMigrationFailed" text="检查旧存档婚约时出了问题，请暂时不要让这些人物通过其他方式结婚。" />
     <string id="MF_Log_AiCandidate" text="{CLAN}已选择{OTHER}作为{OWN}的联姻候选。候选层级：{TIER}；内部评分：{SCORE}。" />
     <string id="MF_Log_AiResponse" text="{CLAN}已重新评估该联姻提议，当前内部评分为{SCORE}。（请求：{ID}）" />
+    <string id="MF_Log_UiReady" text="家族事务界面已经启用。" />
+    <string id="MF_Log_UiFailed" text="家族事务界面未能启用，请检查 UIExtenderEx 是否正常加载。" />
+    <string id="MF_UI_ArrangeMarriageShort" text="安排联姻" />
+    <string id="MF_UI_AdoptionActionsShort" text="办理收养" />
+    <string id="MF_UI_OpenInboxShort" text="查看提议" />
+    <string id="MF_UI_AdoptionActionsDescription" text="请选择被收养人的来源。" />
+    <string id="MF_UI_FamilyManagementTitle" text="家族事务" />
+    <string id="MF_UI_FamilyManagementDescription" text="在此安排家族联姻、办理收养，或查看尚未处理的家族提议。" />
+    <string id="MF_Log_FamilyScreenFailed" text="家族事务界面未能打开，请检查界面文件是否已经正确安装。" />
+    <string id="MF_UI_MarriageScreenTitle" text="联姻" />
+    <string id="MF_UI_AdoptionScreenTitle" text="办理收养" />
+    <string id="MF_UI_MarriageScreenDescription" text="将为所选家族成员选择联姻家族、对象、婚后归属及礼金。" />
+    <string id="MF_UI_AdoptionScreenDescription" text="将由玩家家族成员与所选同伴建立法定收养关系。" />
+    <string id="MF_UI_Continue" text="继续" />
+    <string id="MF_UI_MarriageButton" text="联姻" />
+    <string id="MF_UI_AdoptionButton" text="收养" />
+    <string id="MF_UI_EligibleMarriageHeroes" text="可联姻成员" />
+    <string id="MF_UI_SelectMarriageHero" text="选择对象" />
+    <string id="MF_UI_NoMarriageCandidates" text="当前没有符合全部联姻条件且未被其他提议占用的家族或成员。" />
+    <string id="MF_UI_AdoptionRegistered" text="收养手续已经登记，将在下次家族事务处理时完成身份转换。" />
+    <string id="MF_UI_AdoptionFailed" text="收养未能办理，请检查人物状态、亲属关系或是否已有其他待处理事务。" />
   </strings>
 </base>
 

@@ -30,6 +30,7 @@ namespace ModifiedFamily.Proposals
         [SaveableProperty(21)] public CampaignTime ExecutionDeadline { get; set; }
         [SaveableProperty(22)] public FamilyExecutionStep ExecutionStep { get; set; }
         [SaveableProperty(23)] public FamilyReasonCode ReasonCode { get; set; }
+        [SaveableProperty(24)] public bool PlayerNotified { get; set; }
 
         public bool IsActive => Status == FamilyProposalStatus.PendingResponse || Status == FamilyProposalStatus.AcceptedPendingExecution || Status == FamilyProposalStatus.Executing || Status == FamilyProposalStatus.PaymentReconcileRequired;
     }

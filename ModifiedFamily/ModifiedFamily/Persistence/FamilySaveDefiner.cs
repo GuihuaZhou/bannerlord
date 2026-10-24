@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using ModifiedFamily.Proposals;
 using TaleWorlds.SaveSystem;
+using ModifiedFamily.UI.Notifications;
 
 namespace ModifiedFamily.Persistence
 {
     public sealed class FamilySaveDefiner : SaveableTypeDefiner
     {
         public FamilySaveDefiner() : base(2026102401) { }
-        protected override void DefineClassTypes() { AddClassDefinition(typeof(FamilyProposal), 1); AddClassDefinition(typeof(FamilyCooldownRecord), 2); AddClassDefinition(typeof(AdoptiveKinshipRecord), 3); }
+        protected override void DefineClassTypes() { AddClassDefinition(typeof(FamilyProposal), 1); AddClassDefinition(typeof(FamilyCooldownRecord), 2); AddClassDefinition(typeof(AdoptiveKinshipRecord), 3); AddClassDefinition(typeof(FamilyProposalMapNotification), 9); }
         protected override void DefineEnumTypes()
         {
             AddEnumDefinition(typeof(FamilyProposalType), 4, null); AddEnumDefinition(typeof(FamilyProposalStatus), 5, null);

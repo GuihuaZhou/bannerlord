@@ -85,6 +85,7 @@ namespace ModifiedFamily.Localization
                 case FamilyReasonCode.Fugitive: return T("MF_Reason_Fugitive", "someone is a fugitive");
                 case FamilyReasonCode.TemporaryInactive: return T("MF_Reason_TemporaryInactive", "someone is temporarily unavailable");
                 case FamilyReasonCode.ExternalMarriage: return T("MF_Reason_ExternalMarriage", "a participant married elsewhere");
+                case FamilyReasonCode.PlayerDeclined: return T("MF_Reason_PlayerDeclined", "the receiving clan declined the proposal");
                 default: return T("MF_Reason_Default", "the current conditions no longer satisfy the agreement");
             }
         }

@@ -16,6 +16,7 @@ using ModifiedFamily.Persistence;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using ModifiedFamily.UI.Notifications;
 
 namespace ModifiedFamily.Campaign
 {
@@ -29,6 +30,7 @@ namespace ModifiedFamily.Campaign
         private ClanMarriageDecisionService _marriageAi;
         private MarriageExecutionService _execution;
         private AdoptionExecutionService _adoptionExecution;
+        private FamilyProposalNotificationService _notificationService;
         public IReadOnlyList<AdoptiveKinshipRecord> Adoptions => _adoptions;
         public FamilyProposalService Service => _service;
 
@@ -53,6 +55,7 @@ namespace ModifiedFamily.Campaign
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             BuildServices(); MigrateVanillaOffers();
+            foreach (FamilyProposal proposal in _proposals) _notificationService.Publish(proposal);
             bool correctModel = TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel;
             FamilyDiagnostics.Notice(FamilyLogText.SessionReady(correctModel, _proposals.Count, _cooldowns.Count, _adoptions.Count));
             if (!correctModel) FamilyDiagnostics.Warn(FamilyLogText.Simple("MF_Log_ModelConflict", "Another mod replaced the marriage model; automatic execution is disabled."));
@@ -62,6 +65,8 @@ namespace ModifiedFamily.Campaign
         {
             var adoptionModel = new AdoptionModel();
             _marriageProposalModel = new MarriageProposalModel(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _marriageProposalModel, adoptionModel);
+            _notificationService = new FamilyProposalNotificationService();
+            _service.ProposalCreated += _notificationService.Publish;
             _marriageAi = new ClanMarriageDecisionService(_service, _marriageProposalModel); _execution = new MarriageExecutionService(_marriageProposalModel);
             _adoptionExecution = new AdoptionExecutionService(adoptionModel, new AdoptiveKinshipService(_adoptions));
         }

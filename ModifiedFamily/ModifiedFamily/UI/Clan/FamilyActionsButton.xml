@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ListPanel Id="ModifiedFamilyMemberActions" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="52" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="18" StackLayout.LayoutMethod="HorizontalLeftToRight" RenderLate="true">
+  <Children>
+    <ButtonWidget Id="ModifiedFamilyMarriageButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="170" SuggestedHeight="44" MarginRight="10" Brush="ButtonBrush2" IsVisible="@ShowMarriage" Command.Click="ExecuteOpenMarriageActions" UpdateChildrenStates="true">
+      <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@MarriageActionsText" /></Children>
+    </ButtonWidget>
+    <ButtonWidget Id="ModifiedFamilyAdoptionButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="170" SuggestedHeight="44" Brush="ButtonBrush2" IsVisible="@ShowAdoption" Command.Click="ExecuteOpenAdoptionActions" UpdateChildrenStates="true">
+      <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@AdoptionActionsText" /></Children>
+    </ButtonWidget>
+  </Children>
+</ListPanel>

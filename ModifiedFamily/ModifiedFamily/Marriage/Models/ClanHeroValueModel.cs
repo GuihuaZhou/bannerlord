@@ -16,7 +16,7 @@ namespace ModifiedFamily.Marriage.Models
         {
             float score = ValueToClan(otherHero, evaluatingClan) - (destination == evaluatingClan ? 0f : ValueToClan(ownHero, evaluatingClan));
             score += evaluatingClan.GetRelationWithClan(otherHero.Clan) * 0.5f + giftDelta / 1000f;
-            if (ownHero.Culture == otherHero.Culture) score += 20f;
+            if (ownHero.Clan?.Culture == otherHero.Clan?.Culture) score += 20f;
             if (ownHero.Clan.Kingdom == otherHero.Clan.Kingdom) score += 20f;
             return score;
         }

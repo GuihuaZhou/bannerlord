@@ -56,7 +56,7 @@ namespace ModifiedFamily.Marriage.Models
         private static bool CultureAllowed(Hero a, Hero b)
         {
             bool sameKingdom = a.Clan.Kingdom != null && a.Clan.Kingdom == b.Clan.Kingdom;
-            bool sameCulture = a.Culture == b.Culture;
+            bool sameCulture = a.Clan?.Culture == b.Clan?.Culture;
             return sameCulture || (sameKingdom && MarriagePolicyModel.AllowSameKingdomDifferentCulture);
         }
     }
