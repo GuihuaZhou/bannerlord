@@ -21,8 +21,15 @@ namespace ModifiedFamily.Tool
         private static readonly Color WarnColor = new Color(1f, 0.8f, 0.2f);
         private static readonly Color ErrorColor = new Color(1f, 0.3f, 0.3f);
 
-        private static LogLevel ScreenLevel => GlobalSettings<Settings>.Instance?.MinLogLevel?.SelectedValue ?? LogLevel.Notice;
-        private static LogLevel FileLevel => GlobalSettings<Settings>.Instance?.FileMinLogLevel?.SelectedValue ?? LogLevel.Info;
+        private static LogLevel ScreenLevel => ReadLevel(GlobalSettings<Settings>.Instance?.MinLogLevel, LogLevel.Notice);
+        private static LogLevel FileLevel => ReadLevel(GlobalSettings<Settings>.Instance?.FileMinLogLevel, LogLevel.Info);
+
+        private static LogLevel ReadLevel(MCM.Common.Dropdown<string> dropdown, LogLevel fallback)
+        {
+            // Persisted selection is index-based, so changing display language cannot change behavior.
+            if (dropdown == null || dropdown.SelectedIndex < 0 || dropdown.SelectedIndex > (int)LogLevel.Disabled) return fallback;
+            return (LogLevel)dropdown.SelectedIndex;
+        }
         public static void Debug(string message) => Display(LogLevel.Debug, message, DebugColor);
         public static void Info(string message) => Display(LogLevel.Info, message, InfoColor);
         public static void Notice(string message) => Display(LogLevel.Notice, message, NoticeColor);

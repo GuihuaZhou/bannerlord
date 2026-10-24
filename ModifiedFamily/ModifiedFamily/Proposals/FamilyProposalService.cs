@@ -3,12 +3,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedFamily.Core;
-using ModifiedFamily.Execution;
 using ModifiedFamily.Persistence;
 using TaleWorlds.CampaignSystem;
 using ModifiedFamily.Diagnostics;
 using ModifiedFamily.Localization;
 using ModifiedFamily.Marriage.Models;
+using ModifiedFamily.Adoption.Models;
 
 namespace ModifiedFamily.Proposals
 {
@@ -17,10 +17,11 @@ namespace ModifiedFamily.Proposals
         private readonly IList<FamilyProposal> _proposals;
         private readonly IList<FamilyCooldownRecord> _cooldowns;
         private readonly MarriageProposalModel _marriageModel;
+        private readonly AdoptionModel _adoptionModel;
         private readonly Dictionary<Hero, string> _locks = new Dictionary<Hero, string>();
 
-        public FamilyProposalService(IList<FamilyProposal> proposals, IList<FamilyCooldownRecord> cooldowns, MarriageProposalModel marriageModel)
-        { _proposals = proposals; _cooldowns = cooldowns; _marriageModel = marriageModel; RebuildIndexes(); }
+        public FamilyProposalService(IList<FamilyProposal> proposals, IList<FamilyCooldownRecord> cooldowns, MarriageProposalModel marriageModel, AdoptionModel adoptionModel)
+        { _proposals = proposals; _cooldowns = cooldowns; _marriageModel = marriageModel; _adoptionModel = adoptionModel; RebuildIndexes(); }
 
         public void RebuildIndexes()
         {
@@ -48,7 +49,8 @@ namespace ModifiedFamily.Proposals
         {
             if (draft == null || draft.AdopterHero == null || draft.AdopteeHero == null || draft.DestinationClan == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             if (IsLocked(draft.AdopteeHero)) return FamilyResult.Deny(FamilyReasonCode.HeroLocked);
-            if (draft.AdopterHero.Clan != draft.DestinationClan || draft.AdopteeHero.IsDead || draft.AdopterHero.IsDead) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
+            var valid = _adoptionModel.CanCreate(draft.AdopterHero, draft.AdopteeHero, draft.DestinationClan, draft.ReceiverClan);
+            if (!valid.IsAllowed) return valid;
             var p = new FamilyProposal
             {
                 ProposalId = Guid.NewGuid().ToString("N"), ChainId = Guid.NewGuid().ToString("N"), ProposalType = FamilyProposalType.Adoption,

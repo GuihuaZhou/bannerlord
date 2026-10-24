@@ -3,16 +3,15 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using HarmonyLib;
-using ModifiedFamily.AI;
 using ModifiedFamily.Core;
 using ModifiedFamily.Diagnostics;
-using ModifiedFamily.Execution;
 using ModifiedFamily.Kinship;
-using ModifiedFamily.Models;
 using ModifiedFamily.Localization;
 using ModifiedFamily.Marriage.AI;
 using ModifiedFamily.Marriage.Execution;
 using ModifiedFamily.Marriage.Models;
+using ModifiedFamily.Adoption.Execution;
+using ModifiedFamily.Adoption.Models;
 using ModifiedFamily.Persistence;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
@@ -61,9 +60,10 @@ namespace ModifiedFamily.Campaign
 
         private void BuildServices()
         {
-            _marriageProposalModel = new MarriageProposalModel(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _marriageProposalModel);
+            var adoptionModel = new AdoptionModel();
+            _marriageProposalModel = new MarriageProposalModel(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _marriageProposalModel, adoptionModel);
             _marriageAi = new ClanMarriageDecisionService(_service, _marriageProposalModel); _execution = new MarriageExecutionService(_marriageProposalModel);
-            _adoptionExecution = new AdoptionExecutionService(new AdoptionModel(), new AdoptiveKinshipService(_adoptions));
+            _adoptionExecution = new AdoptionExecutionService(adoptionModel, new AdoptiveKinshipService(_adoptions));
         }
 
         private void OnDailyClan(Clan clan) { if (_service != null && FamilyDiagnostics.IsSafeToRunAi) _marriageAi.ConsiderClan(clan); }

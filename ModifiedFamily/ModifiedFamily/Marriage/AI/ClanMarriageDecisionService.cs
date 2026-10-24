@@ -1,7 +1,6 @@
 // Decentralized clan AI: each clan selects and evaluates proposals for its own benefit.
 using System.Linq;
 using ModifiedFamily.Core;
-using ModifiedFamily.Models;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
 using ModifiedFamily.Diagnostics;

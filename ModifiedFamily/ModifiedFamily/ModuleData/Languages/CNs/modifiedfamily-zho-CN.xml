@@ -2,6 +2,18 @@
 <base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
   <tags><tag language="简体中文" /></tags>
   <strings>
+    <string id="MF_Settings_DisplayName" text="家族系统" />
+    <string id="MF_Logging_Group" text="日志设置" />
+    <string id="MF_MinLogLevel" text="屏幕日志级别" />
+    <string id="MF_MinLogLevel_Desc" text="仅在战役消息区域显示不低于所选级别的日志；选择“禁用”可关闭屏幕日志。" />
+    <string id="MF_FileMinLogLevel" text="文件日志级别" />
+    <string id="MF_FileMinLogLevel_Desc" text="仅将不低于所选级别的日志写入 ModifiedFamily.log；选择“禁用”可关闭文件日志。" />
+    <string id="MF_LogLevel_Debug" text="调试" />
+    <string id="MF_LogLevel_Info" text="信息" />
+    <string id="MF_LogLevel_Notice" text="通知" />
+    <string id="MF_LogLevel_Warn" text="警告" />
+    <string id="MF_LogLevel_Error" text="错误" />
+    <string id="MF_LogLevel_Disabled" text="禁用" />
     <string id="MF_Log_MarriageProposalPlain" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}。（请求：{ID}）" />
     <string id="MF_Log_MarriageProposalOfferingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并由提议方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
     <string id="MF_Log_MarriageProposalAskingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并要求接收方支付{GOLD}第纳尔礼金。（请求：{ID}）" />

@@ -1,7 +1,7 @@
 // Reserved adoption AI boundary; automatic adoption stays disabled until transfer rules are proven.
 using TaleWorlds.CampaignSystem;
 
-namespace ModifiedFamily.AI
+namespace ModifiedFamily.Adoption.AI
 {
     public sealed class ClanAdoptionDecisionService
     {
