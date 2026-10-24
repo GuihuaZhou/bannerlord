@@ -14,7 +14,8 @@ namespace ModifiedFamily.Execution
         public FamilyResult TryExecuteMarriage(FamilyProposal proposal)
         {
             var valid = _validator.CanExecuteMarriage(proposal);
-            if (!valid.IsAllowed || valid.TemporaryBlockers.Count > 0) return valid;
+            if (!valid.IsAllowed || valid.TemporaryBlockers.Count > 0) { FamilyDiagnostics.DebugLog("Marriage execution deferred: id=" + proposal.ProposalId + ", reason=" + valid.ReasonCode + ", blockers=" + string.Join(",", valid.TemporaryBlockers)); return valid; }
+            FamilyDiagnostics.Info("Marriage execution started: id=" + proposal.ProposalId + ", destination=" + proposal.DestinationClan?.StringId + ", gift=" + proposal.GiftAmount);
             proposal.Status = FamilyProposalStatus.Executing;
             try
             {
@@ -39,6 +40,7 @@ namespace ModifiedFamily.Execution
                 }
                 proposal.ExecutionStep = FamilyExecutionStep.GoldSettled;
                 proposal.Status = FamilyProposalStatus.Completed; proposal.ExecutionStep = FamilyExecutionStep.Completed;
+                FamilyDiagnostics.Notice("Marriage completed: id=" + proposal.ProposalId + ", heroes=" + proposal.HeroA.StringId + "/" + proposal.HeroB.StringId + ", clan=" + proposal.DestinationClan.StringId + ", gift=" + proposal.GiftAmount);
                 return FamilyResult.Allow(proposal.ProposalId);
             }
             catch (Exception ex)

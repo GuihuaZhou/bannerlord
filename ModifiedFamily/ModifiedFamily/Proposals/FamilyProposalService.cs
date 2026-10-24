@@ -5,6 +5,7 @@ using ModifiedFamily.Core;
 using ModifiedFamily.Execution;
 using ModifiedFamily.Persistence;
 using TaleWorlds.CampaignSystem;
+using ModifiedFamily.Diagnostics;
 
 namespace ModifiedFamily.Proposals
 {
@@ -33,7 +34,9 @@ namespace ModifiedFamily.Proposals
             var valid = _validator.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
             if (IsLocked(p.HeroA) || IsLocked(p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.HeroLocked);
             if (OnCooldown(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.PairCooldown);
-            _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; return FamilyResult.Allow(p.ProposalId, valid.TemporaryBlockers.ToArray());
+            _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId;
+            FamilyDiagnostics.Info("Marriage proposal created: " + Describe(p));
+            return FamilyResult.Allow(p.ProposalId, valid.TemporaryBlockers.ToArray());
         }
 
         public FamilyResult TryCreateAdoptionProposal(AdoptionProposalDraft draft)
@@ -49,7 +52,9 @@ namespace ModifiedFamily.Proposals
                 OriginClanA = draft.AdopterHero.Clan, OriginClanB = draft.AdopteeHero.Clan, DestinationClan = draft.DestinationClan,
                 CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays), ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays)
             };
-            _proposals.Add(p); _locks[p.AdopteeHero] = p.ChainId; return FamilyResult.Allow(p.ProposalId);
+            _proposals.Add(p); _locks[p.AdopteeHero] = p.ChainId;
+            FamilyDiagnostics.Info("Adoption proposal created: " + Describe(p));
+            return FamilyResult.Allow(p.ProposalId);
         }
 
         public FamilyResult TryAccept(string id, Clan responder)
@@ -60,24 +65,24 @@ namespace ModifiedFamily.Proposals
             {
                 if (p.AdopterHero == null || p.AdopteeHero == null || p.AdopteeHero.IsDead || p.AdopteeHero.Clan != p.OriginClanB)
                 { Invalidate(p, FamilyReasonCode.ClanChanged, false); return FamilyResult.Deny(FamilyReasonCode.ClanChanged); }
-                p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); return FamilyResult.Allow(id);
+                p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice("Adoption proposal accepted: " + Describe(p)); return FamilyResult.Allow(id);
             }
             var valid = _validator.CanRespond(p); if (!valid.IsAllowed) { Invalidate(p, valid.ReasonCode, false); return valid; }
-            p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); return FamilyResult.Allow(id, valid.TemporaryBlockers.ToArray());
+            p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice("Marriage proposal accepted: " + Describe(p)); return FamilyResult.Allow(id, valid.TemporaryBlockers.ToArray());
         }
 
         public FamilyResult TryReject(string id, Clan responder, FamilyReasonCode reason)
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             if (p.ReceiverClan != responder) return FamilyResult.Deny(FamilyReasonCode.WrongResponder);
-            p.Status = FamilyProposalStatus.Rejected; p.ReasonCode = reason; AddCooldown(p); ReleaseChain(p.ChainId); return FamilyResult.Allow(id);
+            p.Status = FamilyProposalStatus.Rejected; p.ReasonCode = reason; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info("Proposal rejected: " + Describe(p) + ", reason=" + reason); return FamilyResult.Allow(id);
         }
 
         public FamilyResult TryWithdraw(string id, Clan proposer)
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             if (p.ProposerClan != proposer) return FamilyResult.Deny(FamilyReasonCode.WrongProposer);
-            p.Status = FamilyProposalStatus.Withdrawn; AddCooldown(p); ReleaseChain(p.ChainId); return FamilyResult.Allow(id);
+            p.Status = FamilyProposalStatus.Withdrawn; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info("Proposal withdrawn: " + Describe(p)); return FamilyResult.Allow(id);
         }
 
         public FamilyResult TryCounter(string id, Clan responder, MarriageDirection direction, Clan goldPayer, int giftAmount)
@@ -88,17 +93,18 @@ namespace ModifiedFamily.Proposals
             Clan destination = direction == MarriageDirection.FemaleJoinsMaleClan ? (old.HeroA.IsFemale ? old.HeroB.Clan : old.HeroA.Clan) : (old.HeroA.IsFemale ? old.HeroA.Clan : old.HeroB.Clan);
             var p = new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = old.ChainId, ParentProposalId = old.ProposalId, CounterCount = 1, ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = old.HeroA, HeroB = old.HeroB, OriginClanA = old.OriginClanA, OriginClanB = old.OriginClanB, DestinationClan = destination, GoldPayerClan = goldPayer, GoldReceiverClan = giftAmount > 0 ? (goldPayer == old.OriginClanA ? old.OriginClanB : old.OriginClanA) : null, GiftAmount = giftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays) };
             var valid = _validator.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
-            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; return FamilyResult.Allow(p.ProposalId);
+            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice("Counter proposal created: " + Describe(p)); return FamilyResult.Allow(p.ProposalId);
         }
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();
         public IReadOnlyList<FamilyProposal> GetOutgoing(Clan clan) => _proposals.Where(p => p.ProposerClan == clan && p.IsActive).ToList();
         public void ReleaseCompleted(FamilyProposal p) => ReleaseChain(p.ChainId);
-        public void Invalidate(FamilyProposal p, FamilyReasonCode reason, bool cooldown) { p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); }
+        public void Invalidate(FamilyProposal p, FamilyReasonCode reason, bool cooldown) { p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn("Proposal invalidated: " + Describe(p) + ", reason=" + reason); }
         private FamilyProposal FindPending(string id) => _proposals.FirstOrDefault(p => p.ProposalId == id && p.Status == FamilyProposalStatus.PendingResponse);
         private bool IsLocked(Hero h) => h != null && _locks.ContainsKey(h);
         private bool OnCooldown(Hero a, Hero b) => _cooldowns.Any(c => c != null && !c.Until.IsPast && ((c.HeroA == a && c.HeroB == b) || (c.HeroA == b && c.HeroB == a)));
         private void AddCooldown(FamilyProposal p) { if (p.HeroA != null && p.HeroB != null) _cooldowns.Add(new FamilyCooldownRecord { HeroA = p.HeroA, HeroB = p.HeroB, Until = CampaignTime.DaysFromNow(FamilyConfig.PairCooldownDays) }); }
         private void ReleaseChain(string chain) { foreach (var key in _locks.Where(x => x.Value == chain).Select(x => x.Key).ToList()) _locks.Remove(key); }
+        private static string Describe(FamilyProposal p) => "id=" + p.ProposalId + ", chain=" + p.ChainId + ", type=" + p.ProposalType + ", proposer=" + (p.ProposerClan?.StringId ?? "null") + ", receiver=" + (p.ReceiverClan?.StringId ?? "null") + ", heroA=" + (p.HeroA?.StringId ?? p.AdopterHero?.StringId ?? "null") + ", heroB=" + (p.HeroB?.StringId ?? p.AdopteeHero?.StringId ?? "null") + ", gift=" + p.GiftAmount;
     }
 }

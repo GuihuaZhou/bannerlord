@@ -41,13 +41,14 @@ namespace ModifiedFamily.Campaign
         {
             store.SyncData("ModifiedFamily.Proposals", ref _proposals); store.SyncData("ModifiedFamily.Cooldowns", ref _cooldowns); store.SyncData("ModifiedFamily.Adoptions", ref _adoptions);
             _proposals = _proposals ?? new List<FamilyProposal>(); _cooldowns = _cooldowns ?? new List<FamilyCooldownRecord>(); _adoptions = _adoptions ?? new List<AdoptiveKinshipRecord>();
+            FamilyDiagnostics.DebugLog("Persistence synchronized: proposals=" + _proposals.Count + ", cooldowns=" + _cooldowns.Count + ", adoptions=" + _adoptions.Count);
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             BuildServices(); MigrateVanillaOffers();
             bool correctModel = TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel;
-            FamilyDiagnostics.Info("Marriage model active: " + correctModel);
+            FamilyDiagnostics.Notice("Session initialized. Marriage model active=" + correctModel + ", proposals=" + _proposals.Count + ", cooldowns=" + _cooldowns.Count + ", adoptions=" + _adoptions.Count);
             if (!correctModel) FamilyDiagnostics.Warn("Another mod replaced ModifiedMarriageModel; proposal execution is disabled.");
         }
 

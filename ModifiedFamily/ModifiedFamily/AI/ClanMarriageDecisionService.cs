@@ -3,6 +3,7 @@ using ModifiedFamily.Core;
 using ModifiedFamily.Models;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
+using ModifiedFamily.Diagnostics;
 
 namespace ModifiedFamily.AI
 {
@@ -25,6 +26,7 @@ namespace ModifiedFamily.AI
             if (candidates.Count == 0 || candidates[0].Score < 0f) return;
             Hero other = candidates[0].Hero;
             var direction = MarriageDirection.FemaleJoinsMaleClan;
+            FamilyDiagnostics.DebugLog("AI candidate selected: clan=" + clan.StringId + ", own=" + own[0].StringId + ", other=" + other.StringId + ", tier=" + candidates[0].Tier + ", score=" + candidates[0].Score.ToString("0.00"));
             _service.TryCreateMarriageProposal(new MarriageProposalDraft { ProposerClan = clan, ReceiverClan = other.Clan, HeroA = own[0], HeroB = other, Direction = direction, GiftAmount = 0 });
         }
 
@@ -36,8 +38,8 @@ namespace ModifiedFamily.AI
             Hero other = own == p.HeroA ? p.HeroB : p.HeroA;
             int giftDelta = p.GoldReceiverClan == p.ReceiverClan ? p.GiftAmount : -p.GiftAmount;
             float score = _values.MarriageScore(own, other, p.ReceiverClan, p.DestinationClan, giftDelta);
-            if (score >= 0f) _service.TryAccept(p.ProposalId, p.ReceiverClan);
-            else _service.TryReject(p.ProposalId, p.ReceiverClan, FamilyReasonCode.InvalidProposal);
+            FamilyDiagnostics.DebugLog("AI response scored: id=" + p.ProposalId + ", clan=" + p.ReceiverClan.StringId + ", score=" + score.ToString("0.00"));
+            if (score >= 0f) _service.TryAccept(p.ProposalId, p.ReceiverClan); else _service.TryReject(p.ProposalId, p.ReceiverClan, FamilyReasonCode.InvalidProposal);
         }
 
         private static int MatchTier(Hero a, Hero b)
