@@ -57,10 +57,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         public void OnNaturalVisit(MobileParty party, Settlement settlement)
         {
             if (!IsEnabled()) return;
-            if (party == null || !party.IsActive || !party.IsLordParty ||
-                party.IsMainParty || party.IsDisbanding ||
-                party.ActualClan == null ||
-                party.ActualClan == Clan.PlayerClan ||
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
                 string.IsNullOrEmpty(party.StringId)) return;
 
             _routingTargets.Remove(party.StringId);
@@ -105,7 +102,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MobileParty party,
             bool isExistingRoute = false)
         {
-            if (!IsEnabled() || party?.ActualClan == null ||
+            if (!IsEnabled() ||
+                !ManagedPartyPolicy.IsModManagedAiParty(party) ||
                 string.IsNullOrEmpty(party.StringId))
             {
                 return new PeaceDemobilizationDecision
@@ -303,7 +301,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 "REMAINING",
                 Math.Max(0, decision.SurplusCount - result.ActualCount));
             message.SetTextVariable("RESULT", GetReasonText(result.ReasonCode));
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Notice(message.ToString());
         }
 
         /// <summary>Converts internal outcomes into readable localized text.</summary>

@@ -81,14 +81,22 @@ namespace ModifiedArmy.Garrison.Behaviors
 
                 town.Settlement.SetGarrisonWagePaymentLimit(newLimit);
 
-                if (previousLimit != newLimit)
+                // Global daily recalculation is expected, but logging every small
+                // fluctuation for every kingdom obscures actionable events. Keep a
+                // diagnostic only for the player's kingdom and only when the limit
+                // moves by at least five percent or one hundred denars.
+                int meaningfulChange = System.Math.Max(
+                    100,
+                    System.Math.Max(1, previousLimit) / 20);
+                if (clan.Kingdom == Clan.PlayerClan?.Kingdom &&
+                    System.Math.Abs(previousLimit - newLimit) >= meaningfulChange)
                 {
                     ModLogger.Debug(
-                        $"[GarrisonWageLimitBehavior] Settlement='{town.Name}' | " +
-                        $"Border={isBorder} | DesiredSize={desiredSize} | " +
-                        $"ExpectedAverageWage={expectedAverageWage:F2} | " +
-                        $"GoldFactor={goldFactor:F2} | RawLimit={rawWageLimit:F2} | " +
-                        $"PreviousLimit={previousLimit} | NewLimit={newLimit}");
+                        $"[GarrisonWageLimit] {town.Name}'s wage limit changed " +
+                        $"from {previousLimit} to {newLimit}. The desired garrison " +
+                        $"size is {desiredSize}, expected average wage is " +
+                        $"{expectedAverageWage:F2}, wealth factor is {goldFactor:F2}, " +
+                        $"raw limit is {rawWageLimit:F2}, and border status is {isBorder}.");
                 }
             }
         }

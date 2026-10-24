@@ -141,12 +141,10 @@ namespace ModifiedArmy.Models.Fief
                 if (!settlement.IsCastle && !settlement.IsTown) continue;
                 if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
                 {
-                    ModLogger.Debug($"[InitializeFiefData] Refreshing existing data for {settlement.Name}");
                     data.InitialFeifPartyData();
                 }
                 else
                 {
-                    ModLogger.Debug($"[InitializeFiefData] Creating new fief data for {settlement.Name}");
                     _fiefDataMap[settlement] = new FiefPartyData(settlement);
                 }
             }
@@ -168,7 +166,10 @@ namespace ModifiedArmy.Models.Fief
                 data.WeeklyUpdate();
                 updatedCount++;
             }
-            ModLogger.Debug($"[Fief Squad Mod] Weekly reinforcement update completed for {updatedCount} settlements.");
+            TextObject weekly = GameTexts.FindText(
+                "str_modifiedarmy_fief_weekly_update");
+            weekly.SetTextVariable("COUNT", updatedCount);
+            ModLogger.Debug(weekly.ToString());
         }
 
         private void OnDailyTick()
@@ -619,7 +620,7 @@ namespace ModifiedArmy.Models.Fief
             int remainingBatch,
             int cooldownWeeks)
         {
-            ModLogger.FileNotice(string.Format(
+            ModLogger.Notice(string.Format(
                 "Fief return: party={0}, source={1}, batch={2}, " +
                 "requested={3}, returned={4}, remainingBatch={5}, " +
                 "restoredHearth={6}, cooldownWeeks={7}, reason={8}",

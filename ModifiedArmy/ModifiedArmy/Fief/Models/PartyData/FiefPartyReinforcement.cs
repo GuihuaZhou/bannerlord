@@ -261,8 +261,6 @@ namespace ModifiedArmy.Models.Fief
             if (upgradeChance <= 0f)
                 return;
 
-            ModLogger.Debug($"[AutoUpgrade] Base chance in {_settlement.Name}: {upgradeChance:P1}");
-
             // 对每个士兵独立判定是否升级
             int upgradedCount = 0;
 
@@ -348,7 +346,7 @@ namespace ModifiedArmy.Models.Fief
                         {
                             TextObject textObject = new TextObject("{=FiefTroopsReady}{SETTLEMENT_NAME}'s feudal troops are ready!", null);
                             textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
-                            MBInformationManager.AddQuickInformation(textObject, 5000, null, null, "");
+                            ModLogger.Notice(textObject.ToString());
                         }
                     }
                 }

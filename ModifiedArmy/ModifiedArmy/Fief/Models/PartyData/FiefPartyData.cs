@@ -67,6 +67,11 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int _totalLimit { get; private set; }
 
+        // This diagnostic-only cache is intentionally not saveable. It suppresses
+        // repeated output while the calculated limit is unchanged and has no
+        // influence on the authoritative limit or any recruitment calculation.
+        private int? _lastLoggedTotalLimit;
+
         /// <summary>
         /// 获取当前定居点使用的部队模板。
         /// </summary>
@@ -262,7 +267,15 @@ namespace ModifiedArmy.Models.Fief
             if (_totalLimit == 0)
                 _totalLimit = CalculateSizeLimit();
 
-            ModLogger.Debug($"[FiefSettlementData] Limit for '{_settlement.Name}': Total≤{_totalLimit}");
+            if (_lastLoggedTotalLimit != _totalLimit)
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_fief_troop_limit");
+                message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
+                message.SetTextVariable("LIMIT", _totalLimit);
+                ModLogger.Debug(message.ToString());
+                _lastLoggedTotalLimit = _totalLimit;
+            }
         }
 
 
@@ -285,13 +298,11 @@ namespace ModifiedArmy.Models.Fief
             }
 
             string templateId = $"{culture}_{type}{portSuffix}";
-            ModLogger.Debug($"[Fief] Trying template ID: '{templateId}' for {settlement.Name}");
             var template = FiefPartyTemplateManager.Instance.GetTemplate(templateId);
 
             if (template == null && !string.IsNullOrEmpty(portSuffix))
             {
                 templateId = $"{culture}_{type}";
-                ModLogger.Debug($"[Fief] Trying template ID: '{templateId}' for {settlement.Name} again");
                 template = FiefPartyTemplateManager.Instance.GetTemplate(templateId);
             }
 

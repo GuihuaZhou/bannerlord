@@ -287,12 +287,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 troops.Remove(troop);
             }
 
-            LogOfferConsumption(
-                settlement,
-                troop,
-                count,
-                true,
-                CreateRemainingCountReason(remaining));
             return true;
         }
 
@@ -303,6 +297,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             bool succeeded,
             TextObject detail)
         {
+            // Successful consumption is already represented by the daily production
+            // manifest and the final garrison recruitment summary. Logging every
+            // troop type separately produced several redundant lines per settlement.
+            // Keep only failures because they identify a broken or stale offer.
+            if (succeeded)
+                return;
             if (!RecruitmentLogFilter.ShouldLog(settlement?.OwnerClan))
             {
                 return;
@@ -310,7 +310,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
 
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_manpower_consume");
-            message.SetTextVariable("DAY", (int)CampaignTime.Now.ToDays);
             message.SetTextVariable(
                 "SETTLEMENT_NAME",
                 settlement?.Name ?? new TextObject("-"));
@@ -333,14 +332,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             TextObject reason = GameTexts.FindText(
                 "str_modifiedarmy_manpower_reason_offer_insufficient");
             reason.SetTextVariable("AVAILABLE", count);
-            return reason;
-        }
-
-        private static TextObject CreateRemainingCountReason(int count)
-        {
-            TextObject reason = GameTexts.FindText(
-                "str_modifiedarmy_manpower_reason_remaining");
-            reason.SetTextVariable("REMAINING", count);
             return reason;
         }
 
@@ -714,7 +705,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             return string.Join(
-                ", ",
+                "、",
                 offers.Where(entry => entry.Key != null && entry.Value > 0)
                     .OrderBy(entry => entry.Key.StringId)
                     .Select(entry => FormatOfferManifestEntry(

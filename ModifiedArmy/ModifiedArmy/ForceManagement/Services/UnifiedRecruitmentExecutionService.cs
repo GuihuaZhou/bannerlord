@@ -167,7 +167,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 message.SetTextVariable("COUNT", count);
                 message.SetTextVariable("TROOP_NAME", market.TroopType.Name);
                 message.SetTextVariable("COST", count * cost);
-                ModLogger.FileNotice(message.ToString());
+                ModLogger.Info(message.ToString());
             }
             return new PartyExchangeExecutionResult
             {

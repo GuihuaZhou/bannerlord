@@ -24,7 +24,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 GameTexts.FindText(enabled
                     ? "str_modifiedarmy_force_entry_mode_unified"
                     : "str_modifiedarmy_force_entry_mode_native"));
-            ModLogger.FileNotice(mode.ToString());
+            ModLogger.Info(mode.ToString());
             if (!enabled) return;
             LogMethod(AccessTools.Method(
                 typeof(GarrisonTroopsCampaignBehavior),
@@ -57,7 +57,10 @@ namespace ModifiedArmy.ForceManagement.Services
                 string.IsNullOrEmpty(owners)
                     ? GameTexts.FindText("str_modifiedarmy_force_patch_none")
                     : new TextObject(owners));
-            ModLogger.FileNotice(message.ToString());
+            // Patch owner and method names are technical evidence. Keep them at
+            // Debug so the normal file log contains only the single startup mode
+            // summary unless a user explicitly enables detailed diagnostics.
+            ModLogger.Debug(message.ToString());
         }
 
         /// <summary>Formats one patch owner and priority through localization.</summary>

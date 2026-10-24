@@ -108,7 +108,10 @@ namespace ModifiedArmy.ForceManagement.Services
         {
             disposition = 0f;
             atFormalWar = ForceManagementFacade.IsAtFormalWar(clan);
-            if (clan == null || Campaign.Current == null)
+            // Minor factions deliberately have no war-disposition record.
+            // They are handled by native party logic and are not a missing-data
+            // condition worth reporting.
+            if (clan == null || clan.IsMinorFaction || Campaign.Current == null)
             {
                 return false;
             }

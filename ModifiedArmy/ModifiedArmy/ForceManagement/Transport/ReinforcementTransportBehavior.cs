@@ -88,7 +88,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                 PartyLogFormatter.GetClanDisplayName(clan));
             message.SetTextVariable("MILITARY", dispatchedTroops);
             message.SetTextVariable("AID", dispatchedAid);
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         public MobileParty TryDispatchControlled(
@@ -101,7 +101,7 @@ namespace ModifiedArmy.ForceManagement.Transport
                 source, destination, requestedTroops, requestedFood);
             if (!plan.IsApproved)
             {
-                ModLogger.FileNotice("Reinforcement dispatch rejected: " +
+                ModLogger.Debug("Reinforcement dispatch was rejected because " +
                     plan.ReasonCode);
                 return null;
             }
@@ -374,7 +374,7 @@ namespace ModifiedArmy.ForceManagement.Transport
             message.SetTextVariable("ACTUAL_FOOD",
                 party?.ItemRoster?.TotalFood ?? 0);
             message.SetTextVariable("EVENT_AMOUNT", troops);
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
     }
 }

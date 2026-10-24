@@ -21,7 +21,8 @@ namespace ModifiedArmy.Tool
     }
 
     /// <summary>
-    /// Displays messages emitted by ModifiedArmy systems.
+    /// Routes every ModifiedArmy log event to the file and campaign feed.
+    /// Each destination applies its own severity threshold independently.
     /// </summary>
     public static class ModLogger
     {
@@ -44,7 +45,7 @@ namespace ModifiedArmy.Tool
         /// Reads MCM on every call so a changed threshold applies immediately.
         /// Before MCM becomes available, use the fixed Notice threshold.
         /// </summary>
-        private static LogLevel CurrentMinLogLevel
+        private static LogLevel CurrentScreenMinLogLevel
         {
             get
             {
@@ -78,24 +79,6 @@ namespace ModifiedArmy.Tool
             Display(LogLevel.Info, message, color ?? InfoColor);
         }
 
-        /// <summary>
-        /// Writes an informational diagnostic without displaying it in the
-        /// campaign message feed.
-        /// </summary>
-        public static void FileInfo(string message)
-        {
-            WriteToFile(LogLevel.Info, message);
-        }
-
-        /// <summary>
-        /// Writes an important diagnostic to the file without displaying it
-        /// in the campaign message feed.
-        /// </summary>
-        public static void FileNotice(string message)
-        {
-            WriteToFile(LogLevel.Notice, message);
-        }
-
         public static void Notice(string message, Color? color = null)
         {
             Display(LogLevel.Notice, message, color ?? NoticeColor);
@@ -116,9 +99,11 @@ namespace ModifiedArmy.Tool
             string message,
             Color color)
         {
+            // Always offer the event to both destinations. Each destination
+            // decides independently whether its configured threshold accepts it.
             WriteToFile(level, message);
 
-            LogLevel displayThreshold = CurrentMinLogLevel;
+            LogLevel displayThreshold = CurrentScreenMinLogLevel;
             if (displayThreshold == LogLevel.Disabled
                 || (int)level < (int)displayThreshold)
             {

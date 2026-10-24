@@ -29,6 +29,29 @@ namespace ModifiedArmy.ForceManagement.Models
             ForceManagementConfig config = MilitaryConfigManager.Instance
                 .RequireActiveConfig().AiRecruitment.ForceManagement;
             Clan clan = party?.ActualClan;
+
+            // Minor factions are intentionally outside the unified force
+            // system. Their clans do not participate in ModifiedPolitics war
+            // disposition, so treating missing data as neutral would silently
+            // impose a kingdom-clan force target on mercenary/minor parties.
+            // Returning the live count makes an accidental model call a no-op;
+            // normal minor-faction recruitment remains owned by native logic.
+            if (clan?.IsMinorFaction == true)
+            {
+                return new PartyForceTargetResult
+                {
+                    Scenario = ForceScenario.WarRoutine,
+                    IsAggressiveWarClan = false,
+                    WarDisposition = 0f,
+                    PartyLimit = limit,
+                    CurrentCount = current,
+                    TargetCount = current,
+                    GapCount = 0,
+                    CanStartRecruitmentVisit = false,
+                    ReasonCode = "MinorFactionExcluded"
+                };
+            }
+
             bool atWar = IsAtFormalWar(clan);
             float disposition = 0f;
             bool bridgeWar;

@@ -49,7 +49,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 .Restore(Enumerable.Empty<ReinforcementMission>());
             if (cancelled > 0)
             {
-                ModLogger.FileNotice(
+                ModLogger.Notice(
                     "Cancelled retired lord reinforcement missions: " +
                     cancelled);
             }

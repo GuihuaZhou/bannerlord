@@ -77,7 +77,10 @@ namespace ModifiedArmy.Models
                 ParseTroopNode(objectManager, child);
             }
 
-            ModLogger.Debug($"[BasicTroopGroup] Finished loading troop config for '{Culture.Name}', total entries: {Troops.Count}");
+            // Culture.Name may still be empty while object XML is being
+            // deserialized because localization has not finished initializing.
+            // Successful per-culture messages also duplicate manager registration
+            // logs, so only malformed cultures or troops are logged above.
             BasicTroopGroupManager.Instance.RegisterGroup(this);
         }
 
@@ -109,7 +112,6 @@ namespace ModifiedArmy.Models
             if (group?.Culture != null)
             {
                 _groups[group.Culture] = group;
-                ModLogger.Debug($"[BasicTroopGroupManager] Registered culture group: {group.Culture.Name}");
             }
         }
 
@@ -127,7 +129,10 @@ namespace ModifiedArmy.Models
                 return group;
             }
 
-            ModLogger.Debug($"[BasicTroopGroupManager] No troop configuration found for culture: {culture.Name}");
+            // StringId is stable even during early loading, while the localized
+            // display name may not be initialized yet.
+            ModLogger.Debug($"[BasicTroopGroupManager] No troop configuration " +
+                $"was found for culture '{culture.StringId}'.");
             return null;
         }
 

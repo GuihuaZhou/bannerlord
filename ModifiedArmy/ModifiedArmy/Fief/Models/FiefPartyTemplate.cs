@@ -167,7 +167,9 @@ namespace ModifiedArmy.Models.Fief
             
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_template_registered");
             msg.SetTextVariable("TEMPLATE_ID", template.TemplateId);
-            ModLogger.Info(msg.ToString());
+            // Template registration is startup diagnostics rather than a player
+            // event. Keep the localized details available only at Debug level.
+            ModLogger.Debug(msg.ToString());
         }
 
         /// <summary>

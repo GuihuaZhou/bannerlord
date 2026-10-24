@@ -42,8 +42,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
 
             foreach (MobileParty party in MobileParty.AllLordParties)
             {
-                if (party == null || !party.IsActive || party.IsMainParty ||
-                    party.ActualClan == null ||
+                if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
                     party.ActualClan.Kingdom != playerKingdom)
                 {
                     continue;
@@ -65,8 +64,13 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 }
 
                 _partyStates[party] = partyState;
+                string templateId = target.GapCount > 0
+                    ? "str_modifiedarmy_force_target_below"
+                    : target.CurrentCount > target.TargetCount
+                        ? "str_modifiedarmy_force_target_above"
+                        : "str_modifiedarmy_force_target_met";
                 TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_force_target");
+                    templateId);
                 message.SetTextVariable(
                     "PARTY_NAME",
                     PartyLogFormatter.GetDisplayName(party));
@@ -78,16 +82,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 message.SetTextVariable("TARGET", target.TargetCount);
                 message.SetTextVariable("LIMIT", target.PartyLimit);
                 message.SetTextVariable("GAP", target.GapCount);
-                message.SetTextVariable(
-                    "REASON",
-                    target.GapCount > 0
-                        ? new TextObject(
-                            "{=ModifiedArmy_ForceReasonBelowTarget}" +
-                            "Below target")
-                        : new TextObject(
-                            "{=ModifiedArmy_ForceReasonTargetReached}" +
-                            "Target reached"));
-                ModLogger.FileNotice(message.ToString());
+                // Routine force targets are diagnostic state, even when the state
+                // changed since the previous observation. Keeping them at Debug
+                // prevents normal daily planning from dominating the event log.
+                ModLogger.Debug(message.ToString());
             }
 
             LogChangedGarrisonStates(playerKingdom);
@@ -125,8 +123,13 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 }
 
                 _garrisonStates[id] = state;
+                // A reinforcement request is an action, while a satisfied defense
+                // requirement is only a status observation. Separate templates keep
+                // the normal path from reading like a zero-sized request.
                 TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_garrison_defense_evaluation");
+                    need.IsRequested
+                        ? "str_modifiedarmy_garrison_reinforcement_requested"
+                        : "str_modifiedarmy_garrison_reinforcement_not_needed");
                 message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
                 message.SetTextVariable(
                     "CURRENT",
@@ -146,22 +149,15 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 message.SetTextVariable(
                     "RECOVERY",
                     snapshot.PredictedSevenDayRecruitment);
-                message.SetTextVariable(
-                    "REQUESTED",
-                    need.RequestedTroops);
-                message.SetTextVariable(
-                    "DECISION",
-                    need.IsRequested
-                        ? new TextObject(
-                            "{=ModifiedArmy_ReinforcementDecisionRequest}" +
-                            "request reinforcement")
-                        : new TextObject(
-                            "{=ModifiedArmy_ReinforcementDecisionWait}" +
-                            "do not request reinforcement"));
+                if (need.IsRequested)
+                    message.SetTextVariable("REQUESTED", need.RequestedTroops);
                 message.SetTextVariable(
                     "REASON",
                     GetReinforcementReasonText(need.ReasonCode));
-                ModLogger.FileNotice(message.ToString());
+                // A settlement that already meets its defense requirement is not
+                // an incident. The changed-state cache still preserves useful
+                // diagnostics without promoting evaluations to Notice.
+                ModLogger.Debug(message.ToString());
             }
         }
 

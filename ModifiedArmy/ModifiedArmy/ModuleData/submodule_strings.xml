@@ -4,7 +4,7 @@
         text="{=ModifiedArmy_Init}[ModifiedArmy] 初始化完成" />
 
     <string id="str_modifiedarmy_config_loaded"
-        text="{=ModConfig_Loaded}[ModifiedArmy] 已加载配置 {CONFIG_ID}" />
+        text="{=ModConfig_Loaded}[配置] 已加载“{CONFIG_ID}”军事配置，其中包含{DOCTRINE_COUNT}套文化军事规则。" />
 
     <!-- AiRecruitFiefTroopsBehavior: 行为加载 -->
     <string id="str_modifiedarmy_ai_recruit_behavior_loaded"
@@ -23,6 +23,10 @@
     <!-- FiefPartyManager: 初始化完成 -->
     <string id="str_modifiedarmy_fief_init_complete"
         text="{=FiefPartyManager_InitializeFiefData_0}[ModifiedArmy] 初始化{COUNT}个封邑" />
+    <string id="str_modifiedarmy_fief_weekly_update"
+        text="{=ModifiedArmy_FiefWeeklyUpdate}[封邑补员] 本周已经检查了{COUNT}座定居点。" />
+    <string id="str_modifiedarmy_fief_troop_limit"
+        text="{=ModifiedArmy_FiefTroopLimit}[封邑编制] {SETTLEMENT_NAME}的封邑兵编制上限为{LIMIT}人。" />
 
     <!-- FiefPartyManager: 手动招募成功 -->
     <string id="str_modifiedarmy_fief_manual_recruit"
@@ -85,8 +89,22 @@
         text="{=ModifiedArmy_AIRecruitmentMercenaryEvaluation}[AI招募] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{APPROVED}名{TROOP_NAME}." />
 
     <!-- Unified force exchange and arrival recruitment logs. -->
-    <string id="str_modifiedarmy_exchange_executed" text="{=ModifiedArmy_ExchangeExecuted}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}{OPERATION}。从{SOURCE_NAME}调往{DESTINATION_NAME}，请求{REQUESTED}人，批准{APPROVED}人，实际完成{ACTUAL}人；来源兵力从{SOURCE_BEFORE}变为{SOURCE_AFTER}，接收方从{DESTINATION_BEFORE}变为{DESTINATION_AFTER}。本次调动：{MANIFEST}。" />
+    <string id="str_modifiedarmy_exchange_executed" text="{=ModifiedArmy_ExchangeExecuted}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}完成了一次调兵，申请{REQUESTED}人，批准{APPROVED}人，实际完成{ACTUAL}人。来源兵力由{SOURCE_BEFORE}人变为{SOURCE_AFTER}人，接收方由{DESTINATION_BEFORE}人变为{DESTINATION_AFTER}人。调动士兵：{MANIFEST}。" />
+    <string id="str_modifiedarmy_exchange_withdraw_executed" text="{=ModifiedArmy_ExchangeWithdrawExecuted}[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，实际补充{ACTUAL}名，包括{MANIFEST}。驻军人数由{SOURCE_BEFORE}人减少到{SOURCE_AFTER}人，部队人数由{DESTINATION_BEFORE}人增加到{DESTINATION_AFTER}人。" />
+    <string id="str_modifiedarmy_exchange_donate_executed" text="{=ModifiedArmy_ExchangeDonateExecuted}[统一调兵] {PARTY_NAME}申请向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，实际移交{ACTUAL}名，包括{MANIFEST}。部队人数由{SOURCE_BEFORE}人减少到{SOURCE_AFTER}人，驻军人数由{DESTINATION_BEFORE}人增加到{DESTINATION_AFTER}人。" />
     <string id="str_modifiedarmy_exchange_rejected" text="{=ModifiedArmy_ExchangeRejected}[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}请求调动{REQUESTED}人，批准{APPROVED}人，但没有执行：{REASON}。" />
+    <string id="str_modifiedarmy_exchange_no_field_surplus" text="{=ModifiedArmy_ExchangeNoFieldSurplus}[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但部队当前没有超过编制目标的安全余量，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
+    <string id="str_modifiedarmy_exchange_no_garrison_capacity" text="{=ModifiedArmy_ExchangeNoGarrisonCapacity}[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但驻军当前没有接收空间，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
+    <string id="str_modifiedarmy_exchange_no_garrison_surplus" text="{=ModifiedArmy_ExchangeNoGarrisonSurplus}[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，但扣除当地最低防守兵力后，驻军已经没有可以安全调出的士兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
+    <string id="str_modifiedarmy_exchange_build_rejected_diagnostic" text="{=ModifiedArmy_ExchangeBuildRejectedDiagnostic}[统一调兵] 调兵记录{OPERATION_ID}原计划调动{REQUESTED}人，但未能建立安全的调兵方案，原因是{REASON}。来源归属为{SOURCE_CLAN}，接收方归属为{DESTINATION_CLAN}，定居点归属为{OWNER_CLAN}。" />
+    <string id="str_modifiedarmy_common_unknown" text="{=ModifiedArmy_CommonUnknown}尚未取得名称" />
+    <string id="str_modifiedarmy_exchange_diag_source_kind" text="{=ModifiedArmy_ExchangeDiagSourceKind}来源和接收方的部队类型不符合本次调兵方向" />
+    <string id="str_modifiedarmy_exchange_diag_not_arrived" text="{=ModifiedArmy_ExchangeDiagNotArrived}野战部队尚未真正抵达目标定居点" />
+    <string id="str_modifiedarmy_exchange_diag_source_owner" text="{=ModifiedArmy_ExchangeDiagSourceOwner}无法确认来源部队的有效归属" />
+    <string id="str_modifiedarmy_exchange_diag_destination_owner" text="{=ModifiedArmy_ExchangeDiagDestinationOwner}无法确认接收部队的有效归属" />
+    <string id="str_modifiedarmy_exchange_diag_clan_mismatch" text="{=ModifiedArmy_ExchangeDiagClanMismatch}来源和接收方不属于同一家族" />
+    <string id="str_modifiedarmy_exchange_diag_settlement_owner" text="{=ModifiedArmy_ExchangeDiagSettlementOwner}部队归属与定居点领主不一致" />
+    <string id="str_modifiedarmy_exchange_diag_safety" text="{=ModifiedArmy_ExchangeDiagSafety}当前活动状态、战斗状态、围城状态或真实驻军校验未通过" />
     <string id="str_modifiedarmy_exchange_source_unknown" text="{=ModifiedArmy_ExchangeSourceUnknown}未知地点" />
     <string id="str_modifiedarmy_exchange_operation_donate" text="{=ModifiedArmy_ExchangeOperationDonate}向驻军补充兵力" />
     <string id="str_modifiedarmy_exchange_operation_withdraw" text="{=ModifiedArmy_ExchangeOperationWithdraw}从驻军补充部队" />
@@ -102,12 +120,27 @@
     <string id="str_modifiedarmy_exchange_reason_missing_plan" text="{=ModifiedArmy_ExchangeReasonMissingPlan}没有形成有效的调兵方案" />
     <string id="str_modifiedarmy_exchange_reason_other" text="{=ModifiedArmy_ExchangeReasonOther}调兵审批未通过（{REASON_CODE}）" />
     <string id="str_modifiedarmy_exchange_manifest_none" text="{=ModifiedArmy_ExchangeManifestNone}无" />
-    <string id="str_modifiedarmy_exchange_manifest_item" text="{=ModifiedArmy_ExchangeManifestItem}{TROOP_NAME}×{COUNT}（伤员{WOUNDED}）" />
+    <string id="str_modifiedarmy_exchange_manifest_item" text="{=ModifiedArmy_ExchangeManifestItem}{COUNT}名{TROOP_NAME}" />
     <string id="str_modifiedarmy_unified_mercenary_recruited" text="{=ModifiedArmy_UnifiedMercenaryRecruited}[统一招兵] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{COUNT}名{TROOP_NAME}，本次花费{COST}第纳尔。" />
     <string id="str_modifiedarmy_force_task_resumed" text="{=ModifiedArmy_ForceTaskResumed}[兵力任务恢复] {PARTY_NAME}读档后继续前往{SETTLEMENT_NAME}，任务类型为{INTENT}。" />
     <string id="str_modifiedarmy_force_task_cancelled_on_load" text="{=ModifiedArmy_ForceTaskCancelledOnLoad}[兵力任务恢复] {PARTY_NAME}原定前往{SETTLEMENT_NAME}的{INTENT}任务已经失效，读档后已安全取消，没有调整兵员。" />
-    <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力统一调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。" />
-    <string id="str_modifiedarmy_force_plan_decision" text="{=ModifiedArmy_ForcePlanDecision}[兵力统一调度] {PARTY_NAME}今日决定为{INTENT}；目标是{SETTLEMENT_NAME}，计划使用{SOURCE}，内部原因为{REASON_CODE}。本次共比较了{CANDIDATE_COUNT}个可行方案。" />
+    <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。" />
+    <string id="str_modifiedarmy_force_plan_recruit" text="{=ModifiedArmy_ForcePlanRecruit}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}补充兵力，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
+    <string id="str_modifiedarmy_force_plan_war_rest" text="{=ModifiedArmy_ForcePlanWarRest}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}进行战时休整，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
+    <string id="str_modifiedarmy_force_plan_maintain" text="{=ModifiedArmy_ForcePlanMaintain}[兵力调度] {PARTY_NAME}今天不需要调整兵力，因为{REASON}。" />
+    <string id="str_modifiedarmy_force_plan_suspended" text="{=ModifiedArmy_ForcePlanSuspended}[兵力调度] {PARTY_NAME}今天暂不安排新的兵力任务，因为{REASON}。" />
+    <string id="str_modifiedarmy_force_reason_target_satisfied" text="{=ModifiedArmy_ForceReasonTargetSatisfied}当前兵力已经达到目标" />
+    <string id="str_modifiedarmy_force_reason_need_below_threshold" text="{=ModifiedArmy_ForceReasonNeedBelowThreshold}兵力缺口尚未达到出发补兵的条件" />
+    <string id="str_modifiedarmy_force_reason_random_gate" text="{=ModifiedArmy_ForceReasonRandomGate}本次日常规划没有触发新的补兵行动" />
+    <string id="str_modifiedarmy_force_reason_no_source" text="{=ModifiedArmy_ForceReasonNoSource}附近没有安全且可用的兵源" />
+    <string id="str_modifiedarmy_force_reason_continue_task" text="{=ModifiedArmy_ForceReasonContinueTask}现有任务仍然有效" />
+    <string id="str_modifiedarmy_force_reason_recruit_planned" text="{=ModifiedArmy_ForceReasonRecruitPlanned}这是当前最合适的补兵方案" />
+    <string id="str_modifiedarmy_force_reason_rest_planned" text="{=ModifiedArmy_ForceReasonRestPlanned}部队需要在战争期间补充和休整" />
+    <string id="str_modifiedarmy_force_reason_no_rest_destination" text="{=ModifiedArmy_ForceReasonNoRestDestination}没有找到安全的战时休整地点" />
+    <string id="str_modifiedarmy_force_reason_rest_cancelled_peace" text="{=ModifiedArmy_ForceReasonRestCancelledPeace}战争已经结束，原休整任务不再需要" />
+    <string id="str_modifiedarmy_force_reason_higher_priority" text="{=ModifiedArmy_ForceReasonHigherPriority}部队正在执行优先级更高的命令" />
+    <string id="str_modifiedarmy_force_reason_invalid_party" text="{=ModifiedArmy_ForceReasonInvalidParty}部队当前状态无效" />
+    <string id="str_modifiedarmy_force_reason_other" text="{=ModifiedArmy_ForceReasonOther}当前没有适合执行的新计划" />
     <string id="str_modifiedarmy_force_intent_recruit" text="{=ModifiedArmy_ForceIntentRecruit}补充兵力" />
     <string id="str_modifiedarmy_force_intent_war_rest" text="{=ModifiedArmy_ForceIntentWarRest}战时休整" />
     <string id="str_modifiedarmy_force_intent_maintain" text="{=ModifiedArmy_ForceIntentMaintain}维持现状" />
@@ -145,7 +178,7 @@
     <string id="str_modifiedarmy_garrison_professional_recruitment"
         text="{=ModifiedArmy_GarrisonProfessionalRecruitment}[驻军招募] {SETTLEMENT_NAME}今日没有补充职业兵, 当时可训练{OFFERED}人, 首要限制是{LIMIT}." />
     <string id="str_modifiedarmy_manpower_consume"
-        text="{=ModifiedArmy_ManpowerConsume}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}处理{COUNT}名{TROOP_NAME}：{OUTCOME}，{DETAIL}。" />
+        text="{=ModifiedArmy_ManpowerConsume}[职业兵生产] {SETTLEMENT_NAME}处理{COUNT}名{TROOP_NAME}：{OUTCOME}，{DETAIL}。" />
     <string id="str_modifiedarmy_manpower_outcome_success"
         text="{=ModifiedArmy_ManpowerOutcomeSuccess}处理成功" />
     <string id="str_modifiedarmy_manpower_outcome_failure"
@@ -165,19 +198,26 @@
     <string id="str_modifiedarmy_manpower_reason_remaining"
         text="{=ModifiedArmy_ManpowerReasonRemaining}处理后还剩{REMAINING}人" />
     <string id="str_modifiedarmy_manpower_produce_no_supply"
-        text="{=ModifiedArmy_ManpowerProduceNoSupply}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}没有可用兵源，今日没有生成职业兵。" />
+        text="{=ModifiedArmy_ManpowerProduceNoSupply}[职业兵生产] {SETTLEMENT_NAME}没有可用兵源，今日没有生成职业兵。" />
     <string id="str_modifiedarmy_manpower_produce"
-        text="{=ModifiedArmy_ManpowerProduce}[职业兵生产] 第{DAY}天，{SETTLEMENT_NAME}分配到{ALLOCATION}点训练产能，计划生成{REQUESTED}人，实际生成{OFFERED}人：{MANIFEST}。当前可用兵源为{SUPPLY}，训练上限为{TRAINING}。" />
+        text="{=ModifiedArmy_ManpowerProduce}[职业兵生产] {SETTLEMENT_NAME}分配到{ALLOCATION}点训练产能，计划生成{REQUESTED}人，实际生成{OFFERED}人：{MANIFEST}。当前可用兵源为{SUPPLY}，训练上限为{TRAINING}。" />
     <string id="str_modifiedarmy_manpower_manifest_empty"
         text="{=ModifiedArmy_ManpowerManifestEmpty}无" />
     <string id="str_modifiedarmy_manpower_manifest_entry"
-        text="{=ModifiedArmy_ManpowerManifestEntry}{TROOP_NAME}×{COUNT}" />
+        text="{=ModifiedArmy_ManpowerManifestEntry}{COUNT}名{TROOP_NAME}" />
     <string id="str_modifiedarmy_manpower_ledger_rebuilt"
         text="{=ModifiedArmy_ManpowerLedgerRebuilt}[职业兵生产] {SETTLEMENT_NAME}的生产条件发生变化，已按模板{TEMPLATE_ID}重新开始统计各兵种的生产份额。" />
     <string id="str_modifiedarmy_manpower_recruitment_blocked"
-        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[驻军招募] 第{DAY}天，{SETTLEMENT_NAME}有{OFFERS}名职业兵可用，但今日无法招募。驻军存在：{GARRISON}，领主存在：{OWNER}，自动招募：{AUTO_RECRUIT}，正在战斗：{MAP_EVENT}，正在围城：{SIEGE}。" />
-    <string id="str_modifiedarmy_manpower_recruitment"
-        text="{=ModifiedArmy_ManpowerRecruitment}[驻军招募] 第{DAY}天，{SETTLEMENT_NAME}原有{GARRISON_BEFORE}人，职业兵池提供{OFFERS}人，每日最多招募{DAILY_LIMIT}人，审核通过{APPROVED}人；实际招募职业兵{PROFESSIONAL_ACTUAL}人、归顺俘虏{PRISONER_ACTUAL}人，驻军现有{GARRISON_AFTER}人。" />
+        text="{=ModifiedArmy_ManpowerRecruitmentBlocked}[驻军招募] {SETTLEMENT_NAME}有{OFFERS}名职业兵可用，但今日无法招募。驻军存在：{GARRISON}，领主存在：{OWNER}，自动招募：{AUTO_RECRUIT}，正在战斗：{MAP_EVENT}，正在围城：{SIEGE}。" />
+    <string id="str_modifiedarmy_manpower_recruitment_completed"
+        text="{=ModifiedArmy_ManpowerRecruitmentCompleted}[驻军招募] {SETTLEMENT_NAME}今天准备了{OFFERS}名职业兵候选，审核通过{APPROVED}人，实际有{PROFESSIONAL_ACTUAL}人加入驻军。驻军人数由{GARRISON_BEFORE}人增加到{GARRISON_AFTER}人；当前编制还可容纳{HARD_FREE}人，自动招募空间还剩{SOFT_FREE}人，另为征粮队预留{RESERVED_ESCORTS}人。" />
+    <string id="str_modifiedarmy_manpower_recruitment_skipped"
+        text="{=ModifiedArmy_ManpowerRecruitmentSkipped}[驻军招募] {SETTLEMENT_NAME}今天有{OFFERS}名职业兵候选，但没有新人加入驻军，原因是{PRIMARY_LIMIT}。当前驻军有{GARRISON_AFTER}人，每日招募额度为{DAILY_LIMIT}人，审核通过{APPROVED}人；编制还可容纳{HARD_FREE}人，自动招募空间还剩{SOFT_FREE}人，另为征粮队预留{RESERVED_ESCORTS}人。" />
+    <string id="str_modifiedarmy_recruit_limit_hard_capacity" text="{=ModifiedArmy_RecruitLimitHardCapacity}驻军已经达到编制上限" />
+    <string id="str_modifiedarmy_recruit_limit_soft_capacity" text="{=ModifiedArmy_RecruitLimitSoftCapacity}驻军已经达到当前自动招募目标" />
+    <string id="str_modifiedarmy_recruit_limit_daily_quota" text="{=ModifiedArmy_RecruitLimitDailyQuota}游戏本体计算出的今日自动招募额度为零" />
+    <string id="str_modifiedarmy_recruit_limit_no_approved_candidate" text="{=ModifiedArmy_RecruitLimitNoApprovedCandidate}现有候选均未通过招募模型审核" />
+    <string id="str_modifiedarmy_recruit_limit_execution_changed" text="{=ModifiedArmy_RecruitLimitExecutionChanged}审核后名册、容量或候选库存发生了变化" />
     <string id="str_modifiedarmy_recruits_unavailable"
         text="{=ModifiedArmy_RecruitsUnavailable}部分士兵已无法招募, 请重新选择." />
     <string id="str_modifiedarmy_garrison_prisoner_skipped"
@@ -254,18 +294,26 @@
         text="{=ModifiedArmy_PeaceDemobilization}[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}办理复员。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；实际返乡{FIEF_RETURNED}名封邑兵，向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。结果：{RESULT}。" />
     <string id="str_modifiedarmy_demobilization_route"
         text="{=ModifiedArmy_DemobilizationRoute}[和平复员] {PARTY_NAME}目前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人，正在前往{SETTLEMENT_NAME}办理复员。" />
-    <string id="str_modifiedarmy_supply_escort_capacity"
-        text="{=ModifiedArmy_SupplyEscortCapacity}[Garrison Capacity] settlement={SETTLEMENT_ID}, party={PARTY_ID}, before={GARRISON_BEFORE}, returning={RETURNING}, reserved before={RESERVED_BEFORE}, after={GARRISON_AFTER}, reserved after={RESERVED_AFTER}, limit={LIMIT}, excess={EXCESS}, mission state={MISSION_STATE}." />
+    <string id="str_modifiedarmy_supply_escort_capacity_returned"
+        text="{=ModifiedArmy_SupplyEscortCapacityReturned}[Garrison Capacity] {PARTY_NAME} returned to {SETTLEMENT_NAME} with {RETURNING} escorts. The garrison increased from {GARRISON_BEFORE} to {GARRISON_AFTER}, while reserved places decreased from {RESERVED_BEFORE} to {RESERVED_AFTER}. Its limit is {LIMIT}, with no overflow." />
+    <string id="str_modifiedarmy_supply_escort_capacity_overflow"
+        text="{=ModifiedArmy_SupplyEscortCapacityOverflow}[Garrison Capacity] {PARTY_NAME} returned to {SETTLEMENT_NAME} with {RETURNING} escorts. The garrison increased from {GARRISON_BEFORE} to {GARRISON_AFTER}, while reserved places decreased from {RESERVED_BEFORE} to {RESERVED_AFTER}. Its limit is {LIMIT}, so it is now {EXCESS} troops over capacity." />
     <string id="str_modifiedarmy_multiple_supply_parties"
         text="{=ModifiedArmy_MultipleSupplyParties}[Garrison Capacity] settlement={SETTLEMENT_ID} has {PARTY_COUNT} active supply parties reserving {RESERVED} places." />
     <string id="str_modifiedarmy_disband_merge_overflow"
         text="{=ModifiedArmy_DisbandMergeOverflow}[Garrison Capacity] disband merge overflow at settlement={SETTLEMENT_ID}: regulars={REGULARS}, heroes={HEROES}, reserved={RESERVED}, limit={LIMIT}, excess={EXCESS}." />
     <string id="str_modifiedarmy_force_disposition_fallback"
         text="{=ModifiedArmy_ForceDispositionFallback}[Force Management] The war disposition for clan {CLAN_ID} could not be read, so the clan is being treated as neutral." />
-    <string id="str_modifiedarmy_force_target"
-        text="{=ModifiedArmy_ForceTarget}[Force Management] {PARTY_NAME} is in the {SCENARIO} situation. Its war disposition is {DISPOSITION}. It currently has {CURRENT} troops, aims for {TARGET}, and may hold up to {LIMIT}. It still needs {GAP} troops because it is {REASON}." />
-    <string id="str_modifiedarmy_garrison_defense_evaluation"
-        text="{=ModifiedArmy_GarrisonDefenseEvaluation}[Force Management] {SETTLEMENT_NAME} is a {LOCATION}. It has {CURRENT} effective defenders and should retain at least {REQUIRED}. The seven-day recruitment forecast used by this decision is {RECOVERY}. The current decision is to {DECISION}; the requested amount is {REQUESTED}, because {REASON}." />
+    <string id="str_modifiedarmy_force_target_below"
+        text="{=ModifiedArmy_ForceTargetBelow}[Force Management] {PARTY_NAME} currently has {CURRENT} troops. Under the {SCENARIO} target it plans to reach {TARGET}, so it still needs {GAP}. Its party limit is {LIMIT}, and its current war disposition is {DISPOSITION}." />
+    <string id="str_modifiedarmy_force_target_met"
+        text="{=ModifiedArmy_ForceTargetMet}[Force Management] {PARTY_NAME} currently has {CURRENT} troops and has reached its {SCENARIO} target of {TARGET}, so it does not need reinforcements for now. Its party limit is {LIMIT}, and its current war disposition is {DISPOSITION}." />
+    <string id="str_modifiedarmy_force_target_above"
+        text="{=ModifiedArmy_ForceTargetAbove}[Force Management] {PARTY_NAME} currently has {CURRENT} troops, above its {SCENARIO} target of {TARGET}, so it does not need reinforcements for now. Its party limit is {LIMIT}, and its current war disposition is {DISPOSITION}." />
+    <string id="str_modifiedarmy_garrison_reinforcement_requested"
+        text="{=ModifiedArmy_GarrisonReinforcementRequested}[Force Management] {SETTLEMENT_NAME} is a {LOCATION} with {CURRENT} effective defenders and must retain at least {REQUIRED}. It has requested {REQUESTED} reinforcements. The seven-day recruitment forecast is {RECOVERY}; the request was made because {REASON}." />
+    <string id="str_modifiedarmy_garrison_reinforcement_not_needed"
+        text="{=ModifiedArmy_GarrisonReinforcementNotNeeded}[Force Management] {SETTLEMENT_NAME} currently needs no reinforcements. It is a {LOCATION} with {CURRENT} effective defenders and must retain at least {REQUIRED}. The seven-day recruitment forecast is {RECOVERY}; no request was made because {REASON}." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
         text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"

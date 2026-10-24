@@ -6,6 +6,7 @@ using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
 
 namespace ModifiedArmy.common
@@ -167,7 +168,11 @@ namespace ModifiedArmy.common
             if (_doctrines.Count == 0)
                 throw new InvalidOperationException("MilitaryConfig must contain at least one culture doctrine.");
             MilitaryConfigManager.Instance.Register(this);
-            ModLogger.Info($"[MilitaryConfig] Loaded '{ConfigId}' with {_doctrines.Count} culture doctrines.");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_config_loaded");
+            message.SetTextVariable("CONFIG_ID", ConfigId);
+            message.SetTextVariable("DOCTRINE_COUNT", _doctrines.Count);
+            ModLogger.Info(message.ToString());
         }
 
         public CulturalMilitaryDoctrine GetDoctrine(CultureObject culture)

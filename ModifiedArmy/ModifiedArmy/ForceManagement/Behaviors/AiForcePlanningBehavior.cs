@@ -219,7 +219,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         "SETTLEMENT_NAME", task.TargetSettlement.Name);
                     resumed.SetTextVariable(
                         "INTENT", GetIntentText(task.Intent));
-                    ModLogger.FileNotice(resumed.ToString());
+                    ModLogger.Info(resumed.ToString());
                 }
                 else
                 {
@@ -236,7 +236,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                             new TextObject("Unknown settlement"));
                     cancelled.SetTextVariable(
                         "INTENT", GetIntentText(task.Intent));
-                    ModLogger.FileNotice(cancelled.ToString());
+                    ModLogger.Info(cancelled.ToString());
                 }
         }
 
@@ -448,7 +448,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable(
                 "SETTLEMENT_NAME", task.TargetSettlement.Name);
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         /// <summary>
@@ -668,21 +668,82 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
             PartyForceTask task = plan?.Task;
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_force_plan_decision");
+            PartyForceIntent? intent = task?.Intent;
+            bool suspended = plan == null || task == null ||
+                plan.ReasonCode == "HigherPriorityOrder" ||
+                plan.ReasonCode == "RecruitmentRandomGateClosed" ||
+                plan.ReasonCode == "NoWarRestDestination" ||
+                plan.ReasonCode == "InvalidParty";
+            string templateId = suspended
+                ? "str_modifiedarmy_force_plan_suspended"
+                : intent switch
+                {
+                    PartyForceIntent.Recruit =>
+                        "str_modifiedarmy_force_plan_recruit",
+                    PartyForceIntent.WarRest =>
+                        "str_modifiedarmy_force_plan_war_rest",
+                    PartyForceIntent.Maintain =>
+                        "str_modifiedarmy_force_plan_maintain",
+                    _ => "str_modifiedarmy_force_plan_suspended"
+                };
+            TextObject message = GameTexts.FindText(templateId);
             message.SetTextVariable(
                 "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable(
-                "INTENT", GetIntentText(task?.Intent));
-            message.SetTextVariable(
-                "SETTLEMENT_NAME",
-                task?.TargetSettlement?.Name ?? GetNoneText());
-            message.SetTextVariable(
-                "SOURCE", GetSourceText(task?.SourceKind));
-            message.SetTextVariable("REASON_CODE", plan?.ReasonCode ?? "Unknown");
-            message.SetTextVariable(
-                "CANDIDATE_COUNT", plan?.RankedCandidates?.Count ?? 0);
+                "REASON",
+                GetPlanReasonText(plan?.ReasonCode));
+
+            // Only actionable travel plans have a destination, source, and ranked
+            // candidates. Maintain and suspended templates intentionally omit
+            // those variables instead of rendering artificial "none" values.
+            if (!suspended && (intent == PartyForceIntent.Recruit ||
+                intent == PartyForceIntent.WarRest))
+            {
+                message.SetTextVariable(
+                    "SETTLEMENT_NAME",
+                    task?.TargetSettlement?.Name ?? GetNoneText());
+                message.SetTextVariable(
+                    "SOURCE", GetSourceText(task?.SourceKind));
+                message.SetTextVariable(
+                    "CANDIDATE_COUNT", plan?.RankedCandidates?.Count ?? 0);
+            }
             ModLogger.Debug(message.ToString());
+        }
+
+        /// <summary>
+        /// Converts planner reason codes into localized player-facing explanations.
+        /// Unknown codes use a neutral fallback; the raw code remains available in
+        /// the debugger and does not need to leak into routine campaign logs.
+        /// </summary>
+        private static TextObject GetPlanReasonText(string reason)
+        {
+            string id = reason switch
+            {
+                "ForceTargetSatisfied" =>
+                    "str_modifiedarmy_force_reason_target_satisfied",
+                "RecruitmentNeedBelowThreshold" =>
+                    "str_modifiedarmy_force_reason_need_below_threshold",
+                "RecruitmentRandomGateClosed" =>
+                    "str_modifiedarmy_force_reason_random_gate",
+                "NoFeasibleRecruitmentSource" =>
+                    "str_modifiedarmy_force_reason_no_source",
+                "ContinueExistingTask" =>
+                    "str_modifiedarmy_force_reason_continue_task",
+                "RecruitmentTaskPlanned" =>
+                    "str_modifiedarmy_force_reason_recruit_planned",
+                "WarRestTaskPlanned" =>
+                    "str_modifiedarmy_force_reason_rest_planned",
+                "NoWarRestDestination" =>
+                    "str_modifiedarmy_force_reason_no_rest_destination",
+                "WarRestCancelledByPeace" =>
+                    "str_modifiedarmy_force_reason_rest_cancelled_peace",
+                "HigherPriorityOrder" =>
+                    "str_modifiedarmy_force_reason_higher_priority",
+                "InvalidParty" =>
+                    "str_modifiedarmy_force_reason_invalid_party",
+                _ => "str_modifiedarmy_force_reason_other"
+            };
+            return GameTexts.FindText(id);
         }
 
         /// <summary>Returns localized text for a force-task intent.</summary>

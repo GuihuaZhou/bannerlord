@@ -224,7 +224,7 @@ namespace ModifiedArmy.Recruitment.Patches
                 "ORDINARY_LOST",
                 result.OrdinaryForcedLost);
 
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Notice(message.ToString());
         }
 
         private static void LogMergeOverflow(
@@ -306,7 +306,7 @@ namespace ModifiedArmy.Recruitment.Patches
             message.SetTextVariable(
                 "ORDINARY_LOST",
                 result.OrdinaryForcedLost);
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Notice(message.ToString());
         }
     }
 }

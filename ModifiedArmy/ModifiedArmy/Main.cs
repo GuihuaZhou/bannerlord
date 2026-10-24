@@ -15,6 +15,7 @@ using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.Tool;
 using System.Collections.Generic;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -196,7 +197,7 @@ namespace ModifiedArmy
                 CampaignEvents.OnAfterSessionLaunchedEvent.AddNonSerializedListener(this, OnAfterSessionLaunched);
 
                 var msgText = GameTexts.FindText("str_modifiedarmy_initialization_complete");
-                InformationManager.DisplayMessage(new InformationMessage(msgText.ToString()));
+                ModLogger.Info(msgText.ToString());
             }
         }
 

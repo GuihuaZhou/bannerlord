@@ -169,9 +169,22 @@ namespace ModifiedArmy.Models
             if (professionalOffered > 0 &&
                 RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
             {
+                // Read capacity from the live roster after execution, but reuse the
+                // plan that was already evaluated. Logging must never rebuild the
+                // plan because evaluation can depend on mutable financial state.
+                int reservedEscorts = GarrisonRecruitmentCapacity
+                    .GetActiveSupplyEscortCount(settlement);
+                int hardFreeSlots = GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                    town.GarrisonParty,
+                    reservedEscorts);
+                int softFreeSlots = GarrisonRecruitmentCapacity
+                    .GetSoftRecruitmentFreeSlots(
+                        town.GarrisonParty,
+                        reservedEscorts);
                 TextObject recruitmentMessage = GameTexts.FindText(
-                    "str_modifiedarmy_manpower_recruitment");
-                recruitmentMessage.SetTextVariable("DAY", day);
+                    professionalRecruited > 0
+                        ? "str_modifiedarmy_manpower_recruitment_completed"
+                        : "str_modifiedarmy_manpower_recruitment_skipped");
                 recruitmentMessage.SetTextVariable(
                     "SETTLEMENT_NAME",
                     settlement.Name);
@@ -194,6 +207,18 @@ namespace ModifiedArmy.Models
                 recruitmentMessage.SetTextVariable(
                     "GARRISON_AFTER",
                     town.GarrisonParty.MemberRoster.TotalManCount);
+                recruitmentMessage.SetTextVariable("RESERVED_ESCORTS", reservedEscorts);
+                recruitmentMessage.SetTextVariable("HARD_FREE", hardFreeSlots);
+                recruitmentMessage.SetTextVariable("SOFT_FREE", softFreeSlots);
+                recruitmentMessage.SetTextVariable(
+                    "PRIMARY_LIMIT",
+                    GetProfessionalFinalLimit(
+                        plan,
+                        dailyLimit,
+                        professionalApproved,
+                        professionalRecruited,
+                        hardFreeSlots,
+                        softFreeSlots));
                 ModLogger.Debug(recruitmentMessage.ToString());
             }
             if (plan != null && professionalOffered > 0)
@@ -217,6 +242,61 @@ namespace ModifiedArmy.Models
                     plan,
                     prisonerRecruited);
             }
+        }
+
+        /// <summary>
+        /// Reads the first limiting reason from professional evaluations already
+        /// present in this plan. None means the model approved every candidate and
+        /// a daily or capacity boundary may have limited the final execution.
+        /// </summary>
+        private static RecruitmentLimitReason GetProfessionalPrimaryLimit(
+            RecruitmentPlan plan)
+        {
+            if (plan?.Evaluations == null)
+                return RecruitmentLimitReason.None;
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+                if (evaluation.Source == RecruitmentSource.ProfessionalProduction &&
+                    evaluation.RecruitableCount < evaluation.RequestedCount)
+                    return evaluation.PrimaryLimit;
+            return RecruitmentLimitReason.None;
+        }
+
+        /// <summary>
+        /// Explains the final bottleneck across the daily quota, hard capacity,
+        /// soft recruitment target, model approval, and execution stages. Capacity
+        /// is checked before the model reason because a plan may be absent when the
+        /// native daily limit is already zero.
+        /// </summary>
+        private static TextObject GetProfessionalFinalLimit(
+            RecruitmentPlan plan,
+            int dailyLimit,
+            int approved,
+            int recruited,
+            int hardFreeSlots,
+            int softFreeSlots)
+        {
+            if (hardFreeSlots <= 0)
+                return GameTexts.FindText(
+                    "str_modifiedarmy_recruit_limit_hard_capacity");
+            if (softFreeSlots <= 0)
+                return GameTexts.FindText(
+                    "str_modifiedarmy_recruit_limit_soft_capacity");
+            if (dailyLimit <= 0)
+                return GameTexts.FindText(
+                    "str_modifiedarmy_recruit_limit_daily_quota");
+
+            RecruitmentLimitReason modelLimit =
+                GetProfessionalPrimaryLimit(plan);
+            if (modelLimit != RecruitmentLimitReason.None)
+                return GetLimitText(modelLimit);
+            if (approved <= 0)
+                return GameTexts.FindText(
+                    "str_modifiedarmy_recruit_limit_no_approved_candidate");
+            if (recruited < approved)
+                return GameTexts.FindText(
+                    "str_modifiedarmy_recruit_limit_execution_changed");
+            return GameTexts.FindText(
+                "str_modifiedarmy_recruit_limit_none");
         }
 
         private static TextObject GetBooleanLogText(bool value)
@@ -360,9 +440,11 @@ namespace ModifiedArmy.Models
                 }
             }
 
-            // Keep successful and failed recruitment at Info so routine
-            // garrison activity does not surface as a player-facing Notice, and
-            // neither message exposes the underlying manpower-pool mechanism.
+            // This method is reached only after at least one professional troop
+            // was recruited. Zero-approval diagnostics are emitted earlier from
+            // the already-computed plan and must not rerun recruitment evaluation.
+            // A successful daily refill is routine file information, not a
+            // player-facing military Notice.
             string textId = recruitedCount > 0
                 ? "str_modifiedarmy_ai_recruitment_garrison_plan"
                 : "str_modifiedarmy_garrison_professional_recruitment";
@@ -373,7 +455,7 @@ namespace ModifiedArmy.Models
             message.SetTextVariable("RECRUITED", recruitedCount);
             message.SetTextVariable("LIMIT", GetLimitText(reason));
 
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         private static void OnWeeklyTick()
@@ -752,7 +834,7 @@ namespace ModifiedArmy.Models
                 message.SetTextVariable("SETTLEMENT_NAME", town.Name);
                 message.SetTextVariable("RECRUITED", recruitedCount);
                 message.SetTextVariable("SOLD", soldCount);
-                ModLogger.FileNotice(message.ToString());
+                ModLogger.Info(message.ToString());
                 return;
             }
 

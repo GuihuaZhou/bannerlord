@@ -601,7 +601,9 @@ namespace ModifiedArmy.Garrison.Supply
                 component?.AidDestination?.Name ??
                     component?.SourceSettlement?.Name ??
                     TextObject.GetEmpty());
-            ModLogger.FileNotice(message.ToString());
+            // A route-state transition is useful campaign history but normally
+            // requires no player intervention, so keep it as file-only Info.
+            ModLogger.Info(message.ToString());
         }
 
         private static TextObject GetSupplyModeText(
@@ -943,7 +945,7 @@ namespace ModifiedArmy.Garrison.Supply
             message.SetTextVariable("ACTUAL_FOOD",
                 party?.ItemRoster?.TotalFood ?? 0);
             message.SetTextVariable("EVENT_AMOUNT", food);
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         private bool TryCreateSupplyParty(
@@ -1181,9 +1183,15 @@ namespace ModifiedArmy.Garrison.Supply
                 0,
                 garrisonAfter + reservedAfter - partySizeLimit);
             TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_supply_escort_capacity");
-            message.SetTextVariable("SETTLEMENT_ID", home?.StringId ?? "-");
-            message.SetTextVariable("PARTY_ID", supplyParty?.StringId ?? "-");
+                excess > 0
+                    ? "str_modifiedarmy_supply_escort_capacity_overflow"
+                    : "str_modifiedarmy_supply_escort_capacity_returned");
+            message.SetTextVariable(
+                "SETTLEMENT_NAME",
+                home?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable(
+                "PARTY_NAME",
+                supplyParty?.Name ?? TextObject.GetEmpty());
             message.SetTextVariable("GARRISON_BEFORE", garrisonBefore);
             message.SetTextVariable("RETURNING", returningTroops);
             message.SetTextVariable("RESERVED_BEFORE", reservedBefore);
@@ -1191,7 +1199,6 @@ namespace ModifiedArmy.Garrison.Supply
             message.SetTextVariable("RESERVED_AFTER", reservedAfter);
             message.SetTextVariable("LIMIT", partySizeLimit);
             message.SetTextVariable("EXCESS", excess);
-            message.SetTextVariable("MISSION_STATE", missionState);
             ModLogger.Debug(message.ToString());
         }
 

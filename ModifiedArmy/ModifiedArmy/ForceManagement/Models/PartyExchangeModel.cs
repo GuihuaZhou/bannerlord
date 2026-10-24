@@ -82,29 +82,53 @@ namespace ModifiedArmy.ForceManagement.Models
             }
 
             int allowed = context.RequestedCount;
+            int safeFieldSurplus = 0;
+            int garrisonFreeSlots = 0;
+            int safeGarrisonTransferOut = 0;
             if (fieldToGarrison)
             {
-                allowed = Math.Min(allowed,
-                    ForceManagementFacade.Current.GetSafeFieldSurplus(source));
-                allowed = Math.Min(allowed,
-                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(destination));
+                safeFieldSurplus = ForceManagementFacade.Current
+                    .GetSafeFieldSurplus(source);
+                garrisonFreeSlots = GarrisonRecruitmentCapacity
+                    .GetTransferFreeSlots(destination);
+                allowed = Math.Min(allowed, safeFieldSurplus);
+                allowed = Math.Min(allowed, garrisonFreeSlots);
             }
             else
             {
                 GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
                     .GarrisonDefense.Evaluate(settlement);
-                allowed = Math.Min(allowed, ForceManagementFacade.Current
+                safeGarrisonTransferOut = ForceManagementFacade.Current
                     .GarrisonDefense.GetSafeTransferOutCount(
                         defense,
-                        source.MemberRoster));
+                        source.MemberRoster);
+                allowed = Math.Min(allowed, safeGarrisonTransferOut);
             }
             if (allowed <= 0)
             {
                 if (RecruitmentLogFilter.ShouldLog(field))
-                    ModLogger.Info($"[ExchangeDiag][NoApprovedCapacity] " +
-                        $"op={context.OperationId}, operation={context.Operation}, " +
-                        $"requested={context.RequestedCount}, sourceRegulars={source?.MemberRoster?.TotalRegulars ?? 0}, " +
-                        $"destinationRegulars={destination?.MemberRoster?.TotalRegulars ?? 0}");
+                {
+                    string diagnosticId = fieldToGarrison
+                        ? safeFieldSurplus <= 0
+                            ? "str_modifiedarmy_exchange_no_field_surplus"
+                            : "str_modifiedarmy_exchange_no_garrison_capacity"
+                        : "str_modifiedarmy_exchange_no_garrison_surplus";
+                    TextObject message = GameTexts.FindText(diagnosticId);
+                    message.SetTextVariable(
+                        "PARTY_NAME",
+                        PartyLogFormatter.GetDisplayName(field));
+                    message.SetTextVariable(
+                        "SETTLEMENT_NAME",
+                        settlement?.Name ?? GetUnknownText());
+                    message.SetTextVariable("REQUESTED", context.RequestedCount);
+                    message.SetTextVariable(
+                        "PARTY_COUNT",
+                        field?.MemberRoster?.TotalRegulars ?? 0);
+                    message.SetTextVariable(
+                        "GARRISON_COUNT",
+                        garrison?.MemberRoster?.TotalRegulars ?? 0);
+                    ModLogger.Debug(message.ToString());
+                }
                 return Reject(context, "NoApprovedCapacity");
             }
 
@@ -164,20 +188,61 @@ namespace ModifiedArmy.ForceManagement.Models
             if (!RecruitmentLogFilter.ShouldLog(field))
                 return;
             Settlement settlement = context.TargetSettlement;
+            bool sourceResolved = PartyTransferOwnershipPolicy
+                .TryGetEffectiveTransferClan(source, settlement, out Clan sourceClan);
+            bool destinationResolved = PartyTransferOwnershipPolicy
+                .TryGetEffectiveTransferClan(destination, settlement, out Clan destinationClan);
             string failed = !kindsMatch ? "SourceKindMismatch" :
                 field?.CurrentSettlement != settlement ? "FieldNotAtSettlement" :
-                source?.ActualClan == null ? "SourceClanNull" :
-                destination?.ActualClan == null ? "DestinationClanNull" :
-                source.ActualClan != destination.ActualClan ? "PartyClanMismatch" :
-                source.ActualClan != settlement?.OwnerClan ? "OwnerMismatch" :
+                !sourceResolved ? "SourceOwnershipUnresolved" :
+                !destinationResolved ? "DestinationOwnershipUnresolved" :
+                sourceClan != destinationClan ? "PartyClanMismatch" :
+                sourceClan != settlement?.OwnerClan ? "OwnerMismatch" :
                 "CaptureExceptionOrSafetyPredicate";
-            ModLogger.Info($"[ExchangeDiag][BuildPlanRejected] op={context.OperationId}, " +
-                $"operation={context.Operation}, request={context.RequestedCount}, " +
-                $"kindsMatch={kindsMatch}, sourceIsGarrison={source == garrison}, " +
-                $"destinationIsGarrison={destination == garrison}, atSettlement={field?.CurrentSettlement == settlement}, " +
-                $"sourceClan={source?.ActualClan?.StringId ?? "null"}, destinationClan={destination?.ActualClan?.StringId ?? "null"}, " +
-                $"ownerClan={settlement?.OwnerClan?.StringId ?? "null"}, failed={failed}");
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_exchange_build_rejected_diagnostic");
+            message.SetTextVariable("OPERATION_ID", context.OperationId);
+            message.SetTextVariable("REQUESTED", context.RequestedCount);
+            message.SetTextVariable("REASON", GetDiagnosticReasonText(failed));
+            message.SetTextVariable(
+                "SOURCE_CLAN",
+                sourceClan?.Name ?? GetUnknownText());
+            message.SetTextVariable(
+                "DESTINATION_CLAN",
+                destinationClan?.Name ?? GetUnknownText());
+            message.SetTextVariable(
+                "OWNER_CLAN",
+                settlement?.OwnerClan?.Name ?? GetUnknownText());
+            ModLogger.Debug(message.ToString());
         }
+
+        /// <summary>
+        /// Converts internal authorization predicates into localized explanations.
+        /// The diagnostic remains read-only and never retries the failed plan.
+        /// </summary>
+        private static TextObject GetDiagnosticReasonText(string reason)
+        {
+            string id = reason switch
+            {
+                "SourceKindMismatch" =>
+                    "str_modifiedarmy_exchange_diag_source_kind",
+                "FieldNotAtSettlement" =>
+                    "str_modifiedarmy_exchange_diag_not_arrived",
+                "SourceOwnershipUnresolved" =>
+                    "str_modifiedarmy_exchange_diag_source_owner",
+                "DestinationOwnershipUnresolved" =>
+                    "str_modifiedarmy_exchange_diag_destination_owner",
+                "PartyClanMismatch" =>
+                    "str_modifiedarmy_exchange_diag_clan_mismatch",
+                "OwnerMismatch" =>
+                    "str_modifiedarmy_exchange_diag_settlement_owner",
+                _ => "str_modifiedarmy_exchange_diag_safety"
+            };
+            return GameTexts.FindText(id);
+        }
+
+        private static TextObject GetUnknownText() =>
+            GameTexts.FindText("str_modifiedarmy_common_unknown");
 
         /// <summary>
         /// Selects garrison troops one at a time. Source abundance and receiver
@@ -605,28 +670,11 @@ namespace ModifiedArmy.ForceManagement.Models
             Settlement settlement,
             PartyExchangePurpose purpose)
         {
-            if (source == null || destination == null || settlement?.Town == null ||
-                !source.IsActive || !destination.IsActive ||
-                source.MapEvent != null || destination.MapEvent != null ||
-                settlement.IsUnderSiege)
-            {
-                return false;
-            }
-
-            if (source.ActualClan != null &&
-                source.ActualClan == destination.ActualClan &&
-                source.ActualClan == settlement.OwnerClan)
-            {
-                return true;
-            }
-
-            // A newly captured fief can belong to another clan in the same
-            // kingdom. Only this explicit one-shot purpose crosses the normal
-            // clan boundary, and only into that settlement's real garrison.
-            return purpose == PartyExchangePurpose.NewlyCapturedSettlement &&
-                source.ActualClan?.Kingdom != null &&
-                source.ActualClan.Kingdom == settlement.OwnerClan?.Kingdom &&
-                destination == settlement.Town.GarrisonParty;
+            return PartyTransferOwnershipPolicy.IsAuthorizedRosterPair(
+                source,
+                destination,
+                settlement,
+                purpose);
         }
 
         /// <summary>Creates a rejection while retaining request identity for diagnostics.</summary>

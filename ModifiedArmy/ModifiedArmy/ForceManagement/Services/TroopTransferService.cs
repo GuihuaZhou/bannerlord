@@ -48,13 +48,14 @@ namespace ModifiedArmy.ForceManagement.Services
         {
             MobileParty garrison = destination?.Town?.GarrisonParty;
             if (source == null || garrison == null || requestedCount <= 0 ||
-                !source.IsActive || !garrison.IsActive ||
-                source.ActualClan == null ||
-                source.ActualClan != destination.OwnerClan ||
-                garrison.ActualClan != destination.OwnerClan ||
                 source.CurrentSettlement != destination ||
-                source.MapEvent != null || garrison.MapEvent != null ||
-                destination.IsUnderSiege)
+                !PartyTransferOwnershipPolicy.IsAuthorizedRosterPair(
+                    source,
+                    garrison,
+                    destination,
+                    purpose == GarrisonDonationPurpose.PeaceDemobilization
+                        ? PartyExchangePurpose.PeaceDemobilization
+                        : PartyExchangePurpose.NaturalVisit))
             {
                 LogOneWayTransfer(
                     source,
@@ -209,7 +210,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 "PROTECTED",
                 Math.Max(0, protectedFiefCount));
             message.SetTextVariable("RESULT", GetTransferResultText(reason));
-            ModLogger.FileNotice(message.ToString());
+            ModLogger.Info(message.ToString());
         }
 
         /// <summary>

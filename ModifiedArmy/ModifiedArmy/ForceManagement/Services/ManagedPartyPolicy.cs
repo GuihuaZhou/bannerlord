@@ -9,15 +9,17 @@ namespace ModifiedArmy.ForceManagement.Services
     {
         /// <summary>
         /// Returns true only for a live AI lord party. Player-controlled,
-        /// player-clan, caravan, villager, bandit and disbanding parties keep
-        /// their existing specialized behavior.
+        /// player-clan, minor-faction, caravan, villager, bandit and
+        /// disbanding parties keep their existing specialized behavior.
         /// </summary>
         public static bool IsModManagedAiParty(MobileParty party)
         {
             return IsEnabled() && party != null && party.IsActive &&
                 party.IsLordParty && !party.IsMainParty &&
                 !party.IsDisbanding && party.LeaderHero?.IsAlive == true &&
-                party.ActualClan != null && party.ActualClan != Clan.PlayerClan;
+                party.ActualClan != null &&
+                !party.ActualClan.IsMinorFaction &&
+                party.ActualClan != Clan.PlayerClan;
         }
 
         /// <summary>Reads the atomic-switch flag with a safe false fallback.</summary>

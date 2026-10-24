@@ -249,14 +249,11 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty destination,
             Settlement settlement)
         {
-            if (source?.ActualClan != null &&
-                source.ActualClan == destination?.ActualClan &&
-                source.ActualClan == settlement?.OwnerClan)
-                return true;
-            return plan?.Purpose == PartyExchangePurpose.NewlyCapturedSettlement &&
-                source?.ActualClan?.Kingdom != null &&
-                source.ActualClan.Kingdom == settlement?.OwnerClan?.Kingdom &&
-                destination == settlement?.Town?.GarrisonParty;
+            return PartyTransferOwnershipPolicy.IsAuthorizedRosterPair(
+                source,
+                destination,
+                settlement,
+                plan?.Purpose ?? PartyExchangePurpose.NaturalVisit);
         }
 
         /// <summary>Uses the authoritative fief transaction after revalidation.</summary>
@@ -389,18 +386,18 @@ namespace ModifiedArmy.ForceManagement.Services
                 new TextObject("Unknown settlement");
             if (result?.Executed == true)
             {
+                string templateId = plan?.Operation switch
+                {
+                    PartyExchangeOperation.GarrisonToField =>
+                        "str_modifiedarmy_exchange_withdraw_executed",
+                    PartyExchangeOperation.FieldToGarrison =>
+                        "str_modifiedarmy_exchange_donate_executed",
+                    _ => "str_modifiedarmy_exchange_executed"
+                };
                 TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_exchange_executed");
+                    templateId);
                 message.SetTextVariable("PARTY_NAME", partyName);
                 message.SetTextVariable("SETTLEMENT_NAME", settlementName);
-                message.SetTextVariable(
-                    "SOURCE_NAME",
-                    GetSourceName(plan.Source));
-                message.SetTextVariable(
-                    "DESTINATION_NAME",
-                    GetSourceName(plan.Destination));
-                message.SetTextVariable(
-                    "OPERATION", GetOperationText(plan.Operation));
                 message.SetTextVariable(
                     "MANIFEST", FormatManifest(plan.SourceToDestination));
                 message.SetTextVariable("REQUESTED", plan.RequestedCount);
@@ -420,7 +417,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 message.SetTextVariable(
                     "DESTINATION_AFTER",
                     plan.ExpectedDestinationFinalCount);
-                ModLogger.FileNotice(message.ToString());
+                ModLogger.Info(message.ToString());
                 return;
             }
             TextObject rejected = GameTexts.FindText(
@@ -433,49 +430,14 @@ namespace ModifiedArmy.ForceManagement.Services
                 plan?.SourceToDestination?.TotalCount ?? 0);
             rejected.SetTextVariable(
                 "REASON", GetReasonText(result?.ReasonCode));
-            ModLogger.FileNotice(rejected.ToString());
-        }
-
-        /// <summary>
-        /// Resolves a localized resource name without exposing internal party
-        /// or settlement identifiers in player-facing diagnostics.
-        /// </summary>
-        private static TextObject GetSourceName(PartyTroopSource source)
-        {
-            if (source?.Settlement != null)
-            {
-                return source.Settlement.Name;
-            }
-            if (source?.Party != null)
-            {
-                return PartyLogFormatter.GetDisplayName(source.Party);
-            }
-            return GameTexts.FindText(
-                "str_modifiedarmy_exchange_source_unknown");
-        }
-
-        /// <summary>Converts an internal operation into a short spoken phrase.</summary>
-        private static TextObject GetOperationText(
-            PartyExchangeOperation operation)
-        {
-            switch (operation)
-            {
-                case PartyExchangeOperation.FieldToGarrison:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_exchange_operation_donate");
-                case PartyExchangeOperation.GarrisonToField:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_exchange_operation_withdraw");
-                case PartyExchangeOperation.FiefMobilization:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_exchange_operation_mobilize");
-                case PartyExchangeOperation.FiefReturn:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_exchange_operation_return");
-                default:
-                    return GameTexts.FindText(
-                        "str_modifiedarmy_exchange_operation_adjust");
-            }
+            // Expected denials such as a full roster or a changed plan belong in
+            // Debug. Transaction failures are exceptional because execution either
+            // detected a conservation problem or had to roll back mutations.
+            if (result?.ReasonCode?.Contains("RolledBack") == true ||
+                result?.ReasonCode == "RosterConservationCheckFailed")
+                ModLogger.Error(rejected.ToString());
+            else
+                ModLogger.Debug(rejected.ToString());
         }
 
         /// <summary>Converts common refusal codes into readable Chinese.</summary>
@@ -517,7 +479,11 @@ namespace ModifiedArmy.ForceManagement.Services
             return GameTexts.FindText(key);
         }
 
-        /// <summary>Formats approved troop types and wounded counts for audit.</summary>
+        /// <summary>
+        /// Formats transferred troop types and total counts. Wounded counts remain
+        /// part of the authoritative transfer manifest but are intentionally omitted
+        /// from the player-facing summary.
+        /// </summary>
         private static string FormatManifest(TroopExchangeManifest manifest)
         {
             if (manifest?.Troops == null || manifest.Troops.Count == 0)
@@ -533,8 +499,6 @@ namespace ModifiedArmy.ForceManagement.Services
                         "TROOP_NAME",
                         pair.Key?.Name ?? new TextObject("Unknown troop"));
                     item.SetTextVariable("COUNT", pair.Value?.Count ?? 0);
-                    item.SetTextVariable(
-                        "WOUNDED", pair.Value?.WoundedCount ?? 0);
                     return item.ToString();
                 }));
         }
