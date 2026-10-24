@@ -1,3 +1,4 @@
+// Fault-tolerant dual-destination logger for the campaign feed and persistent log file.
 using System;
 using System.IO;
 using System.Text;
@@ -30,6 +31,7 @@ namespace ModifiedFamily.Tool
 
         private static void Display(LogLevel level, string message, Color color)
         {
+            // Each destination applies its own threshold to the same event.
             WriteToFile(level, message);
             LogLevel threshold = ScreenLevel;
             if (threshold == LogLevel.Disabled || level < threshold) return;
@@ -40,6 +42,7 @@ namespace ModifiedFamily.Tool
         {
             LogLevel threshold = FileLevel;
             if (_fileUnavailable || threshold == LogLevel.Disabled || level < threshold) return;
+            // Logging failures are isolated so they cannot break campaign simulation.
             try
             {
                 lock (FileLock)

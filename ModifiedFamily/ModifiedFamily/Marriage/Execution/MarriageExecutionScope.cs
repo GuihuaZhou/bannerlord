@@ -1,19 +1,22 @@
+// Thread-local, short-lived context used by the marriage model during a vanilla action call.
 using System;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
 
-namespace ModifiedFamily.Execution
+namespace ModifiedFamily.Marriage.Execution
 {
     public static class MarriageExecutionScope
     {
         [ThreadStatic] private static Scope _current;
         public static IDisposable Enter(FamilyProposal proposal)
         {
+            // Nested execution would make destination lookup ambiguous and is therefore rejected.
             if (_current != null) throw new InvalidOperationException("Nested marriage execution is not allowed.");
             _current = new Scope(proposal); return _current;
         }
         public static bool TryGetDestination(Hero first, Hero second, out Clan clan)
         {
+            // Match the exact pair, not merely their newly assigned spouse references.
             var c = _current;
             if (c != null && ((c.First == first && c.Second == second) || (c.First == second && c.Second == first))) { clan = c.Destination; return true; }
             clan = null; return false;

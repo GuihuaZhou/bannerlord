@@ -1,25 +1,32 @@
+// Validates proposal creation, response, and execution as separate lifecycle stages.
 using System.Collections.Generic;
 using ModifiedFamily.Core;
 using ModifiedFamily.Persistence;
+using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
+using ModifiedFamily.Marriage.Models;
 
-namespace ModifiedFamily.Proposals
+namespace ModifiedFamily.Marriage.Models
 {
-    public sealed class FamilyProposalValidator
+    /// <summary>
+    /// Applies the marriage rules appropriate to each proposal lifecycle stage.
+    /// It contains no persistence or state mutation.
+    /// </summary>
+    public sealed class MarriageProposalModel
     {
         private readonly IEnumerable<AdoptiveKinshipRecord> _kinship;
-        public FamilyProposalValidator(IEnumerable<AdoptiveKinshipRecord> kinship) { _kinship = kinship; }
+        public MarriageProposalModel(IEnumerable<AdoptiveKinshipRecord> kinship) { _kinship = kinship; }
 
         public FamilyResult CanProposeMarriage(FamilyProposal p)
         {
             if (p == null || p.HeroA == null || p.HeroB == null || p.HeroA == p.HeroB) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
-            var aClan = FamilyEligibility.CanUseClan(p.OriginClanA); if (!aClan.IsAllowed) return aClan;
-            var bClan = FamilyEligibility.CanUseClan(p.OriginClanB); if (!bClan.IsAllowed) return bClan;
-            var a = FamilyEligibility.CanNegotiateHero(p.HeroA); if (!a.IsAllowed) return a;
-            var b = FamilyEligibility.CanNegotiateHero(p.HeroB); if (!b.IsAllowed) return b;
+            var aClan = MarriageEligibilityModel.CanUseClan(p.OriginClanA); if (!aClan.IsAllowed) return aClan;
+            var bClan = MarriageEligibilityModel.CanUseClan(p.OriginClanB); if (!bClan.IsAllowed) return bClan;
+            var a = MarriageEligibilityModel.CanNegotiateHero(p.HeroA); if (!a.IsAllowed) return a;
+            var b = MarriageEligibilityModel.CanNegotiateHero(p.HeroB); if (!b.IsAllowed) return b;
             if (p.HeroA.IsFemale == p.HeroB.IsFemale) return FamilyResult.Deny(FamilyReasonCode.SameSex);
-            if (FamilyEligibility.AreBloodRelated(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.Related);
-            if (FamilyEligibility.AreAdoptiveRelated(p.HeroA, p.HeroB, _kinship)) return FamilyResult.Deny(FamilyReasonCode.AdoptiveRelated);
+            if (MarriageEligibilityModel.AreBloodRelated(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.Related);
+            if (MarriageEligibilityModel.AreAdoptiveRelated(p.HeroA, p.HeroB, _kinship)) return FamilyResult.Deny(FamilyReasonCode.AdoptiveRelated);
             if (p.OriginClanA.IsAtWarWith(p.OriginClanB)) return FamilyResult.Deny(FamilyReasonCode.AtWar);
             if (!CultureAllowed(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.CultureForbidden);
             if (p.DestinationClan != p.OriginClanA && p.DestinationClan != p.OriginClanB) return FamilyResult.Deny(FamilyReasonCode.InvalidClan);
@@ -50,7 +57,7 @@ namespace ModifiedFamily.Proposals
         {
             bool sameKingdom = a.Clan.Kingdom != null && a.Clan.Kingdom == b.Clan.Kingdom;
             bool sameCulture = a.Culture == b.Culture;
-            return sameCulture || (sameKingdom && FamilyConfig.AllowSameKingdomDifferentCulture);
+            return sameCulture || (sameKingdom && MarriagePolicyModel.AllowSameKingdomDifferentCulture);
         }
     }
 }

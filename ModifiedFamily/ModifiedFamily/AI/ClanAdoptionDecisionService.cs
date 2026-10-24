@@ -1,3 +1,4 @@
+// Reserved adoption AI boundary; automatic adoption stays disabled until transfer rules are proven.
 using TaleWorlds.CampaignSystem;
 
 namespace ModifiedFamily.AI

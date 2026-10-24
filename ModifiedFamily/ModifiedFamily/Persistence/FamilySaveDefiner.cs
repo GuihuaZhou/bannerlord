@@ -1,3 +1,4 @@
+// Registers only module-owned save types and list containers with stable identifiers.
 using System.Collections.Generic;
 using ModifiedFamily.Proposals;
 using TaleWorlds.SaveSystem;
@@ -15,6 +16,7 @@ namespace ModifiedFamily.Persistence
         }
         protected override void DefineContainerDefinitions()
         {
+            // Runtime dictionaries are rebuilt after load; only owned lists are registered here.
             ConstructContainerDefinition(typeof(List<FamilyProposal>)); ConstructContainerDefinition(typeof(List<FamilyCooldownRecord>)); ConstructContainerDefinition(typeof(List<AdoptiveKinshipRecord>));
         }
     }

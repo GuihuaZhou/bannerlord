@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags><tag language="简体中文" /></tags>
+  <strings>
+    <string id="MF_Log_MarriageProposalPlain" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Log_MarriageProposalOfferingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并由提议方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
+    <string id="MF_Log_MarriageProposalAskingGift" text="{PROPOSER_KINGDOM}{PROPOSER}向{RECEIVER_KINGDOM}{RECEIVER}提出联姻提议：由{HERO_A}与{HERO_B}成婚，婚后{MOVING_HERO}加入{DESTINATION}，并要求接收方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
+    <string id="MF_Log_CounterPlain" text="{PROPOSER_KINGDOM}{PROPOSER}未接受原有条件，并向{RECEIVER_KINGDOM}{RECEIVER}提出反提议：婚后由{MOVING_HERO}加入{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Log_CounterOfferingGift" text="{PROPOSER_KINGDOM}{PROPOSER}未接受原有条件，并向{RECEIVER_KINGDOM}{RECEIVER}提出反提议：婚后由{MOVING_HERO}加入{DESTINATION}，同时由反提议方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
+    <string id="MF_Log_CounterAskingGift" text="{PROPOSER_KINGDOM}{PROPOSER}未接受原有条件，并向{RECEIVER_KINGDOM}{RECEIVER}提出反提议：婚后由{MOVING_HERO}加入{DESTINATION}，同时要求接收方支付{GOLD}第纳尔礼金。（请求：{ID}）" />
+    <string id="MF_Log_MarriageAccepted" text="{RECEIVER}已接受联姻提议。待{HERO_A}与{HERO_B}具备执行条件后，将正式完成婚姻。（请求：{ID}）" />
+    <string id="MF_Log_MarriageRejected" text="{RECEIVER}已拒绝{PROPOSER}提出的联姻提议。{HERO_A}与{HERO_B}将进入暂时冷却期。原因：{REASON}。（请求：{ID}）" />
+    <string id="MF_Log_ProposalTimedOut" text="{RECEIVER}未在规定期限内回应，联姻提议已自动失效。{HERO_A}与{HERO_B}将进入暂时冷却期。（请求：{ID}）" />
+    <string id="MF_Log_ProposalWithdrawn" text="{PROPOSER}已撤回该提议，本次协商终止。（请求：{ID}）" />
+    <string id="MF_Log_ProposalInvalidated" text="该提议已因条件变化而失效。原因：{REASON}。（请求：{ID}）" />
+    <string id="MF_Log_MarriageWaiting" text="{HERO_A}与{HERO_B}当前尚不具备婚姻执行条件，协议将继续保留。原因：{REASON}。（请求：{ID}）" />
+    <string id="MF_Log_MarriageStarting" text="{HERO_A}与{HERO_B}已具备执行条件，正在办理婚姻及家族归属变更。（请求：{ID}）" />
+    <string id="MF_Log_MarriageCompletedNoGift" text="{HERO_A}与{HERO_B}已正式成婚，双方现均归属{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Log_MarriageCompletedGift" text="{HERO_A}与{HERO_B}已正式成婚，双方现均归属{DESTINATION}；约定的{GOLD}第纳尔礼金已完成支付。（请求：{ID}）" />
+    <string id="MF_Log_PaymentUncertain" text="婚姻已经完成，但{GOLD}第纳尔礼金的支付结果无法确认。为避免重复支付，该记录已转入人工核对状态。（请求：{ID}）" />
+    <string id="MF_Log_MarriageFailed" text="{HERO_A}与{HERO_B}的婚姻执行未通过结果校验。系统已停止自动重试，以避免重复结婚或重复支付。（请求：{ID}）" />
+    <string id="MF_Log_AdoptionProposal" text="{PROPOSER}已提出收养提议：由{ADOPTER}收养{ADOPTEE}，并将其正式纳入{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Log_AdoptionAccepted" text="{RECEIVER}已接受收养提议。待{ADOPTEE}具备执行条件后，将正式加入{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Log_AdoptionWaiting" text="{ADOPTEE}当前仍承担部队或总督职务，暂不具备收养执行条件，协议将继续保留。（请求：{ID}）" />
+    <string id="MF_Log_AdoptionCompleted" text="{ADOPTEE}已由{ADOPTER}正式收养，并加入{DESTINATION}。（请求：{ID}）" />
+    <string id="MF_Reason_Expired" text="等候时间已经超过约定期限" />
+    <string id="MF_Reason_Dead" text="相关人物已经去世" />
+    <string id="MF_Reason_AlreadyMarried" text="相关人物已经与别人结婚" />
+    <string id="MF_Reason_ClanChanged" text="相关人物已经离开原来的家族" />
+    <string id="MF_Reason_AtWar" text="双方家族已经处于战争状态" />
+    <string id="MF_Reason_CultureForbidden" text="双方不再符合文化与王国限制" />
+    <string id="MF_Reason_InsufficientFunds" text="付款家族当前无法足额支付约定礼金" />
+    <string id="MF_Reason_InBattle" text="相关人物正在参加战斗" />
+    <string id="MF_Reason_InArmy" text="相关人物当前隶属于军团" />
+    <string id="MF_Reason_Prisoner" text="相关人物当前处于被俘状态" />
+    <string id="MF_Reason_Fugitive" text="相关人物当前处于逃亡状态" />
+    <string id="MF_Reason_TemporaryInactive" text="相关人物当前无法正常行动" />
+    <string id="MF_Reason_ExternalMarriage" text="相关人物已经通过其他方式成婚" />
+    <string id="MF_Reason_Default" text="当前条件已经不再符合约定" />
+    <string id="MF_Log_PatchesInstalled" text="婚姻系统已接管原版自动配婚入口。" />
+    <string id="MF_Log_PatchFailed" text="原版婚姻入口接管失败，为避免两套配婚系统同时运行，家族 AI 已停用。" />
+    <string id="MF_Log_NpcPatchMissing" text="没有找到原版 NPC 自动婚姻入口，家族 AI 已停用。" />
+    <string id="MF_Log_PlayerPatchMissing" text="没有找到原版向玩家家族自动求婚的入口，家族 AI 已停用。" />
+    <string id="MF_Log_Persistence" text="家族数据已同步：{PROPOSALS}份提议、{COOLDOWNS}组冷却、{ADOPTIONS}条收养关系。" />
+    <string id="MF_Log_SessionReady" text="家族系统已经就绪：婚姻模型{MODEL_STATE}；当前有{PROPOSALS}份提议、{COOLDOWNS}组冷却、{ADOPTIONS}条收养关系。" />
+    <string id="MF_Log_ModelActive" text="已正确启用" />
+    <string id="MF_Log_ModelInactive" text="未能启用" />
+    <string id="MF_Log_ModelConflict" text="婚姻模型被其他模组替换了。为避免人物加入错误家族，自动执行婚姻已经停用。" />
+    <string id="MF_Log_LegacyOfferCleared" text="旧存档里有一份替玩家家族成员安排的原版婚约，现已安全隔离。" />
+    <string id="MF_Log_LegacyWaitingCleared" text="旧存档中有{COUNT}份等待执行的原版家族婚约，现已隔离，避免重复结婚。" />
+    <string id="MF_Log_LegacyMigrationFailed" text="检查旧存档婚约时出了问题，请暂时不要让这些人物通过其他方式结婚。" />
+    <string id="MF_Log_AiCandidate" text="{CLAN}已选择{OTHER}作为{OWN}的联姻候选。候选层级：{TIER}；内部评分：{SCORE}。" />
+    <string id="MF_Log_AiResponse" text="{CLAN}已重新评估该联姻提议，当前内部评分为{SCORE}。（请求：{ID}）" />
+  </strings>
+</base>
+

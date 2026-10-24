@@ -1,6 +1,7 @@
+// Stateless scoring model used independently by proposal senders and receivers.
 using TaleWorlds.CampaignSystem;
 
-namespace ModifiedFamily.Models
+namespace ModifiedFamily.Marriage.Models
 {
     public sealed class ClanHeroValueModel
     {

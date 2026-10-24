@@ -1,3 +1,4 @@
+// Saveable proposal schema plus non-persisted command drafts used by callers.
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 

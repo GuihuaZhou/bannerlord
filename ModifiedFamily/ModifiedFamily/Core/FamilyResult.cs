@@ -1,3 +1,4 @@
+// Structured business result that separates permanent denial from temporary blockers.
 using System.Collections.Generic;
 using ModifiedFamily.Proposals;
 

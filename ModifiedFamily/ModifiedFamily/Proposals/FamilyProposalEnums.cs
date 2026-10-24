@@ -1,3 +1,4 @@
+// Stable persisted enums describing proposal, execution, and rejection states.
 namespace ModifiedFamily.Proposals
 {
     public enum FamilyProposalType { Marriage, Adoption }

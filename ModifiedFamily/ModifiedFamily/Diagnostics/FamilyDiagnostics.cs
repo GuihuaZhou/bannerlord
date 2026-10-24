@@ -1,3 +1,4 @@
+// Diagnostic facade that mirrors messages to TaleWorlds debug output and the module logger.
 using System;
 using TaleWorlds.Library;
 using ModifiedFamily.Tool;

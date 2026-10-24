@@ -1,3 +1,4 @@
+// Campaign owner for persistence, event scheduling, lifecycle advancement, and migration.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,6 +9,10 @@ using ModifiedFamily.Diagnostics;
 using ModifiedFamily.Execution;
 using ModifiedFamily.Kinship;
 using ModifiedFamily.Models;
+using ModifiedFamily.Localization;
+using ModifiedFamily.Marriage.AI;
+using ModifiedFamily.Marriage.Execution;
+using ModifiedFamily.Marriage.Models;
 using ModifiedFamily.Persistence;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
@@ -21,7 +26,7 @@ namespace ModifiedFamily.Campaign
         private List<FamilyCooldownRecord> _cooldowns = new List<FamilyCooldownRecord>();
         private List<AdoptiveKinshipRecord> _adoptions = new List<AdoptiveKinshipRecord>();
         private FamilyProposalService _service;
-        private FamilyProposalValidator _validator;
+        private MarriageProposalModel _marriageProposalModel;
         private ClanMarriageDecisionService _marriageAi;
         private MarriageExecutionService _execution;
         private AdoptionExecutionService _adoptionExecution;
@@ -30,6 +35,7 @@ namespace ModifiedFamily.Campaign
 
         public override void RegisterEvents()
         {
+            // Clan ticks discover candidates; the global daily tick advances only existing records.
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
             CampaignEvents.DailyTickClanEvent.AddNonSerializedListener(this, OnDailyClan);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDaily);
@@ -39,23 +45,24 @@ namespace ModifiedFamily.Campaign
 
         public override void SyncData(IDataStore store)
         {
+            // Never mutate the campaign world while the save system is serializing or restoring data.
             store.SyncData("ModifiedFamily.Proposals", ref _proposals); store.SyncData("ModifiedFamily.Cooldowns", ref _cooldowns); store.SyncData("ModifiedFamily.Adoptions", ref _adoptions);
             _proposals = _proposals ?? new List<FamilyProposal>(); _cooldowns = _cooldowns ?? new List<FamilyCooldownRecord>(); _adoptions = _adoptions ?? new List<AdoptiveKinshipRecord>();
-            FamilyDiagnostics.DebugLog("Persistence synchronized: proposals=" + _proposals.Count + ", cooldowns=" + _cooldowns.Count + ", adoptions=" + _adoptions.Count);
+            FamilyDiagnostics.DebugLog(FamilyLogText.Persistence(_proposals.Count, _cooldowns.Count, _adoptions.Count));
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             BuildServices(); MigrateVanillaOffers();
             bool correctModel = TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel;
-            FamilyDiagnostics.Notice("Session initialized. Marriage model active=" + correctModel + ", proposals=" + _proposals.Count + ", cooldowns=" + _cooldowns.Count + ", adoptions=" + _adoptions.Count);
-            if (!correctModel) FamilyDiagnostics.Warn("Another mod replaced ModifiedMarriageModel; proposal execution is disabled.");
+            FamilyDiagnostics.Notice(FamilyLogText.SessionReady(correctModel, _proposals.Count, _cooldowns.Count, _adoptions.Count));
+            if (!correctModel) FamilyDiagnostics.Warn(FamilyLogText.Simple("MF_Log_ModelConflict", "Another mod replaced the marriage model; automatic execution is disabled."));
         }
 
         private void BuildServices()
         {
-            _validator = new FamilyProposalValidator(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _validator);
-            _marriageAi = new ClanMarriageDecisionService(_service, _validator); _execution = new MarriageExecutionService(_validator);
+            _marriageProposalModel = new MarriageProposalModel(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _marriageProposalModel);
+            _marriageAi = new ClanMarriageDecisionService(_service, _marriageProposalModel); _execution = new MarriageExecutionService(_marriageProposalModel);
             _adoptionExecution = new AdoptionExecutionService(new AdoptionModel(), new AdoptiveKinshipService(_adoptions));
         }
 
@@ -63,14 +70,17 @@ namespace ModifiedFamily.Campaign
         private void OnDaily()
         {
             if (_service == null) BuildServices();
+            // CampaignTime deadlines survive saves, so loading a save resumes the same seven-day window.
             foreach (var p in _proposals.Where(x => x != null && x.IsActive).ToList())
             {
                 if (p.Status == FamilyProposalStatus.PendingResponse && p.ReplyDeadline.IsPast)
                 {
+                    // AI receivers decide once the response window closes; unattended player offers expire.
                     if (p.ProposalType == FamilyProposalType.Adoption || p.ReceiverClan == Clan.PlayerClan) _service.TryReject(p.ProposalId, p.ReceiverClan, FamilyReasonCode.Expired); else _marriageAi.Respond(p);
                 }
                 else if (p.Status == FamilyProposalStatus.AcceptedPendingExecution)
                 {
+                    // Temporary blockers are retried daily, but never beyond the execution deadline.
                     if (p.ExecutionDeadline.IsPast) _service.Invalidate(p, FamilyReasonCode.Expired, false);
                     else if (p.ProposalType == FamilyProposalType.Marriage && TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel)
                     { var r = _execution.TryExecuteMarriage(p); if (p.Status == FamilyProposalStatus.Completed) _service.ReleaseCompleted(p); }
@@ -83,6 +93,7 @@ namespace ModifiedFamily.Campaign
 
         private void OnBeforeHeroesMarried(Hero first, Hero second, bool notification)
         {
+            // Ignore the expected vanilla event raised inside this module's own execution scope.
             if (MarriageExecutionScope.CurrentProposalId != null) return;
             foreach (var p in _proposals.Where(x => x.IsActive && (x.HeroA == first || x.HeroB == first || x.HeroA == second || x.HeroB == second)).ToList()) _service.Invalidate(p, FamilyReasonCode.ExternalMarriage, false);
         }
@@ -95,21 +106,22 @@ namespace ModifiedFamily.Campaign
 
         private void MigrateVanillaOffers()
         {
+            // Reflection is intentionally version-contained and must never erase the main hero's romance.
             try
             {
                 var vanilla = TaleWorlds.CampaignSystem.Campaign.Current.GetCampaignBehavior<MarriageOfferCampaignBehavior>(); if (vanilla == null) return;
                 var playerField = AccessTools.Field(vanilla.GetType(), "_currentOfferedPlayerClanHero"); var otherField = AccessTools.Field(vanilla.GetType(), "_currentOfferedOtherClanHero");
                 Hero player = playerField?.GetValue(vanilla) as Hero;
-                if (player != null && player != Hero.MainHero) { playerField.SetValue(vanilla, null); otherField?.SetValue(vanilla, null); FamilyDiagnostics.Info("Cleared legacy arranged-marriage offer for a player clan member."); }
+                if (player != null && player != Hero.MainHero) { playerField.SetValue(vanilla, null); otherField?.SetValue(vanilla, null); FamilyDiagnostics.Info(FamilyLogText.Simple("MF_Log_LegacyOfferCleared", "A legacy arranged-marriage offer for a player clan member was isolated.")); }
                 var waitingField = AccessTools.Field(vanilla.GetType(), "_acceptedMarriageOffersThatWaitingForAvailability");
                 var waiting = waitingField?.GetValue(vanilla) as System.Collections.IDictionary;
                 if (waiting != null)
                 {
                     var remove = new List<object>(); foreach (System.Collections.DictionaryEntry e in waiting) if (e.Key != Hero.MainHero && e.Value != Hero.MainHero) remove.Add(e.Key);
-                    foreach (object key in remove) waiting.Remove(key); if (remove.Count > 0) FamilyDiagnostics.Info("Isolated " + remove.Count + " legacy arranged marriages.");
+                    foreach (object key in remove) waiting.Remove(key); if (remove.Count > 0) FamilyDiagnostics.Info(FamilyLogText.Count("MF_Log_LegacyWaitingCleared", "Isolated {COUNT} legacy arranged marriages.", remove.Count));
                 }
             }
-            catch (Exception ex) { FamilyDiagnostics.Error("Legacy marriage migration failed.", ex); }
+            catch (Exception ex) { FamilyDiagnostics.Error(FamilyLogText.Simple("MF_Log_LegacyMigrationFailed", "Legacy marriage migration failed."), ex); }
         }
     }
 }

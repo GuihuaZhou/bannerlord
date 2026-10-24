@@ -1,3 +1,4 @@
+// Player-facing MCM settings for independent screen and file log thresholds.
 using MCM.Abstractions.Attributes;
 using MCM.Abstractions.Attributes.v2;
 using MCM.Abstractions.Base.Global;

@@ -1,3 +1,4 @@
+// Compact save records for pair cooldowns and legal adoptive relationships.
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.SaveSystem;
 

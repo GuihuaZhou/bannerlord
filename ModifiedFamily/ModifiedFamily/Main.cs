@@ -1,10 +1,12 @@
+// Module entry point: installs compatibility patches and registers campaign services.
 using System;
 using System.Reflection;
 using HarmonyLib;
 using ModifiedFamily.Campaign;
 using ModifiedFamily.Diagnostics;
-using ModifiedFamily.Execution;
-using ModifiedFamily.Models;
+using ModifiedFamily.Marriage.Execution;
+using ModifiedFamily.Marriage.Models;
+using ModifiedFamily.Localization;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
 using TaleWorlds.MountAndBlade;
@@ -19,9 +21,9 @@ namespace ModifiedFamily
             try
             {
                 new Harmony("com.mod.ModifiedFamily").PatchAll(Assembly.GetExecutingAssembly());
-                FamilyDiagnostics.Info("Harmony patches installed.");
+                FamilyDiagnostics.Info(FamilyLogText.Simple("MF_Log_PatchesInstalled", "Vanilla automatic marriage entry points are now managed by ModifiedFamily."));
             }
-            catch (Exception ex) { FamilyDiagnostics.DisableAi("Patch installation failed; family AI is disabled. " + ex); }
+            catch (Exception ex) { FamilyDiagnostics.DisableAi(FamilyLogText.Simple("MF_Log_PatchFailed", "Vanilla marriage patching failed; family AI is disabled.") + " " + ex); }
         }
 
         protected override void OnGameStart(Game game, IGameStarter starter)

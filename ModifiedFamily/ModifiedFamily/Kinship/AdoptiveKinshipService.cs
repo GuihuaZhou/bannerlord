@@ -1,3 +1,4 @@
+// Maintains legal adoptive relationships without overwriting biological parent fields.
 using System.Collections.Generic;
 using ModifiedFamily.Persistence;
 using TaleWorlds.CampaignSystem;

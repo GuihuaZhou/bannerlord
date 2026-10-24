@@ -1,5 +1,7 @@
+// Adoption-specific eligibility model; it intentionally does not reuse marriage restrictions.
 using ModifiedFamily.Core;
 using TaleWorlds.CampaignSystem;
+using ModifiedFamily.Marriage.Models;
 
 namespace ModifiedFamily.Models
 {
@@ -9,7 +11,7 @@ namespace ModifiedFamily.Models
         {
             if (adopter == null || adoptee == null || destination == null || adopter == adoptee || adopter.Clan != destination) return FamilyResult.Deny(Proposals.FamilyReasonCode.InvalidProposal);
             if (adopter.IsDead || adoptee.IsDead || destination.IsEliminated) return FamilyResult.Deny(Proposals.FamilyReasonCode.Dead);
-            if (FamilyEligibility.AreBloodRelated(adopter, adoptee)) return FamilyResult.Deny(Proposals.FamilyReasonCode.Related);
+            if (MarriageEligibilityModel.AreBloodRelated(adopter, adoptee)) return FamilyResult.Deny(Proposals.FamilyReasonCode.Related);
             return FamilyResult.Allow();
         }
     }

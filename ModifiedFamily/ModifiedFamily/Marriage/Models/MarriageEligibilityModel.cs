@@ -1,11 +1,17 @@
+// Pure eligibility helpers shared by proposal validation and AI candidate discovery.
 using System.Collections.Generic;
 using ModifiedFamily.Persistence;
 using ModifiedFamily.Proposals;
+using ModifiedFamily.Core;
 using TaleWorlds.CampaignSystem;
 
-namespace ModifiedFamily.Core
+namespace ModifiedFamily.Marriage.Models
 {
-    public static class FamilyEligibility
+    /// <summary>
+    /// Defines marriage-specific clan, hero, bloodline, and temporary-action rules.
+    /// The model is stateless so AI, proposal validation, and tests share one standard.
+    /// </summary>
+    public static class MarriageEligibilityModel
     {
         public static FamilyResult CanUseClan(Clan clan)
         {
@@ -22,6 +28,7 @@ namespace ModifiedFamily.Core
             if (!hero.IsLord || hero.IsMinorFactionHero || hero.IsNotable || hero.IsTemplate) return FamilyResult.Deny(FamilyReasonCode.InvalidHero);
             int minimumAge = hero.IsFemale ? 18 : 18;
             if (hero.Age < minimumAge) return FamilyResult.Deny(FamilyReasonCode.UnderAge);
+            // Captivity and campaign activity delay execution but do not invalidate negotiations.
             var blockers = new List<FamilyReasonCode>();
             if (!hero.IsActive) blockers.Add(FamilyReasonCode.TemporaryInactive);
             if (hero.IsPrisoner) blockers.Add(FamilyReasonCode.Prisoner);
@@ -33,6 +40,7 @@ namespace ModifiedFamily.Core
 
         public static bool AreBloodRelated(Hero first, Hero second, int depth = 3)
         {
+            // This mirrors the vanilla three-generation ancestor check without calling private methods.
             return IsAncestor(first, second, depth) || IsAncestor(second, first, depth) || ShareAncestor(first, second, depth);
         }
 
