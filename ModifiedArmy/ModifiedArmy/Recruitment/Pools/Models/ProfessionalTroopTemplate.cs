@@ -41,8 +41,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             XmlNode composition = node.SelectSingleNode("TroopComposition");
             if (composition != null)
             {
-                // .//troop accepts the new flat structure and legacy wrappers.
-                foreach (XmlNode troopNode in composition.SelectNodes(".//troop"))
+                // 正式配置只接受平铺具体兵种，不再读取旧五类包装。
+                foreach (XmlNode troopNode in composition.SelectNodes("troop"))
                     ParseTroop(objectManager, troopNode);
             }
 
@@ -95,7 +95,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             }
 
             foreach (List<BasicTroopEntry> entries in
-                group.TroopsByType.Values)
+                group.TroopsByPolicy.Values)
             {
                 foreach (BasicTroopEntry entry in entries)
                 {

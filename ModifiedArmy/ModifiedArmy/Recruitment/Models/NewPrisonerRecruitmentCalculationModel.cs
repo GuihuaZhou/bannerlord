@@ -30,20 +30,20 @@ namespace ModifiedArmy.Models
                 return Math.Max(0, (character.Level + 3) * (character.Level + 3) - 10);
             }
 
-            // 2. 正规军：根据 SoldierType 调整
+            // 2. 正规军：根据独立俘虏政策调整，不借用封邑兵身份。
             if (character.Occupation == Occupation.Soldier)
             {
-                SoldierType type = SoldierTypeClassifier.GetSoldierType(character);
+                PrisonerPolicyClass type = PrisonerTroopPolicy.GetPolicy(character);
                 int levelOffset = 6; // 默认 (Militia)
 
                 switch (type)
                 {
-                    case SoldierType.Sergeant:
-                    case SoldierType.Marine:
-                    case SoldierType.Slave:
+                    case PrisonerPolicyClass.Sergeant:
+                    case PrisonerPolicyClass.Marine:
+                    case PrisonerPolicyClass.Slave:
                         levelOffset = 15; // 军士等
                         break;
-                    case SoldierType.Retinue:
+                    case PrisonerPolicyClass.Retinue:
                         levelOffset = 25; // 扈从需要显著更高的难度
                         break;
                 }

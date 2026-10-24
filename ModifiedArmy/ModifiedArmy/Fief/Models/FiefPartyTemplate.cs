@@ -85,12 +85,11 @@ namespace ModifiedArmy.Models.Fief
 
             culture = MBObjectManager.Instance.ReadObjectReferenceFromXml<CultureObject>("culture", node);
 
-            // 正式配置为平铺 troop；同时兼容读取旧五类包装，但包装名称
-            // 不再进入运行时模型，也不再形成任何分类额度。
+            // 正式配置只接受平铺 troop；旧五类包装已结束迁移支持。
             var compNode = node.SelectSingleNode("TroopComposition");
             if (compNode != null)
             {
-                foreach (XmlNode troopNode in compNode.SelectNodes(".//troop"))
+                foreach (XmlNode troopNode in compNode.SelectNodes("troop"))
                     ParseTroop(objectManager, troopNode);
             }
 

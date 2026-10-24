@@ -122,7 +122,8 @@ namespace ModifiedArmy.Models.Fief
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
-            SoldierTypeClassifier.InitializeAll();
+            // 俘虏政策独立初始化；封邑资格由各自模板负责。
+            PrisonerTroopPolicy.InitializeAll();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
             RebuildServingDetachmentIndex();
