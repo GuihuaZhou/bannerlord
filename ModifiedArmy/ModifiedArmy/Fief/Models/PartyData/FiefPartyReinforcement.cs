@@ -34,7 +34,6 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private Dictionary<CharacterObject, int>
         WithdrawFiefTroopEntries(
-            Dictionary<SoldierType, int> remainingTypeCapacity,
             int maximumCount)
         {
             Dictionary<CharacterObject, int> result = new();
@@ -54,24 +53,25 @@ namespace ModifiedArmy.Models.Fief
             int remainingTotal = maximumCount;
             while (remainingTotal > 0)
             {
-                TroopProductionEntry selected = eligible
-                    .Where(entry => remainingTypeCapacity.TryGetValue(
-                        SoldierTypeClassifier.GetSoldierType(entry.Troop),
-                        out int capacity) && capacity > 0)
-                    .OrderBy(entry =>
-                        (result.TryGetValue(entry.Troop, out int current)
-                            ? current
-                            : 0) / (float)Math.Max(1, entry.Weight))
-                    .ThenBy(entry => entry.Troop.StringId)
-                    .FirstOrDefault();
+                // 每名新兵直接按具体兵种权重抽取。这样即使每天只生产
+                // 1～3 人，长期分布也不会被整数分桶永久截断。
+                int totalWeight = eligible.Sum(entry => entry.Weight);
+                int roll = totalWeight > 0 ? MBRandom.RandomInt(totalWeight) : -1;
+                TroopProductionEntry selected = null;
+                foreach (TroopProductionEntry entry in eligible)
+                {
+                    roll -= entry.Weight;
+                    if (roll < 0)
+                    {
+                        selected = entry;
+                        break;
+                    }
+                }
                 if (selected == null) break;
 
-                SoldierType type = SoldierTypeClassifier.GetSoldierType(
-                    selected.Troop);
                 result[selected.Troop] = result.TryGetValue(
                     selected.Troop,
                     out int currentCount) ? currentCount + 1 : 1;
-                remainingTypeCapacity[type]--;
                 remainingTotal--;
             }
 
@@ -83,7 +83,7 @@ namespace ModifiedArmy.Models.Fief
         /// 从给定的 TroopRoster 中提取所有采邑类型士兵，返回一个新的仅含采邑部队的 TroopRoster。
         /// </summary>
         /// <param name="roster">源 TroopRoster（例如来自 MemberRoster.GetTroopRoster()）</param>
-        /// <returns>新的 TroopRoster，仅包含 Retinue / Sergeant / Militia 类型的士兵</returns>
+        /// <returns>新的 TroopRoster，仅包含当前封邑模板认可的士兵</returns>
         public TroopRoster GetFiefTroopRoster()
         {
             if (_fiefParty == null)
@@ -121,72 +121,23 @@ namespace ModifiedArmy.Models.Fief
         /// <param name="maxReinforcements">最多可补充的总人数（已扣除总容量限制）</param>
         private void PerformReinforcement(int maxReinforcements)
         {
-            Dictionary<SoldierType, int> tmpSoldierTypeSize = new();
-            int tmpTotalWeight = 0;
-            foreach (var kvp in _soldierTypeWeights)
-            {
-                tmpSoldierTypeSize[kvp.Key] = Math.Max(0, _soldierTypeMaxCounts[kvp.Key] - _soldierTypeCounts[kvp.Key]);
-                if (tmpSoldierTypeSize[kvp.Key] > 0)
-                {
-                    tmpTotalWeight += kvp.Value;
-                }
-            }
-
-            if (tmpTotalWeight <= 0)
-                return;
-
-            // 若无可补充兵员，直接退出
-            if (tmpSoldierTypeSize.Values.Sum() <= 0)
-            {
-                ModLogger.Debug($"[WeeklyUpdate] No troops can be recruited this week in {_settlement.Name} (capacity full or ideal=0). Skipping.");
-                return;
-            }
-
-            // New fief soldiers must come from the settlement's saved fief
-            // manpower pool. No troop is created by this legacy weekly path.
-            Dictionary<SoldierType, int> remainingTypeCapacity =
-                new Dictionary<SoldierType, int>(tmpSoldierTypeSize);
-            var tmpNewTroops = WithdrawFiefTroopEntries(
-                remainingTypeCapacity,
-                maxReinforcements);
-
-            // Reuse the existing message fields, but report actual transfers
-            // instead of the desired allocation calculated above.
-            foreach (SoldierType type in tmpSoldierTypeSize.Keys.ToList())
-            {
-                tmpSoldierTypeSize[type] = 0;
-            }
+            int allowed = Math.Min(maxReinforcements,
+                Math.Max(0, _totalLimit - _totalTroopCount));
+            if (allowed <= 0) return;
+            var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
             // 批量添加
             foreach (var kvp in tmpNewTroops)
             {
                 _fiefParty.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
 
-                var type = SoldierTypeClassifier.GetSoldierType(kvp.Key);
-                _soldierTypeCounts[type] += kvp.Value;
-                tmpSoldierTypeSize[type] += kvp.Value;
             }
-
-            _totalTroopCount = _soldierTypeCounts.Values.Sum();;
+            int recruited = tmpNewTroops.Values.Sum();
+            SyncManpowerCounters();
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-            msg.SetTextVariable("RETINUE", tmpSoldierTypeSize[SoldierType.Retinue]);
-            msg.SetTextVariable("SERGEANT", tmpSoldierTypeSize[SoldierType.Sergeant]);
-            msg.SetTextVariable("MARINE", tmpSoldierTypeSize[SoldierType.Marine]);
-            msg.SetTextVariable("SLAVE", tmpSoldierTypeSize[SoldierType.Slave]);
-            msg.SetTextVariable("MILITIA", tmpSoldierTypeSize[SoldierType.Militia]);
-
-            msg.SetTextVariable("RETINUE_COUNT", _soldierTypeCounts[SoldierType.Retinue]);
-            msg.SetTextVariable("MAX_RETINUE", _soldierTypeMaxCounts[SoldierType.Retinue]);
-            msg.SetTextVariable("SERGEANT_COUNT", _soldierTypeCounts[SoldierType.Sergeant]);
-            msg.SetTextVariable("MAX_SERGEANT", _soldierTypeMaxCounts[SoldierType.Sergeant]);
-            msg.SetTextVariable("MARINE_COUNT", _soldierTypeCounts[SoldierType.Marine]);
-            msg.SetTextVariable("MAX_MARINE", _soldierTypeMaxCounts[SoldierType.Marine]);
-            msg.SetTextVariable("SLAVE_COUNT", _soldierTypeCounts[SoldierType.Slave]);
-            msg.SetTextVariable("MAX_SLAVE", _soldierTypeMaxCounts[SoldierType.Slave]);
-            msg.SetTextVariable("MILITIA_COUNT", _soldierTypeCounts[SoldierType.Militia]);
-            msg.SetTextVariable("MAX_MILITIA", _soldierTypeMaxCounts[SoldierType.Militia]);
+            msg.SetTextVariable("RECRUITED", recruited);
             msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
             msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
 
@@ -408,7 +359,7 @@ namespace ModifiedArmy.Models.Fief
             // returned detachments and upgrades ready troops.
 
             // 检查是否已达总兵力上限
-            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+            SyncManpowerCounters();
             if (_totalTroopCount >= _totalLimit)
                 return;
 

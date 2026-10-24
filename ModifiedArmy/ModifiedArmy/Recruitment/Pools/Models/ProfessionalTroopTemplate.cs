@@ -41,21 +41,18 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             XmlNode composition = node.SelectSingleNode("TroopComposition");
             if (composition != null)
             {
-                foreach (XmlNode groupNode in composition.ChildNodes)
-                {
-                    ParseTroops(objectManager, groupNode);
-                }
+                // .//troop accepts the new flat structure and legacy wrappers.
+                foreach (XmlNode troopNode in composition.SelectNodes(".//troop"))
+                    ParseTroop(objectManager, troopNode);
             }
 
             TroopProductionTemplateRepository.Instance.Register(this);
         }
 
-        private void ParseTroops(
+        private void ParseTroop(
             MBObjectManager objectManager,
-            XmlNode groupNode)
+            XmlNode troopNode)
         {
-            foreach (XmlNode troopNode in groupNode.SelectNodes("troop"))
-            {
                 CharacterObject troop =
                     objectManager.ReadObjectReferenceFromXml<CharacterObject>(
                         "id",
@@ -73,7 +70,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     message.SetTextVariable("TEMPLATE_ID", TemplateId);
                     message.SetTextVariable("TROOP_ID", troopId);
                     ModLogger.Warn(message.ToString());
-                    continue;
+                    return;
                 }
 
                 int weight = TroopProductionTemplateUtility.ReadOptionalInt(
@@ -86,7 +83,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     troop,
                     weight,
                     basicTroop.RequiredBarracksLevel));
-            }
         }
 
         private BasicTroopEntry FindBasicTroop(CharacterObject troop)

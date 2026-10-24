@@ -887,22 +887,7 @@ namespace ModifiedPolitics.Models
                 }
 
 
-                var troopCounts =
-                    fiefPartyManager
-                        .GetFiefTroopCounts(
-                            settlement);
-
-
-                if (troopCounts == null)
-                {
-                    continue;
-                }
-
-
-                total +=
-                    troopCounts
-                        .Values
-                        .Sum();
+                total += fiefPartyManager.GetFiefTroopCount(settlement);
             }
 
 

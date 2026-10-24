@@ -509,7 +509,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 .RequireActiveConfig().GetDoctrine(settlement);
             FiefProductionConfig fiefProduction =
                 doctrine.GetProduction(settlement);
-            int current = fiefData.GetTroopCounts().Values.Sum();
+            int current = fiefData.GetTotalTroopCount();
             int capacity = fiefData.GetFiefTroopLimit();
             float fiefDemand = Math.Min(
                 fiefProduction.DailyRate,
@@ -760,7 +760,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 .OrderBy(v => v.Settlement.StringId)
                 .ToList();
             if (villages.Count == 0) return 0f;
-            int totalFief = fiefData.GetTroopCounts().Values.Sum();
+            int totalFief = fiefData.GetTotalTroopCount();
             int totalMobilized = villages.Sum(v => manager.GetMobilizedHearth(v));
             int remaining = Math.Max(0, totalFief - totalMobilized);
             int quotient = remaining / villages.Count;

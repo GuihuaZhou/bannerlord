@@ -53,36 +53,16 @@ namespace ModifiedArmy.Models.Fief
         public List<FiefReturnBatch> ReturnBatches { get; private set; }
 
         [SaveableProperty(3)] 
-        public int RetinueCount { get; private set; } = 0;
+        public int LegacyRetinueCount { get; private set; } = 0;
         [SaveableProperty(4)] 
-        public int SergeantCount { get; private set; } = 0;
+        public int LegacySergeantCount { get; private set; } = 0;
         [SaveableProperty(5)] 
-        public int MilitiaCount { get; private set; } = 0;
-
-        /// <summary>
-        /// 封邑士兵类型和实际数量
-        /// <summary>
-        public Dictionary<SoldierType, int> _soldierTypeCounts { get; private set; }
+        public int LegacyMilitiaCount { get; private set; } = 0;
 
         /// <summary>
         /// 当前封邑使用的部队模板
         /// </summary>
         private FiefPartyTemplate _fiefPartyTemplate;
-
-        /// <summary>
-        /// 封邑士兵类型和最大数量
-        /// <summary>
-        public Dictionary<SoldierType, int> _soldierTypeMaxCounts { get; private set; }
-
-        /// <summary>
-        /// 封邑士兵类型和权重
-        /// <summary>
-        public Dictionary<SoldierType, int> _soldierTypeWeights { get; private set; }
-
-        /// <summary>
-        /// 封邑士兵总权重
-        /// <summary>
-        private int _totalWeight;
 
         /// <summary>
         /// 封邑士兵总人数
@@ -146,23 +126,16 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
-        public Dictionary<SoldierType, int> GetTroopCounts() => _soldierTypeCounts;
-
-        /// <summary>
-        /// 获取封邑士兵的最大数量
-        /// </summary>
-        public Dictionary<SoldierType, int> GetMaxTroopCounts() => _soldierTypeMaxCounts;
+        public int GetTotalTroopCount() => _totalTroopCount;
 
 
         /// <summary>
         /// 从给定的部队名单中统计采邑士兵的实际数量（含健康兵与伤员）。
         /// </summary>
-        public void AnalyzeCurrentManpower(
-            TroopRoster roster, 
-            Dictionary<SoldierType, int> tmpSoldierTypeCounts)
+        public int CountCurrentManpower(TroopRoster roster)
         {
-            if (roster == null)
-                return;
+            if (roster == null || _fiefPartyTemplate == null) return 0;
+            int total = 0;
 
             foreach (var element in roster.GetTroopRoster())
             {
@@ -175,12 +148,9 @@ namespace ModifiedArmy.Models.Fief
                 if (!_fiefPartyTemplate.IsEnableTroop(troop))
                     continue;
 
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-                if (tmpSoldierTypeCounts.ContainsKey(type))
-                    tmpSoldierTypeCounts[type] += count;
-                else
-                    tmpSoldierTypeCounts[type] = count;
+                total += count;
             }
+            return total;
         }
 
         /// <summary>
@@ -188,10 +158,9 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         /// <param name="detachments">分遣队列表，可为 null</param>
         /// 
-        public void AccumulateDetachments(
-            IEnumerable<FiefServiceBatch> detachments,
-            Dictionary<SoldierType, int> tmpSoldierTypeCounts)
+        public int CountDetachments(IEnumerable<FiefServiceBatch> detachments)
         {
+            int total = 0;
             if (detachments != null)
             {
                 foreach (var detachment in detachments)
@@ -204,15 +173,12 @@ namespace ModifiedArmy.Models.Fief
                             int count = kvp.Value;
                             if (troop == null || count <= 0) continue;
 
-                            var type = SoldierTypeClassifier.GetSoldierType(troop);
-                            if (tmpSoldierTypeCounts.ContainsKey(type))
-                                tmpSoldierTypeCounts[type] += count;
-                            else
-                                tmpSoldierTypeCounts[type] = count;
+                            total += count;
                         }
                     }
                 }
             }
+            return total;
         }
 
         /// <summary>
@@ -220,9 +186,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetReadyFiefTroopCount()
         {
-            Dictionary<SoldierType, int> tmpSoldierTypeCounts = new();
-            AnalyzeCurrentManpower(_fiefParty, tmpSoldierTypeCounts);
-            return tmpSoldierTypeCounts.Values.Sum();
+            return CountCurrentManpower(_fiefParty);
         }
 
         /// <summary>
@@ -230,9 +194,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetRecruitedFiefTroopCount()
         {
-            Dictionary<SoldierType, int> tmpSoldierTypeCounts = new();
-            AccumulateDetachments(ServiceBatches, tmpSoldierTypeCounts);
-            return tmpSoldierTypeCounts.Values.Sum();
+            return CountDetachments(ServiceBatches);
         }
 
         /// <summary>
@@ -241,34 +203,13 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private void SyncManpowerCounters()
         {
-            foreach (SoldierType type in Enum.GetValues(typeof(SoldierType)))
-            {
-                _soldierTypeCounts[type] = 0;
-            }
-
-            // 1. 就绪部队
-            AnalyzeCurrentManpower(_fiefParty, _soldierTypeCounts);
-            // 2. 征召中部队
-            AccumulateDetachments(ServiceBatches, _soldierTypeCounts);
-
-            // 3. 归还冷却中部队
-            if (ReturnBatches != null)
-            {
-                foreach (FiefReturnBatch batch in ReturnBatches)
-                {
-                    if (batch?.Troops == null) continue;
-                    foreach (var pair in batch.Troops)
-                    {
-                        if (pair.Key == null || pair.Value <= 0) continue;
-                        SoldierType type = SoldierTypeClassifier.GetSoldierType(pair.Key);
-                        _soldierTypeCounts[type] = _soldierTypeCounts.TryGetValue(type, out int old)
-                            ? old + pair.Value
-                            : pair.Value;
-                    }
-                }
-            }
-
-            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+            // 在役和冷却批次是历史身份记录，不能因当前模板变化而丢失。
+            // 只有共享就绪名册需要按当前模板过滤，避免把原生民兵算入封邑编制。
+            _totalTroopCount = CountCurrentManpower(_fiefParty) +
+                CountDetachments(ServiceBatches) +
+                (ReturnBatches?.Where(batch => batch?.Troops != null)
+                    .Sum(batch => batch.Troops.Where(pair => pair.Key != null)
+                        .Sum(pair => Math.Max(0, pair.Value))) ?? 0);
         }
 
 
@@ -289,15 +230,6 @@ namespace ModifiedArmy.Models.Fief
             return production.BaseLimit +
                 (boundVillageCount * production.VillageBonus);
         }
-
-        /// <summary>
-        /// 重置计数器
-        /// </summary>
-        private void ResetManpowerCounters()
-        {
-            RetinueCount = SergeantCount = MilitiaCount = 0;
-        }
-
 
         /// <summary>
         /// 围攻结束后调用，用于同步当前兵力并处理定居点陷落逻辑。
@@ -337,39 +269,7 @@ namespace ModifiedArmy.Models.Fief
             if (_totalLimit == 0)
                 _totalLimit = CalculateSizeLimit();
 
-            _soldierTypeWeights = _fiefPartyTemplate.GetSoldierTypeWeights();
-            _totalWeight = _soldierTypeWeights.Values.Sum();
-            if (_totalWeight <= 0)
-            {
-                _totalWeight = 1; // 避免除零
-                ModLogger.Warn($"[FiefSettlementData] Total weight is zero for '{_settlement.Name}', clamped to 1.");
-                return;
-            }
-
-            _soldierTypeMaxCounts ??= new Dictionary<SoldierType, int>();
-            _soldierTypeCounts ??= new Dictionary<SoldierType, int>();
-            foreach (SoldierType type in Enum.GetValues(typeof(SoldierType)))
-            {
-                _soldierTypeMaxCounts[type] = 0;
-                _soldierTypeCounts[type] = 0;
-            }
-
-            // 按权重分配上限
-            foreach (var kvp in _soldierTypeWeights)
-            {
-                if (kvp.Value <= 0) continue;
-                int max = (int)MathF.Floor((_totalLimit * kvp.Value) / (float)_totalWeight);
-                _soldierTypeMaxCounts[kvp.Key] = Math.Max(0, max);
-            }
-
-            // 日志
-            var nonZero = _soldierTypeMaxCounts
-                .Where(kvp => kvp.Value > 0)
-                .Select(kvp => $"{kvp.Key}≤{kvp.Value}")
-                .ToArray();
-
-            string detail = nonZero.Length > 0 ? string.Join(", ", nonZero) : "no limits";
-            ModLogger.Debug($"[FiefSettlementData] Limits for '{_settlement.Name}': {detail}, Total≤{_totalLimit}");
+            ModLogger.Debug($"[FiefSettlementData] Limit for '{_settlement.Name}': Total≤{_totalLimit}");
         }
 
 
@@ -457,7 +357,6 @@ namespace ModifiedArmy.Models.Fief
                 }
                 else
                 {
-                    ResetManpowerCounters();
                     return false;
                 }
             }

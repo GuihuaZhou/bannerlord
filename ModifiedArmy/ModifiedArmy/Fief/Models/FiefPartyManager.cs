@@ -957,25 +957,13 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 获取指定封邑士兵的实际数量
         /// </summary>
-        public Dictionary<SoldierType, int> GetFiefTroopCounts(Settlement settlement)
+        public int GetFiefTroopCount(Settlement settlement)
         {
-            if (settlement == null) return null;
+            if (settlement == null) return 0;
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-                return data.GetTroopCounts();
-            return null;
+                return data.GetTotalTroopCount();
+            return 0;
         }
-
-        /// <summary>
-        /// 获取指定封邑士兵的最大数量
-        /// </summary>
-        public Dictionary<SoldierType, int> GetFiefMaxTroopCounts(Settlement settlement)
-        {
-            if (settlement == null) return null;
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-                return data.GetMaxTroopCounts();
-            return null;
-        }
-
 
         /// <summary>
         /// 监听围城结束事件

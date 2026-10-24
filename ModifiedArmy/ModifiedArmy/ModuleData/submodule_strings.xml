@@ -46,14 +46,14 @@
         text="{=FiefPartyData_EnforceTroopLimits_0}[ModifiedArmy] 因兵力超限, 从{SETTLEMENT_NAME}移除了{RETINUE}名扈从, {SERGEANT}名军士, {MILITIA}名民兵" />
 
     <string id="str_modifiedarmy_fief_return_result"
-        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[封邑] {PARTY_NAME}在{SETTLEMENT_NAME}解散了{RETURNED_COUNT}名士兵, 提升{PROSPERITY_COST}点繁荣度, 归还附属村庄{HEARTH_COST}点户数. 当前封邑兵力: 扈从{RETINUE_COUNT}/{MAX_RETINUE}, 军士{SERGEANT_COUNT}/{MAX_SERGEANT}, 水兵{MARINE_COUNT}/{MAX_MARINE}, 军事奴隶{SLAVE_COUNT}/{MAX_SLAVE}, 民兵{MILITIA_COUNT}/{MAX_MILITIA}, 总计{TROOP_COUNT}/{TOTAL_LIMIT}." />
+        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[封邑] {PARTY_NAME}在{SETTLEMENT_NAME}解散了{RETURNED_COUNT}名士兵，归还附属村庄{HEARTH_COST}点户数。当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
 
     <string id="str_modifiedarmy_fief_weekly_reinforcement"
-        text="{=FiefPartyData_WeeklyUpdate_0}[ModifiedArmy] {SETTLEMENT_NAME}补充了{RETINUE}名扈从, {SERGEANT}名军士, {MARINE}名水兵, {SLAVE}名军事奴隶, {MILITIA}名民兵, 当前封邑兵力：扈从{RETINUE_COUNT}/{MAX_RETINUE}, 军士{SERGEANT_COUNT}/{MAX_SERGEANT}, 水兵{MARINE_COUNT}/{MAX_MARINE}, 军事奴隶{SLAVE_COUNT}/{MAX_SLAVE}, 民兵{MILITIA_COUNT}/{MAX_MILITIA}, 总计{TROOP_COUNT}/{TOTAL_LIMIT}" />
+        text="{=FiefPartyData_WeeklyUpdate_0}[封邑补员] {SETTLEMENT_NAME}补充了{RECRUITED}名士兵，当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
 
     <!-- FiefPartyData.cs: 招募封邑部队 -->
     <string id="str_modifiedarmy_fief_recruit_to_party"
-        text="{=FiefPartyData_RecruitTroopsToParty_0}[ModifiedArmy] {PARTY_NAME}从{SETTLEMENT_NAME}招募了{RETINUE}名扈从, {SERGEANT}名军士, {MARINE}名水兵, {SLAVE}名军事奴隶, {MILITIA}名民兵, 消耗{PROSPERITY_COST}点繁荣度, 消耗附属村庄{HEARTH_COST}点户数" />
+        text="{=FiefPartyData_RecruitTroopsToParty_0}[封邑征召] {PARTY_NAME}从{SETTLEMENT_NAME}征召了{RECRUITED}名士兵，动员附属村庄{HEARTH_COST}点户数。当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
 
     <!-- Consistent party ownership names used by log messages. -->
     <string id="str_modifiedarmy_party_log_name_with_kingdom"

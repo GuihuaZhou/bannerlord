@@ -158,7 +158,7 @@ namespace ModifiedArmy.Models.Fief
             {
                 capacity[source, leftStart + i] = registered[left[i]];
                 for (int j = 0; j < right.Count; j++)
-                    if (SoldierTypeClassifier.CanMatchUpgradeTree(left[i], right[j]))
+                    if (CanMatchUpgradeTree(left[i], right[j]))
                         capacity[leftStart + i, rightStart + j] = int.MaxValue / 4;
             }
             for (int j = 0; j < right.Count; j++)
@@ -199,6 +199,35 @@ namespace ModifiedArmy.Models.Fief
                     if (flow[leftStart + i, rightStart + j] > 0)
                         result[(left[i], right[j])] = flow[leftStart + i, rightStart + j];
             return result;
+        }
+
+        /// <summary>
+        /// 判断两个具体兵种是否位于同一条可达升级链。返乡对账只关心
+        /// 实际升级关系，不应借用带五类语义的全局分类器。
+        /// </summary>
+        private static bool CanMatchUpgradeTree(CharacterObject left, CharacterObject right)
+        {
+            return left != null && right != null &&
+                (left == right || CanUpgradeTo(left, right) || CanUpgradeTo(right, left));
+        }
+
+        private static bool CanUpgradeTo(CharacterObject from, CharacterObject to)
+        {
+            HashSet<CharacterObject> visited = new();
+            Stack<CharacterObject> pending = new();
+            pending.Push(from);
+            while (pending.Count > 0)
+            {
+                CharacterObject current = pending.Pop();
+                if (current == null || !visited.Add(current)) continue;
+                foreach (CharacterObject target in current.UpgradeTargets ??
+                    Array.Empty<CharacterObject>())
+                {
+                    if (target == to) return true;
+                    if (target != null) pending.Push(target);
+                }
+            }
+            return false;
         }
     }
 }

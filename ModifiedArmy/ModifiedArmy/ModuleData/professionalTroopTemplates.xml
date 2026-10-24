@@ -13,257 +13,175 @@
   <!-- Empire -->
   <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town_port">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.imperial_cataphract" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-        <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
-        <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
-        <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
-      </SergeantTroops>
-      <MarineTroops>
-        <troop id="NPCCharacter.empire_marine_t3" weight="2" />
-      </MarineTroops>
+      <troop id="NPCCharacter.imperial_cataphract" weight="1" />
+      <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
+      <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
+      <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
+      <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
+      <troop id="NPCCharacter.empire_marine_t3" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.imperial_cataphract" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-        <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
-        <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
-        <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.imperial_cataphract" weight="1" />
+      <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
+      <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
+      <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
+      <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.empire" id="empire_castle">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.imperial_cataphract" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-        <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
-        <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
-        <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.imperial_cataphract" weight="1" />
+      <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
+      <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
+      <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
+      <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Aserai -->
   <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town_port">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.aserai_archer" weight="2" />
-        <troop id="NPCCharacter.aserai_infantry" weight="3" />
-      </SergeantTroops>
-      <MarineTroops>
-        <troop id="NPCCharacter.aserai_marine_t4" weight="2" />
-      </MarineTroops>
-      <SlaveTroops>
-        <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
-        <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
-      </SlaveTroops>
+      <troop id="NPCCharacter.aserai_archer" weight="2" />
+      <troop id="NPCCharacter.aserai_infantry" weight="3" />
+      <troop id="NPCCharacter.aserai_marine_t4" weight="2" />
+      <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
+      <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.aserai_archer" weight="2" />
-        <troop id="NPCCharacter.aserai_infantry" weight="3" />
-      </SergeantTroops>
-      <SlaveTroops>
-        <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
-        <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
-      </SlaveTroops>
+      <troop id="NPCCharacter.aserai_archer" weight="2" />
+      <troop id="NPCCharacter.aserai_infantry" weight="3" />
+      <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
+      <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_castle">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.aserai_archer" weight="2" />
-        <troop id="NPCCharacter.aserai_infantry" weight="3" />
-      </SergeantTroops>
-      <SlaveTroops>
-        <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
-        <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
-      </SlaveTroops>
+      <troop id="NPCCharacter.aserai_archer" weight="2" />
+      <troop id="NPCCharacter.aserai_infantry" weight="3" />
+      <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
+      <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Sturgia -->
   <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town_port">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.druzhinnik" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.sturgian_spearman" weight="3" />
-        <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
-        <troop id="NPCCharacter.sturgian_archer" weight="2" />
-      </SergeantTroops>
-      <MarineTroops>
-        <troop id="NPCCharacter.sturgia_marine_t3" weight="2" />
-      </MarineTroops>
+      <troop id="NPCCharacter.druzhinnik" weight="1" />
+      <troop id="NPCCharacter.sturgian_spearman" weight="3" />
+      <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
+      <troop id="NPCCharacter.sturgian_archer" weight="2" />
+      <troop id="NPCCharacter.sturgia_marine_t3" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.druzhinnik" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.sturgian_spearman" weight="3" />
-        <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
-        <troop id="NPCCharacter.sturgian_archer" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.druzhinnik" weight="1" />
+      <troop id="NPCCharacter.sturgian_spearman" weight="3" />
+      <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
+      <troop id="NPCCharacter.sturgian_archer" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_castle">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.druzhinnik" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.sturgian_spearman" weight="3" />
-        <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
-        <troop id="NPCCharacter.sturgian_archer" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.druzhinnik" weight="1" />
+      <troop id="NPCCharacter.sturgian_spearman" weight="3" />
+      <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
+      <troop id="NPCCharacter.sturgian_archer" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Vlandia -->
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town_port">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.vlandian_billman" weight="3" />
-        <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
-        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-        <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
-      </SergeantTroops>
-      <MarineTroops>
-        <troop id="NPCCharacter.vlandian_marine_t4" weight="2" />
-      </MarineTroops>
+      <troop id="NPCCharacter.vlandian_billman" weight="3" />
+      <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
+      <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
+      <troop id="NPCCharacter.vlandian_marine_t4" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.vlandian_billman" weight="3" />
-        <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
-        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-        <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.vlandian_billman" weight="3" />
+      <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
+      <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_castle">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.vlandian_billman" weight="3" />
-        <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
-        <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-        <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.vlandian_billman" weight="3" />
+      <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
+      <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Battania -->
   <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town_port">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.battanian_falxman" weight="3" />
-        <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
-      </SergeantTroops>
-      <MarineTroops>
-        <troop id="NPCCharacter.battanian_marine_t4" weight="2" />
-      </MarineTroops>
+      <troop id="NPCCharacter.battanian_falxman" weight="3" />
+      <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
+      <troop id="NPCCharacter.battanian_marine_t4" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.battanian_falxman" weight="3" />
-        <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.battanian_falxman" weight="3" />
+      <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.battania" id="battania_castle">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.battanian_falxman" weight="3" />
-        <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.battanian_falxman" weight="3" />
+      <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Khuzait -->
   <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town_port">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.khuzait_torguud" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
-        <troop id="NPCCharacter.khuzait_archer" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.khuzait_torguud" weight="1" />
+      <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
+      <troop id="NPCCharacter.khuzait_archer" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.khuzait_torguud" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
-        <troop id="NPCCharacter.khuzait_archer" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.khuzait_torguud" weight="1" />
+      <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
+      <troop id="NPCCharacter.khuzait_archer" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_castle">
     <TroopComposition>
-      <RetinueTroops>
-        <troop id="NPCCharacter.khuzait_torguud" weight="1" />
-      </RetinueTroops>
-      <SergeantTroops>
-        <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
-        <troop id="NPCCharacter.khuzait_archer" weight="2" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.khuzait_torguud" weight="1" />
+      <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
+      <troop id="NPCCharacter.khuzait_archer" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
-
   <!-- Nord -->
   <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town_port">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.nord_boandi" weight="2" />
-        <troop id="NPCCharacter.nord_vargr" weight="2" />
-        <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
-        <troop id="NPCCharacter.nord_marksman" weight="1" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.nord_boandi" weight="2" />
+      <troop id="NPCCharacter.nord_vargr" weight="2" />
+      <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
+      <troop id="NPCCharacter.nord_marksman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.nord" id="nord_town">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.nord_boandi" weight="2" />
-        <troop id="NPCCharacter.nord_vargr" weight="2" />
-        <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
-        <troop id="NPCCharacter.nord_marksman" weight="1" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.nord_boandi" weight="2" />
+      <troop id="NPCCharacter.nord_vargr" weight="2" />
+      <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
+      <troop id="NPCCharacter.nord_marksman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.nord" id="nord_castle">
     <TroopComposition>
-      <SergeantTroops>
-        <troop id="NPCCharacter.nord_boandi" weight="2" />
-        <troop id="NPCCharacter.nord_vargr" weight="2" />
-        <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
-        <troop id="NPCCharacter.nord_marksman" weight="1" />
-      </SergeantTroops>
+      <troop id="NPCCharacter.nord_boandi" weight="2" />
+      <troop id="NPCCharacter.nord_vargr" weight="2" />
+      <troop id="NPCCharacter.nord_hew-bearer" weight="2" />
+      <troop id="NPCCharacter.nord_marksman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
 </ProfessionalTroopTemplates>

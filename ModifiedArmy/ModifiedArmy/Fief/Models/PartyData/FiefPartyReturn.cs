@@ -53,16 +53,7 @@ namespace ModifiedArmy.Models.Fief
             message.SetTextVariable("RETURNED_COUNT", returnedCount);
             message.SetTextVariable("PROSPERITY_COST", 0);
             message.SetTextVariable("HEARTH_COST", restoredHearth);
-            message.SetTextVariable("RETINUE_COUNT", _soldierTypeCounts[SoldierType.Retinue]);
-            message.SetTextVariable("MAX_RETINUE", _soldierTypeMaxCounts[SoldierType.Retinue]);
-            message.SetTextVariable("SERGEANT_COUNT", _soldierTypeCounts[SoldierType.Sergeant]);
-            message.SetTextVariable("MAX_SERGEANT", _soldierTypeMaxCounts[SoldierType.Sergeant]);
-            message.SetTextVariable("MARINE_COUNT", _soldierTypeCounts[SoldierType.Marine]);
-            message.SetTextVariable("MAX_MARINE", _soldierTypeMaxCounts[SoldierType.Marine]);
-            message.SetTextVariable("SLAVE_COUNT", _soldierTypeCounts[SoldierType.Slave]);
-            message.SetTextVariable("MAX_SLAVE", _soldierTypeMaxCounts[SoldierType.Slave]);
-            message.SetTextVariable("MILITIA_COUNT", _soldierTypeCounts[SoldierType.Militia]);
-            message.SetTextVariable("MAX_MILITIA", _soldierTypeMaxCounts[SoldierType.Militia]);
+            SyncManpowerCounters();
             message.SetTextVariable("TROOP_COUNT", _totalTroopCount);
             message.SetTextVariable("TOTAL_LIMIT", _totalLimit);
             if (sourceParty.ActualClan == Clan.PlayerClan) ModLogger.Notice(message.ToString());

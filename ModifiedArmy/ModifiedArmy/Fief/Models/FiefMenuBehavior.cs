@@ -181,9 +181,11 @@ namespace ModifiedArmy.Models.Fief
         bool CanSelectTroop(CharacterObject troop)
         {
             if (troop == null) return false;
-            // var type = SoldierTypeClassifier.GetSoldierType(troop);
-            // return type is SoldierType.Retinue or SoldierType.Sergeant or SoldierType.Militia;
-            return SoldierTypeClassifier.IsFiefTroop(troop);
+            FiefPartyData data = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .GetFiefData(Settlement.CurrentSettlement);
+            return data?.GetFiefPartyTemplate()?.IsEnableTroop(troop) == true &&
+                data.GetFiefTroopRoster().GetElementNumber(troop) > 0;
         }
 
         // 回调：处理玩家选择结果

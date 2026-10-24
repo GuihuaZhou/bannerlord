@@ -3,6 +3,7 @@ using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
@@ -81,6 +82,14 @@ namespace ModifiedArmy.Models
 
             foreach (XmlNode child in node.ChildNodes)
             {
+                if (child.Name == "troop")
+                {
+                    SoldierType legacyType = SoldierType.Militia;
+                    Enum.TryParse(child.Attributes?["legacyType"]?.Value,
+                        true, out legacyType);
+                    ParseTroopNode(objectManager, child, legacyType);
+                    continue;
+                }
                 switch (child.Name)
                 {
                     case "RetinueTroops":
@@ -119,28 +128,29 @@ namespace ModifiedArmy.Models
             {
                 if (node.Name == "troop")
                 {
-                    CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
-
-                    int barracksLevel = 0;
-                    if (node.Attributes?["barracksLevel"] != null)
-                    {
-                        barracksLevel = XmlHelper.ReadInt(node, "barracksLevel");
-                    }
-
-                    if (troop != null)
-                    {
-                        list.Add(new BasicTroopEntry(troop, 1, type, barracksLevel));
-                        count++;
-                        ModLogger.Debug($"  ├─ [{type}] Added troop: {troop.Name}");
-                    }
-                    else
-                    {
-                        string rawId = XmlHelper.ReadString(node, "id");
-                        ModLogger.Warn($"  ├─ [{type}] Failed to load troop: id='{rawId}' (invalid or undefined ID)");
-                    }
+                    ParseTroopNode(objectManager, node, type);
+                    count++;
                 }
             }
             ModLogger.Debug($"  └─ {type}: Successfully loaded {count} troops");
+        }
+
+        /// <summary>
+        /// 读取一个平铺基础兵种。legacyType 只服务于独立的俘虏旧规则，
+        /// 封邑容量、生产和征召均不会读取该值。
+        /// </summary>
+        private void ParseTroopNode(MBObjectManager objectManager, XmlNode node, SoldierType type)
+        {
+            CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
+            int barracksLevel = node.Attributes?["barracksLevel"] == null
+                ? 0
+                : XmlHelper.ReadInt(node, "barracksLevel");
+            if (troop == null)
+            {
+                ModLogger.Warn($"[BasicTroopGroup] Failed to load troop: id='{XmlHelper.ReadString(node, "id")}'");
+                return;
+            }
+            TroopsByType[type].Add(new BasicTroopEntry(troop, 1, type, barracksLevel));
         }
     }
 
@@ -213,6 +223,19 @@ namespace ModifiedArmy.Models
 
             ModLogger.Debug($"[BasicTroopGroupManager] No entry found for troop '{troop.StringId}' of type {type} in culture: {culture.StringId}");
             return null;
+        }
+
+        /// <summary>
+        /// 按具体兵种查找基础配置。封邑和职业兵生产只关心兵营等级，
+        /// 不应要求调用方先知道旧 SoldierType 分类。
+        /// </summary>
+        public static BasicTroopEntry FindBasicTroop(CultureObject culture, CharacterObject troop)
+        {
+            BasicTroopGroup group = GetGroupForCulture(culture);
+            if (group == null || troop == null) return null;
+            return group.TroopsByType.Values
+                .SelectMany(entries => entries)
+                .FirstOrDefault(entry => entry?.Troop == troop);
         }
     }
 

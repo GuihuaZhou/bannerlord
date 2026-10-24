@@ -47,7 +47,7 @@ namespace ModifiedArmy.Models.Fief
         /// 从封邑军队中按比例招募士兵到目标部队。
         /// - 从 _fiefParty 移除已征召士兵（因为他们已离营）
         /// - Records the transferred troops in a new FiefServiceBatch.
-        /// - 不修改 RetinueCount/SergeantCount/MilitiaCount（兵力仍属封邑）
+        /// - 总兵力仍归来源封邑，只从就绪转为在役批次
         ///
         /// 经济规则：
         /// - 玩家征召：产生 Prosperity / Hearth 动员成本
@@ -78,31 +78,6 @@ namespace ModifiedArmy.Models.Fief
             if (remainSize <= 0)
                 return 0;
 
-            if (_soldierTypeWeights == null || _totalWeight <= 0)
-            {
-                ModLogger.Error(
-                    $"[Recruit] The soldier type weights are unavailable. The total weight is {_totalWeight}.");
-
-                return 0;
-            }
-
-            // The fief template remains the upstream supply policy. The
-            // unified AI model may further reduce these offers, but it never
-            // changes which fief troop identities the settlement produces.
-            Dictionary<SoldierType, int> offeredSoldierTypeSize = new();
-
-            // 记录招募的士兵类型及数量
-            Dictionary<SoldierType, int> tmpRecruitSoldierTypeSize = new();
-
-            // 按权重分配剩余空间
-            foreach (var kvp in _soldierTypeWeights)
-            {
-                offeredSoldierTypeSize[kvp.Key] =
-                    (remainSize * _soldierTypeWeights[kvp.Key]) / _totalWeight;
-
-                tmpRecruitSoldierTypeSize[kvp.Key] = 0;
-            }
-
             // 记录招募的士兵和数量
             Dictionary<CharacterObject, int> tmpRecruitTroops = new();
 
@@ -120,42 +95,8 @@ namespace ModifiedArmy.Models.Fief
             int tmpHearthCostPerTroop =
                 GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
 
-            List<RecruitmentCandidate> candidates = new();
-
-            foreach (var element in _fiefParty.GetTroopRoster())
-            {
-                var troop = element.Character;
-                var count = element.Number;
-
-                if (troop == null || count <= 0)
-                    continue;
-
-                // Recruitment from this fief must use the settlement's own
-                // template. The global SoldierType classifier also contains
-                // professional troops and therefore is not an ownership test.
-                if (_fiefPartyTemplate?.IsEnableTroop(troop) != true)
-                    continue;
-
-                var type =
-                    SoldierTypeClassifier.GetSoldierType(troop);
-
-                int offered = Math.Min(
-                    count,
-                    offeredSoldierTypeSize[type]);
-
-                if (offered <= 0)
-                {
-                    continue;
-                }
-
-                candidates.Add(
-                    new RecruitmentCandidate(
-                        troop,
-                        offered,
-                        RecruitmentSource.Fief));
-
-                offeredSoldierTypeSize[type] -= offered;
-            }
+            List<RecruitmentCandidate> candidates =
+                BuildAvailableRecruitmentCandidates(remainSize);
 
             RecruitmentPlan aiPlan = null;
             Dictionary<CharacterObject, int> approvedTroops =
@@ -208,9 +149,10 @@ namespace ModifiedArmy.Models.Fief
                     continue;
                 }
 
-                SoldierType type =
-                    SoldierTypeClassifier.GetSoldierType(troop);
-
+                // 审批与实际提交之间名册可能变化，因此提交时再次收紧数量。
+                taken = Math.Min(taken, _fiefParty.GetElementNumber(troop));
+                if (taken <= 0 || _fiefPartyTemplate?.IsEnableTroop(troop) != true)
+                    continue;
                 RemoveTroopsFromParty(_fiefParty, troop, taken);
                 targetParty.MemberRoster.AddToCounts(
                     troop,
@@ -237,7 +179,6 @@ namespace ModifiedArmy.Models.Fief
                 }
 
                 tmpRecruitTroops[troop] = taken;
-                tmpRecruitSoldierTypeSize[type] += taken;
                 hearthCost += taken;
             }
 
@@ -276,25 +217,9 @@ namespace ModifiedArmy.Models.Fief
                 "SETTLEMENT_NAME",
                 _settlement.Name.ToString());
 
-            msg.SetTextVariable(
-                "RETINUE",
-                tmpRecruitSoldierTypeSize[SoldierType.Retinue]);
-
-            msg.SetTextVariable(
-                "SERGEANT",
-                tmpRecruitSoldierTypeSize[SoldierType.Sergeant]);
-
-            msg.SetTextVariable(
-                "MARINE",
-                tmpRecruitSoldierTypeSize[SoldierType.Marine]);
-
-            msg.SetTextVariable(
-                "SLAVE",
-                tmpRecruitSoldierTypeSize[SoldierType.Slave]);
-
-            msg.SetTextVariable(
-                "MILITIA",
-                tmpRecruitSoldierTypeSize[SoldierType.Militia]);
+            msg.SetTextVariable("RECRUITED", totalRecruited);
+            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
 
             // 玩家显示实际成本；AI 显示 0
             msg.SetTextVariable(
@@ -327,8 +252,7 @@ namespace ModifiedArmy.Models.Fief
                 int maximumCount)
         {
             var candidates = new List<RecruitmentCandidate>();
-            if (targetParty == null || _fiefParty == null ||
-                _soldierTypeWeights == null || _totalWeight <= 0)
+            if (targetParty == null || _fiefParty == null)
                 return candidates;
             int remainSize = Math.Min(
                 targetParty.Party.PartySizeLimit -
@@ -336,12 +260,20 @@ namespace ModifiedArmy.Models.Fief
                 Math.Max(0, maximumCount));
             if (remainSize <= 0) return candidates;
 
-            Dictionary<SoldierType, int> offers = _soldierTypeWeights
-                .ToDictionary(
-                    pair => pair.Key,
-                    pair => (remainSize * pair.Value) / _totalWeight);
+            return BuildAvailableRecruitmentCandidates(remainSize);
+        }
+
+        /// <summary>
+        /// 为预览和最终征召建立同一份只读候选。候选只来自当前真实就绪名册，
+        /// 并由当前封邑模板判定身份；XML生产权重不限制已有士兵的抽调。
+        /// </summary>
+        private List<RecruitmentCandidate> BuildAvailableRecruitmentCandidates(int maximumCount)
+        {
+            List<RecruitmentCandidate> candidates = new();
+            int remaining = Math.Max(0, maximumCount);
             foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
             {
+                if (remaining <= 0) break;
                 CharacterObject troop = element.Character;
                 // Preview and commit must expose the same troop universe.
                 // Otherwise the planner can approve a professional troop that
@@ -349,16 +281,13 @@ namespace ModifiedArmy.Models.Fief
                 if (troop == null || element.Number <= 0 ||
                     _fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
-                SoldierType type = SoldierTypeClassifier.GetSoldierType(troop);
-                int count = offers.TryGetValue(type, out int available)
-                    ? Math.Min(element.Number, available)
-                    : 0;
+                int count = Math.Min(element.Number, remaining);
                 if (count <= 0) continue;
                 candidates.Add(new RecruitmentCandidate(
                     troop,
                     count,
                     RecruitmentSource.Fief));
-                offers[type] -= count;
+                remaining -= count;
             }
             return candidates;
         }
@@ -559,14 +488,6 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
 
             var tmpRecruitTroops = new Dictionary<CharacterObject, int>();
-            // 记录招募的士兵类型及数量
-            Dictionary<SoldierType, int> tmpRecruitSoldierTypeSize = new();
-            // 按权重分配剩余空间
-            foreach (var kvp in _soldierTypeWeights)
-            {
-                tmpRecruitSoldierTypeSize[kvp.Key] = 0;
-            }
-
             float prosperityCost = 0;
             float hearthCost = 0;
 
@@ -587,7 +508,7 @@ namespace ModifiedArmy.Models.Fief
                 if (remainingPartySpace <= 0) break;
                 CharacterObject troop = element.Character;
                 if (troop == null || element.Number <= 0 ||
-                    !SoldierTypeClassifier.IsFiefTroop(troop)) continue;
+                    _fiefPartyTemplate?.IsEnableTroop(troop) != true) continue;
                 int available = _fiefParty.GetElementNumber(troop);
                 int approved = Math.Min(remainingPartySpace,
                     Math.Min(element.Number, available));
@@ -618,11 +539,8 @@ namespace ModifiedArmy.Models.Fief
                 if (_fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
 
-                var type = SoldierTypeClassifier.GetSoldierType(troop);
-
                 // 记录招募的士兵
                 tmpRecruitTroops[troop] = count;
-                tmpRecruitSoldierTypeSize[type] += count;
                 // 从封邑party移除士兵
                 RemoveTroopsFromParty(_fiefParty, troop, count);
 
@@ -650,11 +568,9 @@ namespace ModifiedArmy.Models.Fief
                 "PARTY_NAME",
                 PartyLogFormatter.GetDisplayName(targetParty));
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-            msg.SetTextVariable("RETINUE", tmpRecruitSoldierTypeSize[SoldierType.Retinue]);
-            msg.SetTextVariable("SERGEANT", tmpRecruitSoldierTypeSize[SoldierType.Sergeant]);
-            msg.SetTextVariable("MARINE", tmpRecruitSoldierTypeSize[SoldierType.Marine]);
-            msg.SetTextVariable("SLAVE", tmpRecruitSoldierTypeSize[SoldierType.Slave]);
-            msg.SetTextVariable("MILITIA", tmpRecruitSoldierTypeSize[SoldierType.Militia]);
+            msg.SetTextVariable("RECRUITED", totalRecruited);
+            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
             msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
             msg.SetTextVariable("HEARTH_COST", hearthCost);
 
@@ -695,11 +611,9 @@ namespace ModifiedArmy.Models.Fief
             if (_fiefPartyTemplate == null || !_fiefPartyTemplate.IsEnableTroop(troop))
                 return false;
 
-            // 2. 获取士兵类型并检查剩余容量
-            var type = SoldierTypeClassifier.GetSoldierType(troop);
-            int currentCount = _soldierTypeCounts[type];
-            int maxCount = _soldierTypeMaxCounts[type];
-            int availableCapacity = Math.Max(0, maxCount - currentCount);
+            // 2. 俘虏转入与生产共用封邑总体容量，不再使用类别子上限。
+            SyncManpowerCounters();
+            int availableCapacity = Math.Max(0, _totalLimit - _totalTroopCount);
 
             if (availableCapacity < count)
                 return false;
@@ -725,9 +639,8 @@ namespace ModifiedArmy.Models.Fief
             hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;
 
-            // 4. 更新计数器
-            _soldierTypeCounts[type] += count;
-            _totalTroopCount = _soldierTypeCounts.Values.Sum();
+            // 4. 更新派生总数
+            SyncManpowerCounters();
 
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_fief_prisoner_recruited");

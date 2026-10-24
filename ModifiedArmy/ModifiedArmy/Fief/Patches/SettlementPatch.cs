@@ -1,5 +1,6 @@
 ﻿using HarmonyLib;
 using ModifiedArmy.Models;
+using ModifiedArmy.Models.Fief;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -16,18 +17,19 @@ namespace ModifiedArmy.Fief.Patches
     [HarmonyPatch(typeof(Settlement), "RemoveMilitiasFromParty")]
     public static class SettlementPatch
     {
-        // 判断是否为采邑部队
-        private static bool IsFiefTroop(CharacterObject troop)
-        {
-            if (troop == null) return false;
-            return SoldierTypeClassifier.IsFiefTroop(troop);
-        }
-
         // Prefix：完全接管函数逻辑
         public static bool Prefix(MobileParty militiaParty, int numberToRemove)
         {
             if (militiaParty == null || militiaParty.MemberRoster == null)
-                return false; // skip original
+                return true;
+
+            Settlement settlement = militiaParty.CurrentSettlement;
+            FiefPartyData data = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .GetFiefData(settlement);
+            FiefPartyTemplate template = data?.GetFiefPartyTemplate();
+            if (template == null)
+                return true;
 
             var roster = militiaParty.MemberRoster;
 
@@ -40,7 +42,9 @@ namespace ModifiedArmy.Fief.Patches
                 int count = roster.GetElementNumber(i);
                 if (count <= 0) continue;
 
-                if (!IsFiefTroop(troop))
+                // 只保护该民兵 Party 所属封邑当前模板认可的兵种。
+                // 全局分类会错误保护其他封邑或职业兵。
+                if (!template.IsEnableTroop(troop))
                 {
                     nonFiefCount += count;
                     nonFiefIndices.Add(i);

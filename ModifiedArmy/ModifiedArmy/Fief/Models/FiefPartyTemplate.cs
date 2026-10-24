@@ -39,17 +39,7 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 所有基础兵种
         /// </summary>
-        public Dictionary<SoldierType, List<BasicTroopEntry>> _allBasicTroops { get; } = new();
-
-        /// <summary>
-        /// 不同类型基础士兵所占权重
-        /// </summary>
-        public Dictionary<SoldierType, int> _soldierTypeWeights { get; } = new();
-
-        /// <summary>
-        /// 所有使能的士兵
-        /// </summary>
-        public Dictionary<CharacterObject, SoldierType> _allEnableTroops { get; } = new();
+        private readonly HashSet<CharacterObject> _allEnableTroops = new();
 
         public CultureObject culture { get; private set; }
 
@@ -61,33 +51,16 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>如果存在则返回 true，否则返回 false</returns>
         public bool IsEnableTroop(CharacterObject troop)
         {
-            return _allEnableTroops.ContainsKey(troop);
-        }
-
-        /// <summary>
-        /// 获取基础兵种类型权重
-        /// </summary>
-        public Dictionary<SoldierType, int> GetSoldierTypeWeights()
-        {
-            return _soldierTypeWeights;
-        }
-
-        /// <summary>
-        /// 获取所有基础兵种条目
-        /// 注意：内部列表和 BasicTroopEntry 对象未深度复制，仅复制字典结构。
-        /// </summary>
-        public Dictionary<SoldierType, List<BasicTroopEntry>> GetBasicTroops()
-        {
-            return _allBasicTroops;
+            return troop != null && _allEnableTroops.Contains(troop);
         }
 
         /// <summary>
         /// 递归获取兵种升级树上的全部士兵
         /// </summary>
-        private void PropagateTypeThroughUpgradeTree(CharacterObject current, SoldierType type)
+        private void AddUpgradeTree(CharacterObject current)
         {
             if (current == null) return;
-            _allEnableTroops[current] = type;
+            if (!_allEnableTroops.Add(current)) return;
 
             if (current.UpgradeTargets?.Length > 0)
             {
@@ -95,7 +68,7 @@ namespace ModifiedArmy.Models.Fief
                 {
                     if (upgrade != null)
                     {
-                        PropagateTypeThroughUpgradeTree(upgrade, type);
+                        AddUpgradeTree(upgrade);
                     }
                 }
             }
@@ -112,15 +85,13 @@ namespace ModifiedArmy.Models.Fief
 
             culture = MBObjectManager.Instance.ReadObjectReferenceFromXml<CultureObject>("culture", node);
 
-            // 仅解析兵种构成部分
+            // 正式配置为平铺 troop；同时兼容读取旧五类包装，但包装名称
+            // 不再进入运行时模型，也不再形成任何分类额度。
             var compNode = node.SelectSingleNode("TroopComposition");
             if (compNode != null)
             {
-                ParseTroopGroup(objectManager, compNode, "RetinueTroops", SoldierType.Retinue);
-                ParseTroopGroup(objectManager, compNode, "SergeantTroops", SoldierType.Sergeant);
-                ParseTroopGroup(objectManager, compNode, "MilitiaTroops", SoldierType.Militia);
-                ParseTroopGroup(objectManager, compNode, "MarineTroops", SoldierType.Marine);
-                ParseTroopGroup(objectManager, compNode, "SlaveTroops", SoldierType.Slave);
+                foreach (XmlNode troopNode in compNode.SelectNodes(".//troop"))
+                    ParseTroop(objectManager, troopNode);
             }
 
             FiefPartyTemplateManager.Instance.RegisterTemplate(this);
@@ -129,68 +100,27 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
-        /// 解析某一类兵种组（如 RetinueTroops）
+        /// 解析一个具体兵种及其生产权重，并从基础兵配置取得兵营等级。
         /// </summary>
-        /// <param name="parent">父节点（TroopComposition）</param>
-        /// <param name="groupName">子节点名称（如 "RetinueTroops"）</param>
-        /// <param name="troopType">兵种类型</param>
-        private void ParseTroopGroup(
-            MBObjectManager objectManager,
-            XmlNode parent,
-            string groupName,
-            SoldierType troopType)
+        private void ParseTroop(MBObjectManager objectManager, XmlNode troopNode)
         {
-            // The legacy fief implementation still consumes a weight per
-            // SoldierType. Derive that compatibility value from the sum of
-            // concrete troop weights instead of restoring an XML group
-            // weight that the new shared pool format no longer supports.
-            if (!_soldierTypeWeights.ContainsKey(troopType))
+            CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", troopNode);
+            if (troop == null)
             {
-                _soldierTypeWeights[troopType] = 0;
+                string rawId = XmlHelper.ReadString(troopNode, "id");
+                ModLogger.Warn($"[FiefPartyTemplate] Unknown troop ID: {rawId} in template '{TemplateId}'");
+                return;
             }
 
-            var groupNode = parent.SelectSingleNode(groupName);
-            if (groupNode == null) return;
-
-            if (!_allBasicTroops.TryGetValue(troopType, out var list))
-            {
-                _allBasicTroops[troopType] = new List<BasicTroopEntry>();
-            }
-
-            foreach (XmlNode troopNode in groupNode.SelectNodes("troop"))
-            {
-                CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", troopNode);
-                if (troop == null)
-                {
-                    string rawId = XmlHelper.ReadString(troopNode, "id");
-                    ModLogger.Warn($"[FiefPartyTemplate] Unknown troop ID: {rawId} in template '{TemplateId}'");
-                    continue;
-                }
-
-                // 读取权重（默认为 1）
-                int troopWeight = 1;
-                if (troopNode.Attributes?["weight"] != null)
-                {
-                    troopWeight = XmlHelper.ReadInt(troopNode, "weight");
-                }
-
-                var basicTroop = BasicTroopGroupManager.FindBasicTroop(culture, troopType, troop);
-                if (basicTroop == null)
-                {
-                    continue;
-                }
-                BasicTroopEntry templateTroop = new BasicTroopEntry(
-                    basicTroop.Troop,
-                    troopWeight,
-                    troopType,
-                    basicTroop.RequiredBarracksLevel);
-                _allBasicTroops[troopType].Add(templateTroop);
-                _soldierTypeWeights[troopType] += troopWeight;
-                _troopEntries.Add(new TroopProductionEntry(
-                    templateTroop.Troop,
-                    troopWeight,
-                    templateTroop.RequiredBarracksLevel));
-            }
+            BasicTroopEntry basicTroop = BasicTroopGroupManager.FindBasicTroop(culture, troop);
+            if (basicTroop == null) return;
+            int troopWeight = troopNode.Attributes?["weight"] == null
+                ? 1
+                : XmlHelper.ReadInt(troopNode, "weight");
+            _troopEntries.Add(new TroopProductionEntry(
+                troop,
+                troopWeight,
+                basicTroop.RequiredBarracksLevel));
         }
 
 
@@ -201,13 +131,8 @@ namespace ModifiedArmy.Models.Fief
         public void InitAllEnableTroops()
         {
             // 遍历士兵升级树，获取所有使能的士兵
-            foreach (var kvp in _allBasicTroops)
-            {
-                foreach (var basicTroop in kvp.Value)
-                {
-                    PropagateTypeThroughUpgradeTree(basicTroop.Troop, kvp.Key);
-                }
-            }
+            foreach (TroopProductionEntry entry in _troopEntries)
+                AddUpgradeTree(entry.Troop);
         }
     }
 
