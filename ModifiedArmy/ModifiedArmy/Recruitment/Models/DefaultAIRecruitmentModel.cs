@@ -111,6 +111,13 @@ namespace ModifiedArmy.Recruitment.Models
                 return result;
             }
 
+            if (RecruitmentTroopEligibilityPolicy
+                .ShouldExcludeBanditForAiRecruitment(party, troop))
+            {
+                result.PrimaryLimit = RecruitmentLimitReason.BanditTroopExcluded;
+                return result;
+            }
+
             int recruitmentTarget = GetRecruitmentTarget(
                 party,
                 state,

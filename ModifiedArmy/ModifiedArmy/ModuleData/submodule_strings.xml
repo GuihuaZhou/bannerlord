@@ -214,6 +214,7 @@
     <string id="str_modifiedarmy_recruit_limit_wage" text="{=ModifiedArmy_RecruitLimit_WageLimit}工资上限" />
     <string id="str_modifiedarmy_recruit_limit_cost" text="{=ModifiedArmy_RecruitLimit_RecruitmentCost}招募费用" />
     <string id="str_modifiedarmy_recruit_limit_maintenance" text="{=ModifiedArmy_RecruitLimit_MaintenanceFunds}维持资金" />
+    <string id="str_modifiedarmy_recruit_limit_bandit" text="{=ModifiedArmy_RecruitLimit_Bandit}AI正规军不会招募野怪" />
 
     <string id="str_modifiedarmy_garrison_market_purchase"
         text="{=ModifiedArmy_GarrisonMarketPurchase}[驻军后勤] {SETTLEMENT_NAME}从市场购买{PURCHASED}单位食物, 花费{COST}第纳尔, 驻军粮仓现有{CURRENT_FOOD}单位食物." />

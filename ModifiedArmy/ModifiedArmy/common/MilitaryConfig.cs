@@ -101,7 +101,7 @@ namespace ModifiedArmy.common
         public bool EnableUnifiedAiForcePlanning { get; internal set; }
         public float PeaceTargetRatio { get; internal set; } = 0.35f;
         public int PeaceMinimumCount { get; internal set; } = 50;
-        public float AggressiveWarDispositionThreshold { get; internal set; } = 20f;
+        public float AggressiveWarDispositionThreshold { get; internal set; } = -50f;
         public float OwnFiefDefenseTargetRatio { get; internal set; } = 1f;
         public float InteriorGarrisonUpperRatio { get; internal set; } = 0.80f;
         public float BorderGarrisonUpperRatio { get; internal set; } = 0.95f;
@@ -260,8 +260,8 @@ namespace ModifiedArmy.common
                 node,
                 "AggressiveWarDispositionThreshold",
                 value.AggressiveWarDispositionThreshold,
-                -100f,
-                100f);
+                -60f,
+                60f);
             value.OwnFiefDefenseTargetRatio = RatioValue(
                 node,
                 "OwnFiefDefenseTargetRatio",

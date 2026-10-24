@@ -42,10 +42,11 @@ namespace ModifiedArmy.ForceManagement.Services
                 ? string.Empty
                 : string.Join(
                     ", ",
-                    patches.Prefixes.Concat(patches.Postfixes)
-                        .OrderBy(item => item.owner)
-                        .ThenByDescending(item => item.priority)
-                        .Select(item => FormatPatch(item.owner, item.priority)));
+                    patches.Prefixes
+                        .Select(item => FormatPatch("Prefix", item))
+                        .Concat(patches.Postfixes.Select(item =>
+                            FormatPatch("Postfix", item)))
+                        .OrderBy(item => item));
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_force_patch_audit");
             message.SetTextVariable(
@@ -60,13 +61,14 @@ namespace ModifiedArmy.ForceManagement.Services
         }
 
         /// <summary>Formats one patch owner and priority through localization.</summary>
-        private static string FormatPatch(string owner, int priority)
+        private static string FormatPatch(string type, Patch patch)
         {
-            TextObject item = GameTexts.FindText(
-                "str_modifiedarmy_force_patch_item");
-            item.SetTextVariable("OWNER", owner ?? "Unknown owner");
-            item.SetTextVariable("PRIORITY", priority);
-            return item.ToString();
+            MethodInfo method = patch?.PatchMethod;
+            string methodName = method == null
+                ? "Unknown method"
+                : $"{method.DeclaringType?.FullName ?? "Unknown type"}.{method.Name}";
+            return $"{type}:{patch?.owner ?? "Unknown owner"} " +
+                $"(priority {patch?.priority ?? 0}, method {methodName})";
         }
     }
 }

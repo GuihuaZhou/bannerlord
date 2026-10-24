@@ -3,6 +3,7 @@ using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;
@@ -75,6 +76,8 @@ namespace ModifiedArmy.ForceManagement.Models
                 !IsAuthorizedRosterPair(
                     source, destination, settlement, context.Purpose))
             {
+                LogRosterRejection(context, source, destination, field,
+                    garrison, kindsMatch);
                 return Reject(context, "InvalidOrUnsafeTransfer");
             }
 
@@ -97,6 +100,11 @@ namespace ModifiedArmy.ForceManagement.Models
             }
             if (allowed <= 0)
             {
+                if (RecruitmentLogFilter.ShouldLog(field))
+                    ModLogger.Info($"[ExchangeDiag][NoApprovedCapacity] " +
+                        $"op={context.OperationId}, operation={context.Operation}, " +
+                        $"requested={context.RequestedCount}, sourceRegulars={source?.MemberRoster?.TotalRegulars ?? 0}, " +
+                        $"destinationRegulars={destination?.MemberRoster?.TotalRegulars ?? 0}");
                 return Reject(context, "NoApprovedCapacity");
             }
 
@@ -138,6 +146,37 @@ namespace ModifiedArmy.ForceManagement.Models
                     protectedCounts);
             }
             return Finish(context, result);
+        }
+
+        /// <summary>
+        /// Reads and decomposes the existing composite rejection condition. This
+        /// diagnostic must not prepare the context again, reconcile fief batches,
+        /// evaluate mutable recruitment plans, or modify either roster.
+        /// </summary>
+        private static void LogRosterRejection(
+            PartyExchangeContext context,
+            MobileParty source,
+            MobileParty destination,
+            MobileParty field,
+            MobileParty garrison,
+            bool kindsMatch)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(field))
+                return;
+            Settlement settlement = context.TargetSettlement;
+            string failed = !kindsMatch ? "SourceKindMismatch" :
+                field?.CurrentSettlement != settlement ? "FieldNotAtSettlement" :
+                source?.ActualClan == null ? "SourceClanNull" :
+                destination?.ActualClan == null ? "DestinationClanNull" :
+                source.ActualClan != destination.ActualClan ? "PartyClanMismatch" :
+                source.ActualClan != settlement?.OwnerClan ? "OwnerMismatch" :
+                "CaptureExceptionOrSafetyPredicate";
+            ModLogger.Info($"[ExchangeDiag][BuildPlanRejected] op={context.OperationId}, " +
+                $"operation={context.Operation}, request={context.RequestedCount}, " +
+                $"kindsMatch={kindsMatch}, sourceIsGarrison={source == garrison}, " +
+                $"destinationIsGarrison={destination == garrison}, atSettlement={field?.CurrentSettlement == settlement}, " +
+                $"sourceClan={source?.ActualClan?.StringId ?? "null"}, destinationClan={destination?.ActualClan?.StringId ?? "null"}, " +
+                $"ownerClan={settlement?.OwnerClan?.StringId ?? "null"}, failed={failed}");
         }
 
         /// <summary>

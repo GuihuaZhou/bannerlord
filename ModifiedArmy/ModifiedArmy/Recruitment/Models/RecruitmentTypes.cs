@@ -24,7 +24,8 @@ namespace ModifiedArmy.Recruitment.Models
         PartySize,
         WageLimit,
         RecruitmentCost,
-        MaintenanceFunds
+        MaintenanceFunds,
+        BanditTroopExcluded
     }
 
 }

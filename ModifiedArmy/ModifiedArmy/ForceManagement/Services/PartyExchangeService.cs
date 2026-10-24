@@ -382,13 +382,6 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty party = plan?.Initiator ??
                 plan?.Destination?.Party ?? plan?.Source?.Party;
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
-            if (result?.Executed != true &&
-                plan?.OperationId?.StartsWith(
-                    "visit:", StringComparison.Ordinal) == true &&
-                (result.ReasonCode == "NoApprovedCapacity" ||
-                 result.ReasonCode == "NoApprovedTroops" ||
-                 result.ReasonCode == "EmptyManifest"))
-                return;
             TextObject partyName = PartyLogFormatter.GetDisplayName(party);
             TextObject settlementName = plan?.TargetSettlement?.Name ??
                 plan?.Source?.Settlement?.Name ??

@@ -35,7 +35,7 @@ namespace ModifiedArmy.ForceManagement.Models
             _warDisposition?.TryGet(clan, out disposition, out bridgeWar);
             disposition = Math.Max(-100f, Math.Min(100f, disposition));
             bool aggressive = atWar &&
-                disposition > config.AggressiveWarDispositionThreshold;
+                disposition >= config.AggressiveWarDispositionThreshold;
             ForceScenario scenario;
             float ratio;
 
@@ -47,7 +47,9 @@ namespace ModifiedArmy.ForceManagement.Models
             else if (atWar)
             {
                 scenario = ForceScenario.WarRoutine;
-                ratio = GetWarTargetRatio(disposition);
+                ratio = GetWarTargetRatio(
+                    disposition,
+                    config.AggressiveWarDispositionThreshold);
             }
             else
             {
@@ -81,22 +83,29 @@ namespace ModifiedArmy.ForceManagement.Models
             };
         }
 
-        public static float GetWarTargetRatio(float disposition)
+        /// <summary>
+        /// Converts wartime disposition into a force target ratio. Values at or
+        /// below -80 retain a 30% floor. The pre-threshold shoulder reaches a 50%
+        /// plateau, while reaching the configured threshold immediately enters the
+        /// aggressive 61%-95% segment. This deliberate step keeps the target above
+        /// the vanilla army participation ratio once aggressive behavior begins.
+        /// </summary>
+        public static float GetWarTargetRatio(float disposition, float threshold)
         {
             float value = Math.Max(-100f, Math.Min(100f, disposition));
-            if (value <= 0f)
-            {
-                return 0.35f + 0.0015f * (value + 100f);
-            }
-            if (value <= 20f)
-            {
-                return 0.50f;
-            }
-            if (value <= 60f)
-            {
-                return 0.60f + 0.005f * (value - 20f);
-            }
-            return 0.80f + 0.00375f * (value - 60f);
+            // Reject invalid programmatic values here even though XML parsing also
+            // clamps configuration input. This keeps the public model deterministic
+            // when called by tests or another mod.
+            if (float.IsNaN(threshold) || float.IsInfinity(threshold) ||
+                threshold < -60f || threshold > 60f)
+                throw new ArgumentOutOfRangeException(nameof(threshold));
+            if (value <= -80f) return 0.30f;
+            if (value < threshold - 10f)
+                return 0.30f + 0.20f * (value + 80f) / (threshold + 70f);
+            if (value < threshold) return 0.50f;
+            if (value < 80f)
+                return 0.61f + 0.34f * (value - threshold) / (80f - threshold);
+            return 0.95f;
         }
 
         private static bool IsAtFormalWar(Clan clan)

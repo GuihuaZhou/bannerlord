@@ -77,13 +77,6 @@ namespace ModifiedArmy.Garrison.Patches
             return true;
         }
 
-        public static void Postfix(
-            MobileParty mobileParty,
-            Settlement settlement)
-        {
-            // The independent PartyExchangeBehavior owns SettlementEntered.
-            // Keeping this postfix empty avoids a second visit transaction.
-        }
     }
 
     /// <summary>

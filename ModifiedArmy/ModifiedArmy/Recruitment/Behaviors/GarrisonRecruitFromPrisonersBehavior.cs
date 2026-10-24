@@ -889,6 +889,9 @@ namespace ModifiedArmy.Models
                 case RecruitmentLimitReason.MaintenanceFunds:
                     return GameTexts.FindText(
                         "str_modifiedarmy_recruit_limit_maintenance");
+                case RecruitmentLimitReason.BanditTroopExcluded:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_recruit_limit_bandit");
                 default:
                     return GameTexts.FindText(
                         "str_modifiedarmy_recruit_limit_none");

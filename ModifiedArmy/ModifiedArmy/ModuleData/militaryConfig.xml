@@ -121,7 +121,7 @@
         <PeaceTargetRatio value="0.35"/>
         <!-- PeaceMinimumCount：和平目标的最低人数；仍不会突破实际编制上限。 -->
         <PeaceMinimumCount value="50"/>
-        <!-- AggressiveWarDispositionThreshold：超过该战争倾向后按积极战争目标扩军；可填 -100～100。 -->
+        <!-- AggressiveWarDispositionThreshold：达到阈值时战时目标从最高50%跃升至61%，允许范围-60～60。 -->
         <AggressiveWarDispositionThreshold value="-50"/>
         <!-- OwnFiefDefenseTargetRatio：赶赴防守自有被围封邑时的目标编制比例。 -->
         <OwnFiefDefenseTargetRatio value="1.00"/>
