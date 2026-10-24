@@ -4,19 +4,6 @@ using System.Text;
 
 namespace ModifiedArmy.common
 {
-    /// <summary>
-    /// 士兵类型：扈从、军士、民兵、水兵、军事奴隶
-    /// </summary>
-    public enum SoldierType
-    {
-        Retinue,
-        Sergeant,
-        Militia,
-        Marine,
-        Slave,
-        Other
-    }
-
     public static class GarrisonConstants
     {
         /// <summary>

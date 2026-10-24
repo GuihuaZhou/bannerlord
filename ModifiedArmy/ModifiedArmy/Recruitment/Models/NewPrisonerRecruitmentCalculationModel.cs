@@ -30,23 +30,13 @@ namespace ModifiedArmy.Models
                 return Math.Max(0, (character.Level + 3) * (character.Level + 3) - 10);
             }
 
-            // 2. 正规军：根据 SoldierType 调整
+            // 2. 正规军直接按游戏实际 Tier 决定偏移。
+            // Tier 1-2 为普通兵，Tier 3-4 为受训兵，Tier 5+ 为精锐兵。
             if (character.Occupation == Occupation.Soldier)
             {
-                SoldierType type = SoldierTypeClassifier.GetSoldierType(character);
-                int levelOffset = 6; // 默认 (Militia)
-
-                switch (type)
-                {
-                    case SoldierType.Sergeant:
-                    case SoldierType.Marine:
-                    case SoldierType.Slave:
-                        levelOffset = 15; // 军士等
-                        break;
-                    case SoldierType.Retinue:
-                        levelOffset = 25; // 扈从需要显著更高的难度
-                        break;
-                }
+                int levelOffset = character.Tier >= 5
+                    ? 25
+                    : character.Tier >= 3 ? 15 : 6;
 
                 return Math.Max(0, (character.Level + levelOffset) * (character.Level + levelOffset) - 10);
             }

@@ -66,13 +66,10 @@ namespace ModifiedArmy.Recruitment.Patches
                         continue;
                     }
 
-                    SoldierType type = SoldierTypeClassifier
-                        .GetSoldierType(troop);
+                    // Tier 3+ 对应原有“受训及以上”留用范围；
+                    // 直接使用游戏数据，不再查询任何分类表。
                     bool useful = troop.Occupation == Occupation.Mercenary ||
-                        type == SoldierType.Retinue ||
-                        type == SoldierType.Marine ||
-                        type == SoldierType.Sergeant ||
-                        type == SoldierType.Slave;
+                        troop.Tier >= 3;
                     int retained = useful
                         ? Math.Min(troopRosterElement.Number, retainCapacity)
                         : 0;

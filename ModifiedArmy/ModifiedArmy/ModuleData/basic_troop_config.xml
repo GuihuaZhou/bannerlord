@@ -1,68 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <BasicTroopGroups>
   <BasicTroopGroup id="basic_troops_empire" culture="Culture.empire">
-    <troop id="NPCCharacter.imperial_cataphract" barracksLevel="3" legacyType="Retinue" />
-    <troop id="NPCCharacter.imperial_equite" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.imperial_veteran_infantryman" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.imperial_menavliaton" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.imperial_veteran_archer" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.imperial_crossbowman" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.empire_marine_t3" barracksLevel="2" legacyType="Marine" />
-    <troop id="NPCCharacter.imperial_infantryman" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.imperial_archer" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.imperial_cataphract" barracksLevel="3" />
+    <troop id="NPCCharacter.imperial_equite" barracksLevel="1" />
+    <troop id="NPCCharacter.imperial_veteran_infantryman" barracksLevel="1" />
+    <troop id="NPCCharacter.imperial_menavliaton" barracksLevel="1" />
+    <troop id="NPCCharacter.imperial_veteran_archer" barracksLevel="2" />
+    <troop id="NPCCharacter.imperial_crossbowman" barracksLevel="2" />
+    <troop id="NPCCharacter.empire_marine_t3" barracksLevel="2" />
+    <troop id="NPCCharacter.imperial_infantryman" barracksLevel="0" />
+    <troop id="NPCCharacter.imperial_archer" barracksLevel="0" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_aserai" culture="Culture.aserai">
-    <troop id="NPCCharacter.aserai_faris" barracksLevel="0" legacyType="Retinue" />
-    <troop id="NPCCharacter.aserai_archer" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.aserai_infantry" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.aserai_marine_t4" barracksLevel="2" legacyType="Marine" />
-    <troop id="NPCCharacter.aserai_tribesman" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.aserai_mameluke_axeman" barracksLevel="2" legacyType="Slave" />
-    <troop id="NPCCharacter.aserai_mameluke_regular" barracksLevel="3" legacyType="Slave" />
+    <troop id="NPCCharacter.aserai_faris" barracksLevel="0" />
+    <troop id="NPCCharacter.aserai_archer" barracksLevel="2" />
+    <troop id="NPCCharacter.aserai_infantry" barracksLevel="1" />
+    <troop id="NPCCharacter.aserai_marine_t4" barracksLevel="2" />
+    <troop id="NPCCharacter.aserai_tribesman" barracksLevel="0" />
+    <troop id="NPCCharacter.aserai_mameluke_axeman" barracksLevel="2" />
+    <troop id="NPCCharacter.aserai_mameluke_regular" barracksLevel="3" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_sturgia" culture="Culture.sturgia">
-    <troop id="NPCCharacter.druzhinnik" barracksLevel="3" legacyType="Retinue" />
-    <troop id="NPCCharacter.sturgian_berzerker" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.sturgian_archer" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.sturgian_spearman" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.sturgian_hardened_brigand" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.sturgia_marine_t3" barracksLevel="2" legacyType="Marine" />
-    <troop id="NPCCharacter.sturgian_warrior" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.sturgian_woodsman" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.druzhinnik" barracksLevel="3" />
+    <troop id="NPCCharacter.sturgian_berzerker" barracksLevel="2" />
+    <troop id="NPCCharacter.sturgian_archer" barracksLevel="2" />
+    <troop id="NPCCharacter.sturgian_spearman" barracksLevel="1" />
+    <troop id="NPCCharacter.sturgian_hardened_brigand" barracksLevel="2" />
+    <troop id="NPCCharacter.sturgia_marine_t3" barracksLevel="2" />
+    <troop id="NPCCharacter.sturgian_warrior" barracksLevel="0" />
+    <troop id="NPCCharacter.sturgian_woodsman" barracksLevel="0" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_vlandia" culture="Culture.vlandia">
-    <troop id="NPCCharacter.vlandian_knight" barracksLevel="0" legacyType="Retinue" />
-    <troop id="NPCCharacter.vlandian_billman" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.vlandian_light_cavalry" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.vlandian_swordsman" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.vlandian_hardened_crossbowman" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.vlandian_marine_t4" barracksLevel="2" legacyType="Marine" />
-    <troop id="NPCCharacter.vlandian_footman" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.vlandian_levy_crossbowman" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.vlandian_knight" barracksLevel="0" />
+    <troop id="NPCCharacter.vlandian_billman" barracksLevel="1" />
+    <troop id="NPCCharacter.vlandian_light_cavalry" barracksLevel="2" />
+    <troop id="NPCCharacter.vlandian_swordsman" barracksLevel="1" />
+    <troop id="NPCCharacter.vlandian_hardened_crossbowman" barracksLevel="2" />
+    <troop id="NPCCharacter.vlandian_marine_t4" barracksLevel="2" />
+    <troop id="NPCCharacter.vlandian_footman" barracksLevel="0" />
+    <troop id="NPCCharacter.vlandian_levy_crossbowman" barracksLevel="0" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_battania" culture="Culture.battania">
-    <troop id="NPCCharacter.battanian_hero" barracksLevel="0" legacyType="Retinue" />
-    <troop id="NPCCharacter.battanian_veteran_skirmisher" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.battanian_falxman" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.battanian_marine_t4" barracksLevel="2" legacyType="Marine" />
-    <troop id="NPCCharacter.battanian_clanwarrior" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.battanian_woodrunner" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.battanian_hero" barracksLevel="0" />
+    <troop id="NPCCharacter.battanian_veteran_skirmisher" barracksLevel="1" />
+    <troop id="NPCCharacter.battanian_falxman" barracksLevel="1" />
+    <troop id="NPCCharacter.battanian_marine_t4" barracksLevel="2" />
+    <troop id="NPCCharacter.battanian_clanwarrior" barracksLevel="0" />
+    <troop id="NPCCharacter.battanian_woodrunner" barracksLevel="0" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_khuzait" culture="Culture.khuzait">
-    <troop id="NPCCharacter.khuzait_torguud" barracksLevel="0" legacyType="Retinue" />
-    <troop id="NPCCharacter.khuzait_archer" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.khuzait_spear_infantry" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.khuzait_lancer" barracksLevel="0" legacyType="Sergeant" />
-    <troop id="NPCCharacter.khuzait_horse_archer" barracksLevel="0" legacyType="Sergeant" />
-    <troop id="NPCCharacter.khuzait_footman" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.khuzait_torguud" barracksLevel="0" />
+    <troop id="NPCCharacter.khuzait_archer" barracksLevel="2" />
+    <troop id="NPCCharacter.khuzait_spear_infantry" barracksLevel="1" />
+    <troop id="NPCCharacter.khuzait_lancer" barracksLevel="0" />
+    <troop id="NPCCharacter.khuzait_horse_archer" barracksLevel="0" />
+    <troop id="NPCCharacter.khuzait_footman" barracksLevel="0" />
   </BasicTroopGroup>
   <BasicTroopGroup id="basic_troops_nord" culture="Culture.nord">
-    <troop id="NPCCharacter.nord_jarlsmann" barracksLevel="0" legacyType="Retinue" />
-    <troop id="NPCCharacter.nord_boandi" barracksLevel="1" legacyType="Sergeant" />
-    <troop id="NPCCharacter.nord_vargr" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.nord_hew-bearer" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.nord_marksman" barracksLevel="2" legacyType="Sergeant" />
-    <troop id="NPCCharacter.nord_axe_warrior" barracksLevel="0" legacyType="Militia" />
-    <troop id="NPCCharacter.nord_freeman_archer" barracksLevel="0" legacyType="Militia" />
+    <troop id="NPCCharacter.nord_jarlsmann" barracksLevel="0" />
+    <troop id="NPCCharacter.nord_boandi" barracksLevel="1" />
+    <troop id="NPCCharacter.nord_vargr" barracksLevel="2" />
+    <troop id="NPCCharacter.nord_hew-bearer" barracksLevel="2" />
+    <troop id="NPCCharacter.nord_marksman" barracksLevel="2" />
+    <troop id="NPCCharacter.nord_axe_warrior" barracksLevel="0" />
+    <troop id="NPCCharacter.nord_freeman_archer" barracksLevel="0" />
   </BasicTroopGroup>
 </BasicTroopGroups>

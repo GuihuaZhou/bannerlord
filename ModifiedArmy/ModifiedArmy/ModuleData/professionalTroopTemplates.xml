@@ -7,7 +7,7 @@
     troop 的 barracksLevel 不在本文件重复定义，而是统一读取
     basic_troop_config.xml 中对应兵种的基础属性。
 
-    外层 SoldierType 节点仅用于兼容现有分类与提高可读性。
+    TroopComposition 内直接列出具体兵种及其生产权重。
     当日职业兵构成由每个 troop 的 weight 决定。
   -->
   <!-- Empire -->

@@ -122,7 +122,6 @@ namespace ModifiedArmy.Models.Fief
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
-            SoldierTypeClassifier.InitializeAll();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
             RebuildServingDetachmentIndex();
