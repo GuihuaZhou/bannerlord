@@ -279,11 +279,25 @@
     <string id="str_modifiedarmy_supply_party_creation_failed"
         text="{=ModifiedArmy_SupplyPartyCreationFailed}[驻军后勤] {HOME_NAME}无法创建征粮队. 错误信息为{ERROR}." />
     <string id="str_modifiedarmy_supply_party_dispatched"
-        text="{=ModifiedArmy_SupplyPartyDispatched}[驻军后勤] {HOME_NAME}派出{ESCORT}人的征粮队前往{SOURCE_NAME}, 计划运回{REQUESTED}单位食物." />
+        text="{=ModifiedArmy_SupplyPartyDispatched}[Supply Party] {HOME_NAME} dispatched {ESCORT} escorts to {SOURCE_NAME} for {REQUESTED} food, carrying {PROVISIONS} food for an estimated {PROVISION_DAYS} days." />
     <string id="str_modifiedarmy_supply_party_returned"
         text="{=ModifiedArmy_SupplyPartyReturned}[驻军后勤] {HOME_NAME}征粮队带回{FOOD}单位食物." />
     <string id="str_modifiedarmy_supply_route"
         text="{=ModifiedArmy_SupplyRoute}[Supply Route] event={EVENT}, party={PARTY}, mode={MODE}, state={STATE}, source={SOURCE}, destination={DESTINATION}." />
+    <string id="str_modifiedarmy_supply_provision_plan"
+        text="{=ModifiedArmy_SupplyProvisionPlan}[Supply Provisions] The foraging route from {HOME_NAME} to {SOURCE_NAME} is {DISTANCE} units long. The outward journey should take {TRAVEL_DAYS} days and the return journey {RETURN_DAYS} days, with another {SAFETY_DAYS} days held in reserve. The party consumes about {DAILY_DEMAND} food each day and therefore needs {REQUIRED} food for {REQUIRED_DAYS} days. After keeping {RESERVE} food for the garrison, {AVAILABLE} food was available and {LOADED} was loaded. The party is {REASON}." />
+    <string id="str_modifiedarmy_supply_provision_rejected"
+        text="{=ModifiedArmy_SupplyProvisionRejected}[Supply Party] {HOME_NAME} could not dispatch its foraging party to {SOURCE_NAME}: {REASON}. It needed {REQUIRED} food but only loaded {LOADED} from {AVAILABLE} available after reserving {RESERVE}; the escort and cargo were returned." />
+    <string id="str_modifiedarmy_supply_route_command"
+        text="{=ModifiedArmy_SupplyRouteCommand}[Supply Route] {PARTY} reset its route because it was {REASON}. Its home is {HOME}, its food source is {SOURCE}, and it is currently {STATE} with {REQUESTED} food still to collect. It had been {DEFAULT} toward {CURRENT_TARGET} and will now travel toward {EXPECTED_TARGET}. Its short-term order is {SHORT_TERM} toward {SHORT_TARGET}. It is at {POSITION}, {DISTANCE} units from the destination. Nearby threat status: {SUPERIOR_ENEMY}." />
+    <string id="str_modifiedarmy_supply_route_mismatch"
+        text="{=ModifiedArmy_SupplyRouteMismatch}[Supply Route] {PARTY} was no longer traveling toward its mission destination, {EXPECTED_TARGET}. It was {DEFAULT} toward {CURRENT_TARGET}, while its short-term order was {SHORT_TERM} toward {SHORT_TARGET}. It is at {POSITION}, {DISTANCE} units from the mission destination. No threat pause is active, so the mission controller will restore the route." />
+    <string id="str_modifiedarmy_supply_health"
+        text="{=ModifiedArmy_SupplyHealth}[Supply Status] {PARTY} has {TOTAL} escorts, including {WOUNDED} wounded. It carries {FOOD} food, consumes about {FOOD_CHANGE} food each day, and has about {FOOD_DAYS} days of food remaining. It is {STARVING}, is currently {STATE}, and is traveling toward {TARGET}. This record shows sequence only and does not claim what caused the wounds." />
+    <string id="str_modifiedarmy_supply_food_risk"
+        text="{=ModifiedArmy_SupplyFoodRisk}[Supply Party] {PARTY} has only {FOOD} food ({FOOD_DAYS} days) but needs about {REQUIRED_DAYS} days to reach safety. Action={ACTION}, target={TARGET}." />
+    <string id="str_modifiedarmy_supply_threat_diagnostic"
+        text="{=ModifiedArmy_SupplyThreatDiagnostic}[Supply Route] {PARTY} {STATUS}. Nearby threat status: {SUPERIOR_ENEMY}. Its current movement is {SHORT_TERM} toward {SHORT_TARGET}." />
     <string id="str_modifiedarmy_transport_event"
         text="{=ModifiedArmy_TransportEvent}[Transport] mission={MISSION}, mode={MODE}, event={EVENT}, state={STATE}, clan={CLAN}, source={SOURCE}, destination={DESTINATION}, requested troops={REQUESTED_TROOPS}, requested food={REQUESTED_FOOD}, actual troops={ACTUAL_TROOPS}, actual food={ACTUAL_FOOD}, event amount={EVENT_AMOUNT}." />
     <string id="str_modifiedarmy_transport_scan"

@@ -191,7 +191,43 @@
     <string id="ModifiedArmy_ForceReasonBelowTarget" text="低于目标" />
     <string id="ModifiedArmy_ForceReasonTargetReached" text="已达目标" />
     <!-- 运输系统日志：日志模板。只调整text内容，不要修改id和{变量名}。 -->
-    <string id="ModifiedArmy_SupplyRoute" text="[运输路线] {PARTY}{EVENT}。这支队伍正在执行{MODE}任务，目前处于“{STATE}”阶段，原定从{SOURCE}前往{DESTINATION}。" />
+    <string id="ModifiedArmy_SupplyRoute" text="[征粮队路线] {PARTY}{EVENT}。这支队伍正在执行{MODE}任务，目前处于“{STATE}”阶段，原定从{SOURCE}前往{DESTINATION}。" />
+    <string id="ModifiedArmy_SupplyPartyDispatched" text="[征粮队] {HOME_NAME}派出{ESCORT}名护卫前往{SOURCE_NAME}征粮，计划运回{REQUESTED}单位粮食；出发时携带{PROVISIONS}单位口粮，预计可维持{PROVISION_DAYS}天。" />
+    <string id="ModifiedArmy_SupplyProvisionPlan" text="[征粮队口粮] 从{HOME_NAME}前往{SOURCE_NAME}的路程约为{DISTANCE}，预计去程需要{TRAVEL_DAYS}天，返程需要{RETURN_DAYS}天，另外再预留{SAFETY_DAYS}天。队伍每天大约消耗{DAILY_DEMAND}单位粮食，因此要为{REQUIRED_DAYS}天的行程准备{REQUIRED}单位粮食。驻军留下{RESERVE}单位应急口粮后还有{AVAILABLE}单位可用，本次实际装载了{LOADED}单位，当前判断为{REASON}。" />
+    <string id="ModifiedArmy_SupplyProvisionRejected" text="[征粮队] {HOME_NAME}原计划派往{SOURCE_NAME}的征粮队未能出发，原因是{REASON}。队伍需要{REQUIRED}单位口粮；驻军留下{RESERVE}单位应急口粮后还有{AVAILABLE}单位可用，本次实际装载{LOADED}单位。护卫和物资已经归还。" />
+    <string id="ModifiedArmy_SupplyProvisionCapacity" text="运输空间不足" />
+    <string id="ModifiedArmy_SupplyProvisionGranary" text="驻军粮仓口粮不足" />
+    <string id="ModifiedArmy_SupplyProvisionDemand" text="无法可靠计算队伍的每日耗粮" />
+    <string id="ModifiedArmy_SupplyProvisionReady" text="可以出发" />
+    <string id="ModifiedArmy_SupplyRouteCommand" text="[征粮队路线] {PARTY}因为{REASON}重新设定了路线。队伍的家乡是{HOME}，粮源是{SOURCE}，当前任务进度为{STATE}，还要取得{REQUESTED}单位粮食。队伍原本正在{DEFAULT}，目标是{CURRENT_TARGET}，现在改为前往{EXPECTED_TARGET}。当前短期安排是{SHORT_TERM}，短期目标是{SHORT_TARGET}，距离目的地还有{DISTANCE}。附近{SUPERIOR_ENEMY}。" />
+    <string id="ModifiedArmy_SupplyRouteMismatch" text="[征粮队路线] {PARTY}没有继续前往任务目标{EXPECTED_TARGET}。队伍当前正在{DEFAULT}，目标是{CURRENT_TARGET}，短期安排是{SHORT_TERM}，短期目标是{SHORT_TARGET}，距离任务目标还有{DISTANCE}。目前没有受到敌情影响，管理器将恢复原定路线。" />
+    <string id="ModifiedArmy_SupplyHealth" text="[征粮队状况] {PARTY}共有{TOTAL}名护卫，其中{WOUNDED}名伤员。队伍携带{FOOD}单位粮食，每天大约消耗{FOOD_CHANGE}单位，预计还能维持{FOOD_DAYS}天。队伍目前{STARVING}，当前任务进度为{STATE}，目标是{TARGET}。这条记录只说明事情发生的先后，不判断伤员是怎样产生的。" />
+    <string id="ModifiedArmy_SupplyFoodRisk" text="[征粮队] {PARTY}只剩{FOOD}单位口粮，预计可维持{FOOD_DAYS}天，但到达安全地点约需{REQUIRED_DAYS}天。队伍已经{ACTION}，当前目标是{TARGET}。" />
+    <string id="ModifiedArmy_SupplyFoodActionCloserSource" text="改去更近的粮源" />
+    <string id="ModifiedArmy_SupplyFoodActionReturnHome" text="中止任务并返乡" />
+    <string id="ModifiedArmy_SupplyFoodActionContinue" text="继续前往当前最近的安全目标" />
+    <string id="ModifiedArmy_SupplyThreatDiagnostic" text="[征粮队路线] {PARTY}{STATUS}。附近{SUPERIOR_ENEMY}。队伍当前正在{SHORT_TERM}，目标是{SHORT_TARGET}。" />
+    <string id="ModifiedArmy_SupplyThreatResumed" text="确认威胁已经解除，准备恢复任务路线" />
+    <string id="ModifiedArmy_SupplyThreatPaused" text="发现威胁，暂时停止重申任务路线" />
+    <string id="ModifiedArmy_SupplyRouteInitialDispatch" text="首次派遣" />
+    <string id="ModifiedArmy_SupplyRouteToSource" text="继续前往粮源" />
+    <string id="ModifiedArmy_SupplyRouteReturnHome" text="继续返乡" />
+    <string id="ModifiedArmy_SupplyRouteEmergencySource" text="改去应急粮源" />
+    <string id="ModifiedArmy_SupplyRouteUnsafeReturn" text="口粮不足，提前返乡" />
+    <string id="ModifiedArmy_SupplyRouteStateChange" text="任务阶段发生变化" />
+    <string id="ModifiedArmy_CommonNone" text="无" />
+    <string id="ModifiedArmy_SuperiorEnemyFound" text="发现了更强的敌军" />
+    <string id="ModifiedArmy_SuperiorEnemyNotFound" text="没有发现更强的敌军" />
+    <string id="ModifiedArmy_SupplyStarvingYes" text="饥饿状态尚未解除" />
+    <string id="ModifiedArmy_SupplyStarvingNo" text="没有挨饿" />
+    <string id="ModifiedArmy_AiBehaviorGoToSettlement" text="前往定居点" />
+    <string id="ModifiedArmy_AiBehaviorHold" text="原地等待" />
+    <string id="ModifiedArmy_AiBehaviorFleeToPoint" text="逃往安全地点" />
+    <string id="ModifiedArmy_AiBehaviorFleeToGate" text="逃往定居点城门" />
+    <string id="ModifiedArmy_AiBehaviorFleeToParty" text="靠近友军避险" />
+    <string id="ModifiedArmy_AiBehaviorGoAroundParty" text="绕开其他部队" />
+    <string id="ModifiedArmy_AiBehaviorGoToPoint" text="前往地图上的指定地点" />
+    <string id="ModifiedArmy_AiBehaviorOther" text="执行其他移动安排" />
     <string id="ModifiedArmy_TransportEvent" text="[运输任务] {MISSION}{EVENT}。这支队伍正在执行{MODE}任务，目前处于“{STATE}”阶段，属于{CLAN}，原定从{SOURCE}前往{DESTINATION}；出发时计划运送{REQUESTED_TROOPS}名士兵和{REQUESTED_FOOD}单位粮食，现在还剩{ACTUAL_TROOPS}人和{ACTUAL_FOOD}单位粮食，本次变化量为{EVENT_AMOUNT}。" />
     <string id="ModifiedArmy_TransportScan" text="[运输调度] {CLAN}今天完成了运输安排，新派出{MILITARY}支军事增援队和{AID}支援粮队。" />
 
