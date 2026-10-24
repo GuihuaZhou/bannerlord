@@ -66,14 +66,28 @@
   
   <string id="imperial_young_archer" text="帝国青年射手"/>
   <string id="imperial_legion_recruitJ" text="帝国军团青年步兵"/>
+  <string id="imperial_guard_infantry" text="帝国禁卫步兵"/>
+
   <string id="yrGYZsQ7" text="帝国军团步兵"/>
   <string id="e8qbF7Ey" text="帝国军团枪兵"/>
   <string id="JGsUtBT3" text="帝国军团资深步兵"/>
   <string id="qAsnj7vU" text="帝国军团资深枪兵"/>
-  <string id="imperial_guard_infantry" text="帝国禁卫步兵"/>
-  <string id="1PsLlMaQ" text="帝国公民骑兵"/>
   <string id="THyv3q9f" text="帝国弩手军士"/>
-  <string id="pRbbJHkU" text="帝国弓骑兵"/>
+  <string id="PvUgOdjT" text="帝国青年水兵"/>
+  <string id="TwjhbnlW" text="帝国水兵"/>
+  <string id="4o1howUZ" text="帝国资深水兵"/>
+  
+  <string id="IfjWyWjc" text="（军区）帝国轻步兵"/>
+  <string id="IZ8OmByJ" text="（军区）帝国步兵"/>
+  <string id="LbjxH9yp" text="（军区）帝国轻装射手"/>
+  <string id="fHQ8ifKM" text="（军区）帝国射手"/>
+  <string id="1PsLlMaQ" text="（军区）帝国轻骑兵"/>
+  <string id="pRbbJHkU" text="（军区）帝国弓骑兵"/>
+  <string id="eYIMQafj" text="（军区）帝国重骑兵"/>
+
+  <string id="G9ByT85b" text="青年兵"/>
+  <string id="qMYpZKWo" text="成年兵"/>
+  <string id="cOt1onbR" text="壮年兵"/>
 
 
   <string id="QhNpvW0Y" text="库塞特卫士"/>
@@ -101,13 +115,6 @@
   <string id="khuzait_young_infantry" text="库塞特青年步兵"/>
   <string id="sturgian_young_infantry" text="斯特吉亚青年步兵"/>
   <string id="vlandian_young_infantry" text="瓦兰迪亚青年步兵"/>
-  
-
-
-  <string id="PvUgOdjT" text="帝国青年水兵"/>
-  <string id="TwjhbnlW" text="帝国水兵"/>
-  <string id="4o1howUZ" text="帝国资深水兵"/>
-
 
   <string id="fKl3b9hT" text="斯特吉亚青年水兵"/>
   <string id="Ow9dH1pP" text="斯特吉亚水兵"/>

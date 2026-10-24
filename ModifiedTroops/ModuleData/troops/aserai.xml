@@ -62,7 +62,7 @@
 					id="Item.southern_spear_4_t3" />
 				<equipment
 					slot="Head"
-					id="Item.pointed_skullcap_over_laced_coif" />
+					id="Item.trailed_desert_helmet" />
 				<equipment
 					slot="Body"
 					id="Item.desert_padded_cloth" />
@@ -88,7 +88,7 @@
 					id="Item.southern_spear_4_t3" />
 				<equipment
 					slot="Head"
-					id="Item.pointed_skullcap_over_laced_coif" />
+					id="Item.open_desert_helmet" />
 				<equipment
 					slot="Body"
 					id="Item.desert_padded_cloth" />
@@ -123,7 +123,7 @@
 					id="Item.desert_leather_shoulderpad" />
 				<equipment
 					slot="Head"
-					id="Item.pointed_skullcap_over_laced_coif" />
+					id="Item.closed_desert_helmet" />
 				<equipment
 					slot="Gloves"
 					id="Item.rough_tied_bracers" />
@@ -217,7 +217,7 @@
 					id="Item.pointed_skullcap_over_laced_coif" />
 				<equipment
 					slot="Body"
-					id="Item.desert_padded_cloth" />
+					id="Item.ringed_desert_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.steppe_leather_boots" />
@@ -317,7 +317,7 @@
 					id="Item.default_arrows" />
 				<equipment
 					slot="Head"
-					id="Item.desert_helmet" />
+					id="Item.trailed_desert_helmet" />
 				<equipment
 					slot="Cape"
 					id="Item.desert_leather_shoulderpad" />
@@ -346,13 +346,13 @@
 					id="Item.default_arrows" />
 				<equipment
 					slot="Head"
-					id="Item.desert_helmet" />
+					id="Item.open_desert_helmet" />
 				<equipment
 					slot="Cape"
 					id="Item.desert_leather_shoulderpad" />
 				<equipment
 					slot="Body"
-					id="Item.long_padded_robe" />
+					id="Item.ringed_desert_armor" />
 				<equipment
 					slot="Leg"
 					id="Item.steppe_leather_boots" />
@@ -375,7 +375,7 @@
 					id="Item.default_arrows" />
 				<equipment
 					slot="Head"
-					id="Item.desert_helmet" />
+					id="Item.closed_desert_helmet" />
 				<equipment
 					slot="Cape"
 					id="Item.desert_leather_shoulderpad" />
