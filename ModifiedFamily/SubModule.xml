@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Module>
+  <Name value="ModifiedFamily" />
+  <Id value="ModifiedFamily" />
+  <Version value="v1.0.0" />
+  <DefaultModule value="false" />
+  <ModuleCategory value="Singleplayer" />
+  <ModuleType value="Community" />
+  <DependedModules>
+    <!-- Four framework prerequisites used by this mod suite. -->
+    <DependedModule Id="Bannerlord.Harmony" DependentVersion="v2.4.2" Optional="false" />
+    <DependedModule Id="Bannerlord.ButterLib" DependentVersion="v2.12.0" Optional="false" />
+    <DependedModule Id="Bannerlord.MBOptionScreen" DependentVersion="v5.12.3" Optional="false" />
+    <DependedModule Id="Bannerlord.UIExtenderEx" DependentVersion="v2.13.3" Optional="false" />
+
+    <!-- Base-game single-player modules. -->
+    <DependedModule Id="Native" DependentVersion="v1.4.8" Optional="false" />
+    <DependedModule Id="SandBoxCore" DependentVersion="v1.4.8" Optional="false" />
+    <DependedModule Id="Sandbox" DependentVersion="v1.4.8" Optional="false" />
+    <DependedModule Id="CustomBattle" DependentVersion="v1.4.8" Optional="false" />
+    <DependedModule Id="StoryMode" DependentVersion="v1.4.8" Optional="false" />
+  </DependedModules>
+  <SubModules>
+    <SubModule>
+      <Name value="ModifiedFamily" />
+      <DLLName value="ModifiedFamily.dll" />
+      <SubModuleClassType value="ModifiedFamily.Main" />
+      <Tags>
+        <Tag key="DedicatedServerType" value="none" />
+        <Tag key="IsNoRenderModeElement" value="false" />
+      </Tags>
+    </SubModule>
+  </SubModules>
+</Module>
