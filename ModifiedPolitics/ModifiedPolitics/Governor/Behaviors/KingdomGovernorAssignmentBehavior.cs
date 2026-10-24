@@ -17,6 +17,11 @@ namespace ModifiedPolitics.Governor.Behaviors
     {
         private const string FirstEligibleTimeKey = "_modifiedPoliticsGovernorFirstEligibleTime";
 
+        // Automatic kingdom-wide governor reassignment is temporarily paused.
+        // Keep the behavior and its save key registered so existing saves remain
+        // compatible. Set this flag back to true when the mechanism is resumed.
+        private static readonly bool EnableAutomaticGovernorAssignment = false;
+
         private CampaignTime _firstEligibleTime = CampaignTime.Zero;
         private readonly GovernorAssignmentPlanner _planner = new GovernorAssignmentPlanner();
         private readonly GovernorAssignmentExecutor _executor = new GovernorAssignmentExecutor();
@@ -25,7 +30,12 @@ namespace ModifiedPolitics.Governor.Behaviors
 
         public override void RegisterEvents()
         {
-            CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, AssignGovernorsForAllKingdoms);
+            if (EnableAutomaticGovernorAssignment)
+            {
+                CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(
+                    this,
+                    AssignGovernorsForAllKingdoms);
+            }
             CampaignEvents.OnNewGameCreatedEvent.AddNonSerializedListener(this, OnNewGameCreated);
         }
 
