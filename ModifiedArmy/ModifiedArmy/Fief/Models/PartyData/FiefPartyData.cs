@@ -52,6 +52,13 @@ namespace ModifiedArmy.Models.Fief
         [SaveableProperty(7)]
         public List<FiefReturnBatch> ReturnBatches { get; private set; }
 
+        [SaveableProperty(3)] 
+        public int LegacyRetinueCount { get; private set; } = 0;
+        [SaveableProperty(4)] 
+        public int LegacySergeantCount { get; private set; } = 0;
+        [SaveableProperty(5)] 
+        public int LegacyMilitiaCount { get; private set; } = 0;
+
         /// <summary>
         /// 当前封邑使用的部队模板
         /// </summary>

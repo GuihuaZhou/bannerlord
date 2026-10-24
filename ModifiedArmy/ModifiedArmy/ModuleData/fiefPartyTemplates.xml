@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FiefPartyTemplates>
+  <!--
+    封邑部队模板（Fief Party Templates）
+    定义各文化在城镇（town）、港口城镇（town_port）、城堡（castle）中自动生成的部队构成与规模规则。
+
+    每个 <FiefPartyTemplate> 对应一种定居点类型（如 empire_town），
+    仅控制该定居点封邑部队的兵种构成；制度参数统一由 militaryConfig.xml 提供。
+  -->
+  <!-- =============== Empire - 军区制，封邑弱，依赖雇佣兵与驻军 =============== -->
+  <FiefPartyTemplate culture="Culture.empire" id="empire_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.empire_marine_t3" weight="1" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.empire" id="empire_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.empire" id="empire_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Aserai - 伊克塔制，灵活征召，依赖奴隶兵 =============== -->
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.aserai_faris" weight="1" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.aserai_faris" weight="1" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.aserai" id="aserai_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.aserai_faris" weight="1" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Sturgia - 亲兵制，兵力上限高 =============== -->
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.sturgian_hardened_brigand" weight="1" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.sturgian_hardened_brigand" weight="1" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.sturgia" id="sturgia_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.sturgian_hardened_brigand" weight="1" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Vlandia - 西欧采邑制，服役长、征召贵 =============== -->
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Battania - 部落制，依赖乡村，弓箭手传统 =============== -->
+  <FiefPartyTemplate culture="Culture.battania" id="battania_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.battanian_hero" weight="1" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.battania" id="battania_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.battanian_hero" weight="1" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.battania" id="battania_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.battanian_hero" weight="1" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Khuzait - 游牧制，冷却快、召之即来 =============== -->
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.khuzait_lancer" weight="1" />
+      <troop id="NPCCharacter.khuzait_horse_archer" weight="1" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.khuzait_lancer" weight="1" />
+      <troop id="NPCCharacter.khuzait_horse_archer" weight="1" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.khuzait" id="khuzait_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.khuzait_lancer" weight="1" />
+      <troop id="NPCCharacter.khuzait_horse_archer" weight="1" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <!-- =============== Nord - 维京全民战士，民兵占比高 =============== -->
+  <FiefPartyTemplate culture="Culture.nord" id="nord_town_port">
+    <TroopComposition>
+      <troop id="NPCCharacter.nord_jarlsmann" weight="1" />
+      <troop id="NPCCharacter.nord_axe_warrior" weight="2" />
+      <troop id="NPCCharacter.nord_freeman_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.nord" id="nord_town">
+    <TroopComposition>
+      <troop id="NPCCharacter.nord_jarlsmann" weight="1" />
+      <troop id="NPCCharacter.nord_axe_warrior" weight="2" />
+      <troop id="NPCCharacter.nord_freeman_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+  <FiefPartyTemplate culture="Culture.nord" id="nord_castle">
+    <TroopComposition>
+      <troop id="NPCCharacter.nord_jarlsmann" weight="1" />
+      <troop id="NPCCharacter.nord_axe_warrior" weight="2" />
+      <troop id="NPCCharacter.nord_freeman_archer" weight="1" />
+    </TroopComposition>
+  </FiefPartyTemplate>
+</FiefPartyTemplates>

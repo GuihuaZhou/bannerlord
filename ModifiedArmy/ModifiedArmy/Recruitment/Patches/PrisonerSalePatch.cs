@@ -66,13 +66,13 @@ namespace ModifiedArmy.Recruitment.Patches
                         continue;
                     }
 
-                    PrisonerPolicyClass type = PrisonerTroopPolicy
-                        .GetPolicy(troop);
+                    SoldierType type = SoldierTypeClassifier
+                        .GetSoldierType(troop);
                     bool useful = troop.Occupation == Occupation.Mercenary ||
-                        type == PrisonerPolicyClass.Retinue ||
-                        type == PrisonerPolicyClass.Marine ||
-                        type == PrisonerPolicyClass.Sergeant ||
-                        type == PrisonerPolicyClass.Slave;
+                        type == SoldierType.Retinue ||
+                        type == SoldierType.Marine ||
+                        type == SoldierType.Sergeant ||
+                        type == SoldierType.Slave;
                     int retained = useful
                         ? Math.Min(troopRosterElement.Number, retainCapacity)
                         : 0;
