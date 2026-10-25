@@ -68,10 +68,10 @@
   <string id="imperial_legion_recruitJ" text="帝国军团青年步兵"/>
   <string id="imperial_guard_infantry" text="帝国禁卫步兵"/>
 
-  <string id="yrGYZsQ7" text="帝国军团步兵"/>
-  <string id="e8qbF7Ey" text="帝国军团枪兵"/>
-  <string id="JGsUtBT3" text="帝国军团资深步兵"/>
-  <string id="qAsnj7vU" text="帝国军团资深枪兵"/>
+  <string id="yrGYZsQ7" text="帝国步兵"/>
+  <string id="e8qbF7Ey" text="帝国枪兵"/>
+  <string id="JGsUtBT3" text="帝国资深步兵"/>
+  <string id="qAsnj7vU" text="帝国资深枪兵"/>
   <string id="THyv3q9f" text="帝国弩手军士"/>
   <string id="PvUgOdjT" text="帝国青年水兵"/>
   <string id="TwjhbnlW" text="帝国水兵"/>
@@ -81,13 +81,22 @@
   <string id="IZ8OmByJ" text="（军区）帝国步兵"/>
   <string id="LbjxH9yp" text="（军区）帝国轻装射手"/>
   <string id="fHQ8ifKM" text="（军区）帝国射手"/>
-  <string id="1PsLlMaQ" text="（军区）帝国轻骑兵"/>
+  <string id="1PsLlMaQ" text="（军区）帝国骑兵"/>
   <string id="pRbbJHkU" text="（军区）帝国弓骑兵"/>
   <string id="eYIMQafj" text="（军区）帝国重骑兵"/>
 
-  <string id="G9ByT85b" text="青年兵"/>
-  <string id="qMYpZKWo" text="成年兵"/>
-  <string id="cOt1onbR" text="壮年兵"/>
+  <string id="G9ByT85b" text="军团青年兵"/>
+  <string id="qMYpZKWo" text="军团壮年兵"/>
+  <string id="cOt1onbR" text="军团老兵"/>
+  <string id="uViDMxLC" text="护盾兄弟会轻步兵"/>
+  <string id="LXybWXde" text="护盾兄弟会步兵"/>
+  <string id="YGexslSX" text="护盾兄弟会勇士"/>
+  <string id="6j9iJMRr" text="湖鼠帮轻步兵"/>
+  <string id="1gAasy1t" text="湖鼠帮步兵"/>
+  <string id="BC5YGna3" text="湖鼠帮资深步兵"/>
+  <string id="KnhpjA7Y" text="古拉姆轻骑兵"/>
+  <string id="ghilmanUnit" text="古拉姆骑兵"/>
+  <string id="7EUhAv8b" text="古拉姆重骑兵"/>
 
 
   <string id="QhNpvW0Y" text="库塞特卫士"/>
@@ -123,6 +132,7 @@
   <string id="xnzpQbwQ" text="斯特吉亚游击骑兵"/>
   <string id="fdaZ3tri" text="斯特吉亚轻装投掷手"/>
   <string id="RJNNsaSP" text="斯特吉亚投掷手"/>
+  <string id="Sc1d2lsH" text="斯特吉亚斧兵"/>
 
 
   <string id="TDjXoPkn" text="瓦兰迪亚水兵"/>
@@ -141,6 +151,9 @@
   <string id="RRbpc6fr" text="诺德资深侍卫"/>
   <string id="5LvI1bsQ" text="诺德射手"/>
   <string id="mI7igoBF" text="诺德神射手"/>
+
+  <string id="LqTTchsa" text="最后的军团"/>
+  <string id="bhxVA9w7" text="皇帝阿雷尼科斯在潘德拉克战役的惨败之后废除了最后一支帝国常备军，转而依赖开销更少、更适合控制领土的执政官私兵，最后的军团在这样的局势下成立。而这支军团则是由厌恶这种变化的人所组成：他们偏爱昔日的军团，及其规矩、历史与军营生活，他们指责新制度正在摧毁帝国。但无饷不成军，所以他们会同时与帝国领主和外国领主签订契约。"/>
   
  </strings>
 </base>

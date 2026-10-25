@@ -54,13 +54,16 @@
 					id="Item.empire_sword_1_t2" />
 				<equipment
 					slot="Item1"
-					id="Item.battered_kite_shield" />
+					id="Item.bound_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.triangluar_spear_t3" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_leather" />
+					id="Item.roundkettle_over_laced_cloth" />
 				<equipment
 					slot="Body"
-					id="Item.empire_warrior_padded_armor_a" />
+					id="Item.empire_warrior_padded_armor_b" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
@@ -77,13 +80,16 @@
 					id="Item.empire_sword_1_t2" />
 				<equipment
 					slot="Item1"
-					id="Item.battered_kite_shield" />
+					id="Item.bound_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.triangluar_spear_t3" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_leather" />
+					id="Item.leatherlame_roundkettle_over_imperial_leather" />
 				<equipment
 					slot="Body"
-					id="Item.empire_warrior_padded_armor_a" />
+					id="Item.empire_warrior_padded_armor_g" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
@@ -97,13 +103,16 @@
 					id="Item.empire_sword_1_t2" />
 				<equipment
 					slot="Item1"
-					id="Item.old_kite_shield" />
+					id="Item.bound_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.triangluar_spear_t3" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_leather" />
+					id="Item.leatherlame_roundkettle_over_imperial_leather" />
 				<equipment
 					slot="Body"
-					id="Item.empire_warrior_padded_armor_b" />
+					id="Item.empire_warrior_padded_armor_c" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
@@ -146,7 +155,7 @@
 				value="40" />
 			<skill
 				id="Polearm"
-				value="40" />
+				value="70" />
 			<skill
 				id="Bow"
 				value="30" />
@@ -175,11 +184,14 @@
 					slot="Item2"
 					id="Item.western_javelin_1_t2" />
 				<equipment
+					slot="Item3"
+					id="Item.southern_spear_4_t3" />
+				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
 				<equipment
 					slot="Cape"
-					id="Item.empire_warrior_padded_armor_shoulder" />
+					id="Item.empire_plate_armor_shoulder_b" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -188,7 +200,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.leatherlame_roundkettle" />
+					id="Item.roundkettle_over_imperial_mail" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -201,11 +213,14 @@
 					slot="Item2"
 					id="Item.western_javelin_1_t2" />
 				<equipment
+					slot="Item3"
+					id="Item.southern_spear_4_t3" />
+				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
 				<equipment
 					slot="Cape"
-					id="Item.empire_warrior_padded_armor_shoulder" />
+					id="Item.empire_plate_armor_shoulder_b" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -214,7 +229,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_mail" />
+					id="Item.ironlame_roundkettle_over_imperial_mail" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -227,11 +242,14 @@
 					slot="Item2"
 					id="Item.western_javelin_1_t2" />
 				<equipment
+					slot="Item3"
+					id="Item.southern_spear_4_t3" />
+				<equipment
 					slot="Body"
 					id="Item.imperial_mail_over_leather" />
 				<equipment
 					slot="Cape"
-					id="Item.empire_warrior_padded_armor_shoulder" />
+					id="Item.empire_plate_armor_shoulder_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -240,7 +258,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_mail" />
+					id="Item.leatherlame_roundkettle_over_imperial_mail" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
@@ -479,7 +497,7 @@
 					id="Item.empire_sword_2_t3" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_studded_leather" />
+					id="Item.imperial_lamellar_over_leather" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -488,7 +506,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_cloth" />
+					id="Item.ironlame_feathered_spangenhelm" />
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
@@ -505,7 +523,7 @@
 					id="Item.empire_sword_3_t3" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_studded_leather" />
+					id="Item.empire_horseman_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -514,7 +532,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_cloth" />
+					id="Item.ironlame_feathered_spangenhelm" />
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
@@ -525,13 +543,13 @@
 					id="Item.western_spear_3_t3" />
 				<equipment
 					slot="Item1"
-					id="Item.battered_horsemans_kite_shield" />
+					id="Item.light_horsemans_kite_shield" />
 				<equipment
 					slot="Item2"
 					id="Item.empire_sword_3_t3" />
 				<equipment
 					slot="Body"
-					id="Item.eastern_studded_leather" />
+					id="Item.empire_horseman_armor" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -540,7 +558,7 @@
 					id="Item.leather_cavalier_boots" />
 				<equipment
 					slot="Head"
-					id="Item.roundkettle_over_imperial_cloth" />
+					id="Item.ironlame_feathered_spangenhelm_over_leather" />
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
@@ -610,68 +628,68 @@
 					id="Item.empire_sword_2_t3" />
 				<equipment
 					slot="Head"
+					id="Item.leatherlame_feathered_spangenhelm_over_leather" />
+				<equipment
+					slot="Cape"
+					id="Item.studded_imperial_neckguard" />
+				<equipment
+					slot="Body"
+					id="Item.empire_legion_b" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.light_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_feathered_spangenhelm_over_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.studded_imperial_neckguard" />
+				<equipment
+					slot="Body"
+					id="Item.battanian_scale_armor_a" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.western_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.light_horsemans_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_sword_2_t3" />
+				<equipment
+					slot="Head"
 					id="Item.leatherlame_feathered_spangenhelm_over_mail" />
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
 				<equipment
 					slot="Body"
-					id="Item.empire_horseman_armor" />
+					id="Item.empire_legion_b" />
 				<equipment
 					slot="Gloves"
-					id="Item.padded_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.light_horsemans_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Head"
-					id="Item.leatherlame_feathered_spangenhelm_over_leather" />
-				<equipment
-					slot="Cape"
-					id="Item.studded_imperial_neckguard" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar_over_leather" />
-				<equipment
-					slot="Gloves"
-					id="Item.padded_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.western_spear_4_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.light_horsemans_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.empire_sword_2_t3" />
-				<equipment
-					slot="Head"
-					id="Item.leatherlame_feathered_spangenhelm_over_leather" />
-				<equipment
-					slot="Cape"
-					id="Item.studded_imperial_neckguard" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar_over_leather" />
-				<equipment
-					slot="Gloves"
-					id="Item.padded_mitten" />
+					id="Item.plated_strip_gauntlets" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />

@@ -12,5 +12,14 @@
     <xsl:template match="NPCCharacter[@id='company_of_the_boar_tier_1']"/>
     <xsl:template match="NPCCharacter[@id='company_of_the_boar_tier_2']"/>
     <xsl:template match="NPCCharacter[@id='company_of_the_boar_tier_3']"/>
+    <xsl:template match="NPCCharacter[@id='skolderbrotva_tier_1']"/>
+    <xsl:template match="NPCCharacter[@id='skolderbrotva_tier_2']"/>
+    <xsl:template match="NPCCharacter[@id='skolderbrotva_tier_3']"/>
+    <xsl:template match="NPCCharacter[@id='lakepike_tier_1']"/>
+    <xsl:template match="NPCCharacter[@id='lakepike_tier_2']"/>
+    <xsl:template match="NPCCharacter[@id='lakepike_tier_3']"/>
+    <xsl:template match="NPCCharacter[@id='ghilman_tier_1']"/>
+    <xsl:template match="NPCCharacter[@id='ghilman_tier_2']"/>
+    <xsl:template match="NPCCharacter[@id='ghilman_tier_3']"/>
 
 </xsl:stylesheet>

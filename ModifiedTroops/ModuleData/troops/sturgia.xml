@@ -1322,7 +1322,7 @@
 		id="sturgian_berzerker"
 		default_group="Infantry"
 		level="21"
-		name="{=Sc1d2lsH}Sturgian Line Breaker"
+		name="{=Sc1d2lsH}Sturgian Axeman"
 		occupation="Soldier"
 		is_basic_troop="true"
 		culture="Culture.sturgia">
@@ -1339,10 +1339,10 @@
 				value="45" />
 			<skill
 				id="OneHanded"
-				value="100" />
+				value="120" />
 			<skill
 				id="TwoHanded"
-				value="110" />
+				value="120" />
 			<skill
 				id="Polearm"
 				value="40" />
@@ -1359,37 +1359,19 @@
 		<upgrade_targets>
 			<upgrade_target
 				id="NPCCharacter.sturgian_ulfhednar" />
+			<upgrade_target
+				id="NPCCharacter.sturgian_veteran_warrior" />
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
+					id="Item.sturgia_axe_4_t4" />
 				<equipment
 					slot="Item1"
-					id="Item.northern_throwing_axe_1_t1" />
+					id="Item.viking_round_shield" />
 				<equipment
-					slot="Head"
-					id="Item.sturgian_helmet_open" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_chainmale_shortsleeve" />
-				<equipment
-					slot="Leg"
-					id="Item.turndown_leather_boots" />
-				<equipment
-					slot="Cape"
-					id="Item.mail_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_plated_gloves" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
-				<equipment
-					slot="Item1"
+					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
@@ -1401,31 +1383,60 @@
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
 				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
+				<equipment
 					slot="Cape"
 					id="Item.mail_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.northern_plated_gloves" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.sturgia_2haxe_1_t4" />
+					id="Item.sturgia_axe_4_t4" />
 				<equipment
 					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
 					id="Item.northern_throwing_axe_1_t1" />
 				<equipment
 					slot="Head"
 					id="Item.sturgian_helmet_open" />
 				<equipment
 					slot="Body"
-					id="Item.mail_shirt" />
+					id="Item.sturgian_chainmale_longsleeve" />
 				<equipment
 					slot="Leg"
 					id="Item.turndown_leather_boots" />
 				<equipment
 					slot="Gloves"
-					id="Item.northern_plated_gloves" />
+					id="Item.northern_brass_bracers" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.viking_round_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_helmet_open" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_gambeson_heavy" />
+				<equipment
+					slot="Leg"
+					id="Item.turndown_leather_boots" />
+				<equipment
+					slot="Gloves"
+					id="Item.northern_brass_bracers" />
 				<equipment
 					slot="Cape"
 					id="Item.mail_shoulders" />
@@ -1549,6 +1560,131 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
+	<!-- 更新装备 -->
+	<NPCCharacter
+		id="sturgian_veteran_warrior"
+		default_group="Infantry"
+		formation_position_preference="Back"
+		level="26"
+		name="{=Gwba5yPA}Sturgian Heavy Axeman"
+		occupation="Soldier"
+		culture="Culture.sturgia">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_sturgia_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="60" />
+			<skill
+				id="OneHanded"
+				value="130" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="80" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="20" />
+			<skill
+				id="Throwing"
+				value="130" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.northern_goggled_helmet" />
+				<equipment
+					slot="Body"
+					id="Item.northern_brass_lamellar_over_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Head"
+					id="Item.lendman_helmet_over_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_fortified" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.sturgia_axe_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_a" />
+				<equipment
+					slot="Item2"
+					id="Item.northern_throwing_axe_1_t1" />
+				<equipment
+					slot="Cape"
+					id="Item.brass_lamellar_shoulder_white" />
+				<equipment
+					slot="Head"
+					id="Item.sturgian_lord_helmet_b" />
+				<equipment
+					slot="Body"
+					id="Item.sturgian_lamellar_base" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_leather_vambraces" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="sturgia_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
 	<!-- 设置为infantry_basic_troop -->
 	<NPCCharacter
 		id="sturgian_spearman"
@@ -1591,8 +1727,6 @@
 		<upgrade_targets>
 			<upgrade_target
 				id="NPCCharacter.sturgian_shock_troop" />
-			<upgrade_target
-				id="NPCCharacter.sturgian_veteran_warrior" />
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
@@ -1798,130 +1932,6 @@
 			</EquipmentRoster>
 			<EquipmentSet
 				id="sturgia_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<!-- 更新装备 -->
-	<NPCCharacter
-		id="sturgian_veteran_warrior"
-		default_group="Infantry"
-		formation_position_preference="Back"
-		level="26"
-		name="{=Gwba5yPA}Sturgian Heavy Axeman"
-		occupation="Soldier"
-		culture="Culture.sturgia">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_sturgia_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="130" />
-			<skill
-				id="Riding"
-				value="60" />
-			<skill
-				id="OneHanded"
-				value="130" />
-			<skill
-				id="TwoHanded"
-				value="80" />
-			<skill
-				id="Polearm"
-				value="80" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="20" />
-			<skill
-				id="Throwing"
-				value="130" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.northern_goggled_helmet" />
-				<equipment
-					slot="Body"
-					id="Item.northern_brass_lamellar_over_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Head"
-					id="Item.lendman_helmet_over_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_fortified" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.sturgia_axe_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_a" />
-				<equipment
-					slot="Item2"
-					id="Item.northern_throwing_axe_1_t1" />
-				<equipment
-					slot="Cape"
-					id="Item.brass_lamellar_shoulder_white" />
-				<equipment
-					slot="Head"
-					id="Item.sturgian_lord_helmet_b" />
-				<equipment
-					slot="Body"
-					id="Item.sturgian_lamellar_base" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_leather_vambraces" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="sturgia_troop_civilian_template_t3"
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
