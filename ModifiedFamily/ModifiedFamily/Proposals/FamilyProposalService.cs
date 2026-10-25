@@ -15,6 +15,7 @@ namespace ModifiedFamily.Proposals
     public sealed class FamilyProposalService
     {
         public event Action<FamilyProposal> ProposalCreated;
+        public event Action<FamilyProposal> ProposalInvalidated;
         private readonly IList<FamilyProposal> _proposals;
         private readonly IList<FamilyCooldownRecord> _cooldowns;
         private readonly MarriageProposalModel _marriageModel;
@@ -35,7 +36,7 @@ namespace ModifiedFamily.Proposals
         public FamilyResult TryCreateMarriageProposal(MarriageProposalDraft draft)
         {
             if (draft == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
-            var p = CreateMarriageProposal(draft);
+            var p = CreateMarriageProposalPreview(draft);
             var valid = ValidateNewMarriageProposal(p); if (!valid.IsAllowed) return valid;
             _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId;
             FamilyDiagnostics.Info(FamilyLogText.MarriageProposal(p, false));
@@ -47,10 +48,10 @@ namespace ModifiedFamily.Proposals
         public FamilyResult CanCreateMarriageProposal(MarriageProposalDraft draft)
         {
             if (draft == null || draft.HeroA == null || draft.HeroB == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
-            return ValidateNewMarriageProposal(CreateMarriageProposal(draft));
+            return ValidateNewMarriageProposal(CreateMarriageProposalPreview(draft));
         }
 
-        private FamilyProposal CreateMarriageProposal(MarriageProposalDraft draft)
+        public FamilyProposal CreateMarriageProposalPreview(MarriageProposalDraft draft)
         {
             Clan destination = draft.Direction == MarriageDirection.FemaleJoinsMaleClan ? (draft.HeroA.IsFemale ? draft.HeroB.Clan : draft.HeroA.Clan) : (draft.HeroA.IsFemale ? draft.HeroA.Clan : draft.HeroB.Clan);
             // The absolute deadline is saved with the proposal and checked by the daily lifecycle tick.
@@ -60,6 +61,7 @@ namespace ModifiedFamily.Proposals
         private FamilyResult ValidateNewMarriageProposal(FamilyProposal proposal)
         {
             FamilyResult valid = _marriageModel.CanProposeMarriage(proposal); if (!valid.IsAllowed) return valid;
+            if (proposal.GiftAmount > 0 && (proposal.GoldPayerClan?.Leader == null || proposal.GoldPayerClan.Leader.Gold < proposal.GiftAmount)) return FamilyResult.Deny(FamilyReasonCode.InsufficientFunds);
             if (IsLocked(proposal.HeroA) || IsLocked(proposal.HeroB)) return FamilyResult.Deny(FamilyReasonCode.HeroLocked);
             if (OnCooldown(proposal.HeroA, proposal.HeroB)) return FamilyResult.Deny(FamilyReasonCode.PairCooldown);
             return valid;
@@ -106,6 +108,14 @@ namespace ModifiedFamily.Proposals
             p.Status = FamilyProposalStatus.Rejected; p.ReasonCode = reason; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.MarriageRejected(p)); return FamilyResult.Allow(id);
         }
 
+        public FamilyResult TryExpirePending(string id)
+        {
+            var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
+            p.Status = FamilyProposalStatus.TimedOut; p.ReasonCode = FamilyReasonCode.Expired;
+            AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.ProposalTimedOut(p));
+            return FamilyResult.Allow(id);
+        }
+
         public FamilyResult TryWithdraw(string id, Clan proposer)
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
@@ -116,24 +126,34 @@ namespace ModifiedFamily.Proposals
         public FamilyResult TryCounter(string id, Clan responder, MarriageDirection direction, Clan goldPayer, int giftAmount)
         {
             var old = FindPending(id); if (old == null || old.ReceiverClan != responder) return FamilyResult.Deny(FamilyReasonCode.WrongResponder);
-            var current = _marriageModel.CanRespond(old); if (!current.IsAllowed) { TryInvalidateDueToPoliticalChange(old, current.ReasonCode); return current; }
+            var current = _marriageModel.CanRespond(old); if (!current.IsAllowed) { TryInvalidateActive(old, current.ReasonCode); return current; }
             if (old.CounterCount >= 1) return FamilyResult.Deny(FamilyReasonCode.CounterLimitReached);
+            if (giftAmount < 0) return FamilyResult.Deny(FamilyReasonCode.InvalidGift);
             var draft = new MarriageProposalDraft { ProposerClan = old.ReceiverClan, ReceiverClan = old.ProposerClan, HeroA = old.HeroA, HeroB = old.HeroB, Direction = direction, GoldPayerClan = goldPayer, GiftAmount = giftAmount };
             Clan destination = direction == MarriageDirection.FemaleJoinsMaleClan ? (old.HeroA.IsFemale ? old.HeroB.Clan : old.HeroA.Clan) : (old.HeroA.IsFemale ? old.HeroA.Clan : old.HeroB.Clan);
             var p = new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = old.ChainId, ParentProposalId = old.ProposalId, CounterCount = 1, ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = old.HeroA, HeroB = old.HeroB, OriginClanA = old.OriginClanA, OriginClanB = old.OriginClanB, DestinationClan = destination, GoldPayerClan = goldPayer, GoldReceiverClan = giftAmount > 0 ? (goldPayer == old.OriginClanA ? old.OriginClanB : old.OriginClanA) : null, GiftAmount = giftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays) };
             var valid = _marriageModel.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
+            bool sameTerms = p.DestinationClan == old.DestinationClan && p.GoldPayerClan == old.GoldPayerClan && p.GiftAmount == old.GiftAmount;
+            if (sameTerms) return FamilyResult.Deny(FamilyReasonCode.UnacceptableTerms);
+            if (p.GiftAmount > 0 && (p.GoldPayerClan?.Leader == null || p.GoldPayerClan.Leader.Gold < p.GiftAmount)) return FamilyResult.Deny(FamilyReasonCode.InsufficientFunds);
             // The old record and replacement share one chain, so hero locks transfer atomically.
             old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice(FamilyLogText.MarriageProposal(p, true)); ProposalCreated?.Invoke(p); return FamilyResult.Allow(p.ProposalId);
         }
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();
         public IReadOnlyList<FamilyProposal> GetOutgoing(Clan clan) => _proposals.Where(p => p.ProposerClan == clan && p.IsActive).ToList();
+        public FamilyProposal GetProposal(string id) => id == null ? null : _proposals.FirstOrDefault(p => p?.ProposalId == id);
         // UI diagnostics use this read-only lookup to explain why a selected hero cannot start another negotiation.
         public FamilyProposal GetActiveProposalFor(Hero hero) => hero == null ? null : _proposals.FirstOrDefault(p => p != null && p.IsActive && (p.HeroA == hero || p.HeroB == hero || p.AdopteeHero == hero));
         public void ReleaseCompleted(FamilyProposal p) => ReleaseChain(p.ChainId);
         public bool TryInvalidateDueToPoliticalChange(FamilyProposal p, FamilyReasonCode reason)
         {
             if (p == null || !MarriagePoliticalValidationModel.IsPoliticalFailure(reason)) return false;
+            return TryInvalidateActive(p, reason);
+        }
+        public bool TryInvalidateActive(FamilyProposal p, FamilyReasonCode reason)
+        {
+            if (p == null) return false;
             if (p.Status != FamilyProposalStatus.PendingResponse && p.Status != FamilyProposalStatus.AcceptedPendingExecution) return false;
             Invalidate(p, reason, false);
             return true;
@@ -143,6 +163,8 @@ namespace ModifiedFamily.Proposals
             if (p == null || p.Status == FamilyProposalStatus.Invalidated || p.Status == FamilyProposalStatus.Completed ||
                 p.Status == FamilyProposalStatus.Executing || p.Status == FamilyProposalStatus.PaymentReconcileRequired) return;
             p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn(FamilyLogText.Invalidated(p));
+            FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(p, "Invalidated", reason));
+            ProposalInvalidated?.Invoke(p);
         }
         private FamilyProposal FindPending(string id) => _proposals.FirstOrDefault(p => p.ProposalId == id && p.Status == FamilyProposalStatus.PendingResponse);
         private bool IsLocked(Hero h) => h != null && _locks.ContainsKey(h);

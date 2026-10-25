@@ -74,6 +74,7 @@ namespace ModifiedFamily.Campaign
             _marriageProposalModel = new MarriageProposalModel(_adoptions); _service = new FamilyProposalService(_proposals, _cooldowns, _marriageProposalModel, adoptionModel);
             _notificationService = new FamilyProposalNotificationService();
             _service.ProposalCreated += _notificationService.Publish;
+            _service.ProposalInvalidated += _notificationService.PublishInvalidated;
             _marriageAi = new ClanMarriageDecisionService(_service, _marriageProposalModel); _execution = new MarriageExecutionService(_marriageProposalModel);
             _adoptionExecution = new AdoptionExecutionService(adoptionModel, new AdoptiveKinshipService(_adoptions));
         }
@@ -97,7 +98,7 @@ namespace ModifiedFamily.Campaign
                 if (p.Status == FamilyProposalStatus.PendingResponse && p.ReplyDeadline.IsPast)
                 {
                     // AI receivers decide once the response window closes; unattended player offers expire.
-                    if (p.ProposalType == FamilyProposalType.Adoption || p.ReceiverClan == Clan.PlayerClan) _service.TryReject(p.ProposalId, p.ReceiverClan, FamilyReasonCode.Expired); else _marriageAi.Respond(p);
+                    if (p.ProposalType == FamilyProposalType.Adoption || p.ReceiverClan == Clan.PlayerClan) _service.TryExpirePending(p.ProposalId); else _marriageAi.Respond(p);
                 }
                 else if (p.Status == FamilyProposalStatus.AcceptedPendingExecution)
                 {

@@ -1,6 +1,7 @@
 // Builds localized, scenario-specific log messages from campaign objects and proposal state.
 using System.Linq;
 using ModifiedFamily.Proposals;
+using ModifiedFamily.Marriage.Models;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Localization;
 
@@ -47,6 +48,16 @@ namespace ModifiedFamily.Localization
 
         internal static string MarriageAccepted(FamilyProposal p) { var t = T("MF_Log_MarriageAccepted", "{RECEIVER} accepted the marriage. {HERO_A} and {HERO_B} will marry when available. (Request: {ID})"); Common(t, p); return t.ToString(); }
         internal static string MarriageRejected(FamilyProposal p) { string key = p.ReasonCode == FamilyReasonCode.Expired ? "MF_Log_ProposalTimedOut" : "MF_Log_MarriageRejected"; var t = T(key, "{RECEIVER} declined the proposal from {PROPOSER}. Reason: {REASON}. (Request: {ID})"); Common(t, p); return t.ToString(); }
+        internal static string ProposalTimedOut(FamilyProposal p) { var t = T("MF_Log_ProposalTimedOut", "The proposal expired without a response. (Request: {ID})"); Common(t, p); return t.ToString(); }
+        internal static string MarriageEvaluation(FamilyProposal p, MarriageScoreBreakdown b, string phase)
+        {
+            return $"[MF][MarriageEvaluation] proposal={p?.ProposalId ?? "preview"} chain={p?.ChainId ?? "-"} clan={b?.EvaluatingClan?.StringId ?? "-"} phase={phase} " +
+                   $"own={b?.OwnHero?.StringId ?? "-"} other={b?.OtherHero?.StringId ?? "-"} direction={b?.Direction.ToString() ?? "-"} adultCount={b?.AdultHeroCount ?? 0} " +
+                   $"baseHero={b?.BaseHeroValue ?? 0:0.00} inflow={b?.InflowValue ?? 0:0.00} outflow={b?.OutflowCost ?? 0:0.00} succession={b?.SuccessionPenalty ?? 0:0.00} " +
+                   $"alliance={b?.AllianceBenefit ?? 0:0.00} relationRaw={b?.RelationRaw ?? 0} relation={b?.RelationValue ?? 0:0.00} culture={b?.CultureValue ?? 0:0.00} kingdom={b?.KingdomValue ?? 0:0.00} gift={b?.GiftValue ?? 0:0.00} total={b?.Total ?? 0:0.00}";
+        }
+        internal static string MarriageDecision(FamilyProposal p, string decision, FamilyReasonCode reason) => $"[MF][MarriageDecision] proposal={p?.ProposalId ?? "-"} chain={p?.ChainId ?? "-"} decision={decision} reason={reason}";
+        internal static string ReasonText(FamilyReasonCode reason) => Reason(reason).ToString();
         internal static string Withdrawn(FamilyProposal p) { var t = T("MF_Log_ProposalWithdrawn", "{PROPOSER} withdrew the proposal. (Request: {ID})"); Common(t, p); return t.ToString(); }
         internal static string Invalidated(FamilyProposal p) { var t = T("MF_Log_ProposalInvalidated", "The proposal can no longer continue: {REASON}. (Request: {ID})"); Common(t, p); return t.ToString(); }
         internal static string MarriageWaiting(FamilyProposal p, FamilyReasonCode reason) { var t = T("MF_Log_MarriageWaiting", "{HERO_A} and {HERO_B} cannot marry yet: {REASON}. (Request: {ID})"); Common(t, p, reason); return t.ToString(); }
@@ -93,6 +104,9 @@ namespace ModifiedFamily.Localization
                 case FamilyReasonCode.ExternalMarriage: return T("MF_Reason_ExternalMarriage", "a participant married elsewhere");
                 case FamilyReasonCode.PlayerDeclined: return T("MF_Reason_PlayerDeclined", "the receiving clan declined the proposal");
                 case FamilyReasonCode.PoliticalInterestChanged: return T("MF_Reason_PoliticalInterestChanged", "political changes made the accepted agreement unacceptable");
+                case FamilyReasonCode.LowClanBenefit: return T("MF_Reason_LowClanBenefit", "the agreement offers too little benefit to the clan");
+                case FamilyReasonCode.UnacceptableTerms: return T("MF_Reason_UnacceptableTerms", "the proposed terms are unacceptable");
+                case FamilyReasonCode.NoViableCounterProposal: return T("MF_Reason_NoViableCounterProposal", "no mutually viable counterproposal was available");
                 default: return T("MF_Reason_Default", "the current conditions no longer satisfy the agreement");
             }
         }

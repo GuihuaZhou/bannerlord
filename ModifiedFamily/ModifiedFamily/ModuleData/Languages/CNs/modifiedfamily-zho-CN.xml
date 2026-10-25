@@ -101,6 +101,10 @@
     <string id="MF_Reason_ExternalMarriage" text="相关人物已经通过其他方式成婚" />
     <string id="MF_Reason_PlayerDeclined" text="接收方决定不接受该提议" />
     <string id="MF_Reason_PoliticalInterestChanged" text="政治局势变化后，一方不再愿意履行既定协议" />
+    <string id="MF_Reason_LowClanBenefit" text="该协议给本家族带来的收益不足" />
+    <string id="MF_Reason_UnacceptableTerms" text="提议条款无法接受" />
+    <string id="MF_Reason_NoViableCounterProposal" text="没有双方都可能接受的反提议方案" />
+    <string id="MF_UI_ProposalInvalidated" text="一项与玩家家族有关的提议已经失效。原因：{REASON}。" />
     <string id="MF_Reason_Default" text="当前条件已经不再符合约定" />
     <string id="MF_Log_PatchesInstalled" text="婚姻系统已接管原版自动配婚入口。" />
     <string id="MF_Log_PatchFailed" text="原版婚姻入口接管失败，为避免两套配婚系统同时运行，家族 AI 已停用。" />
