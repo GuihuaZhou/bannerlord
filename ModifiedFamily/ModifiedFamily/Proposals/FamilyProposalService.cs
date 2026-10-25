@@ -16,6 +16,7 @@ namespace ModifiedFamily.Proposals
     {
         public event Action<FamilyProposal> ProposalCreated;
         public event Action<FamilyProposal> ProposalInvalidated;
+        public event Action<FamilyProposal> ProposalResolved;
         private readonly IList<FamilyProposal> _proposals;
         private readonly IList<FamilyCooldownRecord> _cooldowns;
         private readonly MarriageProposalModel _marriageModel;
@@ -95,24 +96,24 @@ namespace ModifiedFamily.Proposals
             {
                 if (p.AdopterHero == null || p.AdopteeHero == null || p.AdopteeHero.IsDead || p.AdopteeHero.Clan != p.OriginClanB)
                 { Invalidate(p, FamilyReasonCode.ClanChanged, false); return FamilyResult.Deny(FamilyReasonCode.ClanChanged); }
-                p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice(FamilyLogText.AdoptionAccepted(p)); return FamilyResult.Allow(id);
+                p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice(FamilyLogText.AdoptionAccepted(p)); ProposalResolved?.Invoke(p); return FamilyResult.Allow(id);
             }
             var valid = _marriageModel.CanRespond(p); if (!valid.IsAllowed) { Invalidate(p, valid.ReasonCode, false); return valid; }
-            p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice(FamilyLogText.MarriageAccepted(p)); return FamilyResult.Allow(id, valid.TemporaryBlockers.ToArray());
+            p.Status = FamilyProposalStatus.AcceptedPendingExecution; p.ExecutionDeadline = CampaignTime.DaysFromNow(FamilyConfig.ExecutionDays); FamilyDiagnostics.Notice(FamilyLogText.MarriageAccepted(p)); ProposalResolved?.Invoke(p); return FamilyResult.Allow(id, valid.TemporaryBlockers.ToArray());
         }
 
         public FamilyResult TryReject(string id, Clan responder, FamilyReasonCode reason)
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             if (p.ReceiverClan != responder) return FamilyResult.Deny(FamilyReasonCode.WrongResponder);
-            p.Status = FamilyProposalStatus.Rejected; p.ReasonCode = reason; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.MarriageRejected(p)); return FamilyResult.Allow(id);
+            p.Status = FamilyProposalStatus.Rejected; p.ReasonCode = reason; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.MarriageRejected(p)); ProposalResolved?.Invoke(p); return FamilyResult.Allow(id);
         }
 
         public FamilyResult TryExpirePending(string id)
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             p.Status = FamilyProposalStatus.TimedOut; p.ReasonCode = FamilyReasonCode.Expired;
-            AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.ProposalTimedOut(p));
+            AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.ProposalTimedOut(p)); ProposalResolved?.Invoke(p);
             return FamilyResult.Allow(id);
         }
 
@@ -120,7 +121,7 @@ namespace ModifiedFamily.Proposals
         {
             var p = FindPending(id); if (p == null) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
             if (p.ProposerClan != proposer) return FamilyResult.Deny(FamilyReasonCode.WrongProposer);
-            p.Status = FamilyProposalStatus.Withdrawn; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.Withdrawn(p)); return FamilyResult.Allow(id);
+            p.Status = FamilyProposalStatus.Withdrawn; AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Info(FamilyLogText.Withdrawn(p)); ProposalResolved?.Invoke(p); return FamilyResult.Allow(id);
         }
 
         public FamilyResult TryCounter(string id, Clan responder, MarriageDirection direction, Clan goldPayer, int giftAmount)
@@ -137,7 +138,7 @@ namespace ModifiedFamily.Proposals
             if (sameTerms) return FamilyResult.Deny(FamilyReasonCode.UnacceptableTerms);
             if (p.GiftAmount > 0 && (p.GoldPayerClan?.Leader == null || p.GoldPayerClan.Leader.Gold < p.GiftAmount)) return FamilyResult.Deny(FamilyReasonCode.InsufficientFunds);
             // The old record and replacement share one chain, so hero locks transfer atomically.
-            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice(FamilyLogText.MarriageProposal(p, true)); ProposalCreated?.Invoke(p); return FamilyResult.Allow(p.ProposalId);
+            old.Status = FamilyProposalStatus.SupersededByCounter; _proposals.Add(p); _locks[p.HeroA] = p.ChainId; _locks[p.HeroB] = p.ChainId; FamilyDiagnostics.Notice(FamilyLogText.MarriageProposal(p, true)); ProposalResolved?.Invoke(old); ProposalCreated?.Invoke(p); return FamilyResult.Allow(p.ProposalId);
         }
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();
@@ -165,6 +166,7 @@ namespace ModifiedFamily.Proposals
             p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn(FamilyLogText.Invalidated(p));
             FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(p, "Invalidated", reason));
             ProposalInvalidated?.Invoke(p);
+            ProposalResolved?.Invoke(p);
         }
         private FamilyProposal FindPending(string id) => _proposals.FirstOrDefault(p => p.ProposalId == id && p.Status == FamilyProposalStatus.PendingResponse);
         private bool IsLocked(Hero h) => h != null && _locks.ContainsKey(h);
