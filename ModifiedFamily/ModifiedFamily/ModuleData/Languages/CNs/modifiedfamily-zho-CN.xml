@@ -165,7 +165,7 @@
     <string id="MF_UI_NoHeroBiography" text="当前没有可显示的人物生平资料。" />
     <string id="MF_UI_HeroInformation" text="信息" />
     <string id="MF_UI_HeroBiography" text="生平" />
-    <string id="MF_UI_HeroFamily" text="亲属关系" />
+    <string id="MF_UI_HeroFamily" text="亲属" />
     <string id="MF_UI_HeroFriends" text="好友" />
     <string id="MF_UI_HeroEnemies" text="敌人" />
     <string id="MF_UI_CurrentMarriagePair" text="当前联姻对象：{OWN}  ↔  {TARGET}" />
@@ -183,17 +183,17 @@
     <string id="MF_UI_ClanMemberRole" text="家族成员" />
     <string id="MF_UI_AdoptionRegistered" text="收养手续已经登记，将在下次家族事务处理时完成身份转换。" />
     <string id="MF_UI_AdoptionFailed" text="收养未能办理，请检查人物状态、亲属关系或是否已有其他待处理事务。" />
-    <string id="MF_UI_MarriageTermsTitle" text="联姻安排" />
-    <string id="MF_UI_MarriageDirectionTitle" text="婚后归属" />
-    <string id="MF_UI_NormalMarriageDirection" text="正常联姻：女性加入男性家族" />
-    <string id="MF_UI_MatrilocalMarriageDirection" text="入赘：男性加入女性家族" />
-    <string id="MF_UI_MarriageGiftTitle" text="礼金约定" />
-    <string id="MF_UI_NoMarriageGift" text="不附带礼金" />
-    <string id="MF_UI_PlayerPaysMarriageGift" text="己方向对方支付" />
-    <string id="MF_UI_OtherPaysMarriageGift" text="要求对方向己方支付" />
+    <string id="MF_UI_MarriageTermsTitle" text="联姻" />
+    <string id="MF_UI_MarriageDirectionTitle" text="归属" />
+    <string id="MF_UI_NormalMarriageDirection" text="女方嫁入男方家族" />
+    <string id="MF_UI_MatrilocalMarriageDirection" text="男方入赘女方家族" />
+    <string id="MF_UI_MarriageGiftTitle" text="礼金" />
+    <string id="MF_UI_NoMarriageGift" text="无礼金" />
+    <string id="MF_UI_PlayerPaysMarriageGift" text="我方支付" />
+    <string id="MF_UI_OtherPaysMarriageGift" text="对方支付" />
     <string id="MF_UI_MarriageGiftAmount" text="礼金数额" />
     <string id="MF_UI_OpenMarriageTerms" text="安排联姻" />
-    <string id="MF_UI_SubmitMarriageProposal" text="发送联姻请求" />
+    <string id="MF_UI_SubmitMarriageProposal" text="发起联姻" />
     <string id="MF_UI_Cancel" text="取消" />
     <string id="MF_UI_ConfirmMarriageProposal" text="{HERO_A}将与{HERO_B}成婚；婚后归属为“{DIRECTION}”，礼金为{GOLD}第纳尔。是否发送联姻请求？" />
     <string id="MF_UI_MarriageProposalSent" text="联姻提议已发送，正在等待对方答复。" />

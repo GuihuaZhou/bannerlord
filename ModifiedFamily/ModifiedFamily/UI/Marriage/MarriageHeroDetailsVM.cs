@@ -9,6 +9,7 @@ using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.Generic;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
@@ -17,11 +18,11 @@ namespace ModifiedFamily.UI.Marriage
 {
     internal sealed class MarriageHeroDetailsVM : ViewModel
     {
-        private readonly Action _openTerms;
+        private readonly MarriageNavigationVM _owner;
 
-        internal MarriageHeroDetailsVM(Hero ownHero, Hero targetHero, Action openTerms)
+        internal MarriageHeroDetailsVM(MarriageNavigationVM owner, Hero ownHero, Hero targetHero)
         {
-            _openTerms = openTerms;
+            _owner = owner;
             TargetHero = targetHero;
             Character = new HeroViewModel(CharacterViewModel.StanceTypes.EmphasizeFace);
             Traits = new MBBindingList<EncyclopediaTraitItemVM>();
@@ -71,7 +72,7 @@ namespace ModifiedFamily.UI.Marriage
             if (string.IsNullOrWhiteSpace(BiographyText)) BiographyText = new TextObject("{=MF_UI_NoHeroBiography}当前没有可显示的人物生平资料。").ToString();
             InformationTitle = new TextObject("{=MF_UI_HeroInformation}信息").ToString();
             BiographyTitle = new TextObject("{=MF_UI_HeroBiography}生平").ToString();
-            FamilyTitle = new TextObject("{=MF_UI_HeroFamily}亲属关系").ToString();
+            FamilyTitle = new TextObject("{=MF_UI_HeroFamily}亲属").ToString();
             PairingText = new TextObject("{=MF_UI_CurrentMarriagePair}当前联姻对象：{OWN}  ↔  {TARGET}")
                 .SetTextVariable("OWN", ownHero?.Name ?? new TextObject("-"))
                 .SetTextVariable("TARGET", targetHero?.Name ?? new TextObject("-"))
@@ -108,8 +109,33 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public bool HasNeutralClan => TargetHero?.Clan == null;
         [DataSourceProperty] public bool HasSkills => Skills.Count > 0;
         [DataSourceProperty] public bool HasFamily => Family.Count > 0;
+        [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageDirectionSelector => _owner.MarriageDirectionSelector;
+        [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageGiftSelector => _owner.MarriageGiftSelector;
+        [DataSourceProperty] public string DirectionTitle => _owner.DirectionTitle;
+        [DataSourceProperty] public string GiftTitle => _owner.GiftTitle;
+        [DataSourceProperty] public string GiftAmountText => _owner.GiftAmountText;
+        [DataSourceProperty] public string TermsValidationText => _owner.TermsValidationText;
+        [DataSourceProperty] public string SubmitTermsText => _owner.SubmitTermsText;
+        [DataSourceProperty] public bool IsGiftAmountEnabled => _owner.IsGiftAmountEnabled;
+        [DataSourceProperty] public bool CanSubmitTerms => _owner.CanSubmitTerms;
+        [DataSourceProperty] public int GiftAmount { get => _owner.GiftAmount; set { _owner.GiftAmount = value; RefreshArrangement(); } }
 
-        public void ExecuteOpenTerms() => _openTerms?.Invoke();
+        public void ExecuteOpenTerms() => _owner.ExecuteOpenTerms();
+        public void ExecuteSubmitTerms()
+        {
+            ModifiedFamily.Diagnostics.FamilyDiagnostics.DebugLog($"联姻详情VM收到按钮点击：目标={TargetHero?.StringId ?? "none"}。");
+            _owner.ExecuteSubmitTerms();
+        }
+        public void ExecuteDecreaseGiftAmount() => _owner.ExecuteDecreaseGiftAmount();
+        public void ExecuteIncreaseGiftAmount() => _owner.ExecuteIncreaseGiftAmount();
+
+        internal void RefreshArrangement()
+        {
+            OnPropertyChanged(nameof(IsGiftAmountEnabled));
+            OnPropertyChanged(nameof(GiftAmount));
+            OnPropertyChanged(nameof(TermsValidationText));
+            OnPropertyChanged(nameof(CanSubmitTerms));
+        }
 
         public override void OnFinalize()
         {

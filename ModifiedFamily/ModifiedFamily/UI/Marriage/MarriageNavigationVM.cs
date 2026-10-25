@@ -59,12 +59,12 @@ namespace ModifiedFamily.UI.Marriage
             OwnHeroTraits = new MBBindingList<EncyclopediaTraitItemVM>();
             OwnHeroSkills = new MBBindingList<EncyclopediaSkillVM>();
             MarriageDirectionSelector = new SelectorVM<SelectorItemVM>(0, OnMarriageDirectionChanged);
-            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NormalMarriageDirection}正常联姻：女性加入男性家族")));
-            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_MatrilocalMarriageDirection}入赘：男性加入女性家族")));
+            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NormalMarriageDirection}女方嫁入男方家族")));
+            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_MatrilocalMarriageDirection}男方入赘女方家族")));
             MarriageGiftSelector = new SelectorVM<SelectorItemVM>(0, OnMarriageGiftChanged);
-            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NoMarriageGift}不附带礼金")));
-            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_PlayerPaysMarriageGift}己方向对方支付")));
-            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_OtherPaysMarriageGift}要求对方向己方支付")));
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NoMarriageGift}无礼金")));
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_OtherPaysMarriageGift}对方支付")));
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_PlayerPaysMarriageGift}我方支付")));
             if (ownHero != null)
             {
                 // Reuse the native encyclopedia character source so the tableau displays the exact live hero.
@@ -164,17 +164,17 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public string TermsValidationText { get => _termsValidationText; private set { _termsValidationText = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public bool CanSubmitTerms => !_isSubmitting && _page == MarriageUiPage.HeroDetail && BuildDraft(out FamilyResult result) != null && result.IsAllowed;
         [DataSourceProperty] public bool IsGiftAmountEnabled => _giftMode != 0;
-        [DataSourceProperty] public string TermsTitle => new TextObject("{=MF_UI_MarriageTermsTitle}联姻安排").ToString();
-        [DataSourceProperty] public string DirectionTitle => new TextObject("{=MF_UI_MarriageDirectionTitle}婚后归属").ToString();
-        [DataSourceProperty] public string NormalDirectionText => new TextObject("{=MF_UI_NormalMarriageDirection}正常联姻：女性加入男性家族").ToString();
-        [DataSourceProperty] public string MatrilocalDirectionText => new TextObject("{=MF_UI_MatrilocalMarriageDirection}入赘：男性加入女性家族").ToString();
-        [DataSourceProperty] public string GiftTitle => new TextObject("{=MF_UI_MarriageGiftTitle}礼金约定").ToString();
-        [DataSourceProperty] public string NoGiftText => new TextObject("{=MF_UI_NoMarriageGift}不附带礼金").ToString();
-        [DataSourceProperty] public string PlayerPaysText => new TextObject("{=MF_UI_PlayerPaysMarriageGift}己方向对方支付").ToString();
-        [DataSourceProperty] public string OtherPaysText => new TextObject("{=MF_UI_OtherPaysMarriageGift}要求对方向己方支付").ToString();
+        [DataSourceProperty] public string TermsTitle => new TextObject("{=MF_UI_MarriageTermsTitle}联姻").ToString();
+        [DataSourceProperty] public string DirectionTitle => new TextObject("{=MF_UI_MarriageDirectionTitle}归属").ToString();
+        [DataSourceProperty] public string NormalDirectionText => new TextObject("{=MF_UI_NormalMarriageDirection}女方嫁入男方家族").ToString();
+        [DataSourceProperty] public string MatrilocalDirectionText => new TextObject("{=MF_UI_MatrilocalMarriageDirection}男方入赘女方家族").ToString();
+        [DataSourceProperty] public string GiftTitle => new TextObject("{=MF_UI_MarriageGiftTitle}礼金").ToString();
+        [DataSourceProperty] public string NoGiftText => new TextObject("{=MF_UI_NoMarriageGift}无礼金").ToString();
+        [DataSourceProperty] public string PlayerPaysText => new TextObject("{=MF_UI_PlayerPaysMarriageGift}我方支付").ToString();
+        [DataSourceProperty] public string OtherPaysText => new TextObject("{=MF_UI_OtherPaysMarriageGift}对方支付").ToString();
         [DataSourceProperty] public string GiftAmountText => new TextObject("{=MF_UI_MarriageGiftAmount}礼金数额").ToString();
         [DataSourceProperty] public string OpenTermsText => new TextObject("{=MF_UI_OpenMarriageTerms}安排联姻").ToString();
-        [DataSourceProperty] public string SubmitTermsText => new TextObject("{=MF_UI_SubmitMarriageProposal}发送联姻请求").ToString();
+        [DataSourceProperty] public string SubmitTermsText => new TextObject("{=MF_UI_SubmitMarriageProposal}发起联姻").ToString();
         [DataSourceProperty] public string CancelTermsText => new TextObject("{=MF_UI_Cancel}取消").ToString();
         [DataSourceProperty] public bool CanGoBack => _page != MarriageUiPage.ClanList;
         [DataSourceProperty] public string BreadcrumbText { get => _breadcrumbText; private set { _breadcrumbText = value; OnPropertyChangedWithValue(value); } }
@@ -206,19 +206,21 @@ namespace ModifiedFamily.UI.Marriage
         public void ExecuteSelectNoGift() { _giftMode = 0; GiftAmount = 0; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
         public void ExecuteSelectPlayerPays() { _giftMode = 1; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
         public void ExecuteSelectOtherPays() { _giftMode = 2; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+        public void ExecuteDecreaseGiftAmount() => GiftAmount = Math.Max(0, GiftAmount - 100);
+        public void ExecuteIncreaseGiftAmount() => GiftAmount = Math.Min(100000000, GiftAmount + 100);
 
         public void ExecuteSubmitTerms()
         {
+            FamilyDiagnostics.DebugLog($"联姻界面收到发起命令：己方={OwnHero?.StringId ?? "none"}，目标={SelectedTargetHero?.StringId ?? "none"}，方向={_selectedDirection}，礼金模式={_giftMode}，金额={GiftAmount}。");
             MarriageProposalDraft draft = BuildDraft(out FamilyResult validation);
-            if (draft == null || !validation.IsAllowed) { RefreshTermsValidation(); return; }
-            string description = new TextObject("{=MF_UI_ConfirmMarriageProposal}{HERO_A}将与{HERO_B}成婚；婚后归属为“{DIRECTION}”，礼金为{GOLD}第纳尔。是否发送联姻请求？")
-                .SetTextVariable("HERO_A", OwnHero?.Name ?? TextObject.GetEmpty())
-                .SetTextVariable("HERO_B", SelectedTargetHero?.Name ?? TextObject.GetEmpty())
-                .SetTextVariable("DIRECTION", _selectedDirection == MarriageDirection.FemaleJoinsMaleClan ? NormalDirectionText : MatrilocalDirectionText)
-                .SetTextVariable("GOLD", draft.GiftAmount)
-                .ToString();
-            InformationManager.ShowInquiry(new InquiryData(TermsTitle, description, true, true,
-                SubmitTermsText, CancelTermsText, SubmitConfirmed, null, string.Empty, 0f, null, null, null), false, false);
+            FamilyDiagnostics.DebugLog($"联姻提交草案构建完成：草案={(draft == null ? "null" : "ok")}，校验={validation.IsAllowed}/{validation.ReasonCode}。");
+            if (draft == null || !validation.IsAllowed)
+            {
+                FamilyDiagnostics.Warn($"联姻界面拒绝发起：{validation.ReasonCode}。");
+                RefreshTermsValidation();
+                return;
+            }
+            SubmitConfirmed();
         }
 
         private void SubmitConfirmed()
@@ -227,8 +229,22 @@ namespace ModifiedFamily.UI.Marriage
             MarriageProposalDraft draft = BuildDraft(out FamilyResult validation);
             if (draft == null || !validation.IsAllowed) { RefreshTermsValidation(); return; }
             IsSubmitting = true;
-            FamilyResult result = _service.TryCreateMarriageProposal(draft);
+            FamilyDiagnostics.DebugLog("联姻界面开始调用FamilyProposalService.TryCreateMarriageProposal。");
+            FamilyResult result;
+            try
+            {
+                result = _service.TryCreateMarriageProposal(draft);
+            }
+            catch (Exception exception)
+            {
+                IsSubmitting = false;
+                FamilyDiagnostics.Error("联姻界面提交请求时发生异常。", exception);
+                TermsValidationText = new TextObject("{=MF_UI_MarriageSubmitFailed}发起联姻失败，请查看日志。").ToString();
+                HeroDetails?.RefreshArrangement();
+                return;
+            }
             IsSubmitting = false;
+            FamilyDiagnostics.DebugLog($"联姻服务返回：允许={result.IsAllowed}，原因={result.ReasonCode}，请求={result.ProposalId ?? "-"}。");
             if (!result.IsAllowed)
             {
                 TermsValidationText = DenialText(result.ReasonCode);
@@ -237,6 +253,7 @@ namespace ModifiedFamily.UI.Marriage
             }
             InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=MF_UI_MarriageProposalSent}联姻提议已发送，正在等待对方答复。").ToString(), Colors.Green));
             FamilyDiagnostics.Notice($"玩家已从联姻界面提交请求：{OwnHero?.Name}与{SelectedTargetHero?.Name}，请求={result.ProposalId ?? "-"}。");
+            FamilyDiagnostics.DebugLog("联姻请求创建成功，准备关闭联姻界面。");
             FamilyActionScreenHost.Close();
         }
 
@@ -381,7 +398,7 @@ namespace ModifiedFamily.UI.Marriage
             SelectedTargetHero = item?.Hero;
             if (SelectedTargetHero == null) return;
             HeroDetails?.OnFinalize();
-            HeroDetails = new MarriageHeroDetailsVM(OwnHero, SelectedTargetHero, ExecuteOpenTerms);
+            HeroDetails = new MarriageHeroDetailsVM(this, OwnHero, SelectedTargetHero);
             InitializeTerms();
             FamilyDiagnostics.DebugLog($"联姻界面[HeroDetail]：己方={OwnHero?.StringId ?? "none"}/{OwnHero?.Name?.ToString() ?? "none"}；目标={SelectedTargetHero.StringId}/{SelectedTargetHero.Name}；目标家族={SelectedTargetClan?.StringId ?? "none"}。");
             SetPage(MarriageUiPage.HeroDetail);
@@ -413,7 +430,7 @@ namespace ModifiedFamily.UI.Marriage
         private void OnMarriageGiftChanged(SelectorVM<SelectorItemVM> selector)
         {
             if (selector == null) return;
-            _giftMode = Math.Max(0, Math.Min(2, selector.SelectedIndex));
+            _giftMode = selector.SelectedIndex == 1 ? 2 : selector.SelectedIndex == 2 ? 1 : 0;
             if (_giftMode == 0)
             {
                 _giftAmount = 0;
@@ -475,6 +492,7 @@ namespace ModifiedFamily.UI.Marriage
                 ? new TextObject("{=MF_UI_MarriageTermsValid}当前安排符合联姻规则，可以发送请求。").ToString()
                 : DenialText(result.ReasonCode);
             OnPropertyChanged(nameof(CanSubmitTerms));
+            HeroDetails?.RefreshArrangement();
         }
 
         private void NotifyTermsSelectionChanged()
