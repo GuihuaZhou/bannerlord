@@ -137,6 +137,7 @@
     <string id="MF_UI_MarriageClanListTitle" text="可联姻家族" />
     <string id="MF_UI_MarriageForHero" text="为 {HERO} 寻找联姻对象" />
     <string id="MF_UI_MarriageBreadcrumbClans" text="联姻  &gt;  选择家族" />
+    <string id="MF_UI_MarriageBreadcrumbClanDetail" text="联姻  &gt;  选择家族  &gt;  {CLAN}" />
     <string id="MF_UI_MarriageKingdomColumn" text="所属王国" />
     <string id="MF_UI_MarriageCultureColumn" text="文化" />
     <string id="MF_UI_MarriageMatchColumn" text="匹配类型" />
@@ -147,6 +148,12 @@
     <string id="MF_UI_MarriageLeaderField" text="领袖：{VALUE}" />
     <string id="MF_UI_MarriageRelationField" text="关系：{VALUE}" />
     <string id="MF_UI_MarriageCandidateField" text="候选人数：{VALUE}" />
+    <string id="MF_UI_MarriageTierField" text="家族等级：{VALUE}" />
+    <string id="MF_UI_MarriageFiefField" text="封地数量：{VALUE}" />
+    <string id="MF_UI_MarriageEligibleClanMembers" text="可联姻的家族成员（{COUNT}）" />
+    <string id="MF_UI_MarriageClanFallbackDescription" text="{CLAN}是{KINGDOM}境内的一个家族。" />
+    <string id="MF_UI_NoClanMarriageCandidates" text="该家族目前没有仍符合条件的联姻候选人物，请返回并选择其他家族。" />
+    <string id="MF_UI_MarriageHeroAge" text="年龄：{AGE}" />
     <string id="MF_UI_MarriageMatchField" text="匹配类型：{VALUE}" />
     <string id="MF_UI_IndependentClan" text="独立家族" />
     <string id="MF_UI_MatchSameRealmCulture" text="同国同文化" />

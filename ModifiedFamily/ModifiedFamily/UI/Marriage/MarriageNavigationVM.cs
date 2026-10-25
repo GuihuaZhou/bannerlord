@@ -35,6 +35,7 @@ namespace ModifiedFamily.UI.Marriage
         private MarriageUiPage _page;
         private string _breadcrumbText;
         private string _emptyStateText;
+        private MarriageClanDetailsVM _clanDetails;
 
         internal MarriageNavigationVM(Hero ownHero)
         {
@@ -94,6 +95,7 @@ namespace ModifiedFamily.UI.Marriage
         internal Hero SelectedTargetHero { get; private set; }
 
         [DataSourceProperty] public MBBindingList<MarriageClanItemVM> Clans { get; }
+        [DataSourceProperty] public MarriageClanDetailsVM ClanDetails { get => _clanDetails; private set { _clanDetails = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string Title { get; }
         [DataSourceProperty] public string ClanListTitle { get; }
         [DataSourceProperty] public string OwnHeroSummaryText { get; }
@@ -245,8 +247,31 @@ namespace ModifiedFamily.UI.Marriage
         {
             SelectedTargetClan = item?.Clan;
             SelectedTargetHero = null;
-            FamilyDiagnostics.DebugLog($"联姻界面[ClanList]选择家族：{SelectedTargetClan?.StringId ?? "none"}/{SelectedTargetClan?.Name?.ToString() ?? "none"}。");
-            // M2 will replace this no-op with the in-movie clan-detail transition.
+            if (SelectedTargetClan == null) return;
+
+            List<Hero> eligibleHeroes = GetEligibleHeroes(SelectedTargetClan).ToList();
+            ClanDetails = new MarriageClanDetailsVM(SelectedTargetClan, eligibleHeroes, SelectHero);
+            FamilyDiagnostics.DebugLog($"联姻界面[ClanDetail]：目标家族={SelectedTargetClan.StringId}/{SelectedTargetClan.Name}，实时合法候选={eligibleHeroes.Count}。");
+            SetPage(MarriageUiPage.ClanDetail);
+        }
+
+        private IEnumerable<Hero> GetEligibleHeroes(CampaignClan clan)
+        {
+            if (clan == null || OwnHero == null || _service == null) yield break;
+            foreach (Hero target in clan.Heroes.OrderByDescending(x => x?.Age ?? 0f))
+            {
+                if (target == null || target.Clan != clan || target.IsFemale == OwnHero.IsFemale) continue;
+                if (!MarriageEligibilityModel.CanNegotiateHero(target).IsAllowed) continue;
+                FamilyResult normal = ValidateDraft(target, MarriageDirection.FemaleJoinsMaleClan);
+                FamilyResult matrilocal = normal.IsAllowed ? normal : ValidateDraft(target, MarriageDirection.MaleJoinsFemaleClan);
+                if (normal.IsAllowed || matrilocal.IsAllowed) yield return target;
+            }
+        }
+
+        private void SelectHero(MarriageHeroItemVM item)
+        {
+            SelectedTargetHero = item?.Hero;
+            FamilyDiagnostics.DebugLog($"联姻界面[ClanDetail]选择人物：{SelectedTargetHero?.StringId ?? "none"}/{SelectedTargetHero?.Name?.ToString() ?? "none"}；目标家族={SelectedTargetClan?.StringId ?? "none"}。M3人物详情尚未启用。");
         }
 
         private void SetPage(MarriageUiPage page)
@@ -254,7 +279,9 @@ namespace ModifiedFamily.UI.Marriage
             _page = page;
             BreadcrumbText = page == MarriageUiPage.ClanList
                 ? new TextObject("{=MF_UI_MarriageBreadcrumbClans}联姻  >  选择家族").ToString()
-                : new TextObject("{=MF_UI_MarriageScreenTitle}联姻").ToString();
+                : page == MarriageUiPage.ClanDetail
+                    ? new TextObject("{=MF_UI_MarriageBreadcrumbClanDetail}联姻  >  选择家族  >  {CLAN}").SetTextVariable("CLAN", SelectedTargetClan?.Name ?? new TextObject("-")).ToString()
+                    : new TextObject("{=MF_UI_MarriageScreenTitle}联姻").ToString();
             OnPropertyChanged(nameof(IsClanListVisible));
             OnPropertyChanged(nameof(IsClanDetailVisible));
             OnPropertyChanged(nameof(IsHeroDetailVisible));
