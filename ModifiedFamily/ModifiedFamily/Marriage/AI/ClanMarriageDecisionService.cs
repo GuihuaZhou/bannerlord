@@ -44,13 +44,34 @@ namespace ModifiedFamily.Marriage.AI
                 return;
             }
             var valid = _proposalModel.CanRespond(p);
-            if (!valid.IsAllowed) { _service.TryReject(p.ProposalId, p.ReceiverClan, valid.ReasonCode); return; }
+            if (!valid.IsAllowed)
+            {
+                if (!_service.TryInvalidateDueToPoliticalChange(p, valid.ReasonCode)) _service.TryReject(p.ProposalId, p.ReceiverClan, valid.ReasonCode);
+                return;
+            }
             Hero own = p.HeroA.Clan == p.ReceiverClan ? p.HeroA : p.HeroB;
             Hero other = own == p.HeroA ? p.HeroB : p.HeroA;
             int giftDelta = p.GoldReceiverClan == p.ReceiverClan ? p.GiftAmount : -p.GiftAmount;
             float score = _values.MarriageScore(own, other, p.ReceiverClan, p.DestinationClan, giftDelta);
             FamilyDiagnostics.DebugLog(FamilyLogText.AiResponse(p, score));
             if (score >= 0f) _service.TryAccept(p.ProposalId, p.ReceiverClan); else _service.TryReject(p.ProposalId, p.ReceiverClan, FamilyReasonCode.InvalidProposal);
+        }
+
+        public bool ShouldContinueAcceptedProposal(FamilyProposal p)
+        {
+            if (p == null || p.Status != FamilyProposalStatus.AcceptedPendingExecution) return true;
+            Clan[] parties = { p.ProposerClan, p.ReceiverClan };
+            foreach (Clan clan in parties.Where(c => c != null && c != Clan.PlayerClan).Distinct())
+            {
+                Hero own = p.OriginClanA == clan ? p.HeroA : p.OriginClanB == clan ? p.HeroB : null;
+                Hero other = own == p.HeroA ? p.HeroB : p.HeroA;
+                if (own == null || other == null) return false;
+                int giftDelta = p.GoldReceiverClan == clan ? p.GiftAmount : p.GoldPayerClan == clan ? -p.GiftAmount : 0;
+                float score = _values.MarriageScore(own, other, clan, p.DestinationClan, giftDelta);
+                FamilyDiagnostics.DebugLog(FamilyLogText.AiPoliticalReassessment(p, clan, score));
+                if (score < 0f) return false;
+            }
+            return true;
         }
 
         private static int MatchTier(Hero a, Hero b)

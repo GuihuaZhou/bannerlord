@@ -16,6 +16,7 @@ using ModifiedFamily.Persistence;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
+using TaleWorlds.CampaignSystem.Actions;
 using ModifiedFamily.UI.Notifications;
 
 namespace ModifiedFamily.Campaign
@@ -31,6 +32,8 @@ namespace ModifiedFamily.Campaign
         private MarriageExecutionService _execution;
         private AdoptionExecutionService _adoptionExecution;
         private FamilyProposalNotificationService _notificationService;
+        private readonly HashSet<Clan> _pendingPoliticalRevalidation = new HashSet<Clan>();
+        private readonly MarriagePoliticalValidationModel _politicalValidation = new MarriagePoliticalValidationModel();
         public IReadOnlyList<AdoptiveKinshipRecord> Adoptions => _adoptions;
         public FamilyProposalService Service => _service;
 
@@ -42,6 +45,10 @@ namespace ModifiedFamily.Campaign
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(this, OnDaily);
             CampaignEvents.BeforeHeroesMarried.AddNonSerializedListener(this, OnBeforeHeroesMarried);
             CampaignEvents.OnHeroChangedClanEvent.AddNonSerializedListener(this, OnHeroChangedClan);
+            CampaignEvents.WarDeclared.AddNonSerializedListener(this, OnWarDeclared);
+            CampaignEvents.OnClanChangedKingdomEvent.AddNonSerializedListener(this, OnClanChangedKingdom);
+            CampaignEvents.OnClanDestroyedEvent.AddNonSerializedListener(this, OnClanDestroyed);
+            CampaignEvents.HourlyTickEvent.AddNonSerializedListener(this, OnHourlyTick);
         }
 
         public override void SyncData(IDataStore store)
@@ -78,6 +85,15 @@ namespace ModifiedFamily.Campaign
             // CampaignTime deadlines survive saves, so loading a save resumes the same seven-day window.
             foreach (var p in _proposals.Where(x => x != null && x.IsActive).ToList())
             {
+                if (p.ProposalType == FamilyProposalType.Marriage && IsPreExecution(p))
+                {
+                    FamilyResult political = _politicalValidation.Validate(p);
+                    if (!political.IsAllowed)
+                    {
+                        _service.TryInvalidateDueToPoliticalChange(p, political.ReasonCode);
+                        continue;
+                    }
+                }
                 if (p.Status == FamilyProposalStatus.PendingResponse && p.ReplyDeadline.IsPast)
                 {
                     // AI receivers decide once the response window closes; unattended player offers expire.
@@ -88,7 +104,12 @@ namespace ModifiedFamily.Campaign
                     // Temporary blockers are retried daily, but never beyond the execution deadline.
                     if (p.ExecutionDeadline.IsPast) _service.Invalidate(p, FamilyReasonCode.Expired, false);
                     else if (p.ProposalType == FamilyProposalType.Marriage && TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel)
-                    { var r = _execution.TryExecuteMarriage(p); if (p.Status == FamilyProposalStatus.Completed) _service.ReleaseCompleted(p); }
+                    {
+                        var r = _execution.TryExecuteMarriage(p);
+                        if (p.Status == FamilyProposalStatus.Completed) _service.ReleaseCompleted(p);
+                        else if (p.Status == FamilyProposalStatus.AcceptedPendingExecution && !r.IsAllowed && r.TemporaryBlockers.Count == 0 && r.ReasonCode != FamilyReasonCode.InsufficientFunds)
+                            _service.Invalidate(p, r.ReasonCode, false);
+                    }
                     else if (p.ProposalType == FamilyProposalType.Adoption)
                     { _adoptionExecution.TryExecute(p); if (p.Status == FamilyProposalStatus.Completed) _service.ReleaseCompleted(p); }
                 }
@@ -108,6 +129,53 @@ namespace ModifiedFamily.Campaign
             foreach (var p in _proposals.Where(x => x.IsActive && (x.HeroA == hero || x.HeroB == hero)).ToList())
                 if ((p.HeroA == hero && hero.Clan != p.OriginClanA) || (p.HeroB == hero && hero.Clan != p.OriginClanB)) _service.Invalidate(p, FamilyReasonCode.ClanChanged, false);
         }
+
+        private void OnWarDeclared(IFaction first, IFaction second, DeclareWarAction.DeclareWarDetail detail)
+        {
+            if (_service == null) BuildServices();
+            // Validate current clan/kingdom state instead of trusting the event's faction shape.
+            RevalidateMarriageProposals(null, false);
+        }
+
+        private void OnClanChangedKingdom(Clan clan, Kingdom oldKingdom, Kingdom newKingdom, ChangeKingdomAction.ChangeKingdomActionDetail detail, bool showNotification)
+        {
+            if (clan == null) return;
+            // Kingdom switches can expose a short-lived null/intermediate state. Coalesce them until the next safe hourly update.
+            _pendingPoliticalRevalidation.Add(clan);
+        }
+
+        private void OnClanDestroyed(Clan clan)
+        {
+            if (_service == null) BuildServices();
+            RevalidateMarriageProposals(clan, false);
+        }
+
+        private void OnHourlyTick()
+        {
+            if (_pendingPoliticalRevalidation.Count == 0) return;
+            if (_service == null) BuildServices();
+            Clan[] changed = _pendingPoliticalRevalidation.ToArray();
+            _pendingPoliticalRevalidation.Clear();
+            foreach (Clan clan in changed) RevalidateMarriageProposals(clan, true);
+        }
+
+        private void RevalidateMarriageProposals(Clan changedClan, bool reassessAccepted)
+        {
+            foreach (FamilyProposal p in _proposals.Where(x => x != null && x.ProposalType == FamilyProposalType.Marriage && IsPreExecution(x) &&
+                (changedClan == null || x.OriginClanA == changedClan || x.OriginClanB == changedClan || x.ProposerClan == changedClan || x.ReceiverClan == changedClan)).ToList())
+            {
+                FamilyResult validity = _politicalValidation.Validate(p);
+                if (!validity.IsAllowed)
+                {
+                    _service.TryInvalidateDueToPoliticalChange(p, validity.ReasonCode);
+                    continue;
+                }
+                if (reassessAccepted && p.Status == FamilyProposalStatus.AcceptedPendingExecution && !_marriageAi.ShouldContinueAcceptedProposal(p))
+                    _service.TryInvalidateDueToPoliticalChange(p, FamilyReasonCode.PoliticalInterestChanged);
+            }
+        }
+
+        private static bool IsPreExecution(FamilyProposal p) => p.Status == FamilyProposalStatus.PendingResponse || p.Status == FamilyProposalStatus.AcceptedPendingExecution;
 
         private void MigrateVanillaOffers()
         {

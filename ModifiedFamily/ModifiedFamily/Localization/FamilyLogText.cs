@@ -31,6 +31,11 @@ namespace ModifiedFamily.Localization
             var t = T("MF_Log_AiResponse", "{CLAN} rescored the proposal at {SCORE}. (Request: {ID})");
             t.SetTextVariable("CLAN", p.ReceiverClan.Name); t.SetTextVariable("SCORE", score.ToString("0.00")); t.SetTextVariable("ID", p.ProposalId); return t.ToString();
         }
+        internal static string AiPoliticalReassessment(FamilyProposal p, Clan clan, float score)
+        {
+            var t = T("MF_Log_AiPoliticalReassessment", "{CLAN} reassessed the accepted marriage after a political change: {SCORE}. (Request: {ID})");
+            t.SetTextVariable("CLAN", clan?.Name ?? new TextObject(string.Empty)); t.SetTextVariable("SCORE", score.ToString("0.00")); t.SetTextVariable("ID", p?.ProposalId ?? "-"); return t.ToString();
+        }
         internal static string MarriageProposal(FamilyProposal p, bool counter)
         {
             string id;
@@ -75,6 +80,7 @@ namespace ModifiedFamily.Localization
                 case FamilyReasonCode.Expired: return T("MF_Reason_Expired", "the agreed deadline passed");
                 case FamilyReasonCode.Dead: return T("MF_Reason_Dead", "a participant died");
                 case FamilyReasonCode.AlreadyMarried: return T("MF_Reason_AlreadyMarried", "a participant already married");
+                case FamilyReasonCode.InvalidClan: return T("MF_Reason_InvalidClan", "a participating clan is no longer eligible");
                 case FamilyReasonCode.ClanChanged: return T("MF_Reason_ClanChanged", "a participant changed clan");
                 case FamilyReasonCode.AtWar: return T("MF_Reason_AtWar", "the clans are at war");
                 case FamilyReasonCode.CultureForbidden: return T("MF_Reason_CultureForbidden", "culture and kingdom rules no longer allow it");
@@ -86,6 +92,7 @@ namespace ModifiedFamily.Localization
                 case FamilyReasonCode.TemporaryInactive: return T("MF_Reason_TemporaryInactive", "someone is temporarily unavailable");
                 case FamilyReasonCode.ExternalMarriage: return T("MF_Reason_ExternalMarriage", "a participant married elsewhere");
                 case FamilyReasonCode.PlayerDeclined: return T("MF_Reason_PlayerDeclined", "the receiving clan declined the proposal");
+                case FamilyReasonCode.PoliticalInterestChanged: return T("MF_Reason_PoliticalInterestChanged", "political changes made the accepted agreement unacceptable");
                 default: return T("MF_Reason_Default", "the current conditions no longer satisfy the agreement");
             }
         }

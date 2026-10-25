@@ -116,6 +116,7 @@ namespace ModifiedFamily.Proposals
         public FamilyResult TryCounter(string id, Clan responder, MarriageDirection direction, Clan goldPayer, int giftAmount)
         {
             var old = FindPending(id); if (old == null || old.ReceiverClan != responder) return FamilyResult.Deny(FamilyReasonCode.WrongResponder);
+            var current = _marriageModel.CanRespond(old); if (!current.IsAllowed) { TryInvalidateDueToPoliticalChange(old, current.ReasonCode); return current; }
             if (old.CounterCount >= 1) return FamilyResult.Deny(FamilyReasonCode.CounterLimitReached);
             var draft = new MarriageProposalDraft { ProposerClan = old.ReceiverClan, ReceiverClan = old.ProposerClan, HeroA = old.HeroA, HeroB = old.HeroB, Direction = direction, GoldPayerClan = goldPayer, GiftAmount = giftAmount };
             Clan destination = direction == MarriageDirection.FemaleJoinsMaleClan ? (old.HeroA.IsFemale ? old.HeroB.Clan : old.HeroA.Clan) : (old.HeroA.IsFemale ? old.HeroA.Clan : old.HeroB.Clan);
@@ -130,7 +131,19 @@ namespace ModifiedFamily.Proposals
         // UI diagnostics use this read-only lookup to explain why a selected hero cannot start another negotiation.
         public FamilyProposal GetActiveProposalFor(Hero hero) => hero == null ? null : _proposals.FirstOrDefault(p => p != null && p.IsActive && (p.HeroA == hero || p.HeroB == hero || p.AdopteeHero == hero));
         public void ReleaseCompleted(FamilyProposal p) => ReleaseChain(p.ChainId);
-        public void Invalidate(FamilyProposal p, FamilyReasonCode reason, bool cooldown) { p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn(FamilyLogText.Invalidated(p)); }
+        public bool TryInvalidateDueToPoliticalChange(FamilyProposal p, FamilyReasonCode reason)
+        {
+            if (p == null || !MarriagePoliticalValidationModel.IsPoliticalFailure(reason)) return false;
+            if (p.Status != FamilyProposalStatus.PendingResponse && p.Status != FamilyProposalStatus.AcceptedPendingExecution) return false;
+            Invalidate(p, reason, false);
+            return true;
+        }
+        public void Invalidate(FamilyProposal p, FamilyReasonCode reason, bool cooldown)
+        {
+            if (p == null || p.Status == FamilyProposalStatus.Invalidated || p.Status == FamilyProposalStatus.Completed ||
+                p.Status == FamilyProposalStatus.Executing || p.Status == FamilyProposalStatus.PaymentReconcileRequired) return;
+            p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn(FamilyLogText.Invalidated(p));
+        }
         private FamilyProposal FindPending(string id) => _proposals.FirstOrDefault(p => p.ProposalId == id && p.Status == FamilyProposalStatus.PendingResponse);
         private bool IsLocked(Hero h) => h != null && _locks.ContainsKey(h);
         private bool OnCooldown(Hero a, Hero b) => _cooldowns.Any(c => c != null && !c.Until.IsPast && ((c.HeroA == a && c.HeroB == b) || (c.HeroA == b && c.HeroB == a)));

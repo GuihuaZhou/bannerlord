@@ -17,7 +17,14 @@ namespace ModifiedFamily.Marriage.Execution
         public FamilyResult TryExecuteMarriage(FamilyProposal proposal)
         {
             var valid = _proposalModel.CanExecuteMarriage(proposal);
-            if (!valid.IsAllowed || valid.TemporaryBlockers.Count > 0) { FamilyReasonCode reason = valid.TemporaryBlockers.Count > 0 ? valid.TemporaryBlockers[0] : valid.ReasonCode; FamilyDiagnostics.DebugLog(FamilyLogText.MarriageWaiting(proposal, reason)); return valid; }
+            if (!valid.IsAllowed || valid.TemporaryBlockers.Count > 0)
+            {
+                FamilyReasonCode reason = valid.TemporaryBlockers.Count > 0 ? valid.TemporaryBlockers[0] : valid.ReasonCode;
+                // Funds and transient hero activity may recover. Permanent failures are returned to the lifecycle owner for invalidation.
+                if (valid.TemporaryBlockers.Count > 0 || reason == FamilyReasonCode.InsufficientFunds)
+                    FamilyDiagnostics.DebugLog(FamilyLogText.MarriageWaiting(proposal, reason));
+                return valid;
+            }
             FamilyDiagnostics.Info(FamilyLogText.MarriageStarting(proposal));
             proposal.Status = FamilyProposalStatus.Executing;
             try

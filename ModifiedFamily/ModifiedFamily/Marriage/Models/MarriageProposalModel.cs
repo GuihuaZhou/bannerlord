@@ -15,20 +15,18 @@ namespace ModifiedFamily.Marriage.Models
     public sealed class MarriageProposalModel
     {
         private readonly IEnumerable<AdoptiveKinshipRecord> _kinship;
+        private readonly MarriagePoliticalValidationModel _political = new MarriagePoliticalValidationModel();
         public MarriageProposalModel(IEnumerable<AdoptiveKinshipRecord> kinship) { _kinship = kinship; }
 
         public FamilyResult CanProposeMarriage(FamilyProposal p)
         {
             if (p == null || p.HeroA == null || p.HeroB == null || p.HeroA == p.HeroB) return FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
-            var aClan = MarriageEligibilityModel.CanUseClan(p.OriginClanA); if (!aClan.IsAllowed) return aClan;
-            var bClan = MarriageEligibilityModel.CanUseClan(p.OriginClanB); if (!bClan.IsAllowed) return bClan;
+            var political = _political.Validate(p); if (!political.IsAllowed) return political;
             var a = MarriageEligibilityModel.CanNegotiateHero(p.HeroA); if (!a.IsAllowed) return a;
             var b = MarriageEligibilityModel.CanNegotiateHero(p.HeroB); if (!b.IsAllowed) return b;
             if (p.HeroA.IsFemale == p.HeroB.IsFemale) return FamilyResult.Deny(FamilyReasonCode.SameSex);
             if (MarriageEligibilityModel.AreBloodRelated(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.Related);
             if (MarriageEligibilityModel.AreAdoptiveRelated(p.HeroA, p.HeroB, _kinship)) return FamilyResult.Deny(FamilyReasonCode.AdoptiveRelated);
-            if (p.OriginClanA.IsAtWarWith(p.OriginClanB)) return FamilyResult.Deny(FamilyReasonCode.AtWar);
-            if (!CultureAllowed(p.HeroA, p.HeroB)) return FamilyResult.Deny(FamilyReasonCode.CultureForbidden);
             if (p.DestinationClan != p.OriginClanA && p.DestinationClan != p.OriginClanB) return FamilyResult.Deny(FamilyReasonCode.InvalidClan);
             if ((p.OriginClanA.Leader == p.HeroA && p.DestinationClan != p.OriginClanA) || (p.OriginClanB.Leader == p.HeroB && p.DestinationClan != p.OriginClanB)) return FamilyResult.Deny(FamilyReasonCode.LeaderCannotLeave);
             if (!ValidGift(p)) return FamilyResult.Deny(FamilyReasonCode.InvalidGift);
@@ -40,7 +38,6 @@ namespace ModifiedFamily.Marriage.Models
         {
             var result = CanProposeMarriage(p);
             if (!result.IsAllowed) return result;
-            if (p.HeroA.Clan != p.OriginClanA || p.HeroB.Clan != p.OriginClanB) return FamilyResult.Deny(FamilyReasonCode.ClanChanged);
             return result;
         }
 
@@ -53,10 +50,11 @@ namespace ModifiedFamily.Marriage.Models
         }
 
         private static bool ValidGift(FamilyProposal p) => p.GiftAmount >= 0 && (p.GiftAmount == 0 || (p.GoldPayerClan != null && p.GoldReceiverClan != null && p.GoldPayerClan != p.GoldReceiverClan && (p.GoldPayerClan == p.OriginClanA || p.GoldPayerClan == p.OriginClanB) && (p.GoldReceiverClan == p.OriginClanA || p.GoldReceiverClan == p.OriginClanB)));
-        private static bool CultureAllowed(Hero a, Hero b)
+        internal static bool CultureAndKingdomAllowed(Hero a, Hero b)
         {
+            if (a?.Clan == null || b?.Clan == null) return false;
             bool sameKingdom = a.Clan.Kingdom != null && a.Clan.Kingdom == b.Clan.Kingdom;
-            bool sameCulture = a.Clan?.Culture == b.Clan?.Culture;
+            bool sameCulture = a.Clan.Culture == b.Clan.Culture;
             return sameCulture || (sameKingdom && MarriagePolicyModel.AllowSameKingdomDifferentCulture);
         }
     }

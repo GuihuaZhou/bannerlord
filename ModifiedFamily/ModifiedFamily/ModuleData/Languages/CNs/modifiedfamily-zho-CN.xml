@@ -88,6 +88,7 @@
     <string id="MF_Reason_Expired" text="等候时间已经超过约定期限" />
     <string id="MF_Reason_Dead" text="相关人物已经去世" />
     <string id="MF_Reason_AlreadyMarried" text="相关人物已经与别人结婚" />
+    <string id="MF_Reason_InvalidClan" text="相关家族已经不再具备联姻资格" />
     <string id="MF_Reason_ClanChanged" text="相关人物已经离开原来的家族" />
     <string id="MF_Reason_AtWar" text="双方家族已经处于战争状态" />
     <string id="MF_Reason_CultureForbidden" text="双方不再符合文化与王国限制" />
@@ -99,6 +100,7 @@
     <string id="MF_Reason_TemporaryInactive" text="相关人物当前无法正常行动" />
     <string id="MF_Reason_ExternalMarriage" text="相关人物已经通过其他方式成婚" />
     <string id="MF_Reason_PlayerDeclined" text="接收方决定不接受该提议" />
+    <string id="MF_Reason_PoliticalInterestChanged" text="政治局势变化后，一方不再愿意履行既定协议" />
     <string id="MF_Reason_Default" text="当前条件已经不再符合约定" />
     <string id="MF_Log_PatchesInstalled" text="婚姻系统已接管原版自动配婚入口。" />
     <string id="MF_Log_PatchFailed" text="原版婚姻入口接管失败，为避免两套配婚系统同时运行，家族 AI 已停用。" />
@@ -114,6 +116,7 @@
     <string id="MF_Log_LegacyMigrationFailed" text="检查旧存档婚约时出了问题，请暂时不要让这些人物通过其他方式结婚。" />
     <string id="MF_Log_AiCandidate" text="{CLAN}已选择{OTHER}作为{OWN}的联姻候选。候选层级：{TIER}；内部评分：{SCORE}。" />
     <string id="MF_Log_AiResponse" text="{CLAN}已重新评估该联姻提议，当前内部评分为{SCORE}。（请求：{ID}）" />
+    <string id="MF_Log_AiPoliticalReassessment" text="政治局势变化后，{CLAN}对已接受联姻的履约评分为{SCORE}。（请求：{ID}）" />
     <string id="MF_Log_UiReady" text="家族事务界面已经启用。" />
     <string id="MF_Log_UiFailed" text="家族事务界面未能启用，请检查 UIExtenderEx 是否正常加载。" />
     <string id="MF_UI_ArrangeMarriageShort" text="安排联姻" />
