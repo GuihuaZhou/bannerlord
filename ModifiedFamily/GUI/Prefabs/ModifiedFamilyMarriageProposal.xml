@@ -1,0 +1,93 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#B8000000" DoNotPassEventsToChildren="true">
+      <Children>
+        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="850" SuggestedHeight="910" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Frame1Brush" RenderLate="true">
+          <Children>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="42" SuggestedHeight="42" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="38" MarginTop="32" Brush="ButtonBrush2" Command.Click="ExecuteClose">
+              <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="×" /></Children>
+            </ButtonWidget>
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="75" MarginRight="75" MarginTop="58" MarginBottom="52" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="58" Brush="Kingdom.General.Title.Text" Text="@Title" />
+
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="235" MarginTop="8" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                  <Children>
+                    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="335" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="35" Brush="Kingdom.General.SecondaryText" Text="@PlayerSideText" />
+                        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="190" SuggestedHeight="145" HorizontalAlignment="Center" Brush="ButtonBrush2" Command.Click="ExecuteOpenPlayerHero" HoveredCursorState="RightClickLink">
+                          <Children><ImageIdentifierWidget DataSource="{PlayerHeroVisual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" /></Children>
+                        </ButtonWidget>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="42" Brush="Kingdom.General.SecondaryText" Text="@PlayerHeroName" />
+                      </Children>
+                    </ListPanel>
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="70" VerticalAlignment="Center" Brush="Kingdom.General.Title.Text" Text="×" />
+                    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="335" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="35" Brush="Kingdom.General.SecondaryText" Text="@OtherSideText" />
+                        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="190" SuggestedHeight="145" HorizontalAlignment="Center" Brush="ButtonBrush2" Command.Click="ExecuteOpenOtherHero" HoveredCursorState="RightClickLink">
+                          <Children><ImageIdentifierWidget DataSource="{OtherHeroVisual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" /></Children>
+                        </ButtonWidget>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="42" Brush="Kingdom.General.SecondaryText" Text="@OtherHeroName" />
+                      </Children>
+                    </ListPanel>
+                  </Children>
+                </ListPanel>
+
+                <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="238" MarginTop="15" Brush="Frame1Brush">
+                  <Children>
+                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="42" MarginRight="42" MarginTop="28" MarginBottom="25" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="45" Brush="Kingdom.General.Title.Text" Text="@ConditionsTitle" />
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="57" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                          <Children>
+                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="145" Brush="Kingdom.General.SecondaryText" Text="@DirectionLabel" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecutePreviousDirection" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="‹" /></Children></ButtonWidget>
+                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.General.SecondaryText" Text="@DirectionText" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecuteNextDirection" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="›" /></Children></ButtonWidget>
+                          </Children>
+                        </ListPanel>
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="57" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                          <Children>
+                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="145" Brush="Kingdom.General.SecondaryText" Text="@GiftLabel" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecutePreviousGift" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="‹" /></Children></ButtonWidget>
+                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.General.SecondaryText" Text="@GiftText" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecuteNextGift" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="›" /></Children></ButtonWidget>
+                          </Children>
+                        </ListPanel>
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="57" StackLayout.LayoutMethod="HorizontalLeftToRight" IsVisible="@HasGift">
+                          <Children>
+                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="145" Brush="Kingdom.General.SecondaryText" Text="@GiftAmountLabel" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecuteDecreaseGift" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="−" /></Children></ButtonWidget>
+                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Kingdom.General.SecondaryText" Text="@GiftAmountText" />
+                            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="45" Brush="ButtonBrush2" Command.Click="ExecuteIncreaseGift" IsVisible="@IsNegotiating"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="+" /></Children></ButtonWidget>
+                          </Children>
+                        </ListPanel>
+                      </Children>
+                    </ListPanel>
+                  </Children>
+                </BrushWidget>
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" MarginTop="8" Brush="Kingdom.General.SecondaryText" Text="@StatusText" />
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@IsViewing">
+                  <Children>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="58" MarginTop="8" Brush="ButtonBrush2" Command.Click="ExecuteAccept"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@AcceptText" /></Children></ButtonWidget>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="58" MarginTop="8" Brush="ButtonBrush2" Command.Click="ExecuteReject"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@RejectText" /></Children></ButtonWidget>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="58" MarginTop="8" Brush="ButtonBrush2" Command.Click="ExecuteNegotiate" IsVisible="@CanNegotiate"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@NegotiateText" /></Children></ButtonWidget>
+                  </Children>
+                </ListPanel>
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@IsNegotiating">
+                  <Children>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="62" MarginTop="8" Brush="ButtonBrush2" Command.Click="ExecuteSubmitCounter" IsEnabled="@CanSubmitCounter"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@SubmitCounterText" /></Children></ButtonWidget>
+                    <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" MarginTop="8" Brush="ButtonBrush2" Command.Click="ExecuteBack"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="ButtonTextBrush" Text="@BackText" /></Children></ButtonWidget>
+                  </Children>
+                </ListPanel>
+              </Children>
+            </ListPanel>
+          </Children>
+        </BrushWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

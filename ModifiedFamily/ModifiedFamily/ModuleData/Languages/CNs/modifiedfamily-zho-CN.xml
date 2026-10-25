@@ -212,6 +212,19 @@
     <string id="MF_UI_DenialHeroLocked" text="其中一人已有正在处理的家族事务。" />
     <string id="MF_UI_DenialPairCooldown" text="双方仍处于再次提议的冷却期。" />
     <string id="MF_UI_DenialMarriageInvalid" text="当前安排不再符合联姻条件，请返回并重新选择。" />
+    <string id="MF_UI_IncomingMarriageTitle" text="收到家族联姻提议" />
+    <string id="MF_UI_MarriageConditions" text="联姻条件" />
+    <string id="MF_UI_OurHero" text="我方成员" />
+    <string id="MF_UI_OtherHero" text="对方成员" />
+    <string id="MF_UI_DirectionLabel" text="归属" />
+    <string id="MF_UI_GiftLabel" text="礼金" />
+    <string id="MF_UI_Negotiate" text="协商" />
+    <string id="MF_UI_SubmitCounter" text="提交反提议" />
+    <string id="MF_UI_Back" text="返回" />
+    <string id="MF_UI_AdjustCounterTerms" text="调整条件后提交；每条谈判链只能协商一次。" />
+    <string id="MF_UI_NoGiftShort" text="无礼金" />
+    <string id="MF_UI_WePayShort" text="我方支付" />
+    <string id="MF_UI_OtherPaysShort" text="对方支付" />
   </strings>
 </base>
 

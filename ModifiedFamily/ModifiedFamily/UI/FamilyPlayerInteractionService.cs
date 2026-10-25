@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using ModifiedFamily.Campaign;
 using ModifiedFamily.Marriage.Models;
+using ModifiedFamily.UI.Marriage;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Core;
@@ -195,6 +196,7 @@ namespace ModifiedFamily.UI
             FamilyProposal proposal = behavior?.Service?.GetIncoming(CampaignClan.PlayerClan)
                 ?.FirstOrDefault(p => p.ProposalId == proposalId);
             if (proposal == null) { ShowUnavailable(); return; }
+            if (proposal.ProposalType == FamilyProposalType.Marriage && MarriageProposalScreenService.Open(proposalId)) return;
 
             var choices = new List<InquiryElement>
             {
