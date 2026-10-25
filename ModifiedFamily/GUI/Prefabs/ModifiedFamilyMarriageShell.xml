@@ -86,16 +86,16 @@
                                 <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="140" MarginLeft="8" MarginRight="8" MarginTop="8" MarginBottom="8" Brush="Popup.SelectionElement.Tuple" Command.Click="ExecuteSelect" UpdateChildrenStates="true">
                                   <Children>
                                     <!-- Match the native kingdom/fief owner visual: leader portrait with the clan banner overlaid. -->
-                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="140" SuggestedHeight="108" MarginLeft="18" VerticalAlignment="Center">
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="116" SuggestedHeight="92" MarginLeft="20" VerticalAlignment="Center">
                                       <Children>
-                                        <ImageIdentifierWidget DataSource="{LeaderVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="130" SuggestedHeight="100" HorizontalAlignment="Left" VerticalAlignment="Bottom" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsEnabled="false" />
-                                        <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="64" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+                                        <ImageIdentifierWidget DataSource="{LeaderVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="104" SuggestedHeight="80" HorizontalAlignment="Left" VerticalAlignment="Bottom" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsEnabled="false" />
+                                        <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="44" SuggestedHeight="54" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
                                       </Children>
                                     </Widget>
-                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="32" MarginLeft="182" MarginTop="7" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="24" Text="@Name" />
-                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="43" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@KingdomFieldText" />
-                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="75" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@CultureFieldText" />
-                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="107" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@LeaderFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="32" MarginLeft="160" MarginTop="7" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="24" Text="@Name" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="160" MarginTop="43" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@KingdomFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="160" MarginTop="75" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@CultureFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="160" MarginTop="107" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@LeaderFieldText" />
                                     <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="350" SuggestedHeight="26" HorizontalAlignment="Right" MarginRight="22" MarginTop="43" Brush="Encyclopedia.Stat.ValueText" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@RelationFieldText" />
                                     <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="350" SuggestedHeight="26" HorizontalAlignment="Right" MarginRight="22" MarginTop="75" Brush="Encyclopedia.Stat.ValueText" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@CandidateFieldText" />
                                   </Children>
@@ -104,14 +104,14 @@
                             </NavigatableGridWidget>
                           </Children>
                         </Widget>
-                        <ScrollbarWidget Id="ClanCardScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" AlignmentAxis="Vertical" Handle="ClanCardScrollbarHandle" MinValue="0" MaxValue="100">
+                      </Children>
+                    </ScrollablePanel>
+                    <ScrollbarWidget Id="ClanCardScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" MarginTop="55" MarginRight="2" AlignmentAxis="Vertical" Handle="ClanCardScrollbarHandle" MinValue="0" MaxValue="100">
                           <Children>
                             <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
                             <BrushWidget Id="ClanCardScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
                           </Children>
-                        </ScrollbarWidget>
-                      </Children>
-                    </ScrollablePanel>
+                    </ScrollbarWidget>
                     <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="850" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontSize="24" Text="@EmptyStateText" IsHidden="@HasClans" />
                   </Children>
                 </Widget>
@@ -174,14 +174,14 @@
                                 </NavigatableGridWidget>
                               </Children>
                             </Widget>
-                            <ScrollbarWidget Id="MarriageHeroScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" AlignmentAxis="Vertical" Handle="MarriageHeroScrollbarHandle" MinValue="0" MaxValue="100">
+                          </Children>
+                        </ScrollablePanel>
+                        <ScrollbarWidget Id="MarriageHeroScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" MarginTop="52" MarginRight="2" AlignmentAxis="Vertical" Handle="MarriageHeroScrollbarHandle" MinValue="0" MaxValue="100">
                               <Children>
                                 <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
                                 <BrushWidget Id="MarriageHeroScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
                               </Children>
-                            </ScrollbarWidget>
-                          </Children>
-                        </ScrollablePanel>
+                        </ScrollbarWidget>
                         <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="850" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontSize="22" Text="@EmptyText" IsHidden="@HasEligibleHeroes" />
                       </Children>
                     </Widget>
@@ -357,14 +357,14 @@
                             </ListPanel>
                           </Children>
                         </Widget>
-                        <ScrollbarWidget Id="HeroDetailScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" AlignmentAxis="Vertical" Handle="HeroDetailScrollbarHandle" MinValue="0" MaxValue="100">
+                      </Children>
+                    </ScrollablePanel>
+                    <ScrollbarWidget Id="HeroDetailScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" MarginRight="2" AlignmentAxis="Vertical" Handle="HeroDetailScrollbarHandle" MinValue="0" MaxValue="100">
                           <Children>
                             <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
                             <BrushWidget Id="HeroDetailScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
                           </Children>
-                        </ScrollbarWidget>
-                      </Children>
-                    </ScrollablePanel>
+                    </ScrollbarWidget>
                   </Children>
                 </ListPanel>
 
