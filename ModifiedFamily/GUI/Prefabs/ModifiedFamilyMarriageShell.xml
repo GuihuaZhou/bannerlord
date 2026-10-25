@@ -15,11 +15,108 @@
         <!-- Reuse the native encyclopedia frame so the shell scales exactly like an encyclopedia page. -->
         <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Encyclopedia.Frame.Width" SuggestedHeight="!Encyclopedia.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.Frame">
           <Children>
+            <ButtonWidget Command.Click="ExecuteBack" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="48" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="40" Brush="ButtonRightBigArrowBrush1" IsEnabled="@CanGoBack" />
             <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="576" SuggestedHeight="150" PositionYOffset="-17" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="StdAssets\tabbar_popup" DoNotAcceptEvents="true">
               <Children>
                 <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" PositionYOffset="-22" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="46" Text="@Title" />
               </Children>
             </Widget>
+            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="48" MinWidth="508" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="40" MarginTop="100" Sprite="Encyclopedia\navbar">
+              <Children>
+                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" MarginLeft="16" Brush="EncyclopediaNavBar.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="22" Text="@BreadcrumbText" />
+              </Children>
+            </Widget>
+
+            <!-- M1 follows the approved mock-up: own hero at left, two-column clan cards at right. -->
+            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="155" MarginBottom="35" MarginLeft="30" MarginRight="30" StackLayout.LayoutMethod="HorizontalLeftToRight" IsVisible="@IsClanListVisible">
+              <Children>
+                <!-- Native encyclopedia hero column: the tableau is fed by HeroViewModel, not a portrait texture. -->
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="370" MarginRight="18" Sprite="General\CharacterCreation\character_creation_background_gradient">
+                  <Children>
+                    <Widget WidthSizePolicy="Fixed" SuggestedWidth="370" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" MarginBottom="1" VerticalAlignment="Center" IsEnabled="false" ClipContents="true">
+                      <Children>
+                        <EncyclopediaCharacterTableauWidget DataSource="{OwnHeroCharacter}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" BodyProperties="@BodyProperties" IsFemale="@IsFemale" EquipmentCode="@EquipmentCode" CharStringId="@CharStringId" StanceIndex="@StanceIndex" BannerCodeText="@BannerCodeText" MountCreationKey="@MountCreationKey" IsEnabled="false" IsDead="@IsDead" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2" IdleAction="@IdleAction" IdleFaceAnim="@IdleFaceAnim" Race="@Race" IsHidden="@IsHidden" />
+                        <ParallaxItemBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="582" SuggestedHeight="380" Brush="Encyclopedia.Character.Smoke" OneDirectionDuration="5" OneDirectionDistance="100" InitialDirection="Right" IsEaseInOutEnabled="true" VerticalAlignment="Bottom" HorizontalAlignment="Center" PositionYOffset="1" />
+                        <ParallaxItemBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="582" SuggestedHeight="380" Brush="Encyclopedia.Character.Smoke2" OneDirectionDuration="5" OneDirectionDistance="100" InitialDirection="Left" IsEaseInOutEnabled="true" VerticalAlignment="Bottom" HorizontalAlignment="Center" PositionYOffset="1" />
+                      </Children>
+                    </Widget>
+                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="20" MarginRight="20" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" MaxHeight="100" HorizontalAlignment="Center" MarginTop="10" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Center" Brush.TextVerticalAlignment="Top" Text="@OwnHeroNameText" />
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontColor="#E1BE8FFF" Brush.TextHorizontalAlignment="Center" Text="@OwnHeroRoleText" />
+                        <ListPanel DataSource="{OwnHeroTraits}" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="75" HorizontalAlignment="Center" MarginTop="2">
+                          <ItemTemplate>
+                            <EncyclopediaHeroTraitVisualWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="74" SuggestedHeight="75" MarginLeft="-7" MarginRight="-7" TraitId="@TraitId" TraitValue="@Value">
+                              <Children>
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                              </Children>
+                            </EncyclopediaHeroTraitVisualWidget>
+                          </ItemTemplate>
+                        </ListPanel>
+                      </Children>
+                    </ListPanel>
+                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginLeft="10" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Text="@SkillsText" IsVisible="@OwnHeroHasSkills" />
+                        <GridWidget DataSource="{OwnHeroSkills}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" DefaultCellWidth="55" DefaultCellHeight="70" ColumnCount="6" HorizontalAlignment="Center" MarginLeft="10" MarginRight="10" LayoutImp.VerticalLayoutMethod="TopToBottom">
+                          <ItemTemplate>
+                            <SkillIconVisualWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" SkillId="@SkillId" MarginBottom="20" UseSmallestVariation="true" MarginLeft="3" MarginRight="3">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="20" IntText="@SkillValue" VerticalAlignment="Bottom" HorizontalAlignment="Center" Brush="Encyclopedia.Skill.Text" Brush.FontSize="20" PositionYOffset="20" ClipContents="false" />
+                                <HintWidget DataSource="{Hint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                              </Children>
+                            </SkillIconVisualWidget>
+                          </ItemTemplate>
+                        </GridWidget>
+                      </Children>
+                    </ListPanel>
+                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Right" Sprite="Encyclopedia\divider_vertical" />
+                  </Children>
+                </Widget>
+
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" MarginLeft="12" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="28" Text="@ClanListTitle" />
+                    <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="55" MarginRight="12" InnerPanel="ClanCardClip\ClanCardGrid" ClipRect="ClanCardClip" MouseScrollAxis="Vertical" VerticalScrollbar="..\ClanCardScrollbar" AutoHideScrollBars="true">
+                      <Children>
+                        <Widget Id="ClanCardClip" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                          <Children>
+                            <NavigatableGridWidget Id="ClanCardGrid" DataSource="{Clans}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" DefaultCellWidth="1020" DefaultCellHeight="156" ColumnCount="1">
+                              <ItemTemplate>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1000" SuggestedHeight="140" MarginLeft="8" MarginRight="8" MarginTop="8" MarginBottom="8" Brush="Popup.SelectionElement.Tuple" Command.Click="ExecuteSelect" UpdateChildrenStates="true">
+                                  <Children>
+                                    <!-- Match the native kingdom/fief owner visual: leader portrait with the clan banner overlaid. -->
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="140" SuggestedHeight="108" MarginLeft="18" VerticalAlignment="Center">
+                                      <Children>
+                                        <ImageIdentifierWidget DataSource="{LeaderVisual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="130" SuggestedHeight="100" HorizontalAlignment="Left" VerticalAlignment="Bottom" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsEnabled="false" />
+                                        <MaskedTextureWidget DataSource="{Banner}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="52" SuggestedHeight="64" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="Flat.Tuple.Banner.Small.Hero" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+                                      </Children>
+                                    </Widget>
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="32" MarginLeft="182" MarginTop="7" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="24" Text="@Name" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="43" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@KingdomFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="75" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@CultureFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="26" MarginLeft="182" MarginTop="107" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@LeaderFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="350" SuggestedHeight="26" HorizontalAlignment="Right" MarginRight="22" MarginTop="43" Brush="Encyclopedia.Stat.ValueText" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@RelationFieldText" />
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="350" SuggestedHeight="26" HorizontalAlignment="Right" MarginRight="22" MarginTop="75" Brush="Encyclopedia.Stat.ValueText" Brush.TextHorizontalAlignment="Left" Brush.FontSize="18" Text="@CandidateFieldText" />
+                                  </Children>
+                                </ButtonWidget>
+                              </ItemTemplate>
+                            </NavigatableGridWidget>
+                          </Children>
+                        </Widget>
+                        <ScrollbarWidget Id="ClanCardScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" AlignmentAxis="Vertical" Handle="ClanCardScrollbarHandle" MinValue="0" MaxValue="100">
+                          <Children>
+                            <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
+                            <BrushWidget Id="ClanCardScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
+                          </Children>
+                        </ScrollbarWidget>
+                      </Children>
+                    </ScrollablePanel>
+                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="850" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontSize="24" Text="@EmptyStateText" IsHidden="@HasClans" />
+                  </Children>
+                </Widget>
+              </Children>
+            </ListPanel>
           </Children>
         </BrushWidget>
 

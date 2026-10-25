@@ -15,7 +15,11 @@ namespace ModifiedFamily.Marriage.Models
     {
         public static FamilyResult CanUseClan(Clan clan)
         {
-            if (clan == null || clan.IsEliminated || clan.IsMinorFaction || clan.IsClanTypeMercenary || clan.IsUnderMercenaryService || clan.IsBanditFaction || clan.IsRebelClan || clan.Kingdom == null)
+            if (clan == null || clan.IsEliminated || clan.IsBanditFaction || clan.IsRebelClan || clan.Kingdom == null)
+                return FamilyResult.Deny(FamilyReasonCode.InvalidClan);
+            // NPC-only exclusions must not reject the player's clan when it is the proposal origin.
+            // Some campaign states retain minor/mercenary flags after the player becomes a kingdom ruler.
+            if (clan != Clan.PlayerClan && (clan.IsMinorFaction || clan.IsClanTypeMercenary || clan.IsUnderMercenaryService))
                 return FamilyResult.Deny(FamilyReasonCode.InvalidClan);
             return FamilyResult.Allow();
         }

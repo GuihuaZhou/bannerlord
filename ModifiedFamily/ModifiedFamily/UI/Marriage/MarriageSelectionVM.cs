@@ -11,6 +11,8 @@ using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using CampaignClan = TaleWorlds.CampaignSystem.Clan;
 
+#if false
+// Superseded by MarriageNavigationVM; retained temporarily until every staged page has passed in-game regression testing.
 namespace ModifiedFamily.UI.Marriage
 {
     internal sealed class MarriageSelectionVM : ViewModel
@@ -123,3 +125,4 @@ namespace ModifiedFamily.UI.Marriage
         public void ExecuteSelect() => _select(this);
     }
 }
+#endif

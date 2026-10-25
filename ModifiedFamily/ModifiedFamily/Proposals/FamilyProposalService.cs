@@ -127,6 +127,8 @@ namespace ModifiedFamily.Proposals
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();
         public IReadOnlyList<FamilyProposal> GetOutgoing(Clan clan) => _proposals.Where(p => p.ProposerClan == clan && p.IsActive).ToList();
+        // UI diagnostics use this read-only lookup to explain why a selected hero cannot start another negotiation.
+        public FamilyProposal GetActiveProposalFor(Hero hero) => hero == null ? null : _proposals.FirstOrDefault(p => p != null && p.IsActive && (p.HeroA == hero || p.HeroB == hero || p.AdopteeHero == hero));
         public void ReleaseCompleted(FamilyProposal p) => ReleaseChain(p.ChainId);
         public void Invalidate(FamilyProposal p, FamilyReasonCode reason, bool cooldown) { p.Status = FamilyProposalStatus.Invalidated; p.ReasonCode = reason; if (cooldown) AddCooldown(p); ReleaseChain(p.ChainId); FamilyDiagnostics.Warn(FamilyLogText.Invalidated(p)); }
         private FamilyProposal FindPending(string id) => _proposals.FirstOrDefault(p => p.ProposalId == id && p.Status == FamilyProposalStatus.PendingResponse);

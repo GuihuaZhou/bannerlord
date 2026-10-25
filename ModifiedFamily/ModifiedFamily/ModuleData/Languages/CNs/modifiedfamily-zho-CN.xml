@@ -133,6 +133,27 @@
     <string id="MF_UI_EligibleMarriageHeroes" text="可联姻成员" />
     <string id="MF_UI_SelectMarriageHero" text="选择对象" />
     <string id="MF_UI_NoMarriageCandidates" text="当前没有符合全部联姻条件且未被其他提议占用的家族或成员。" />
+    <string id="MF_UI_OwnHeroProposalLocked" text="{HERO}已有一份正在处理的家族事务，当前不能再次安排联姻。（请求：{ID}）" />
+    <string id="MF_UI_MarriageClanListTitle" text="可联姻家族" />
+    <string id="MF_UI_MarriageForHero" text="为 {HERO} 寻找联姻对象" />
+    <string id="MF_UI_MarriageBreadcrumbClans" text="联姻  &gt;  选择家族" />
+    <string id="MF_UI_MarriageKingdomColumn" text="所属王国" />
+    <string id="MF_UI_MarriageCultureColumn" text="文化" />
+    <string id="MF_UI_MarriageMatchColumn" text="匹配类型" />
+    <string id="MF_UI_MarriageRelationColumn" text="关系" />
+    <string id="MF_UI_MarriageCandidateColumn" text="候选人数" />
+    <string id="MF_UI_MarriageKingdomField" text="国家：{VALUE}" />
+    <string id="MF_UI_MarriageCultureField" text="文化：{VALUE}" />
+    <string id="MF_UI_MarriageLeaderField" text="领袖：{VALUE}" />
+    <string id="MF_UI_MarriageRelationField" text="关系：{VALUE}" />
+    <string id="MF_UI_MarriageCandidateField" text="候选人数：{VALUE}" />
+    <string id="MF_UI_MarriageMatchField" text="匹配类型：{VALUE}" />
+    <string id="MF_UI_IndependentClan" text="独立家族" />
+    <string id="MF_UI_MatchSameRealmCulture" text="同国同文化" />
+    <string id="MF_UI_MatchSameCulture" text="异国同文化" />
+    <string id="MF_UI_MatchSameRealm" text="同国异文化" />
+    <string id="MF_UI_ClanLeaderRole" text="家族领袖" />
+    <string id="MF_UI_ClanMemberRole" text="家族成员" />
     <string id="MF_UI_AdoptionRegistered" text="收养手续已经登记，将在下次家族事务处理时完成身份转换。" />
     <string id="MF_UI_AdoptionFailed" text="收养未能办理，请检查人物状态、亲属关系或是否已有其他待处理事务。" />
   </strings>

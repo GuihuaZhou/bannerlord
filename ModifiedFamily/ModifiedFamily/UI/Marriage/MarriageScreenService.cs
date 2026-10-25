@@ -5,6 +5,10 @@ namespace ModifiedFamily.UI.Marriage
 {
     public static class MarriageScreenService
     {
-        public static bool Open(Hero hero) => FamilyActionScreenHost.Open("ModifiedFamilyMarriageShell", "ModifiedFamilyMarriageLayer", new FamilyActionScreenVM(hero, true, null));
+        public static bool Open(Hero hero)
+        {
+            if (hero == null || hero.Clan != TaleWorlds.CampaignSystem.Clan.PlayerClan || !ModifiedFamily.Marriage.Models.MarriageEligibilityModel.CanNegotiateHero(hero).IsAllowed) return false;
+            return FamilyActionScreenHost.Open("ModifiedFamilyMarriageShell", "ModifiedFamilyMarriageLayer", new MarriageNavigationVM(hero));
+        }
     }
 }
