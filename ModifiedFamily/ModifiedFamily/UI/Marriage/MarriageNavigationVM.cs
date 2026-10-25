@@ -14,6 +14,7 @@ using TaleWorlds.CampaignSystem.ViewModelCollection.Encyclopedia.Items;
 using TaleWorlds.Core;
 using TaleWorlds.Core.ViewModelCollection;
 using TaleWorlds.Core.ViewModelCollection.ImageIdentifiers;
+using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.ObjectSystem;
@@ -57,6 +58,13 @@ namespace ModifiedFamily.UI.Marriage
             OwnHeroCharacter = new HeroViewModel(CharacterViewModel.StanceTypes.EmphasizeFace);
             OwnHeroTraits = new MBBindingList<EncyclopediaTraitItemVM>();
             OwnHeroSkills = new MBBindingList<EncyclopediaSkillVM>();
+            MarriageDirectionSelector = new SelectorVM<SelectorItemVM>(0, OnMarriageDirectionChanged);
+            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NormalMarriageDirection}正常联姻：女性加入男性家族")));
+            MarriageDirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_MatrilocalMarriageDirection}入赘：男性加入女性家族")));
+            MarriageGiftSelector = new SelectorVM<SelectorItemVM>(0, OnMarriageGiftChanged);
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NoMarriageGift}不附带礼金")));
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_PlayerPaysMarriageGift}己方向对方支付")));
+            MarriageGiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_OtherPaysMarriageGift}要求对方向己方支付")));
             if (ownHero != null)
             {
                 // Reuse the native encyclopedia character source so the tableau displays the exact live hero.
@@ -111,6 +119,8 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public HeroViewModel OwnHeroCharacter { get; }
         [DataSourceProperty] public MBBindingList<EncyclopediaTraitItemVM> OwnHeroTraits { get; }
         [DataSourceProperty] public MBBindingList<EncyclopediaSkillVM> OwnHeroSkills { get; }
+        [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageDirectionSelector { get; }
+        [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageGiftSelector { get; }
         [DataSourceProperty] public bool OwnHeroHasSkills => OwnHeroSkills.Count > 0;
         [DataSourceProperty] public string SkillsText => new TextObject("{=hVve5rNi}技能").ToString();
         [DataSourceProperty] public string OwnHeroNameText { get; }
@@ -131,13 +141,29 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public bool IsTermsOpen { get => _isTermsOpen; private set { _isTermsOpen = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public bool IsSubmitting { get => _isSubmitting; private set { _isSubmitting = value; OnPropertyChangedWithValue(value); OnPropertyChanged(nameof(CanSubmitTerms)); } }
         [DataSourceProperty] public bool IsNormalDirection => _selectedDirection == MarriageDirection.FemaleJoinsMaleClan;
-        [DataSourceProperty] public bool IsMatrilocalDirection => _selectedDirection == MarriageDirection.MaleJoinsFemaleClan;
+        [DataSourceProperty]
+        public bool IsMatrilocalDirection
+        {
+            get => _selectedDirection == MarriageDirection.MaleJoinsFemaleClan;
+            set
+            {
+                MarriageDirection direction = value
+                    ? MarriageDirection.MaleJoinsFemaleClan
+                    : MarriageDirection.FemaleJoinsMaleClan;
+                if (_selectedDirection == direction) return;
+                _selectedDirection = direction;
+                OnPropertyChangedWithValue(value);
+                OnPropertyChanged(nameof(IsNormalDirection));
+                RefreshTermsValidation();
+            }
+        }
         [DataSourceProperty] public bool IsNoGift => _giftMode == 0;
         [DataSourceProperty] public bool IsPlayerPays => _giftMode == 1;
         [DataSourceProperty] public bool IsOtherPays => _giftMode == 2;
         [DataSourceProperty] public int GiftAmount { get => _giftAmount; set { _giftAmount = Math.Max(0, value); OnPropertyChangedWithValue(_giftAmount); RefreshTermsValidation(); } }
         [DataSourceProperty] public string TermsValidationText { get => _termsValidationText; private set { _termsValidationText = value; OnPropertyChangedWithValue(value); } }
-        [DataSourceProperty] public bool CanSubmitTerms => !_isSubmitting && IsTermsOpen && BuildDraft(out FamilyResult result) != null && result.IsAllowed;
+        [DataSourceProperty] public bool CanSubmitTerms => !_isSubmitting && _page == MarriageUiPage.HeroDetail && BuildDraft(out FamilyResult result) != null && result.IsAllowed;
+        [DataSourceProperty] public bool IsGiftAmountEnabled => _giftMode != 0;
         [DataSourceProperty] public string TermsTitle => new TextObject("{=MF_UI_MarriageTermsTitle}联姻安排").ToString();
         [DataSourceProperty] public string DirectionTitle => new TextObject("{=MF_UI_MarriageDirectionTitle}婚后归属").ToString();
         [DataSourceProperty] public string NormalDirectionText => new TextObject("{=MF_UI_NormalMarriageDirection}正常联姻：女性加入男性家族").ToString();
@@ -156,7 +182,6 @@ namespace ModifiedFamily.UI.Marriage
 
         public void ExecuteBack()
         {
-            if (IsTermsOpen) { IsTermsOpen = false; return; }
             if (_page == MarriageUiPage.HeroDetail) SetPage(MarriageUiPage.ClanDetail);
             else if (_page == MarriageUiPage.ClanDetail) SetPage(MarriageUiPage.ClanList);
         }
@@ -357,9 +382,45 @@ namespace ModifiedFamily.UI.Marriage
             if (SelectedTargetHero == null) return;
             HeroDetails?.OnFinalize();
             HeroDetails = new MarriageHeroDetailsVM(OwnHero, SelectedTargetHero, ExecuteOpenTerms);
-            IsTermsOpen = false;
+            InitializeTerms();
             FamilyDiagnostics.DebugLog($"联姻界面[HeroDetail]：己方={OwnHero?.StringId ?? "none"}/{OwnHero?.Name?.ToString() ?? "none"}；目标={SelectedTargetHero.StringId}/{SelectedTargetHero.Name}；目标家族={SelectedTargetClan?.StringId ?? "none"}。");
             SetPage(MarriageUiPage.HeroDetail);
+            RefreshTermsValidation();
+        }
+
+        private void InitializeTerms()
+        {
+            FamilyResult normal = ValidateDraft(SelectedTargetHero, MarriageDirection.FemaleJoinsMaleClan);
+            _selectedDirection = normal.IsAllowed ? MarriageDirection.FemaleJoinsMaleClan : MarriageDirection.MaleJoinsFemaleClan;
+            MarriageDirectionSelector.SelectedIndex = _selectedDirection == MarriageDirection.MaleJoinsFemaleClan ? 1 : 0;
+            _giftMode = 0;
+            MarriageGiftSelector.SelectedIndex = 0;
+            _giftAmount = 0;
+            NotifyTermsSelectionChanged();
+            OnPropertyChanged(nameof(GiftAmount));
+        }
+
+        private void OnMarriageDirectionChanged(SelectorVM<SelectorItemVM> selector)
+        {
+            if (selector == null) return;
+            _selectedDirection = selector.SelectedIndex == 1
+                ? MarriageDirection.MaleJoinsFemaleClan
+                : MarriageDirection.FemaleJoinsMaleClan;
+            NotifyTermsSelectionChanged();
+            RefreshTermsValidation();
+        }
+
+        private void OnMarriageGiftChanged(SelectorVM<SelectorItemVM> selector)
+        {
+            if (selector == null) return;
+            _giftMode = Math.Max(0, Math.Min(2, selector.SelectedIndex));
+            if (_giftMode == 0)
+            {
+                _giftAmount = 0;
+                OnPropertyChanged(nameof(GiftAmount));
+            }
+            NotifyTermsSelectionChanged();
+            RefreshTermsValidation();
         }
 
         private void SetPage(MarriageUiPage page)
@@ -408,7 +469,7 @@ namespace ModifiedFamily.UI.Marriage
 
         private void RefreshTermsValidation()
         {
-            if (!IsTermsOpen) return;
+            if (SelectedTargetHero == null) return;
             BuildDraft(out FamilyResult result);
             TermsValidationText = result.IsAllowed
                 ? new TextObject("{=MF_UI_MarriageTermsValid}当前安排符合联姻规则，可以发送请求。").ToString()
@@ -423,6 +484,7 @@ namespace ModifiedFamily.UI.Marriage
             OnPropertyChanged(nameof(IsNoGift));
             OnPropertyChanged(nameof(IsPlayerPays));
             OnPropertyChanged(nameof(IsOtherPays));
+            OnPropertyChanged(nameof(IsGiftAmountEnabled));
         }
 
         private static string DenialText(FamilyReasonCode reason)

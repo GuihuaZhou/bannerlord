@@ -238,7 +238,7 @@
                       </Children>
                     </Widget>
 
-                    <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="12" InnerPanel="HeroDetailClip\HeroDetailContent" ClipRect="HeroDetailClip" MouseScrollAxis="Vertical" VerticalScrollbar="..\HeroDetailScrollbar" AutoHideScrollBars="true">
+                    <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="12" MarginBottom="255" InnerPanel="HeroDetailClip\HeroDetailContent" ClipRect="HeroDetailClip" MouseScrollAxis="Vertical" VerticalScrollbar="..\HeroDetailScrollbar" AutoHideScrollBars="true">
                       <Children>
                         <Widget Id="HeroDetailClip" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
                           <Children>
@@ -281,12 +281,7 @@
                                             </EncyclopediaSubPageElement>
                                           </ItemTemplate>
                                         </NavigatableGridWidget>
-                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="12" MarginBottom="12" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Center" Brush.FontSize="23" Text="@PairingText" />
-                                        <ButtonWidget Command.Click="ExecuteOpenTerms" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="320" SuggestedHeight="52" HorizontalAlignment="Center" MarginBottom="50" Brush="Popup.Done.Button">
-                                          <Children>
-                                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@OpenTermsText" />
-                                          </Children>
-                                        </ButtonWidget>
+                                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="12" MarginBottom="30" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Center" Brush.FontSize="23" Text="@PairingText" />
                                       </Children>
                                     </ListPanel>
                                   </Children>
@@ -295,7 +290,7 @@
                             </ListPanel>
                           </Children>
                         </Widget>
-                        <ScrollbarWidget Id="HeroDetailScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" AlignmentAxis="Vertical" Handle="HeroDetailScrollbarHandle" MinValue="0" MaxValue="100">
+                        <ScrollbarWidget Id="HeroDetailScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="18" HorizontalAlignment="Right" MarginBottom="255" AlignmentAxis="Vertical" Handle="HeroDetailScrollbarHandle" MinValue="0" MaxValue="100">
                           <Children>
                             <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Bed" />
                             <BrushWidget Id="HeroDetailScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="50" HorizontalAlignment="Center" Brush="Encyclopedia.Scrollbar.Flat.Handle" />
@@ -305,51 +300,69 @@
                     </ScrollablePanel>
                   </Children>
                 </ListPanel>
-              </Children>
-            </Widget>
-          </Children>
-        </BrushWidget>
 
-        <!-- M4 remains inside the same movie and submits through FamilyProposalService. -->
-        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.SoundBrush" Sprite="BlankWhiteSquare_9" Brush.Color="#000000AA" IsVisible="@IsTermsOpen" RenderLate="true">
-          <Children>
-            <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="980" SuggestedHeight="570" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="BlankWhiteSquare_9" Brush.Color="#19140FFF">
-              <Children>
-                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="55" MarginRight="55" MarginTop="35" MarginBottom="35" StackLayout.LayoutMethod="VerticalTopToBottom">
+                <!-- The marriage agreement stays on the selected hero page, matching the mock-up's bottom arrangement panel. -->
+                <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="242" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginLeft="388" MarginRight="12" Brush="Encyclopedia.SoundBrush" Sprite="BlankWhiteSquare_9" Brush.Color="#120E0A88">
                   <Children>
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="55" Brush="Encyclopedia.SubPage.Title.Text" Brush.TextHorizontalAlignment="Center" Text="@TermsTitle" />
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="42" MarginTop="12" Brush="Encyclopedia.SubPage.Title.Text" Brush.FontSize="26" Brush.TextHorizontalAlignment="Left" Text="@DirectionTitle" />
-                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="60" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="4" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="Encyclopedia\list_filters_divider" />
+                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="28" MarginRight="28" MarginTop="7" MarginBottom="7" StackLayout.LayoutMethod="VerticalTopToBottom">
                       <Children>
-                        <ButtonWidget Command.Click="ExecuteSelectNormalDirection" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" MarginRight="8" Brush="Popup.Done.Button" IsSelected="@IsNormalDirection" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@NormalDirectionText" /></Children></ButtonWidget>
-                        <ButtonWidget Command.Click="ExecuteSelectMatrilocalDirection" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" MarginLeft="8" Brush="Popup.Done.Button" IsSelected="@IsMatrilocalDirection" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@MatrilocalDirectionText" /></Children></ButtonWidget>
-                      </Children>
-                    </ListPanel>
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="42" MarginTop="18" Brush="Encyclopedia.SubPage.Title.Text" Brush.FontSize="26" Brush.TextHorizontalAlignment="Left" Text="@GiftTitle" />
-                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="60" StackLayout.LayoutMethod="HorizontalLeftToRight">
-                      <Children>
-                        <ButtonWidget Command.Click="ExecuteSelectNoGift" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" MarginRight="5" Brush="Popup.Done.Button" IsSelected="@IsNoGift" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@NoGiftText" /></Children></ButtonWidget>
-                        <ButtonWidget Command.Click="ExecuteSelectPlayerPays" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" MarginLeft="5" MarginRight="5" Brush="Popup.Done.Button" IsSelected="@IsPlayerPays" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@PlayerPaysText" /></Children></ButtonWidget>
-                        <ButtonWidget Command.Click="ExecuteSelectOtherPays" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" MarginLeft="5" Brush="Popup.Done.Button" IsSelected="@IsOtherPays" UpdateChildrenStates="true"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@OtherPaysText" /></Children></ButtonWidget>
-                      </Children>
-                    </ListPanel>
-                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="52" HorizontalAlignment="Center" MarginTop="8" StackLayout.LayoutMethod="HorizontalLeftToRight">
-                      <Children>
-                        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="150" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Right" Text="@GiftAmountText" MarginRight="16" />
-                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="42"><Children><BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Barter.AmountInput.Input" /><IntegerInputTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Barter.AmountInput.Text" IntText="@GiftAmount" MaxInt="100000000" MinInt="0" EnableClamp="true" /></Children></Widget>
-                      </Children>
-                    </ListPanel>
-                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="56" MarginTop="8" Brush="Encyclopedia.SubPage.Info.Text" Brush.TextHorizontalAlignment="Center" Text="@TermsValidationText" />
-                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="60" HorizontalAlignment="Center" StackLayout.LayoutMethod="HorizontalLeftToRight">
-                      <Children>
-                        <ButtonWidget Command.Click="ExecuteCloseTerms" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="250" SuggestedHeight="52" MarginRight="12" Brush="Popup.Cancel.Button"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@CancelTermsText" /></Children></ButtonWidget>
-                        <ButtonWidget Command.Click="ExecuteSubmitTerms" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="330" SuggestedHeight="52" MarginLeft="12" Brush="Popup.Done.Button" IsEnabled="@CanSubmitTerms"><Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@SubmitTermsText" /></Children></ButtonWidget>
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="38" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                          <Children>
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.SubPage.Title.Text" Brush.FontSize="25" Brush.TextHorizontalAlignment="Left" Text="@TermsTitle" />
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" VerticalAlignment="Center" MarginLeft="16" Sprite="Encyclopedia\list_filters_divider" />
+                          </Children>
+                        </ListPanel>
+
+                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="112" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                          <Children>
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="20" MarginRight="30" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="Encyclopedia.SubPage.Title.Text" Brush.FontSize="21" Brush.TextHorizontalAlignment="Left" Text="@DirectionTitle" />
+                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="64" MarginTop="8" VerticalAlignment="Center">
+                                  <Children>
+                                    <Standard.DropdownWithHorizontalControl Parameter.SelectorDataSource="{MarriageDirectionSelector}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                  </Children>
+                                </Widget>
+                              </Children>
+                            </ListPanel>
+
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" Sprite="Encyclopedia\divider_vertical" />
+
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="32">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="Encyclopedia.SubPage.Title.Text" Brush.FontSize="21" Brush.TextHorizontalAlignment="Left" Text="@GiftTitle" />
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="360" SuggestedHeight="58" MarginTop="30" HorizontalAlignment="Left">
+                                  <Children>
+                                    <Standard.DropdownWithHorizontalControl Parameter.SelectorDataSource="{MarriageGiftSelector}" HorizontalAlignment="Center" VerticalAlignment="Center" />
+                                  </Children>
+                                </Widget>
+                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" HorizontalAlignment="Right" VerticalAlignment="Bottom" MarginBottom="3" StackLayout.LayoutMethod="HorizontalLeftToRight" IsVisible="@IsGiftAmountEnabled">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="100" MarginRight="8" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontSize="17" Brush.TextHorizontalAlignment="Right" Text="@GiftAmountText" />
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="180" SuggestedHeight="36" VerticalAlignment="Center">
+                                      <Children>
+                                        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Barter.AmountInput.Input" ClipContents="false" />
+                                        <IntegerInputTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Barter.AmountInput.Text" IntText="@GiftAmount" MaxInt="100000000" MinInt="0" EnableClamp="true" ClipContents="false" UpdateChildrenStates="true" DoNotPassEventsToChildren="true" />
+                                      </Children>
+                                    </Widget>
+                                  </Children>
+                                </ListPanel>
+                              </Children>
+                            </Widget>
+                          </Children>
+                        </ListPanel>
+
+                        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="25" Brush="Encyclopedia.SubPage.Info.Text" Brush.FontSize="16" Brush.TextHorizontalAlignment="Center" Text="@TermsValidationText" />
+                        <ButtonWidget Command.Click="ExecuteSubmitTerms" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="330" SuggestedHeight="46" HorizontalAlignment="Center" Brush="Popup.Done.Button" IsEnabled="@CanSubmitTerms">
+                          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@SubmitTermsText" /></Children>
+                        </ButtonWidget>
                       </Children>
                     </ListPanel>
                   </Children>
-                </ListPanel>
+                </BrushWidget>
               </Children>
-            </BrushWidget>
+            </Widget>
           </Children>
         </BrushWidget>
 
