@@ -36,6 +36,13 @@ namespace ModifiedFamily.UI.Marriage
         private string _breadcrumbText;
         private string _emptyStateText;
         private MarriageClanDetailsVM _clanDetails;
+        private MarriageHeroDetailsVM _heroDetails;
+        private bool _isTermsOpen;
+        private bool _isSubmitting;
+        private MarriageDirection _selectedDirection;
+        private int _giftMode;
+        private int _giftAmount;
+        private string _termsValidationText;
 
         internal MarriageNavigationVM(Hero ownHero)
         {
@@ -96,6 +103,7 @@ namespace ModifiedFamily.UI.Marriage
 
         [DataSourceProperty] public MBBindingList<MarriageClanItemVM> Clans { get; }
         [DataSourceProperty] public MarriageClanDetailsVM ClanDetails { get => _clanDetails; private set { _clanDetails = value; OnPropertyChangedWithValue(value); } }
+        [DataSourceProperty] public MarriageHeroDetailsVM HeroDetails { get => _heroDetails; private set { _heroDetails = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string Title { get; }
         [DataSourceProperty] public string ClanListTitle { get; }
         [DataSourceProperty] public string OwnHeroSummaryText { get; }
@@ -120,21 +128,96 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public bool IsClanListVisible => _page == MarriageUiPage.ClanList;
         [DataSourceProperty] public bool IsClanDetailVisible => _page == MarriageUiPage.ClanDetail;
         [DataSourceProperty] public bool IsHeroDetailVisible => _page == MarriageUiPage.HeroDetail;
-        [DataSourceProperty] public bool IsTermsOpen => false;
+        [DataSourceProperty] public bool IsTermsOpen { get => _isTermsOpen; private set { _isTermsOpen = value; OnPropertyChangedWithValue(value); } }
+        [DataSourceProperty] public bool IsSubmitting { get => _isSubmitting; private set { _isSubmitting = value; OnPropertyChangedWithValue(value); OnPropertyChanged(nameof(CanSubmitTerms)); } }
+        [DataSourceProperty] public bool IsNormalDirection => _selectedDirection == MarriageDirection.FemaleJoinsMaleClan;
+        [DataSourceProperty] public bool IsMatrilocalDirection => _selectedDirection == MarriageDirection.MaleJoinsFemaleClan;
+        [DataSourceProperty] public bool IsNoGift => _giftMode == 0;
+        [DataSourceProperty] public bool IsPlayerPays => _giftMode == 1;
+        [DataSourceProperty] public bool IsOtherPays => _giftMode == 2;
+        [DataSourceProperty] public int GiftAmount { get => _giftAmount; set { _giftAmount = Math.Max(0, value); OnPropertyChangedWithValue(_giftAmount); RefreshTermsValidation(); } }
+        [DataSourceProperty] public string TermsValidationText { get => _termsValidationText; private set { _termsValidationText = value; OnPropertyChangedWithValue(value); } }
+        [DataSourceProperty] public bool CanSubmitTerms => !_isSubmitting && IsTermsOpen && BuildDraft(out FamilyResult result) != null && result.IsAllowed;
+        [DataSourceProperty] public string TermsTitle => new TextObject("{=MF_UI_MarriageTermsTitle}联姻安排").ToString();
+        [DataSourceProperty] public string DirectionTitle => new TextObject("{=MF_UI_MarriageDirectionTitle}婚后归属").ToString();
+        [DataSourceProperty] public string NormalDirectionText => new TextObject("{=MF_UI_NormalMarriageDirection}正常联姻：女性加入男性家族").ToString();
+        [DataSourceProperty] public string MatrilocalDirectionText => new TextObject("{=MF_UI_MatrilocalMarriageDirection}入赘：男性加入女性家族").ToString();
+        [DataSourceProperty] public string GiftTitle => new TextObject("{=MF_UI_MarriageGiftTitle}礼金约定").ToString();
+        [DataSourceProperty] public string NoGiftText => new TextObject("{=MF_UI_NoMarriageGift}不附带礼金").ToString();
+        [DataSourceProperty] public string PlayerPaysText => new TextObject("{=MF_UI_PlayerPaysMarriageGift}己方向对方支付").ToString();
+        [DataSourceProperty] public string OtherPaysText => new TextObject("{=MF_UI_OtherPaysMarriageGift}要求对方向己方支付").ToString();
+        [DataSourceProperty] public string GiftAmountText => new TextObject("{=MF_UI_MarriageGiftAmount}礼金数额").ToString();
+        [DataSourceProperty] public string OpenTermsText => new TextObject("{=MF_UI_OpenMarriageTerms}安排联姻").ToString();
+        [DataSourceProperty] public string SubmitTermsText => new TextObject("{=MF_UI_SubmitMarriageProposal}发送联姻请求").ToString();
+        [DataSourceProperty] public string CancelTermsText => new TextObject("{=MF_UI_Cancel}取消").ToString();
         [DataSourceProperty] public bool CanGoBack => _page != MarriageUiPage.ClanList;
         [DataSourceProperty] public string BreadcrumbText { get => _breadcrumbText; private set { _breadcrumbText = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string EmptyStateText { get => _emptyStateText; private set { _emptyStateText = value; OnPropertyChangedWithValue(value); } }
 
         public void ExecuteBack()
         {
+            if (IsTermsOpen) { IsTermsOpen = false; return; }
             if (_page == MarriageUiPage.HeroDetail) SetPage(MarriageUiPage.ClanDetail);
             else if (_page == MarriageUiPage.ClanDetail) SetPage(MarriageUiPage.ClanList);
         }
 
         public void ExecuteClose() => FamilyActionScreenHost.Close();
 
+        public void ExecuteOpenTerms()
+        {
+            if (SelectedTargetHero == null) return;
+            FamilyResult normal = ValidateDraft(SelectedTargetHero, MarriageDirection.FemaleJoinsMaleClan);
+            _selectedDirection = normal.IsAllowed ? MarriageDirection.FemaleJoinsMaleClan : MarriageDirection.MaleJoinsFemaleClan;
+            _giftMode = 0;
+            GiftAmount = 0;
+            IsTermsOpen = true;
+            NotifyTermsSelectionChanged();
+            RefreshTermsValidation();
+        }
+
+        public void ExecuteCloseTerms() => IsTermsOpen = false;
+        public void ExecuteSelectNormalDirection() { _selectedDirection = MarriageDirection.FemaleJoinsMaleClan; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+        public void ExecuteSelectMatrilocalDirection() { _selectedDirection = MarriageDirection.MaleJoinsFemaleClan; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+        public void ExecuteSelectNoGift() { _giftMode = 0; GiftAmount = 0; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+        public void ExecuteSelectPlayerPays() { _giftMode = 1; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+        public void ExecuteSelectOtherPays() { _giftMode = 2; NotifyTermsSelectionChanged(); RefreshTermsValidation(); }
+
+        public void ExecuteSubmitTerms()
+        {
+            MarriageProposalDraft draft = BuildDraft(out FamilyResult validation);
+            if (draft == null || !validation.IsAllowed) { RefreshTermsValidation(); return; }
+            string description = new TextObject("{=MF_UI_ConfirmMarriageProposal}{HERO_A}将与{HERO_B}成婚；婚后归属为“{DIRECTION}”，礼金为{GOLD}第纳尔。是否发送联姻请求？")
+                .SetTextVariable("HERO_A", OwnHero?.Name ?? TextObject.GetEmpty())
+                .SetTextVariable("HERO_B", SelectedTargetHero?.Name ?? TextObject.GetEmpty())
+                .SetTextVariable("DIRECTION", _selectedDirection == MarriageDirection.FemaleJoinsMaleClan ? NormalDirectionText : MatrilocalDirectionText)
+                .SetTextVariable("GOLD", draft.GiftAmount)
+                .ToString();
+            InformationManager.ShowInquiry(new InquiryData(TermsTitle, description, true, true,
+                SubmitTermsText, CancelTermsText, SubmitConfirmed, null, string.Empty, 0f, null, null, null), false, false);
+        }
+
+        private void SubmitConfirmed()
+        {
+            if (IsSubmitting) return;
+            MarriageProposalDraft draft = BuildDraft(out FamilyResult validation);
+            if (draft == null || !validation.IsAllowed) { RefreshTermsValidation(); return; }
+            IsSubmitting = true;
+            FamilyResult result = _service.TryCreateMarriageProposal(draft);
+            IsSubmitting = false;
+            if (!result.IsAllowed)
+            {
+                TermsValidationText = DenialText(result.ReasonCode);
+                OnPropertyChanged(nameof(CanSubmitTerms));
+                return;
+            }
+            InformationManager.DisplayMessage(new InformationMessage(new TextObject("{=MF_UI_MarriageProposalSent}联姻提议已发送，正在等待对方答复。").ToString(), Colors.Green));
+            FamilyDiagnostics.Notice($"玩家已从联姻界面提交请求：{OwnHero?.Name}与{SelectedTargetHero?.Name}，请求={result.ProposalId ?? "-"}。");
+            FamilyActionScreenHost.Close();
+        }
+
         public override void OnFinalize()
         {
+            HeroDetails?.OnFinalize();
             OwnHeroCharacter?.OnFinalize();
             base.OnFinalize();
         }
@@ -271,7 +354,12 @@ namespace ModifiedFamily.UI.Marriage
         private void SelectHero(MarriageHeroItemVM item)
         {
             SelectedTargetHero = item?.Hero;
-            FamilyDiagnostics.DebugLog($"联姻界面[ClanDetail]选择人物：{SelectedTargetHero?.StringId ?? "none"}/{SelectedTargetHero?.Name?.ToString() ?? "none"}；目标家族={SelectedTargetClan?.StringId ?? "none"}。M3人物详情尚未启用。");
+            if (SelectedTargetHero == null) return;
+            HeroDetails?.OnFinalize();
+            HeroDetails = new MarriageHeroDetailsVM(OwnHero, SelectedTargetHero, ExecuteOpenTerms);
+            IsTermsOpen = false;
+            FamilyDiagnostics.DebugLog($"联姻界面[HeroDetail]：己方={OwnHero?.StringId ?? "none"}/{OwnHero?.Name?.ToString() ?? "none"}；目标={SelectedTargetHero.StringId}/{SelectedTargetHero.Name}；目标家族={SelectedTargetClan?.StringId ?? "none"}。");
+            SetPage(MarriageUiPage.HeroDetail);
         }
 
         private void SetPage(MarriageUiPage page)
@@ -281,13 +369,74 @@ namespace ModifiedFamily.UI.Marriage
                 ? new TextObject("{=MF_UI_MarriageBreadcrumbClans}联姻  >  选择家族").ToString()
                 : page == MarriageUiPage.ClanDetail
                     ? new TextObject("{=MF_UI_MarriageBreadcrumbClanDetail}联姻  >  选择家族  >  {CLAN}").SetTextVariable("CLAN", SelectedTargetClan?.Name ?? new TextObject("-")).ToString()
-                    : new TextObject("{=MF_UI_MarriageScreenTitle}联姻").ToString();
+                    : new TextObject("{=MF_UI_MarriageBreadcrumbHeroDetail}联姻  >  {CLAN}  >  {HERO}")
+                        .SetTextVariable("CLAN", SelectedTargetClan?.Name ?? new TextObject("-"))
+                        .SetTextVariable("HERO", SelectedTargetHero?.Name ?? new TextObject("-"))
+                        .ToString();
             OnPropertyChanged(nameof(IsClanListVisible));
             OnPropertyChanged(nameof(IsClanDetailVisible));
             OnPropertyChanged(nameof(IsHeroDetailVisible));
             OnPropertyChanged(nameof(IsTermsOpen));
             OnPropertyChanged(nameof(CanGoBack));
             FamilyDiagnostics.DebugLog($"联姻界面切换至[{page}]；己方人物={OwnHero?.StringId ?? "none"}/{OwnHero?.Name?.ToString() ?? "none"}。");
+        }
+
+        private MarriageProposalDraft BuildDraft(out FamilyResult validation)
+        {
+            validation = FamilyResult.Deny(FamilyReasonCode.InvalidProposal);
+            if (_service == null || OwnHero == null || SelectedTargetHero == null || SelectedTargetHero.Clan == null) return null;
+            CampaignClan payer = _giftMode == 1 ? CampaignClan.PlayerClan : _giftMode == 2 ? SelectedTargetHero.Clan : null;
+            int amount = _giftMode == 0 ? 0 : Math.Max(0, GiftAmount);
+            if (amount > 0 && payer?.Leader != null && payer.Leader.Gold < amount)
+            {
+                validation = FamilyResult.Deny(FamilyReasonCode.InsufficientFunds);
+                return new MarriageProposalDraft();
+            }
+            var draft = new MarriageProposalDraft
+            {
+                ProposerClan = CampaignClan.PlayerClan,
+                ReceiverClan = SelectedTargetHero.Clan,
+                HeroA = OwnHero,
+                HeroB = SelectedTargetHero,
+                Direction = _selectedDirection,
+                GoldPayerClan = amount > 0 ? payer : null,
+                GiftAmount = amount
+            };
+            validation = _service.CanCreateMarriageProposal(draft);
+            return draft;
+        }
+
+        private void RefreshTermsValidation()
+        {
+            if (!IsTermsOpen) return;
+            BuildDraft(out FamilyResult result);
+            TermsValidationText = result.IsAllowed
+                ? new TextObject("{=MF_UI_MarriageTermsValid}当前安排符合联姻规则，可以发送请求。").ToString()
+                : DenialText(result.ReasonCode);
+            OnPropertyChanged(nameof(CanSubmitTerms));
+        }
+
+        private void NotifyTermsSelectionChanged()
+        {
+            OnPropertyChanged(nameof(IsNormalDirection));
+            OnPropertyChanged(nameof(IsMatrilocalDirection));
+            OnPropertyChanged(nameof(IsNoGift));
+            OnPropertyChanged(nameof(IsPlayerPays));
+            OnPropertyChanged(nameof(IsOtherPays));
+        }
+
+        private static string DenialText(FamilyReasonCode reason)
+        {
+            switch (reason)
+            {
+                case FamilyReasonCode.LeaderCannotLeave: return new TextObject("{=MF_UI_DenialLeaderCannotLeave}所选方向会使家族领袖离开原家族，请更换婚后归属。").ToString();
+                case FamilyReasonCode.InsufficientFunds: return new TextObject("{=MF_UI_DenialInsufficientFunds}礼金支付方的资金不足。").ToString();
+                case FamilyReasonCode.AtWar: return new TextObject("{=MF_UI_DenialAtWar}双方家族目前处于战争状态，不能提出联姻。").ToString();
+                case FamilyReasonCode.CultureForbidden: return new TextObject("{=MF_UI_DenialCultureForbidden}双方不符合当前文化与王国联姻规则。").ToString();
+                case FamilyReasonCode.HeroLocked: return new TextObject("{=MF_UI_DenialHeroLocked}其中一人已有正在处理的家族事务。").ToString();
+                case FamilyReasonCode.PairCooldown: return new TextObject("{=MF_UI_DenialPairCooldown}双方仍处于再次提议的冷却期。").ToString();
+                default: return new TextObject("{=MF_UI_DenialMarriageInvalid}当前安排不再符合联姻条件，请返回并重新选择。").ToString();
+            }
         }
     }
 

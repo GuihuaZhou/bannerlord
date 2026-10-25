@@ -138,6 +138,7 @@
     <string id="MF_UI_MarriageForHero" text="为 {HERO} 寻找联姻对象" />
     <string id="MF_UI_MarriageBreadcrumbClans" text="联姻  &gt;  选择家族" />
     <string id="MF_UI_MarriageBreadcrumbClanDetail" text="联姻  &gt;  选择家族  &gt;  {CLAN}" />
+    <string id="MF_UI_MarriageBreadcrumbHeroDetail" text="联姻  &gt;  {CLAN}  &gt;  {HERO}" />
     <string id="MF_UI_MarriageKingdomColumn" text="所属王国" />
     <string id="MF_UI_MarriageCultureColumn" text="文化" />
     <string id="MF_UI_MarriageMatchColumn" text="匹配类型" />
@@ -154,6 +155,25 @@
     <string id="MF_UI_MarriageClanFallbackDescription" text="{CLAN}是{KINGDOM}境内的一个家族。" />
     <string id="MF_UI_NoClanMarriageCandidates" text="该家族目前没有仍符合条件的联姻候选人物，请返回并选择其他家族。" />
     <string id="MF_UI_MarriageHeroAge" text="年龄：{AGE}" />
+    <string id="MF_UI_MarriageHeroClan" text="所属家族：{CLAN}" />
+    <string id="MF_UI_MarriageHeroRole" text="身份：{ROLE}" />
+    <string id="MF_UI_StatCulture" text="文化：" />
+    <string id="MF_UI_StatAge" text="年龄：" />
+    <string id="MF_UI_StatRole" text="身份：" />
+    <string id="MF_UI_StatRelation" text="关系：" />
+    <string id="MF_UI_MarriageHeroRelation" text="与己方人物关系：{RELATION}" />
+    <string id="MF_UI_NoHeroBiography" text="当前没有可显示的人物生平资料。" />
+    <string id="MF_UI_HeroInformation" text="信息" />
+    <string id="MF_UI_HeroBiography" text="生平" />
+    <string id="MF_UI_HeroFamily" text="亲属关系" />
+    <string id="MF_UI_HeroFriends" text="好友" />
+    <string id="MF_UI_HeroEnemies" text="敌人" />
+    <string id="MF_UI_CurrentMarriagePair" text="当前联姻对象：{OWN}  ↔  {TARGET}" />
+    <string id="MF_UI_RelativeFather" text="父亲" />
+    <string id="MF_UI_RelativeMother" text="母亲" />
+    <string id="MF_UI_RelativeSpouse" text="配偶" />
+    <string id="MF_UI_RelativeSibling" text="兄弟姐妹" />
+    <string id="MF_UI_RelativeChild" text="子女" />
     <string id="MF_UI_MarriageMatchField" text="匹配类型：{VALUE}" />
     <string id="MF_UI_IndependentClan" text="独立家族" />
     <string id="MF_UI_MatchSameRealmCulture" text="同国同文化" />
@@ -163,6 +183,28 @@
     <string id="MF_UI_ClanMemberRole" text="家族成员" />
     <string id="MF_UI_AdoptionRegistered" text="收养手续已经登记，将在下次家族事务处理时完成身份转换。" />
     <string id="MF_UI_AdoptionFailed" text="收养未能办理，请检查人物状态、亲属关系或是否已有其他待处理事务。" />
+    <string id="MF_UI_MarriageTermsTitle" text="联姻安排" />
+    <string id="MF_UI_MarriageDirectionTitle" text="婚后归属" />
+    <string id="MF_UI_NormalMarriageDirection" text="正常联姻：女性加入男性家族" />
+    <string id="MF_UI_MatrilocalMarriageDirection" text="入赘：男性加入女性家族" />
+    <string id="MF_UI_MarriageGiftTitle" text="礼金约定" />
+    <string id="MF_UI_NoMarriageGift" text="不附带礼金" />
+    <string id="MF_UI_PlayerPaysMarriageGift" text="己方向对方支付" />
+    <string id="MF_UI_OtherPaysMarriageGift" text="要求对方向己方支付" />
+    <string id="MF_UI_MarriageGiftAmount" text="礼金数额" />
+    <string id="MF_UI_OpenMarriageTerms" text="安排联姻" />
+    <string id="MF_UI_SubmitMarriageProposal" text="发送联姻请求" />
+    <string id="MF_UI_Cancel" text="取消" />
+    <string id="MF_UI_ConfirmMarriageProposal" text="{HERO_A}将与{HERO_B}成婚；婚后归属为“{DIRECTION}”，礼金为{GOLD}第纳尔。是否发送联姻请求？" />
+    <string id="MF_UI_MarriageProposalSent" text="联姻提议已发送，正在等待对方答复。" />
+    <string id="MF_UI_MarriageTermsValid" text="当前安排符合联姻规则，可以发送请求。" />
+    <string id="MF_UI_DenialLeaderCannotLeave" text="所选方向会使家族领袖离开原家族，请更换婚后归属。" />
+    <string id="MF_UI_DenialInsufficientFunds" text="礼金支付方的资金不足。" />
+    <string id="MF_UI_DenialAtWar" text="双方家族目前处于战争状态，不能提出联姻。" />
+    <string id="MF_UI_DenialCultureForbidden" text="双方不符合当前文化与王国联姻规则。" />
+    <string id="MF_UI_DenialHeroLocked" text="其中一人已有正在处理的家族事务。" />
+    <string id="MF_UI_DenialPairCooldown" text="双方仍处于再次提议的冷却期。" />
+    <string id="MF_UI_DenialMarriageInvalid" text="当前安排不再符合联姻条件，请返回并重新选择。" />
   </strings>
 </base>
 

@@ -18,7 +18,9 @@ namespace ModifiedFamily.Marriage.AI
 
         public void ConsiderClan(Clan clan)
         {
-            if (!MarriageEligibilityModel.CanUseClan(clan).IsAllowed || (!MarriagePolicyModel.EnableAiToPlayer && clan == Clan.PlayerClan) || _service.GetOutgoing(clan).Count > 0) return;
+            // The player clan may receive AI proposals, but the decentralized AI must never
+            // act as the player and create an outgoing proposal for one of the player's heroes.
+            if (clan == Clan.PlayerClan || !MarriageEligibilityModel.CanUseClan(clan).IsAllowed || _service.GetOutgoing(clan).Count > 0) return;
             var own = clan.Heroes.Where(h => MarriageEligibilityModel.CanNegotiateHero(h).IsAllowed).OrderByDescending(h => h.Age).ToList();
             if (own.Count == 0) return;
             var candidates = Clan.All.Where(c => c != clan && MarriageEligibilityModel.CanUseClan(c).IsAllowed && (MarriagePolicyModel.EnableAiToPlayer || c != Clan.PlayerClan))
@@ -34,6 +36,13 @@ namespace ModifiedFamily.Marriage.AI
 
         public void Respond(FamilyProposal p)
         {
+            // Player-clan responses are exclusively controlled by the inbox UI. This guard
+            // prevents any current or future scheduler call from accepting on the player's behalf.
+            if (p == null || p.ReceiverClan == Clan.PlayerClan)
+            {
+                FamilyDiagnostics.Warn("已阻止AI代替玩家家族回应联姻提议；该提议将继续等待玩家处理。");
+                return;
+            }
             var valid = _proposalModel.CanRespond(p);
             if (!valid.IsAllowed) { _service.TryReject(p.ProposalId, p.ReceiverClan, valid.ReasonCode); return; }
             Hero own = p.HeroA.Clan == p.ReceiverClan ? p.HeroA : p.HeroB;
