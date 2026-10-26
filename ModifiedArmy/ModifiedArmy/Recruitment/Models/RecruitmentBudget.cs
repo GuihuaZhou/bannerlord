@@ -1,4 +1,4 @@
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Recruitment.Finance;
 using System;
 using TaleWorlds.CampaignSystem;

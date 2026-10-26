@@ -171,8 +171,10 @@ namespace ModifiedArmy.ForceManagement.Services
             }
             return new PartyExchangeExecutionResult
             {
-                Executed = true,
+                Status = TransferCommitStatus.Committed,
                 ReasonCode = "Executed",
+                RequestedCount = requested,
+                ApprovedCount = count,
                 TransferredCount = count
             };
         }

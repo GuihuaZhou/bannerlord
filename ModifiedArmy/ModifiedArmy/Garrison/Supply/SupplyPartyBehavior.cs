@@ -3,6 +3,7 @@ using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Garrison.Supply.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
@@ -63,7 +64,7 @@ namespace ModifiedArmy.Garrison.Supply
                 new Dictionary<string, SupplyHealthSnapshot>();
         private readonly Dictionary<string, int> _lastFoodRiskDay =
             new Dictionary<string, int>();
-        private static readonly Dictionary<string, double>
+        private readonly Dictionary<string, double>
             LastRouteCommandHours = new Dictionary<string, double>();
 
         public override void RegisterEvents()
@@ -1593,7 +1594,7 @@ namespace ModifiedArmy.Garrison.Supply
             }
         }
 
-        private static void EnsureMovingTo(
+        private void EnsureMovingTo(
             MobileParty party,
             Settlement destination,
             string reason = "MissionStateCheck")
@@ -1609,7 +1610,7 @@ namespace ModifiedArmy.Garrison.Supply
             MoveToSettlement(party, destination, reason);
         }
 
-        private static void MoveToSettlement(
+        private void MoveToSettlement(
             MobileParty party,
             Settlement destination,
             string reason = "MissionStateChange")

@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Garrison.Supply.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
@@ -32,13 +33,7 @@ namespace ModifiedArmy.Garrison.Supply
             float outboundDays = Math.Max(0f, distance / speed / 24f);
             float returnDays = outboundDays;
             float dailyDemand = GetDailyFoodDemand(supplyParty);
-            int requiredDays = Math.Max(OutboundProvisionDays,
-                (int)Math.Ceiling(outboundDays + returnDays +
-                    ProvisionSafetyDays));
-            int requiredFood = (int)Math.Ceiling(
-                dailyDemand * requiredDays);
             int existingFood = supplyParty.ItemRoster.TotalFood;
-            int neededTransfer = Math.Max(0, requiredFood - existingFood);
             int granaryFood = garrison?.ItemRoster?.TotalFood ?? 0;
             // Keep one day of the resident garrison's current demand. This is
             // intentionally smaller than the aid-route reserve: a starving
@@ -50,24 +45,25 @@ namespace ModifiedArmy.Garrison.Supply
             int available = Math.Max(0, granaryFood - granaryReserve);
             int capacityLimited = CalculateFoodCapacity(
                 garrison?.ItemRoster, supplyParty);
-            int requestedLoad = Math.Min(neededTransfer,
-                Math.Min(capacityLimited, available));
+            SupplyProvisionPlan planned = SupplyProvisionModel.Plan(
+                new SupplyProvisionInput
+                {
+                    RouteDistance = distance,
+                    TravelDaysToSource = outboundDays,
+                    EstimatedReturnDays = returnDays,
+                    DailyFoodDemand = dailyDemand,
+                    MinimumProvisionDays = OutboundProvisionDays,
+                    SafetyDays = ProvisionSafetyDays,
+                    ExistingFood = existingFood,
+                    AvailableGranaryFood = available,
+                    GranaryReserveFood = granaryReserve,
+                    CargoCapacity = capacityLimited
+                });
             int loaded = TransferFoodWithinCapacity(garrison.ItemRoster,
-                supplyParty.ItemRoster, requestedLoad, supplyParty);
+                supplyParty.ItemRoster, planned.PlannedLoad, supplyParty);
             int finalFood = supplyParty.ItemRoster.TotalFood;
 
-            string reason = "Ready";
-            if (dailyDemand <= 0f)
-                reason = "InvalidFoodDemand";
-            else if (capacityLimited < neededTransfer)
-                reason = "InsufficientCargoCapacity";
-            else if (loaded < neededTransfer || finalFood < requiredFood)
-                reason = "InsufficientGranaryFood";
-
-            return new SupplyProvisionPlan(distance, outboundDays,
-                returnDays, dailyDemand, ProvisionSafetyDays, requiredDays,
-                requiredFood, available, granaryReserve, loaded,
-                finalFood >= requiredFood && dailyDemand > 0f, reason);
+            return planned.WithCommitResult(loaded, finalFood);
         }
 
         /// <summary>
@@ -314,49 +310,12 @@ namespace ModifiedArmy.Garrison.Supply
             }
         }
 
-        private sealed class SupplyProvisionPlan
-        {
-            public SupplyProvisionPlan(float routeDistance,
-                float travelDaysToSource, float estimatedReturnDays,
-                float dailyFoodDemand, int safetyDays, int requiredDays,
-                int requiredFood, int availableGranaryFood,
-                int granaryReserveFood, int plannedLoad, bool canDepart,
-                string reason)
-            {
-                RouteDistance = routeDistance;
-                TravelDaysToSource = travelDaysToSource;
-                EstimatedReturnDays = estimatedReturnDays;
-                DailyFoodDemand = dailyFoodDemand;
-                SafetyDays = safetyDays;
-                RequiredDays = requiredDays;
-                RequiredFood = requiredFood;
-                AvailableGranaryFood = availableGranaryFood;
-                GranaryReserveFood = granaryReserveFood;
-                PlannedLoad = plannedLoad;
-                CanDepart = canDepart;
-                Reason = reason;
-            }
-
-            public float RouteDistance { get; }
-            public float TravelDaysToSource { get; }
-            public float EstimatedReturnDays { get; }
-            public float DailyFoodDemand { get; }
-            public int SafetyDays { get; }
-            public int RequiredDays { get; }
-            public int RequiredFood { get; }
-            public int AvailableGranaryFood { get; }
-            public int GranaryReserveFood { get; }
-            public int PlannedLoad { get; }
-            public bool CanDepart { get; }
-            public string Reason { get; }
-        }
-
         /// <summary>
         /// Emits a route snapshot only when this behavior is about to replace
         /// an existing movement order. This makes competing AI orders visible
         /// without producing one line for every hourly tick.
         /// </summary>
-        private static void LogRouteCommand(
+        private void LogRouteCommand(
             MobileParty party,
             Settlement destination,
             string reason)

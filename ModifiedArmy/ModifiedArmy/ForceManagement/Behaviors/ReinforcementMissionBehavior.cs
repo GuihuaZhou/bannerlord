@@ -1,6 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
-using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Tool;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
@@ -11,6 +11,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     /// Compatibility reader for the retired lord-party reinforcement design.
     /// It preserves the old save key and safely cancels loaded active tasks.
     /// </summary>
+    [Obsolete("Legacy save compatibility only")]
     public sealed class ReinforcementMissionBehavior : CampaignBehaviorBase
     {
         private List<ReinforcementMission> _missions =
@@ -31,11 +32,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             _missions ??= new List<ReinforcementMission>();
         }
 
-        public bool StartControlledMission(ReinforcementMission mission)
-        {
-            return false;
-        }
-
         private void OnGameLoadFinished()
         {
             int cancelled = 0;
@@ -45,8 +41,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 mission.State = ReinforcementMissionState.Cancelled;
                 cancelled++;
             }
-            ForceManagementFacade.Current.ReinforcementMissions
-                .Restore(Enumerable.Empty<ReinforcementMission>());
             if (cancelled > 0)
             {
                 ModLogger.Notice(

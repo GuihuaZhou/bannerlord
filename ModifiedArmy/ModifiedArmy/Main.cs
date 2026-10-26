@@ -7,7 +7,7 @@ using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
-using ModifiedArmy.PartyFinance.Behaviors;
+using ModifiedArmy.PartyManagement.Behaviors;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;

@@ -5,7 +5,7 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.PartyFinance.Behaviors
+namespace ModifiedArmy.PartyManagement.Behaviors
 {
     /// <summary>
     /// Reports actual desertion and party disbanding for military parties in

@@ -28,7 +28,9 @@ namespace ModifiedArmy.ForceManagement.Services
         public PartyExchangeExecutionResult DryRun(PartyExchangePlan plan)
         {
             string reason = Validate(plan);
-            return Result(false, reason, 0);
+            PartyExchangeExecutionResult result = Result(false, reason, 0);
+            CompleteResultMetadata(plan, result);
+            return result;
         }
 
         /// <summary>Captures the live constraints used to detect stale plans.</summary>
@@ -50,7 +52,7 @@ namespace ModifiedArmy.ForceManagement.Services
                     source.Party?.Party?.PartySizeLimit ?? int.MaxValue),
                 DailyWage = source.Party == null
                     ? 0f
-                    : ModifiedArmy.PartyFinance.Models
+                    : ModifiedArmy.PartyManagement.Finance.Models
                         .AiRecruitmentFinancialModel
                         .GetLongTermDailyWage(source.Party)
             };
@@ -83,6 +85,7 @@ namespace ModifiedArmy.ForceManagement.Services
             {
                 PartyExchangeExecutionResult rejected = Result(
                     false, validation, 0);
+                CompleteResultMetadata(plan, rejected);
                 Log(plan, rejected);
                 return rejected;
             }
@@ -103,7 +106,8 @@ namespace ModifiedArmy.ForceManagement.Services
                     result = Result(false, "UnsupportedExecutor", 0);
                     break;
             }
-            if (result.Executed)
+            CompleteResultMetadata(plan, result);
+            if (result.HasCommittedChanges)
             {
                 _completedOperationIds.Add(plan.OperationId);
             }
@@ -202,6 +206,9 @@ namespace ModifiedArmy.ForceManagement.Services
             var rollback = new List<Action>();
             int sourceBefore = source.MemberRoster.TotalRegulars;
             int destinationBefore = destination.MemberRoster.TotalRegulars;
+            string sourceFingerprintBefore = GetFingerprint(source.MemberRoster);
+            string destinationFingerprintBefore =
+                GetFingerprint(destination.MemberRoster);
             try
             {
                 foreach (var pair in plan.SourceToDestination.Troops)
@@ -226,19 +233,56 @@ namespace ModifiedArmy.ForceManagement.Services
                     throw new InvalidOperationException(
                         "RosterConservationCheckFailed");
                 }
-                return Result(true, "Executed", plan.SourceToDestination.TotalCount);
+                return Result(
+                    TransferCommitStatus.Committed,
+                    "Executed",
+                    plan.SourceToDestination.TotalCount);
             }
             catch (Exception exception)
             {
+                bool rollbackFailed = false;
                 for (int index = rollback.Count - 1; index >= 0; index--)
                 {
-                    try { rollback[index](); } catch { }
+                    try
+                    {
+                        rollback[index]();
+                    }
+                    catch (Exception rollbackException)
+                    {
+                        rollbackFailed = true;
+                        ModLogger.Error(
+                            "Party exchange rollback action failed: " +
+                            rollbackException);
+                    }
+                }
+                bool restored = !rollbackFailed &&
+                    source.MemberRoster.TotalRegulars == sourceBefore &&
+                    destination.MemberRoster.TotalRegulars == destinationBefore &&
+                    GetFingerprint(source.MemberRoster) ==
+                        sourceFingerprintBefore &&
+                    GetFingerprint(destination.MemberRoster) ==
+                        destinationFingerprintBefore;
+                if (!restored)
+                {
+                    ModLogger.Error(
+                        "Party exchange rollback could not restore roster " +
+                        "counts. Manual recovery is required. Operation=" +
+                        (plan.OperationId ?? "unknown"));
+                    int observedChange = Math.Max(
+                        Math.Abs(sourceBefore - source.MemberRoster.TotalRegulars),
+                        Math.Abs(destinationBefore -
+                            destination.MemberRoster.TotalRegulars));
+                    return Result(
+                        TransferCommitStatus.RecoveryRequired,
+                        "ExecutionRecoveryRequired:" +
+                            exception.GetType().Name,
+                        observedChange);
                 }
                 string reason = exception.Message ==
                         "RosterConservationCheckFailed"
                     ? "RosterConservationCheckFailedRolledBack"
                     : "ExecutionRolledBack:" + exception.GetType().Name;
-                return Result(false, reason, 0);
+                return Result(TransferCommitStatus.RolledBack, reason, 0);
             }
         }
 
@@ -273,9 +317,14 @@ namespace ModifiedArmy.ForceManagement.Services
                 source,
                 destination,
                 plan.SourceToDestination.TotalCount);
+            if (recruited <= 0)
+                return Result(false, "AuthoritativeFiefResultChanged", 0);
             return recruited == plan.SourceToDestination.TotalCount
                 ? Result(true, "Executed", recruited)
-                : Result(false, "AuthoritativeFiefResultChanged", recruited);
+                : Result(
+                    TransferCommitStatus.PartiallyCommitted,
+                    "AuthoritativeFiefResultChanged",
+                    recruited);
         }
 
         /// <summary>Returns exactly one approved service batch through D2.</summary>
@@ -302,9 +351,15 @@ namespace ModifiedArmy.ForceManagement.Services
                 ForceManagementFacade.Current.WarRestPlanning.RecordCompleted(
                     source,
                     returned.ActualReturnedCount);
+            if (returned.ActualReturnedCount <= 0)
+                return Result(
+                    false,
+                    returned.ReasonCode ?? "AuthoritativeFiefResultChanged",
+                    0);
             return returned.ActualReturnedCount == approval.ApprovedCount
                 ? Result(true, "Executed", returned.ActualReturnedCount)
-                : Result(false,
+                : Result(
+                    TransferCommitStatus.PartiallyCommitted,
                     returned.ReasonCode ?? "AuthoritativeFiefResultChanged",
                     returned.ActualReturnedCount);
         }
@@ -364,12 +419,34 @@ namespace ModifiedArmy.ForceManagement.Services
         private static PartyExchangeExecutionResult Result(
             bool executed,
             string reason,
+            int count) => Result(
+                executed
+                    ? TransferCommitStatus.Committed
+                    : TransferCommitStatus.Rejected,
+                reason,
+                count);
+
+        private static PartyExchangeExecutionResult Result(
+            TransferCommitStatus status,
+            string reason,
             int count) => new PartyExchangeExecutionResult
         {
-            Executed = executed,
+            Status = status,
             ReasonCode = reason,
             TransferredCount = Math.Max(0, count)
         };
+
+        private static void CompleteResultMetadata(
+            PartyExchangePlan plan,
+            PartyExchangeExecutionResult result)
+        {
+            if (plan == null || result == null) return;
+            result.OperationId = plan.OperationId;
+            result.RequestedCount = Math.Max(0, plan.RequestedCount);
+            result.ApprovedCount = Math.Max(
+                0,
+                plan.SourceToDestination?.TotalCount ?? 0);
+        }
 
         /// <summary>Writes one audit record without exposing raw roster contents.</summary>
         private static void Log(
@@ -384,7 +461,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 plan?.Source?.Settlement?.Name ??
                 plan?.Destination?.Settlement?.Name ??
                 new TextObject("Unknown settlement");
-            if (result?.Executed == true)
+            if (result?.HasCommittedChanges == true)
             {
                 string templateId = plan?.Operation switch
                 {

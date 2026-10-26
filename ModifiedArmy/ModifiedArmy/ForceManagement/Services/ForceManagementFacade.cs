@@ -1,5 +1,8 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Models;
+using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Models;
+using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Tool;
 using ModifiedPolitics.Models.WarDisposition;
 using System;
@@ -13,10 +16,30 @@ namespace ModifiedArmy.ForceManagement.Services
 {
     public sealed class ForceManagementFacade
     {
-        private static readonly Lazy<ForceManagementFacade> Instance =
-            new Lazy<ForceManagementFacade>(() => new ForceManagementFacade());
+        private static readonly object SyncRoot = new object();
+        private static Campaign _campaign;
+        private static ForceManagementFacade _current;
 
-        public static ForceManagementFacade Current => Instance.Value;
+        public static ForceManagementFacade Current
+        {
+            get
+            {
+                Campaign campaign = Campaign.Current;
+                lock (SyncRoot)
+                {
+                    if (_current == null || !ReferenceEquals(_campaign, campaign))
+                    {
+                        _campaign = campaign;
+                        GarrisonRecruitmentCapacity.ResetRuntimeDiagnostics();
+                        NewSettlementFoodModel.ResetRuntimeState();
+                        ClanRecruitmentBudgetManager.ResetRuntimeState();
+                        BasicTroopGroupManager.Clear();
+                        _current = new ForceManagementFacade();
+                    }
+                    return _current;
+                }
+            }
+        }
 
         public IPartyForceTargetModel PartyTargets { get; }
         public IRecruitmentAdmissionModel RecruitmentAdmission { get; }
@@ -31,10 +54,6 @@ namespace ModifiedArmy.ForceManagement.Services
         public IPeaceDemobilizationModel PeaceDemobilization { get; }
         public DemobilizationService DemobilizationRunner { get; }
         public TroopTransferService TroopTransfers { get; }
-        public ReinforcementCargoService ReinforcementCargo { get; }
-        public FoodTransferService FoodTransfers { get; }
-        public ReinforcementMissionService ReinforcementMissions { get; }
-        public IArmyMissionProtectionModel ArmyMissionProtection { get; }
 
         private ForceManagementFacade()
         {
@@ -52,10 +71,6 @@ namespace ModifiedArmy.ForceManagement.Services
             PeaceDemobilization = new PeaceDemobilizationModel();
             DemobilizationRunner = new DemobilizationService();
             TroopTransfers = new TroopTransferService();
-            ReinforcementCargo = new ReinforcementCargoService();
-            FoodTransfers = new FoodTransferService();
-            ReinforcementMissions = new ReinforcementMissionService();
-            ArmyMissionProtection = ReinforcementMissions;
         }
 
         public PartyForceTargetResult GetPartyTarget(MobileParty party)
@@ -98,7 +113,7 @@ namespace ModifiedArmy.ForceManagement.Services
 
     internal sealed class WarDispositionBridge : IWarDispositionProvider
     {
-        private static readonly HashSet<string> ReportedFallbacks =
+        private readonly HashSet<string> ReportedFallbacks =
             new HashSet<string>();
 
         public bool TryGet(
@@ -130,7 +145,7 @@ namespace ModifiedArmy.ForceManagement.Services
             return false;
         }
 
-        private static void LogFallback(Clan clan)
+        private void LogFallback(Clan clan)
         {
             string id = clan?.StringId ?? "unknown";
             if (!ReportedFallbacks.Add(id))

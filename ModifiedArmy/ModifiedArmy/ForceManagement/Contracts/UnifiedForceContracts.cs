@@ -333,12 +333,39 @@ namespace ModifiedArmy.ForceManagement.Contracts
             };
     }
 
+    public enum TransferCommitStatus
+    {
+        Rejected,
+        Committed,
+        PartiallyCommitted,
+        RolledBack,
+        RecoveryRequired
+    }
+
     /// <summary>Result of one guarded unified exchange execution.</summary>
     public sealed class PartyExchangeExecutionResult
     {
-        public bool Executed { get; set; }
+        public TransferCommitStatus Status { get; set; }
+        public bool Executed
+        {
+            get => Status == TransferCommitStatus.Committed;
+            set
+            {
+                if (value)
+                    Status = TransferCommitStatus.Committed;
+                else if (Status == TransferCommitStatus.Committed)
+                    Status = TransferCommitStatus.Rejected;
+            }
+        }
+        public bool HasCommittedChanges =>
+            Status == TransferCommitStatus.Committed ||
+            Status == TransferCommitStatus.PartiallyCommitted ||
+            Status == TransferCommitStatus.RecoveryRequired;
         public string ReasonCode { get; set; }
+        public int RequestedCount { get; set; }
+        public int ApprovedCount { get; set; }
         public int TransferredCount { get; set; }
+        public string OperationId { get; set; }
     }
 
     public interface IAiForcePlanningModel

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -168,6 +169,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public string ReasonCode { get; set; }
     }
 
+    [Obsolete("Legacy save compatibility only")]
     [SaveableRootClass(8)]
     public sealed class ReinforcementMission
     {
@@ -227,12 +229,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
             MobileParty carrier,
             Settlement source,
             Settlement destination);
-    }
-
-    public interface IArmyMissionProtectionModel
-    {
-        bool IsProtected(MobileParty party);
-        bool MayStartReinforcement(MobileParty party);
     }
 
     public interface IDemobilizationPolicy

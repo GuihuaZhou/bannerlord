@@ -1,6 +1,6 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;

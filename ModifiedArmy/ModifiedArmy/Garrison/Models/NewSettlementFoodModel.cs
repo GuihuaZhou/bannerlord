@@ -55,6 +55,11 @@ namespace ModifiedArmy.Garrison.Models
             }
         }
 
+        public static void ResetRuntimeState()
+        {
+            LocalProductionAllocations.Clear();
+        }
+
         public override ExplainedNumber CalculateTownFoodStocksChange(
             Town town,
             bool includeMarketStocks = true,

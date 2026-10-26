@@ -6,7 +6,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
-namespace ModifiedArmy.PartyFinance.Models
+namespace ModifiedArmy.PartyManagement.Finance.Models
 {
     /// <summary>
     /// Prevents AI recruitment from creating a party whose full post-exemption

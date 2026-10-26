@@ -3,7 +3,7 @@ using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.common;

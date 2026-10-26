@@ -1,4 +1,4 @@
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;

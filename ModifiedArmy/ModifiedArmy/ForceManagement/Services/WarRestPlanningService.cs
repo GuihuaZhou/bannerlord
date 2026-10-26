@@ -1,7 +1,7 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Models.Fief;
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;

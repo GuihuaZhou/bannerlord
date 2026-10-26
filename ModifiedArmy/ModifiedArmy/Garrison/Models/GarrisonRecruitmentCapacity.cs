@@ -24,6 +24,11 @@ namespace ModifiedArmy.Garrison.Models
         public const int DefaultInteriorUpperPercentage = 80;
         public const int DefaultBorderUpperPercentage = 95;
 
+        public static void ResetRuntimeDiagnostics()
+        {
+            ReportedMultipleParties.Clear();
+        }
+
         public static int GetActiveSupplyEscortCount(Settlement home)
         {
             if (home == null)

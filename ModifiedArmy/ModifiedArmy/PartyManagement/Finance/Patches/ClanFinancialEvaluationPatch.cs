@@ -1,5 +1,5 @@
 using HarmonyLib;
-using ModifiedArmy.PartyFinance.Models;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
@@ -9,7 +9,7 @@ using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
-namespace ModifiedArmy.PartyFinance.Patches
+namespace ModifiedArmy.PartyManagement.Finance.Patches
 {
     /// <summary>
     /// Replaces native AI war-party wage-limit evaluation with limits scaled

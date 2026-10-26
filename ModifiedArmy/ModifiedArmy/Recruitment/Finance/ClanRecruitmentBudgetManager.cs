@@ -26,6 +26,12 @@ namespace ModifiedArmy.Recruitment.Finance
 
         private static int _cachedCampaignDay = int.MinValue;
 
+        public static void ResetRuntimeState()
+        {
+            Snapshots.Clear();
+            _cachedCampaignDay = int.MinValue;
+        }
+
         /// <summary>
         /// Starts a fresh shared recruitment budget at the campaign daily
         /// tick boundary. Relying only on lazy date detection left consumed

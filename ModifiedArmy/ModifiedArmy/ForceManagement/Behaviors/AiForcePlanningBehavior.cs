@@ -493,7 +493,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             }
             task.Progress += Math.Max(0, result.TransferredCount);
             task.ReasonCode = result.ReasonCode;
-            task.Status = result.Executed
+            task.Status = result.Status == TransferCommitStatus.Committed
                 ? PartyForceTaskStatus.Completed
                 : PartyForceTaskStatus.Cancelled;
             task.OwnsMovementOrder = false;

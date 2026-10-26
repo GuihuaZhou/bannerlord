@@ -3,7 +3,7 @@ using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 
-namespace ModifiedArmy.PartyFinance.Models
+namespace ModifiedArmy.PartyManagement.Finance.Models
 {
     /// <summary>
     /// Calculates the wage-payment limit assigned to one AI mobile party.
