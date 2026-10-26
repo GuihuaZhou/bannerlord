@@ -28,12 +28,12 @@ namespace ModifiedFamily.UI
         public override void RefreshValues()
         {
             base.RefreshValues();
-            Title = new TextObject("{=MF_UI_FamilyManagementTitle}家族事务").ToString();
-            Description = new TextObject("{=MF_UI_FamilyManagementDescription}在此安排家族联姻、办理收养，或查看尚未处理的家族提议。").ToString();
-            MarriageText = new TextObject("{=MF_UI_ArrangeMarriageShort}安排联姻").ToString();
-            AdoptionText = new TextObject("{=MF_UI_AdoptionActionsShort}办理收养").ToString();
-            InboxText = new TextObject("{=MF_UI_OpenInboxShort}查看提议").ToString();
-            CloseText = new TextObject("{=MF_UI_Close}关闭").ToString();
+            Title = new TextObject("{=MF_UI_FamilyManagementTitle}Family Management Title").ToString();
+            Description = new TextObject("{=MF_UI_FamilyManagementDescription}Family Management Description").ToString();
+            MarriageText = new TextObject("{=MF_UI_ArrangeMarriageShort}Arrange Marriage Short").ToString();
+            AdoptionText = new TextObject("{=MF_UI_AdoptionActionsShort}Adoption Actions Short").ToString();
+            InboxText = new TextObject("{=MF_UI_OpenInboxShort}Open Inbox Short").ToString();
+            CloseText = new TextObject("{=MF_UI_Close}Close").ToString();
         }
 
         public void ExecuteMarriage()

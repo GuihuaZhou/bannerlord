@@ -32,8 +32,8 @@ namespace ModifiedFamily.UI.Clan
             ShowMarriage = hero != null && _vm.IsFamilyMember && hero != Hero.MainHero
                 && MarriageEligibilityModel.CanNegotiateHero(hero).IsAllowed;
             ShowAdoption = hero != null && !_vm.IsFamilyMember && hero.CompanionOf == TaleWorlds.CampaignSystem.Clan.PlayerClan;
-            MarriageActionsText = new TextObject("{=MF_UI_MarriageButton}联姻").ToString();
-            AdoptionActionsText = new TextObject("{=MF_UI_AdoptionButton}收养").ToString();
+            MarriageActionsText = new TextObject("{=MF_UI_MarriageButton}Marriage Button").ToString();
+            AdoptionActionsText = new TextObject("{=MF_UI_AdoptionButton}Adoption Button").ToString();
         }
     }
 }

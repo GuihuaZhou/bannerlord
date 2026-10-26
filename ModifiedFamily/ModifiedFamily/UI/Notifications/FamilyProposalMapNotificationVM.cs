@@ -17,7 +17,7 @@ namespace ModifiedFamily.UI.Notifications
             EnsureService();
             NotificationIdentifier = "marriage";
             TitleText = data.TitleText.ToString();
-            DescriptionText = new TaleWorlds.Localization.TextObject("{=MF_UI_IncomingDescription}一个家族提议正在等待您的决定。点击查看详细内容。").ToString();
+            DescriptionText = new TaleWorlds.Localization.TextObject("{=MF_UI_IncomingDescription}Incoming Description").ToString();
             SoundId = data.SoundEventPath;
             ForceInspection = true;
             _onInspect = InspectProposal;

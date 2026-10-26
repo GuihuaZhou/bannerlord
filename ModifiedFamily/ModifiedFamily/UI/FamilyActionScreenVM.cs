@@ -20,11 +20,11 @@ namespace ModifiedFamily.UI
         {
             _hero = hero;
             _continueAction = continueAction;
-            Title = new TextObject(marriage ? "{=MF_UI_MarriageScreenTitle}安排联姻" : "{=MF_UI_AdoptionScreenTitle}办理收养").ToString();
-            Description = new TextObject(marriage ? "{=MF_UI_MarriageScreenDescription}将为所选家族成员选择联姻家族、对象、婚后归属及礼金。" : "{=MF_UI_AdoptionScreenDescription}将由玩家家族成员与所选同伴建立法定收养关系。").ToString();
+            Title = new TextObject(marriage ? "{=MF_UI_MarriageScreenTitle}Marriage Screen Title" : "{=MF_UI_AdoptionScreenTitle}Adoption Screen Title").ToString();
+            Description = new TextObject(marriage ? "{=MF_UI_MarriageScreenDescription}Marriage Screen Description" : "{=MF_UI_AdoptionScreenDescription}Adoption Screen Description").ToString();
             HeroName = hero?.Name?.ToString() ?? string.Empty;
-            ContinueText = new TextObject("{=MF_UI_Continue}继续").ToString();
-            CloseText = new TextObject("{=MF_UI_Close}关闭").ToString();
+            ContinueText = new TextObject("{=MF_UI_Continue}Continue").ToString();
+            CloseText = new TextObject("{=MF_UI_Close}Close").ToString();
         }
 
         [DataSourceProperty] public string Title { get => _title; private set { _title = value; OnPropertyChangedWithValue(value); } }

@@ -35,7 +35,7 @@ namespace ModifiedFamily.UI
             }
             catch (Exception exception)
             {
-                FamilyDiagnostics.Error("家族事务独立界面打开失败。", exception);
+                FamilyDiagnostics.Error("Failed to open the standalone family action screen.", exception);
                 Close();
                 return false;
             }

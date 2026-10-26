@@ -31,11 +31,11 @@ namespace ModifiedFamily.UI.Marriage
             _ownHero = ownHero;
             Clans = new MBBindingList<MarriageClanItemVM>();
             Heroes = new MBBindingList<MarriageHeroItemVM>();
-            Title = new TextObject("{=MF_UI_MarriageScreenTitle}联姻").ToString();
-            MembersText = new TextObject("{=MF_UI_EligibleMarriageHeroes}可联姻成员").ToString();
-            ProposeText = new TextObject("{=MF_UI_SelectMarriageHero}选择对象").ToString();
-            CloseText = new TextObject("{=MF_UI_Close}关闭").ToString();
-            NoCandidatesText = new TextObject("{=MF_UI_NoMarriageCandidates}当前没有符合全部联姻条件且未被其他提议占用的家族或成员。").ToString();
+            Title = new TextObject("{=MF_UI_MarriageScreenTitle}Marriage Screen Title").ToString();
+            MembersText = new TextObject("{=MF_UI_EligibleMarriageHeroes}Eligible Marriage Heroes").ToString();
+            ProposeText = new TextObject("{=MF_UI_SelectMarriageHero}Select Marriage Hero").ToString();
+            CloseText = new TextObject("{=MF_UI_Close}Close").ToString();
+            NoCandidatesText = new TextObject("{=MF_UI_NoMarriageCandidates}No Marriage Candidates").ToString();
             LoadClans();
         }
 

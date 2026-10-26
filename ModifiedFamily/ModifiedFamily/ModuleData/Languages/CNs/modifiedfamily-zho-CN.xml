@@ -204,6 +204,7 @@
     <string id="MF_UI_Cancel" text="取消" />
     <string id="MF_UI_ConfirmMarriageProposal" text="{HERO_A}将与{HERO_B}成婚；婚后归属为“{DIRECTION}”，礼金为{GOLD}第纳尔。是否发送联姻请求？" />
     <string id="MF_UI_MarriageProposalSent" text="联姻提议已发送，正在等待对方答复。" />
+    <string id="MF_UI_MarriageSubmitFailed" text="联姻提议提交失败，请稍后重试。" />
     <string id="MF_UI_MarriageTermsValid" text="当前安排符合联姻规则，可以发送请求。" />
     <string id="MF_UI_DenialLeaderCannotLeave" text="所选方向会使家族领袖离开原家族，请更换婚后归属。" />
     <string id="MF_UI_DenialInsufficientFunds" text="礼金支付方的资金不足。" />

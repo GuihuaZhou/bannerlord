@@ -56,7 +56,7 @@ namespace ModifiedFamily.Marriage.AI
         {
             if (proposal == null || proposal.ReceiverClan == Clan.PlayerClan)
             {
-                FamilyDiagnostics.Warn("已阻止AI代替玩家家族回应联姻提议；该提议将继续等待玩家处理。");
+                FamilyDiagnostics.Warn("Prevented AI from responding to a marriage proposal on behalf of the player clan; the proposal remains pending for player input.");
                 return;
             }
             FamilyResult valid = _proposalModel.CanRespond(proposal);

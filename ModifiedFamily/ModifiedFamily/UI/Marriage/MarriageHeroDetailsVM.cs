@@ -46,38 +46,38 @@ namespace ModifiedFamily.UI.Marriage
                     int value = targetHero.GetSkillValue(skill);
                     if (value > 0) Skills.Add(new EncyclopediaSkillVM(skill, value));
                 }
-                AddRelative(targetHero.Father, "{=MF_UI_RelativeFather}父亲");
-                AddRelative(targetHero.Mother, "{=MF_UI_RelativeMother}母亲");
-                AddRelative(targetHero.Spouse, "{=MF_UI_RelativeSpouse}配偶");
-                foreach (Hero sibling in targetHero.Siblings) AddRelative(sibling, "{=MF_UI_RelativeSibling}兄弟姐妹");
-                foreach (Hero child in targetHero.Children) AddRelative(child, "{=MF_UI_RelativeChild}子女");
+                AddRelative(targetHero.Father, "{=MF_UI_RelativeFather}Relative Father");
+                AddRelative(targetHero.Mother, "{=MF_UI_RelativeMother}Relative Mother");
+                AddRelative(targetHero.Spouse, "{=MF_UI_RelativeSpouse}Relative Spouse");
+                foreach (Hero sibling in targetHero.Siblings) AddRelative(sibling, "{=MF_UI_RelativeSibling}Relative Sibling");
+                foreach (Hero child in targetHero.Children) AddRelative(child, "{=MF_UI_RelativeChild}Relative Child");
             }
 
             Name = targetHero?.Name?.ToString() ?? "-";
             RoleText = targetHero?.Clan?.Leader == targetHero
-                ? new TextObject("{=MF_UI_ClanLeaderRole}家族领袖").ToString()
-                : new TextObject("{=MF_UI_ClanMemberRole}家族成员").ToString();
-            RoleFieldText = Format("{=MF_UI_MarriageHeroRole}身份：{ROLE}", "ROLE", RoleText);
-            AgeText = Format("{=MF_UI_MarriageHeroAge}年龄：{AGE}", "AGE", targetHero == null ? "-" : ((int)targetHero.Age).ToString());
-            ClanText = Format("{=MF_UI_MarriageHeroClan}所属家族：{CLAN}", "CLAN", targetHero?.Clan?.Name?.ToString() ?? "-");
-            CultureText = Format("{=MF_UI_MarriageCultureField}文化：{VALUE}", "VALUE", targetHero?.Culture?.Name?.ToString() ?? "-");
+                ? new TextObject("{=MF_UI_ClanLeaderRole}Clan Leader Role").ToString()
+                : new TextObject("{=MF_UI_ClanMemberRole}Clan Member Role").ToString();
+            RoleFieldText = Format("{=MF_UI_MarriageHeroRole}Marriage Hero Role {ROLE}", "ROLE", RoleText);
+            AgeText = Format("{=MF_UI_MarriageHeroAge}Marriage Hero Age {AGE}", "AGE", targetHero == null ? "-" : ((int)targetHero.Age).ToString());
+            ClanText = Format("{=MF_UI_MarriageHeroClan}Marriage Hero Clan {CLAN}", "CLAN", targetHero?.Clan?.Name?.ToString() ?? "-");
+            CultureText = Format("{=MF_UI_MarriageCultureField}Marriage Culture Field {VALUE}", "VALUE", targetHero?.Culture?.Name?.ToString() ?? "-");
             ClanBanner = targetHero?.Clan == null ? null : new BannerImageIdentifierVM(targetHero.Clan.Banner, true);
             Faction = targetHero?.Clan == null ? null : new EncyclopediaFactionVM(targetHero.Clan);
             int relation = ownHero == null || targetHero == null ? 0 : ownHero.GetRelation(targetHero);
-            RelationText = Format("{=MF_UI_MarriageHeroRelation}与己方人物关系：{RELATION}", "RELATION", relation > 0 ? "+" + relation : relation.ToString());
-            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatCulture}文化：").ToString(), targetHero?.Culture?.Name?.ToString() ?? "-", null));
-            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatAge}年龄：").ToString(), targetHero == null ? "-" : ((int)targetHero.Age).ToString(), null));
-            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatRelation}关系：").ToString(), relation > 0 ? "+" + relation : relation.ToString(), null));
+            RelationText = Format("{=MF_UI_MarriageHeroRelation}Marriage Hero Relation {RELATION}", "RELATION", relation > 0 ? "+" + relation : relation.ToString());
+            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatCulture}Stat Culture").ToString(), targetHero?.Culture?.Name?.ToString() ?? "-", null));
+            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatAge}Stat Age").ToString(), targetHero == null ? "-" : ((int)targetHero.Age).ToString(), null));
+            Stats.Add(new StringPairItemVM(new TextObject("{=MF_UI_StatRelation}Stat Relation").ToString(), relation > 0 ? "+" + relation : relation.ToString(), null));
             BiographyText = targetHero?.EncyclopediaText?.ToString();
-            if (string.IsNullOrWhiteSpace(BiographyText)) BiographyText = new TextObject("{=MF_UI_NoHeroBiography}当前没有可显示的人物生平资料。").ToString();
-            InformationTitle = new TextObject("{=MF_UI_HeroInformation}信息").ToString();
-            BiographyTitle = new TextObject("{=MF_UI_HeroBiography}生平").ToString();
-            FamilyTitle = new TextObject("{=MF_UI_HeroFamily}亲属").ToString();
-            PairingText = new TextObject("{=MF_UI_CurrentMarriagePair}当前联姻对象：{OWN}  ↔  {TARGET}")
+            if (string.IsNullOrWhiteSpace(BiographyText)) BiographyText = new TextObject("{=MF_UI_NoHeroBiography}No Hero Biography").ToString();
+            InformationTitle = new TextObject("{=MF_UI_HeroInformation}Hero Information").ToString();
+            BiographyTitle = new TextObject("{=MF_UI_HeroBiography}Hero Biography").ToString();
+            FamilyTitle = new TextObject("{=MF_UI_HeroFamily}Hero Family").ToString();
+            PairingText = new TextObject("{=MF_UI_CurrentMarriagePair}Current Marriage Pair {OWN} {TARGET}")
                 .SetTextVariable("OWN", ownHero?.Name ?? new TextObject("-"))
                 .SetTextVariable("TARGET", targetHero?.Name ?? new TextObject("-"))
                 .ToString();
-            SkillsText = new TextObject("{=hVve5rNi}技能").ToString();
+            SkillsText = new TextObject("{=hVve5rNi}Skills").ToString();
         }
 
         internal Hero TargetHero { get; }
@@ -102,7 +102,7 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public string BiographyTitle { get; }
         [DataSourceProperty] public string FamilyTitle { get; }
         [DataSourceProperty] public string PairingText { get; }
-        [DataSourceProperty] public string OpenTermsText => new TextObject("{=MF_UI_OpenMarriageTerms}安排联姻").ToString();
+        [DataSourceProperty] public string OpenTermsText => new TextObject("{=MF_UI_OpenMarriageTerms}Open Marriage Terms").ToString();
         [DataSourceProperty] public string SkillsText { get; }
         [DataSourceProperty] public string FamilyText => FamilyTitle;
         [DataSourceProperty] public EncyclopediaFactionVM Faction { get; }
@@ -123,7 +123,7 @@ namespace ModifiedFamily.UI.Marriage
         public void ExecuteOpenTerms() => _owner.ExecuteOpenTerms();
         public void ExecuteSubmitTerms()
         {
-            ModifiedFamily.Diagnostics.FamilyDiagnostics.DebugLog($"联姻详情VM收到按钮点击：目标={TargetHero?.StringId ?? "none"}。");
+            ModifiedFamily.Diagnostics.FamilyDiagnostics.DebugLog($"Marriage details VM received submit click: target={TargetHero?.StringId ?? "none"}.");
             _owner.ExecuteSubmitTerms();
         }
         public void ExecuteDecreaseGiftAmount() => _owner.ExecuteDecreaseGiftAmount();

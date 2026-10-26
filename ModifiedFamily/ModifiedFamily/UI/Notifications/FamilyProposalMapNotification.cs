@@ -13,7 +13,7 @@ namespace ModifiedFamily.UI.Notifications
         public FamilyProposalMapNotification() : base(TextObject.GetEmpty()) { }
         public FamilyProposalMapNotification(string proposalId, TextObject title) : base(title) { _proposalId = proposalId; }
         public string ProposalId => _proposalId;
-        public override TextObject TitleText => new TextObject("{=MF_UI_IncomingTitle}收到家族提议");
+        public override TextObject TitleText => new TextObject("{=MF_UI_IncomingTitle}Incoming Title");
         public override string SoundEventPath => "event:/ui/notification/kingdom_decision";
     }
 }

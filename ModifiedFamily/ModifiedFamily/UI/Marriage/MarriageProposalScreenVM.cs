@@ -41,37 +41,37 @@ namespace ModifiedFamily.UI.Marriage
             _giftMode = proposal.GiftAmount <= 0 ? 0 : proposal.GoldPayerClan == TaleWorlds.CampaignSystem.Clan.PlayerClan ? 1 : 2;
             _giftAmount = Math.Max(0, proposal.GiftAmount);
             DirectionSelector = new SelectorVM<SelectorItemVM>(0, OnDirectionSelected);
-            DirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NormalMarriageDirection}女方嫁入男方家族")));
-            DirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_MatrilocalMarriageDirection}男方入赘女方家族")));
+            DirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NormalMarriageDirection}Normal Marriage Direction")));
+            DirectionSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_MatrilocalMarriageDirection}Matrilocal Marriage Direction")));
             int giftSelectorIndex = _giftMode == 2 ? 1 : _giftMode == 1 ? 2 : 0;
             GiftSelector = new SelectorVM<SelectorItemVM>(0, OnGiftSelected);
-            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NoMarriageGift}无礼金")));
-            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_OtherPaysMarriageGift}对方支付")));
-            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_PlayerPaysMarriageGift}我方支付")));
+            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_NoMarriageGift}No Marriage Gift")));
+            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_OtherPaysMarriageGift}Other Pays Marriage Gift")));
+            GiftSelector.AddItem(new SelectorItemVM(new TextObject("{=MF_UI_PlayerPaysMarriageGift}Player Pays Marriage Gift")));
             DirectionSelector.SelectedIndex = _direction == MarriageDirection.MaleJoinsFemaleClan ? 1 : 0;
             GiftSelector.SelectedIndex = giftSelectorIndex;
             RefreshTerms();
         }
 
-        [DataSourceProperty] public string Title => new TextObject("{=MF_UI_IncomingMarriageTitle}联姻提议").ToString();
-        [DataSourceProperty] public string ConditionsTitle => new TextObject("{=MF_UI_MarriageConditions}条件").ToString();
-        [DataSourceProperty] public string PlayerSideText => new TextObject("{=MF_UI_OurHero}我方成员").ToString();
-        [DataSourceProperty] public string OtherSideText => new TextObject("{=MF_UI_OtherHero}对方成员").ToString();
+        [DataSourceProperty] public string Title => new TextObject("{=MF_UI_IncomingMarriageTitle}Incoming Marriage Title").ToString();
+        [DataSourceProperty] public string ConditionsTitle => new TextObject("{=MF_UI_MarriageConditions}Marriage Conditions").ToString();
+        [DataSourceProperty] public string PlayerSideText => new TextObject("{=MF_UI_OurHero}Our Hero").ToString();
+        [DataSourceProperty] public string OtherSideText => new TextObject("{=MF_UI_OtherHero}Other Hero").ToString();
         [DataSourceProperty] public string PlayerHeroName { get; }
         [DataSourceProperty] public string OtherHeroName { get; }
         [DataSourceProperty] public CharacterImageIdentifierVM PlayerHeroVisual { get; }
         [DataSourceProperty] public CharacterImageIdentifierVM OtherHeroVisual { get; }
         [DataSourceProperty] public SelectorVM<SelectorItemVM> DirectionSelector { get; }
         [DataSourceProperty] public SelectorVM<SelectorItemVM> GiftSelector { get; }
-        [DataSourceProperty] public string DirectionLabel => new TextObject("{=MF_UI_DirectionLabel}归属").ToString();
-        [DataSourceProperty] public string GiftLabel => new TextObject("{=MF_UI_GiftLabel}礼金").ToString();
-        [DataSourceProperty] public string GiftAmountLabel => new TextObject("{=MF_UI_GiftAmount}礼金金额").ToString();
-        [DataSourceProperty] public string CounterAmountLabel => new TextObject("{=MF_UI_CounterAmount}礼金数额").ToString();
-        [DataSourceProperty] public string AcceptText => new TextObject("{=MF_UI_Accept}接受").ToString();
-        [DataSourceProperty] public string RejectText => new TextObject("{=MF_UI_Reject}拒绝").ToString();
-        [DataSourceProperty] public string NegotiateText => new TextObject("{=MF_UI_Negotiate}协商").ToString();
-        [DataSourceProperty] public string SubmitCounterText => new TextObject("{=MF_UI_SubmitCounter}提交").ToString();
-        [DataSourceProperty] public string BackText => new TextObject("{=MF_UI_Back}返回").ToString();
+        [DataSourceProperty] public string DirectionLabel => new TextObject("{=MF_UI_DirectionLabel}Direction Label").ToString();
+        [DataSourceProperty] public string GiftLabel => new TextObject("{=MF_UI_GiftLabel}Gift Label").ToString();
+        [DataSourceProperty] public string GiftAmountLabel => new TextObject("{=MF_UI_GiftAmount}Gift Amount").ToString();
+        [DataSourceProperty] public string CounterAmountLabel => new TextObject("{=MF_UI_CounterAmount}Counter Amount").ToString();
+        [DataSourceProperty] public string AcceptText => new TextObject("{=MF_UI_Accept}Accept").ToString();
+        [DataSourceProperty] public string RejectText => new TextObject("{=MF_UI_Reject}Reject").ToString();
+        [DataSourceProperty] public string NegotiateText => new TextObject("{=MF_UI_Negotiate}Negotiate").ToString();
+        [DataSourceProperty] public string SubmitCounterText => new TextObject("{=MF_UI_SubmitCounter}Submit Counter").ToString();
+        [DataSourceProperty] public string BackText => new TextObject("{=MF_UI_Back}Back").ToString();
         [DataSourceProperty] public string DirectionText { get => _directionText; private set { _directionText = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string GiftText { get => _giftText; private set { _giftText = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string GiftAmountText { get => _giftAmountText; private set { _giftAmountText = value; OnPropertyChangedWithValue(value); } }
@@ -86,11 +86,11 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public bool CanAdjustGiftAmount => IsNegotiating && HasGift;
         [DataSourceProperty] public bool CanSubmitCounter { get => _canSubmitCounter; private set { _canSubmitCounter = value; OnPropertyChangedWithValue(value); } }
 
-        public void ExecuteAccept() => ExecuteResolution("接受", () => _service.TryAccept(_proposal.ProposalId, TaleWorlds.CampaignSystem.Clan.PlayerClan));
-        public void ExecuteReject() => ExecuteResolution("拒绝", () => _service.TryReject(_proposal.ProposalId, TaleWorlds.CampaignSystem.Clan.PlayerClan, FamilyReasonCode.PlayerDeclined));
+        public void ExecuteAccept() => ExecuteResolution("accept", () => _service.TryAccept(_proposal.ProposalId, TaleWorlds.CampaignSystem.Clan.PlayerClan));
+        public void ExecuteReject() => ExecuteResolution("reject", () => _service.TryReject(_proposal.ProposalId, TaleWorlds.CampaignSystem.Clan.PlayerClan, FamilyReasonCode.PlayerDeclined));
         public void ExecuteNegotiate()
         {
-            FamilyDiagnostics.DebugLog($"联姻提议弹窗收到协商点击：请求={_proposal.ProposalId}，可协商={CanNegotiate}。");
+            FamilyDiagnostics.DebugLog($"Marriage proposal dialog received negotiate click: proposal={_proposal.ProposalId}, canNegotiate={CanNegotiate}.");
             if (!CanNegotiate) return;
             ResetTermsToProposal();
             IsViewing = false; IsNegotiating = true;
@@ -100,7 +100,7 @@ namespace ModifiedFamily.UI.Marriage
         public void ExecuteBack() { ResetTermsToProposal(); IsNegotiating = false; IsViewing = true; StatusText = string.Empty; RefreshTerms(); }
         public void ExecuteClose()
         {
-            FamilyDiagnostics.DebugLog($"联姻提议弹窗收到关闭点击：请求={_proposal.ProposalId}。");
+            FamilyDiagnostics.DebugLog($"Marriage proposal dialog received close click: proposal={_proposal.ProposalId}.");
             FamilyActionScreenHost.Close();
         }
         public void ExecuteOpenPlayerHero() => OpenHero(_playerHero);
@@ -122,11 +122,11 @@ namespace ModifiedFamily.UI.Marriage
         private void RefreshTerms()
         {
             DirectionText = _direction == MarriageDirection.FemaleJoinsMaleClan
-                ? new TextObject("{=MF_UI_DirectionNormal}女方嫁入男方家族").ToString()
-                : new TextObject("{=MF_UI_DirectionMatrilocal}男方入赘女方家族").ToString();
-            GiftText = _giftMode == 0 ? new TextObject("{=MF_UI_NoGiftShort}无礼金").ToString()
-                : _giftMode == 1 ? new TextObject("{=MF_UI_WePayShort}我方支付").ToString()
-                : new TextObject("{=MF_UI_OtherPaysShort}对方支付").ToString();
+                ? new TextObject("{=MF_UI_DirectionNormal}Direction Normal").ToString()
+                : new TextObject("{=MF_UI_DirectionMatrilocal}Direction Matrilocal").ToString();
+            GiftText = _giftMode == 0 ? new TextObject("{=MF_UI_NoGiftShort}No Gift Short").ToString()
+                : _giftMode == 1 ? new TextObject("{=MF_UI_WePayShort}We Pay Short").ToString()
+                : new TextObject("{=MF_UI_OtherPaysShort}Other Pays Short").ToString();
             GiftAmountText = _giftAmount.ToString("N0");
             OnPropertyChanged(nameof(CounterGiftAmount));
             OnPropertyChanged(nameof(HasGift));
@@ -166,18 +166,18 @@ namespace ModifiedFamily.UI.Marriage
             if (result != null && result.IsAllowed) FamilyActionScreenHost.Close();
             else
             {
-                StatusText = new TextObject("{=MF_UI_RequestFailed}提议未能提交，请检查人物状态、家族关系、冷却或礼金条件。").ToString();
-                FamilyDiagnostics.Warn($"联姻提议弹窗操作失败：请求={_proposal.ProposalId}，原因={result?.ReasonCode.ToString() ?? "NoResult"}。");
+                StatusText = new TextObject("{=MF_UI_RequestFailed}Request Failed").ToString();
+                FamilyDiagnostics.Warn($"Marriage proposal dialog action failed: proposal={_proposal.ProposalId}, reason={result?.ReasonCode.ToString() ?? "NoResult"}.");
             }
         }
         private void ExecuteResolution(string actionName, Func<FamilyResult> action)
         {
-            FamilyDiagnostics.DebugLog($"联姻提议弹窗收到{actionName}点击：请求={_proposal.ProposalId}。");
+            FamilyDiagnostics.DebugLog($"Marriage proposal dialog received {actionName} click: proposal={_proposal.ProposalId}.");
             try { Finish(action()); }
             catch (Exception exception)
             {
-                StatusText = new TextObject("{=MF_UI_RequestFailed}提议未能提交，请检查人物状态、家族关系、冷却或礼金条件。").ToString();
-                FamilyDiagnostics.Error($"联姻提议弹窗执行{actionName}失败：请求={_proposal.ProposalId}。", exception);
+                StatusText = new TextObject("{=MF_UI_RequestFailed}Request Failed").ToString();
+                FamilyDiagnostics.Error($"Marriage proposal dialog failed to execute {actionName}: proposal={_proposal.ProposalId}.", exception);
             }
         }
         private static MarriageDirection GetDirection(FamilyProposal proposal)
@@ -189,13 +189,13 @@ namespace ModifiedFamily.UI.Marriage
         private static void OpenHero(Hero hero)
         {
             if (hero == null) return;
-            FamilyDiagnostics.DebugLog($"联姻提议弹窗收到人物头像点击：人物={hero.StringId}/{hero.Name}，百科链接={hero.EncyclopediaLink}。");
+            FamilyDiagnostics.DebugLog($"Marriage proposal dialog received hero portrait click: hero={hero.StringId}/{hero.Name}, encyclopediaLink={hero.EncyclopediaLink}.");
             try
             {
                 TaleWorlds.CampaignSystem.Encyclopedia.EncyclopediaManager encyclopediaManager = TaleWorlds.CampaignSystem.Campaign.Current?.EncyclopediaManager;
                 if (encyclopediaManager == null || string.IsNullOrEmpty(hero.EncyclopediaLink))
                 {
-                    FamilyDiagnostics.Warn($"无法从联姻提议弹窗打开人物百科：人物={hero.StringId}，百科管理器或链接不可用。");
+                    FamilyDiagnostics.Warn($"Could not open hero encyclopedia from marriage proposal dialog: hero={hero.StringId}, manager or link unavailable.");
                     return;
                 }
                 FamilyActionScreenHost.Close();
@@ -203,7 +203,7 @@ namespace ModifiedFamily.UI.Marriage
             }
             catch (Exception exception)
             {
-                FamilyDiagnostics.Error($"从联姻提议弹窗打开人物百科失败：人物={hero.StringId}。", exception);
+                FamilyDiagnostics.Error($"Failed to open hero encyclopedia from marriage proposal dialog: hero={hero.StringId}.", exception);
             }
         }
     }
