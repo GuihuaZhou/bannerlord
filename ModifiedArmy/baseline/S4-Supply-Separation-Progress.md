@@ -54,8 +54,14 @@
   inventory restoration, capacity logging and party destruction through
   `SupplyRecoveryService.CompleteReturn`.
 - Move outbound provisioning, purchases and full compensation into cargo service.
-- Move destroyed-party cooldown and aid-return recovery completion behind
-  `SupplyRecoveryService`.
+- Failed-departure compensation now runs through `SupplyCargoService` and
+  restores escort troops, removes purchased animals before returning cargo,
+  refunds gold and destroys the incomplete party in the original order.
+- Destroyed-party cooldown/notification and successful local return completion
+  now run through `SupplyRecoveryService`.
+- Remaining cargo work is moving the town/village purchase loops themselves;
+  their resource writes and compensation boundaries are already delegated.
+- Aid-return recovery completion still needs to be migrated.
 - Remove the partial-class business implementations after every caller migrates.
 
 - ROLLBACK: discard the uncommitted S4 working-tree files.

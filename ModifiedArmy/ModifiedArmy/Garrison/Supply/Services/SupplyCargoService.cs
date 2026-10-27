@@ -1,6 +1,10 @@
 using System;
+using ModifiedArmy.Garrison.Models;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.Actions;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
 namespace ModifiedArmy.Garrison.Supply.Services
@@ -102,6 +106,66 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     remainingWeight -= amount * item.Weight;
             }
             return requested - remaining;
+        }
+
+        public void RollbackDeparture(
+            Settlement home,
+            MobileParty garrison,
+            MobileParty supplyParty,
+            TroopRoster detachedEscort,
+            int purchasedPackAnimals,
+            int refundableGold,
+            Action<Settlement, MobileParty, int, int, int, int, int>
+                logCapacity)
+        {
+            if (supplyParty?.IsActive == true)
+            {
+                SupplyPartyComponent component = supplyParty.PartyComponent as
+                    SupplyPartyComponent;
+                int garrisonBefore = garrison.Party.NumberOfAllMembers;
+                int returning = supplyParty.Party.NumberOfAllMembers;
+                int reservedBefore = GarrisonRecruitmentCapacity
+                    .GetActiveSupplyEscortCount(home);
+                int limit = garrison.Party.PartySizeLimit;
+                int state = component?.MissionStateValue ?? -1;
+                component?.CompleteMission();
+                RestoreTroops(supplyParty.MemberRoster,
+                    garrison.MemberRoster);
+                RemovePurchasedPackAnimalsForRecovery(supplyParty.ItemRoster,
+                    purchasedPackAnimals);
+                TransferAllItems(supplyParty.ItemRoster,
+                    garrison.ItemRoster);
+                logCapacity?.Invoke(home, supplyParty, garrisonBefore,
+                    returning, reservedBefore, limit, state);
+                DestroyPartyAction.Apply(null, supplyParty);
+            }
+            else if (detachedEscort != null)
+            {
+                RestoreTroops(detachedEscort, garrison.MemberRoster);
+            }
+
+            if (refundableGold > 0 && home?.OwnerClan?.Leader != null)
+                GiveGoldAction.ApplyBetweenCharacters(null,
+                    home.OwnerClan.Leader, refundableGold, true);
+        }
+
+        public void RemovePurchasedPackAnimalsForRecovery(
+            ItemRoster roster,
+            int requested)
+        {
+            int remaining = Math.Max(0, requested);
+            for (int index = roster.Count - 1;
+                index >= 0 && remaining > 0; index--)
+            {
+                ItemRosterElement element = roster[index];
+                if (element.EquipmentElement.Item?.ItemCategory !=
+                        DefaultItemCategories.PackAnimal ||
+                    element.Amount <= 0)
+                    continue;
+                int amount = Math.Min(element.Amount, remaining);
+                roster.AddToCounts(element.EquipmentElement, -amount);
+                remaining -= amount;
+            }
         }
     }
 }

@@ -84,5 +84,24 @@ namespace ModifiedArmy.Garrison.Supply.Services
             }
             DestroyPartyAction.Apply(null, party);
         }
+
+        public void HandleDestroyedMission(
+            SupplyPartyComponent component,
+            int cooldownDays,
+            Action<Settlement, float> setCooldown)
+        {
+            if (component == null || component.MissionState ==
+                    SupplyPartyMissionState.Completed)
+                return;
+            setCooldown(component.HomeSettlement, cooldownDays);
+            if (component.HomeSettlement?.OwnerClan != Clan.PlayerClan)
+                return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_supply_party_destroyed");
+            message.SetTextVariable(
+                "HOME_NAME", component.HomeSettlement.Name);
+            message.SetTextVariable("COOLDOWN_DAYS", cooldownDays);
+            ModLogger.Notice(message.ToString());
+        }
     }
 }

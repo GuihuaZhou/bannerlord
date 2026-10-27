@@ -133,34 +133,9 @@ namespace ModifiedArmy.Garrison.Supply
             int purchasedPackAnimals,
             int refundableGold)
         {
-            if (supplyParty?.IsActive == true)
-            {
-                SupplyPartyComponent component = GetComponent(supplyParty);
-                int garrisonBefore = garrison.Party.NumberOfAllMembers;
-                int returning = supplyParty.Party.NumberOfAllMembers;
-                int reservedBefore = GarrisonRecruitmentCapacity
-                    .GetActiveSupplyEscortCount(home);
-                int limit = garrison.Party.PartySizeLimit;
-                int state = component?.MissionStateValue ?? -1;
-                component?.CompleteMission();
-                RestoreTroops(supplyParty.MemberRoster,
-                    garrison.MemberRoster);
-                RemovePurchasedPackAnimals(supplyParty.ItemRoster,
-                    purchasedPackAnimals);
-                TransferAllItems(supplyParty.ItemRoster,
-                    garrison.ItemRoster);
-                LogSupplyEscortCapacity(home, supplyParty, garrisonBefore,
-                    returning, reservedBefore, limit, state);
-                DestroyPartyAction.Apply(null, supplyParty);
-            }
-            else if (detachedEscort != null)
-            {
-                RestoreTroops(detachedEscort, garrison.MemberRoster);
-            }
-
-            if (refundableGold > 0 && home?.OwnerClan?.Leader != null)
-                GiveGoldAction.ApplyBetweenCharacters(null,
-                    home.OwnerClan.Leader, refundableGold, true);
+            Cargo.RollbackDeparture(home, garrison, supplyParty,
+                detachedEscort, purchasedPackAnimals, refundableGold,
+                LogSupplyEscortCapacity);
         }
 
         /// <summary>
@@ -173,20 +148,7 @@ namespace ModifiedArmy.Garrison.Supply
             ItemRoster roster,
             int requested)
         {
-            int remaining = Math.Max(0, requested);
-            for (int index = roster.Count - 1;
-                index >= 0 && remaining > 0;
-                index--)
-            {
-                ItemRosterElement element = roster[index];
-                if (element.EquipmentElement.Item?.ItemCategory !=
-                        DefaultItemCategories.PackAnimal ||
-                    element.Amount <= 0)
-                    continue;
-                int amount = Math.Min(element.Amount, remaining);
-                roster.AddToCounts(element.EquipmentElement, -amount);
-                remaining -= amount;
-            }
+            Cargo.RemovePurchasedPackAnimalsForRecovery(roster, requested);
         }
 
         private static void LogProvisionPlan(

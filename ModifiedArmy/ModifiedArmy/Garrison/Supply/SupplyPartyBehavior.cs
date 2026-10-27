@@ -380,32 +380,8 @@ namespace ModifiedArmy.Garrison.Supply
                 _lastFoodRiskDay.Remove(party.StringId);
             }
             SupplyPartyComponent component = GetComponent(party);
-
-            if (component == null
-                || component.MissionState
-                    == SupplyPartyMissionState.Completed)
-            {
-                return;
-            }
-
-            // Losing the escort, animals, and cargo temporarily interrupts the
-            // home settlement's ability to organize another supply mission.
-            SetDispatchCooldown(
-                component.HomeSettlement,
-                DestroyedPartyCooldownDays);
-
-            if (component.HomeSettlement?.OwnerClan == Clan.PlayerClan)
-            {
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_supply_party_destroyed");
-                message.SetTextVariable(
-                    "HOME_NAME",
-                    component.HomeSettlement.Name);
-                message.SetTextVariable(
-                    "COOLDOWN_DAYS",
-                    DestroyedPartyCooldownDays);
-                ModLogger.Notice(message.ToString());
-            }
+            _recoveryService.HandleDestroyedMission(component,
+                DestroyedPartyCooldownDays, SetDispatchCooldown);
         }
 
         private void OnSettlementOwnerChanged(
