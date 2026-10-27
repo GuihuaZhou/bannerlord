@@ -33,7 +33,6 @@ namespace ModifiedArmy.ForceManagement.Services
                         GarrisonRecruitmentCapacity.ResetRuntimeDiagnostics();
                         NewSettlementFoodModel.ResetRuntimeState();
                         ClanRecruitmentBudgetManager.ResetRuntimeState();
-                        BasicTroopGroupManager.Clear();
                         _current = new ForceManagementFacade();
                     }
                     return _current;
