@@ -50,8 +50,12 @@
   in the Behavior during the transition.
 - `SupplyRecoveryService` now owns load-time component ownership restoration,
   native-avoidance protection and mission-route selection.
+- Successful local-mission return now commits component completion, escort and
+  inventory restoration, capacity logging and party destruction through
+  `SupplyRecoveryService.CompleteReturn`.
 - Move outbound provisioning, purchases and full compensation into cargo service.
-- Move destroy/return recovery completion behind `SupplyRecoveryService`.
+- Move destroyed-party cooldown and aid-return recovery completion behind
+  `SupplyRecoveryService`.
 - Remove the partial-class business implementations after every caller migrates.
 
 - ROLLBACK: discard the uncommitted S4 working-tree files.

@@ -1149,59 +1149,12 @@ namespace ModifiedArmy.Garrison.Supply
             return escort;
         }
 
-        private static void CompleteMission(
+        private void CompleteMission(
             MobileParty party,
             SupplyPartyComponent component)
         {
-            MobileParty garrison =
-                component.HomeSettlement.Town.GarrisonParty;
-
-            if (garrison == null)
-            {
-                return;
-            }
-
-            int returnedTroops = party.MemberRoster.TotalManCount;
-            int returnedFood = party.ItemRoster.TotalFood;
-            int returnedPackAnimals =
-                party.ItemRoster.NumberOfPackAnimals;
-            int returnedMounts = party.ItemRoster.NumberOfMounts;
-            int garrisonBefore = garrison.Party.NumberOfAllMembers;
-            int reservedBefore = GarrisonRecruitmentCapacity
-                .GetActiveSupplyEscortCount(component.HomeSettlement);
-            int partySizeLimit = garrison.Party.PartySizeLimit;
-            int missionState = component.MissionStateValue;
-
-            component.CompleteMission();
-            RestoreTroops(party.MemberRoster, garrison.MemberRoster);
-            TransferAllItems(party.ItemRoster, garrison.ItemRoster);
-
-            LogSupplyEscortCapacity(
-                component.HomeSettlement,
-                party,
-                garrisonBefore,
-                returnedTroops,
-                reservedBefore,
-                partySizeLimit,
-                missionState);
-
-            if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
-            {
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_supply_party_returned");
-                message.SetTextVariable(
-                    "HOME_NAME",
-                    component.HomeSettlement.Name);
-                message.SetTextVariable("ESCORT", returnedTroops);
-                message.SetTextVariable("FOOD", returnedFood);
-                message.SetTextVariable(
-                    "PACK_ANIMALS",
-                    returnedPackAnimals);
-                message.SetTextVariable("MOUNTS", returnedMounts);
-                ModLogger.Notice(message.ToString());
-            }
-
-            DestroyPartyAction.Apply(null, party);
+            _recoveryService.CompleteReturn(
+                party, component, Cargo, LogSupplyEscortCapacity);
         }
 
         private static void LogSupplyEscortCapacity(
