@@ -58,6 +58,10 @@ namespace ModifiedArmy.Garrison.Supply
             new SupplyRouteController();
         private static readonly SupplyCargoService Cargo =
             new SupplyCargoService();
+        private readonly SupplyDispatchService _dispatchService =
+            new SupplyDispatchService();
+        private readonly SupplyRecoveryService _recoveryService =
+            new SupplyRecoveryService();
         private readonly Dictionary<string, SupplyHealthSnapshot>
             _lastHealthSnapshots =
                 new Dictionary<string, SupplyHealthSnapshot>();
@@ -194,37 +198,21 @@ namespace ModifiedArmy.Garrison.Supply
 
         private void OnDailySettlementTick(Settlement settlement)
         {
-            if (!CanDispatchFrom(settlement)
-                || FindSupplyPartyForHome(settlement) != null
-                || IsDispatchCoolingDown(settlement))
-            {
-                return;
-            }
-
-            GarrisonLogisticsStatus status =
-                GarrisonLogisticsModel.Calculate(settlement.Town);
-
-            if (!GarrisonLogisticsModel.NeedsReplenishment(status)
-                || !ShouldDispatchAfterLocalSupply(settlement, status))
-            {
-                return;
-            }
-
-            SourceSelection source = FindBestSource(
+            _dispatchService.EvaluateDaily(
                 settlement,
-                status.FoodDeficit,
-                null);
-
-            if (source == null)
-            {
-                SetDispatchCooldown(settlement, 1f);
-                return;
-            }
-
-            TryCreateSupplyParty(
-                settlement,
-                source,
-                Math.Min(status.FoodDeficit, MaximumRequestedFood));
+                _nextDispatchTimes,
+                CanDispatchFrom,
+                home => FindSupplyPartyForHome(home) != null,
+                ShouldDispatchAfterLocalSupply,
+                status =>
+                {
+                    SourceSelection source = FindBestSource(
+                        settlement, status.FoodDeficit, null);
+                    if (source == null) return false;
+                    return TryCreateSupplyParty(settlement, source,
+                        Math.Min(status.FoodDeficit,
+                            MaximumRequestedFood));
+                });
         }
 
         private void OnHourlyPartyTick(MobileParty party)
@@ -486,43 +474,10 @@ namespace ModifiedArmy.Garrison.Supply
 
         private void OnGameLoadFinished()
         {
-            foreach (MobileParty party in MobileParty.All)
-            {
-                SupplyPartyComponent component = GetComponent(party);
-
-                if (component == null)
-                {
-                    continue;
-                }
-
-                component.SynchronizeOwnership();
-                // Keep native decisions enabled so immediate flee and avoidance
-                // behavior remains available. Long-term mission ownership is
-                // maintained by the state-specific route controller below.
-                party.Ai.SetDoNotMakeNewDecisions(false);
-
-                // Loading must not replace an active tactical escape order or
-                // a battle-controlled movement order with a mission route.
-                if (party.MapEvent != null ||
-                    TransportThreatModel.IsNativeAvoidanceActive(party))
-                    continue;
-
-                if (component.IsAidMission)
-                {
-                    AdvanceAidMission(party, component);
-                    continue;
-                }
-
-                Settlement destination = component.MissionState
-                    == SupplyPartyMissionState.TravelingToSource
-                        ? component.SourceSettlement
-                        : component.HomeSettlement;
-
-                if (destination != null)
-                {
-                    MoveToSettlement(party, destination);
-                }
-            }
+            _recoveryService.RestoreLoadedMissions(
+                AdvanceAidMission,
+                (party, destination) => MoveToSettlement(
+                    party, destination, "LoadRecovery"));
         }
 
         private void AdvanceAidMission(
@@ -1509,31 +1464,16 @@ namespace ModifiedArmy.Garrison.Supply
 
         private bool IsDispatchCoolingDown(Settlement home)
         {
-            if (!_nextDispatchTimes.TryGetValue(
-                home,
-                out CampaignTime nextTime))
-            {
-                return false;
-            }
-
-            if (nextTime.IsPast)
-            {
-                _nextDispatchTimes.Remove(home);
-                return false;
-            }
-
-            return true;
+            return _dispatchService.IsCoolingDown(
+                _nextDispatchTimes, home);
         }
 
         private void SetDispatchCooldown(
             Settlement home,
             float days)
         {
-            if (home != null)
-            {
-                _nextDispatchTimes[home] =
-                    CampaignTime.Now + CampaignTime.Days(days);
-            }
+            _dispatchService.SetCooldown(
+                _nextDispatchTimes, home, days);
         }
 
         private void EnsureMovingTo(

@@ -42,9 +42,13 @@
 
 ## Remaining S4 work
 
-- Extract daily dispatch candidate/cooldown ownership.
+- `SupplyDispatchService` now owns daily eligibility sequencing and the
+  existing persisted cooldown dictionary; candidate scoring remains unchanged
+  in the Behavior during the transition.
+- `SupplyRecoveryService` now owns load-time component ownership restoration,
+  native-avoidance protection and mission-route selection.
 - Move outbound provisioning, purchases and full compensation into cargo service.
-- Extract load/destroy/return recovery orchestration.
+- Move destroy/return recovery completion behind `SupplyRecoveryService`.
 - Remove the partial-class business implementations after every caller migrates.
 
 - ROLLBACK: discard the uncommitted S4 working-tree files.
