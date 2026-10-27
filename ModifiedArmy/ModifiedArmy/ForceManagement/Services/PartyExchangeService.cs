@@ -1,4 +1,5 @@
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
@@ -110,6 +111,9 @@ namespace ModifiedArmy.ForceManagement.Services
             if (result.HasCommittedChanges)
             {
                 _completedOperationIds.Add(plan.OperationId);
+                Campaign.Current?
+                    .GetCampaignBehavior<TransferOperationJournalBehavior>()?
+                    .Record(result, (int)CampaignTime.Now.ToDays);
             }
             Log(plan, result);
             return result;
@@ -124,8 +128,13 @@ namespace ModifiedArmy.ForceManagement.Services
                 return string.IsNullOrWhiteSpace(plan.ReasonCode)
                     ? "PlanRejected"
                     : plan.ReasonCode;
-            if (_completedOperationIds.Contains(plan.OperationId))
+            TransferOperationJournalBehavior journal = Campaign.Current?
+                .GetCampaignBehavior<TransferOperationJournalBehavior>();
+            if (_completedOperationIds.Contains(plan.OperationId) ||
+                journal?.Contains(plan.OperationId) == true)
                 return "OperationAlreadyCompleted";
+            if (journal?.IsDomainFrozen(GetFreezeDomain(plan)) == true)
+                return "TransferDomainFrozenForRecovery";
             if (plan.Operation == PartyExchangeOperation.BidirectionalSwap)
                 return "BidirectionalSwapDisabled";
             if (plan.SourceToDestination.TotalCount <= 0)
@@ -446,7 +455,21 @@ namespace ModifiedArmy.ForceManagement.Services
             result.ApprovedCount = Math.Max(
                 0,
                 plan.SourceToDestination?.TotalCount ?? 0);
+            result.SourceFingerprint = CaptureFingerprint(plan.Source);
+            result.DestinationFingerprint = CaptureFingerprint(
+                plan.Destination);
+            result.FreezeDomain = GetFreezeDomain(plan);
         }
+
+        private static string CaptureFingerprint(PartyTroopSource source)
+        {
+            TroopRoster roster = source?.Party?.MemberRoster ?? source?.Roster;
+            return roster == null ? string.Empty : GetFingerprint(roster);
+        }
+
+        private static string GetFreezeDomain(PartyExchangePlan plan) =>
+            plan?.Initiator?.StringId ?? plan?.Destination?.Party?.StringId ??
+            plan?.Source?.Party?.StringId ?? string.Empty;
 
         /// <summary>Writes one audit record without exposing raw roster contents.</summary>
         private static void Log(

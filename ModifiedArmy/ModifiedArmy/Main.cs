@@ -185,6 +185,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new PartyExchangeBehavior());
                 campaignStarter.AddBehavior(
+                    new TransferOperationJournalBehavior());
+                campaignStarter.AddBehavior(
                     new ReinforcementMissionBehavior());
                 campaignStarter.AddBehavior(
                     new ReinforcementTransportBehavior());

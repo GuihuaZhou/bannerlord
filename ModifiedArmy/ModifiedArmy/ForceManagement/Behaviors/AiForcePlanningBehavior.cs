@@ -493,9 +493,21 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             }
             task.Progress += Math.Max(0, result.TransferredCount);
             task.ReasonCode = result.ReasonCode;
-            task.Status = result.Status == TransferCommitStatus.Committed
-                ? PartyForceTaskStatus.Completed
-                : PartyForceTaskStatus.Cancelled;
+            switch (result.Status)
+            {
+                case TransferCommitStatus.Committed:
+                case TransferCommitStatus.PartiallyCommitted:
+                    task.Status = PartyForceTaskStatus.Completed;
+                    break;
+                case TransferCommitStatus.RecoveryRequired:
+                    task.Status = PartyForceTaskStatus.Suspended;
+                    task.ReasonCode = "RecoveryRequired:" +
+                        (result.ReasonCode ?? "Unknown");
+                    break;
+                default:
+                    task.Status = PartyForceTaskStatus.Cancelled;
+                    break;
+            }
             task.OwnsMovementOrder = false;
             return result;
         }

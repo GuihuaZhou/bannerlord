@@ -169,6 +169,25 @@ namespace ModifiedArmy.Recruitment.Finance
                 snapshot.RemainingCommitmentBudget - commitment);
         }
 
+        /// <summary>
+        /// Restores a snapshot captured immediately before a failed atomic
+        /// recruitment purchase. This is transaction compensation only; it
+        /// must never be used to grant additional daily budget.
+        /// </summary>
+        public static void RestoreRemainingBudget(
+            ClanRecruitmentBudgetSnapshot snapshot,
+            float purchaseBudget,
+            float commitmentBudget)
+        {
+            if (snapshot == null) return;
+            snapshot.RemainingPurchaseBudget = Math.Max(
+                0f,
+                Math.Min(snapshot.TotalPurchaseBudget, purchaseBudget));
+            snapshot.RemainingCommitmentBudget = Math.Max(
+                0f,
+                Math.Min(snapshot.TotalCommitmentBudget, commitmentBudget));
+        }
+
         private static int GetCampaignDay()
         {
             return Campaign.Current == null

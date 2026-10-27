@@ -1,4 +1,5 @@
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Finance;
@@ -46,7 +47,8 @@ namespace ModifiedArmy.ForceManagement.Services
                     return ExecuteGarrison(
                         party, settlement, requested, operationId);
                 case PartyForceSourceKind.Mercenary:
-                    return ExecuteMercenary(party, settlement, requested);
+                    return ExecuteMercenary(
+                        party, settlement, requested, operationId);
                 default:
                     return Failed("UnsupportedRecruitmentSource");
             }
@@ -121,8 +123,18 @@ namespace ModifiedArmy.ForceManagement.Services
         private static PartyExchangeExecutionResult ExecuteMercenary(
             MobileParty party,
             Settlement settlement,
-            int requested)
+            int requested,
+            string operationId)
         {
+            TransferOperationJournalBehavior journal = Campaign.Current?
+                .GetCampaignBehavior<TransferOperationJournalBehavior>();
+            string domain = party?.StringId ?? string.Empty;
+            if (string.IsNullOrWhiteSpace(operationId))
+                return Failed("MissingApprovedPlan");
+            if (journal?.Contains(operationId) == true)
+                return Failed("OperationAlreadyCompleted", operationId);
+            if (journal?.IsDomainFrozen(domain) == true)
+                return Failed("TransferDomainFrozenForRecovery", operationId);
             RecruitmentCampaignBehavior behavior = Campaign.Current?
                 .GetCampaignBehavior<RecruitmentCampaignBehavior>();
             if (behavior == null || settlement?.Town == null)
@@ -145,18 +157,82 @@ namespace ModifiedArmy.ForceManagement.Services
             int count = Math.Max(0, approval?.RecruitableCount ?? 0);
             if (count <= 0) return Failed("MercenaryAdmissionRejected");
             int cost = approval.UnitRecruitmentCost;
-            GiveGoldAction.ApplyBetweenCharacters(
-                party.LeaderHero, null, count * cost, true);
-            market.ChangeMercenaryCount(-count);
-            party.AddElementToMemberRoster(market.TroopType, count, false);
+            CharacterObject troop = market.TroopType;
+            int goldBefore = party.LeaderHero?.Gold ?? 0;
+            int marketBefore = market.Number;
+            int rosterBefore = party.MemberRoster.GetTroopRoster()
+                .FirstOrDefault(item => item.Character == troop).Number;
+            Clan clan = ClanRecruitmentBudgetManager.GetSupportingClan(party);
+            ClanRecruitmentBudgetSnapshot budgetBefore =
+                ClanRecruitmentBudgetManager.GetSnapshot(clan);
+            float purchaseBudgetBefore = budgetBefore.RemainingPurchaseBudget;
+            float commitmentBudgetBefore =
+                budgetBefore.RemainingCommitmentBudget;
+            bool goldChanged = false;
+            bool marketChanged = false;
+            bool rosterChanged = false;
+            try
+            {
+                GiveGoldAction.ApplyBetweenCharacters(
+                    party.LeaderHero, null, count * cost, true);
+                goldChanged = true;
+                market.ChangeMercenaryCount(-count);
+                marketChanged = true;
+                party.AddElementToMemberRoster(troop, count, false);
+                rosterChanged = true;
+                ClanRecruitmentBudgetManager.CommitRecruitment(
+                    party, count, cost, approval.UnitDailyWage);
+            }
+            catch (Exception exception)
+            {
+                bool restored = TryRollbackMercenaryPurchase(
+                    party,
+                    market,
+                    troop,
+                    count,
+                    count * cost,
+                    goldBefore,
+                    marketBefore,
+                    rosterBefore,
+                    budgetBefore,
+                    purchaseBudgetBefore,
+                    commitmentBudgetBefore,
+                    goldChanged,
+                    marketChanged,
+                    rosterChanged);
+                PartyExchangeExecutionResult failure = new PartyExchangeExecutionResult
+                {
+                    Status = restored
+                        ? TransferCommitStatus.RolledBack
+                        : TransferCommitStatus.RecoveryRequired,
+                    ReasonCode = restored
+                        ? "MercenaryPurchaseRolledBack:" +
+                            exception.GetType().Name
+                        : "MercenaryPurchaseRecoveryRequired:" +
+                            exception.GetType().Name,
+                    RequestedCount = requested,
+                    ApprovedCount = count,
+                    TransferredCount = restored ? 0 : Math.Max(
+                        0,
+                        party.MemberRoster.GetTroopRoster()
+                            .FirstOrDefault(item => item.Character == troop)
+                            .Number - rosterBefore),
+                    OperationId = operationId,
+                    SourceFingerprint = "market:" + market.Number,
+                    DestinationFingerprint =
+                        TroopTransferService.GetRosterFingerprint(party),
+                    FreezeDomain = domain
+                };
+                if (failure.Status == TransferCommitStatus.RecoveryRequired)
+                    journal?.Record(failure, CurrentDay());
+                return failure;
+            }
             CampaignEventDispatcher.Instance.OnTroopRecruited(
                 party.LeaderHero,
                 settlement,
                 null,
                 market.TroopType,
                 count);
-            ClanRecruitmentBudgetManager.CommitRecruitment(
-                party, count, cost, approval.UnitDailyWage);
             if (RecruitmentLogFilter.ShouldLog(party))
             {
                 TextObject message = GameTexts.FindText(
@@ -169,14 +245,65 @@ namespace ModifiedArmy.ForceManagement.Services
                 message.SetTextVariable("COST", count * cost);
                 ModLogger.Info(message.ToString());
             }
-            return new PartyExchangeExecutionResult
+            PartyExchangeExecutionResult result = new PartyExchangeExecutionResult
             {
                 Status = TransferCommitStatus.Committed,
                 ReasonCode = "Executed",
                 RequestedCount = requested,
                 ApprovedCount = count,
-                TransferredCount = count
+                TransferredCount = count,
+                OperationId = operationId,
+                SourceFingerprint = "market:" + market.Number,
+                DestinationFingerprint =
+                    TroopTransferService.GetRosterFingerprint(party),
+                FreezeDomain = domain
             };
+            journal?.Record(result, CurrentDay());
+            return result;
+        }
+
+        private static bool TryRollbackMercenaryPurchase(
+            MobileParty party,
+            RecruitmentCampaignBehavior.TownMercenaryData market,
+            CharacterObject troop,
+            int count,
+            int totalCost,
+            int goldBefore,
+            int marketBefore,
+            int rosterBefore,
+            ClanRecruitmentBudgetSnapshot budgetBefore,
+            float purchaseBudgetBefore,
+            float commitmentBudgetBefore,
+            bool goldChanged,
+            bool marketChanged,
+            bool rosterChanged)
+        {
+            try
+            {
+                if (rosterChanged)
+                    party.MemberRoster.AddToCounts(troop, -count);
+                if (marketChanged)
+                    market.ChangeMercenaryCount(count);
+                if (goldChanged)
+                    GiveGoldAction.ApplyBetweenCharacters(
+                        null, party.LeaderHero, totalCost, true);
+                ClanRecruitmentBudgetManager.RestoreRemainingBudget(
+                    budgetBefore,
+                    purchaseBudgetBefore,
+                    commitmentBudgetBefore);
+            }
+            catch (Exception rollbackException)
+            {
+                ModLogger.Error("Mercenary rollback failed: " +
+                    rollbackException);
+                return false;
+            }
+            int rosterAfter = party.MemberRoster.GetTroopRoster()
+                .FirstOrDefault(item => item.Character == troop).Number;
+            return (party.LeaderHero?.Gold ?? 0) == goldBefore &&
+                market.Number == marketBefore && rosterAfter == rosterBefore &&
+                budgetBefore.RemainingPurchaseBudget == purchaseBudgetBefore &&
+                budgetBefore.RemainingCommitmentBudget == commitmentBudgetBefore;
         }
 
         /// <summary>Submits the request through the pure model and guarded executor.</summary>
@@ -207,6 +334,14 @@ namespace ModifiedArmy.ForceManagement.Services
         /// <summary>Creates a non-mutating failed result.</summary>
         private static PartyExchangeExecutionResult Failed(string reason) =>
             new PartyExchangeExecutionResult { ReasonCode = reason };
+
+        private static PartyExchangeExecutionResult Failed(
+            string reason,
+            string operationId) => new PartyExchangeExecutionResult
+        {
+            ReasonCode = reason,
+            OperationId = operationId
+        };
 
         /// <summary>Returns the current whole campaign day.</summary>
         private static int CurrentDay() => (int)CampaignTime.Now.ToDays;
