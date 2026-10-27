@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.ForceManagement.Missions;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Recruitment.Diagnostics;
@@ -27,8 +28,14 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private Dictionary<string, int> _savedTaskRecords = new();
         private readonly PartyForceCandidateService _candidates =
             new PartyForceCandidateService();
-        private readonly UnifiedRecruitmentExecutionService _recruitment =
-            new UnifiedRecruitmentExecutionService();
+        private readonly PartyVisitExecutionService _visitExecution =
+            new PartyVisitExecutionService();
+        private readonly PartyForceTaskPersistence _persistence =
+            new PartyForceTaskPersistence();
+        private PartyForceTaskCoordinator _coordinator;
+
+        private PartyForceTaskCoordinator Coordinator => _coordinator ??=
+            new PartyForceTaskCoordinator(() => _tasks, _candidates);
 
         /// <summary>Registers the unified daily planning pass.</summary>
         public override void RegisterEvents()
@@ -48,13 +55,13 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         public override void SyncData(IDataStore dataStore)
         {
             if (!dataStore.IsLoading)
-                CaptureTaskSaveFields();
+                _persistence.Capture(_tasks, _savedTaskRecords);
             dataStore.SyncData(
                 "modifiedarmy_force_task_records_v1",
                 ref _savedTaskRecords);
             EnsureSaveCollections();
             if (dataStore.IsLoading)
-                RestoreTaskSaveFields();
+                _tasks = _persistence.Restore(_savedTaskRecords);
         }
 
         /// <summary>
@@ -350,12 +357,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         /// </summary>
         private void PruneTerminalTasks()
         {
-            int today = (int)CampaignTime.Now.ToDays;
-            _tasks.RemoveAll(task => task == null || task.Party == null ||
-                !task.Party.IsActive ||
-                task.Status == PartyForceTaskStatus.Completed ||
-                task.Status == PartyForceTaskStatus.Cancelled ||
-                today - task.LastValidatedDay > 7);
+            Coordinator.PruneTerminalTasks();
         }
 
         /// <summary>
@@ -366,27 +368,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MobileParty party,
             bool randomGateOpen)
         {
-            PartyForceTask current = FindTask(party);
-            if (current?.OwnsMovementOrder == true &&
-                party.TargetSettlement != current.TargetSettlement)
-            {
-                // Another game system has already replaced our route. Drop
-                // ownership without touching that newer order.
-                current.OwnsMovementOrder = false;
-                current.Status = PartyForceTaskStatus.Cancelled;
-                current.ReasonCode = "MovementOrderChangedExternally";
-            }
-            PartyForcePlanningContext context = _candidates.BuildContext(
-                party,
-                current?.Status == PartyForceTaskStatus.Cancelled
-                    ? null
-                    : current,
-                randomGateOpen);
-            PartyForcePlan plan = ForceManagementFacade.Current.ForcePlanning
-                .BuildDailyPlan(context);
-            ApplyLivePlan(party, current, plan, context.Today);
-            LogPlan(party, plan);
-            return plan;
+            return Coordinator.EvaluateParty(party, randomGateOpen);
         }
 
         /// <summary>Stores the planner result and takes ownership of its route.</summary>
@@ -473,57 +455,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MobileParty party,
             Settlement settlement)
         {
-            PartyForceTask task = FindTask(party);
-            if (task == null || task.TargetSettlement != settlement)
-            {
-                PartyExchangeExecutionResult donation = TryRoutineDonation(
-                    party, settlement);
-                if (donation.Executed) return donation;
-                TryPeaceDemobilization(party, settlement);
-                return new PartyExchangeExecutionResult
-                    { ReasonCode = donation.ReasonCode ?? "NoMatchingForceTask" };
-            }
-            task.Status = PartyForceTaskStatus.Executing;
-            PartyExchangeExecutionResult result;
-            string operationId = string.Format(
-                "force:{0}:{1}:{2}:{3}",
-                party.StringId,
-                task.CreatedDay,
-                task.Version,
-                task.Intent);
-            if (task.Intent == PartyForceIntent.Recruit)
-            {
-                result = _recruitment.Execute(
-                    party, settlement, task.SourceKind, operationId);
-            }
-            else if (task.Intent == PartyForceIntent.WarRest)
-            {
-                result = ExecuteWarRest(party, task, operationId);
-            }
-            else
-            {
-                result = new PartyExchangeExecutionResult
-                    { ReasonCode = "TaskHasNoArrivalOperation" };
-            }
-            task.Progress += Math.Max(0, result.TransferredCount);
-            task.ReasonCode = result.ReasonCode;
-            switch (result.Status)
-            {
-                case TransferCommitStatus.Committed:
-                case TransferCommitStatus.PartiallyCommitted:
-                    task.Status = PartyForceTaskStatus.Completed;
-                    break;
-                case TransferCommitStatus.RecoveryRequired:
-                    task.Status = PartyForceTaskStatus.Suspended;
-                    task.ReasonCode = "RecoveryRequired:" +
-                        (result.ReasonCode ?? "Unknown");
-                    break;
-                default:
-                    task.Status = PartyForceTaskStatus.Cancelled;
-                    break;
-            }
-            task.OwnsMovementOrder = false;
-            return result;
+            return _visitExecution.Execute(
+                party, settlement, FindTask(party));
         }
 
         /// <summary>
@@ -591,53 +524,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             Settlement settlement,
             GarrisonCaptureSupplyBehavior capture)
         {
-            if (capture?.TryConsumeTroopDonationPermit(
-                    party, settlement) != true)
-                return new PartyExchangeExecutionResult
-                    { ReasonCode = "CapturePermitUnavailable" };
-
-            MobileParty garrison = settlement?.Town?.GarrisonParty;
-            int requested = ForceManagementFacade.Current
-                .GetSafeFieldSurplus(party);
-            if (garrison == null || requested <= 0)
-                return new PartyExchangeExecutionResult
-                    { ReasonCode = "NoSafeDonationSurplus" };
-
-            PartyExchangeService runner = ForceManagementFacade.Current
-                .PartyExchangeRunner;
-            PartyExchangeContext context = new PartyExchangeContext
-            {
-                OperationId = string.Format(
-                    "capture:{0}:{1}:{2}",
-                    party.StringId,
-                    settlement.StringId,
-                    (int)CampaignTime.Now.ToDays),
-                Initiator = party,
-                Operation = PartyExchangeOperation.FieldToGarrison,
-                Intent = PartyForceIntent.Maintain,
-                Purpose = PartyExchangePurpose.NewlyCapturedSettlement,
-                Source = new PartyTroopSource
-                {
-                    Kind = PartyTroopSourceKind.Mobile,
-                    Party = party,
-                    Settlement = settlement,
-                    Roster = party.MemberRoster
-                },
-                Destination = new PartyTroopSource
-                {
-                    Kind = PartyTroopSourceKind.Garrison,
-                    Party = garrison,
-                    Settlement = settlement,
-                    Roster = garrison.MemberRoster
-                },
-                TargetSettlement = settlement,
-                RequestedCount = requested,
-                Today = (int)CampaignTime.Now.ToDays
-            };
-            runner.PrepareContext(context);
-            PartyExchangePlan plan = ForceManagementFacade.Current
-                .PartyExchange.BuildPlan(context);
-            return runner.Execute(plan);
+            return _visitExecution.ExecuteCaptureDonation(
+                party, settlement, capture);
         }
 
         /// <summary>Rebuilds and executes the approved real fief batch return.</summary>
@@ -679,16 +567,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         }
 
         /// <summary>Finds the newest unfinished task owned by this behavior.</summary>
-        private PartyForceTask FindTask(MobileParty party) => _tasks
-            .Where(task => task != null &&
-                (task.Party == party || task.PartyId == party?.StringId) &&
-                task.Status != PartyForceTaskStatus.Completed &&
-                task.Status != PartyForceTaskStatus.Cancelled)
-            .OrderByDescending(task => task.Version)
-            .FirstOrDefault();
+        private PartyForceTask FindTask(MobileParty party) =>
+            Coordinator.FindTask(party);
 
         /// <summary>Writes an explainable shadow decision using display names.</summary>
-        private static void LogPlan(
+        internal static void LogPlan(
             MobileParty party,
             PartyForcePlan plan)
         {
