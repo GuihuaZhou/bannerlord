@@ -135,6 +135,20 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         /// <summary>Revalidates restored tasks once the campaign is fully loaded.</summary>
         private void OnGameLoadFinished()
         {
+            // The coordinator registered after all specialist behaviors runs
+            // this validation once the fief service index is rebuilt.
+            if (Campaign.Current?.GetCampaignBehavior<
+                    CampaignRecoveryCoordinator>() == null)
+                RevalidateAfterCampaignRecovery();
+        }
+
+        /// <summary>
+        /// Revalidates runtime task references after persistent fief indexes
+        /// are available. The operation is idempotent and never replays a
+        /// roster or financial mutation.
+        /// </summary>
+        public void RevalidateAfterCampaignRecovery()
+        {
             foreach (PartyForceTask task in _tasks.ToList())
             {
                 try

@@ -32,6 +32,8 @@ namespace ModifiedArmy.ForceManagement.Services
             PartyForceSourceKind sourceKind,
             string operationId)
         {
+            if (!CampaignRecoveryCoordinator.CanMutateCampaignState())
+                return Failed("CampaignRecoveryNotReady", operationId);
             if (party?.CurrentSettlement != settlement ||
                 party.ActualClan == null || settlement == null)
                 return Failed("NotAtPlannedSettlement");

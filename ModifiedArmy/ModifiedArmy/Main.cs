@@ -53,11 +53,13 @@ namespace ModifiedArmy
 
         private void OnGameLoaded(CampaignGameStarter starter)
         {
+            CampaignState.IsNewGame = false;
             CampaignState.IsReady = true;
         }
 
         private void OnNewGameCreated(CampaignGameStarter starter)
         {
+            CampaignState.IsReady = false;
             CampaignState.IsNewGame = true;
         }
     }
@@ -193,6 +195,10 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
+                // Registered last so its recovery barrier runs after the
+                // specialist load handlers registered above.
+                campaignStarter.AddBehavior(
+                    new CampaignRecoveryCoordinator());
 
                 ForceEntryPatchAudit.LogActivePatches();
 

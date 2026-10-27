@@ -122,6 +122,8 @@ namespace ModifiedArmy.ForceManagement.Services
         /// <summary>Rejects replayed, empty, or stale plans before any mutation.</summary>
         private string Validate(PartyExchangePlan plan)
         {
+            if (!CampaignRecoveryCoordinator.CanMutateCampaignState())
+                return "CampaignRecoveryNotReady";
             if (plan == null || string.IsNullOrWhiteSpace(plan.OperationId))
                 return "MissingApprovedPlan";
             if (!plan.ShouldExecute)
