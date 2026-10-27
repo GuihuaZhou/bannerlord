@@ -5,6 +5,7 @@ using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Services;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -348,53 +349,20 @@ namespace ModifiedArmy.Models
 
                 if (evaluation.Source == RecruitmentSource.ProfessionalProduction)
                 {
-                    if (pools == null || !pools.TryConsumeProfessionalOffer(
-                        settlement,
-                        evaluation.Troop,
-                        count))
+                    if (!ProfessionalRecruitmentService.TryCommit(
+                        settlement, garrison, evaluation.Troop, count, pools))
                     {
                         continue;
                     }
-
-                    garrison.MemberRoster.AddToCounts(
-                        evaluation.Troop,
-                        count,
-                        false,
-                        0,
-                        0,
-                        true,
-                        -1);
                     professionalRecruited += count;
                 }
-                else if (evaluation.Source == RecruitmentSource.Prisoner &&
-                    evaluation.Candidate?.SourceContext is
-                        PrisonerRecruitmentOffer offer)
+                else if (evaluation.Source == RecruitmentSource.Prisoner)
                 {
-                    TroopRoster prison = settlement.Party.PrisonRoster;
-                    count = Math.Min(
-                        count,
-                        prison.GetTroopCount(evaluation.Troop));
-                    int wounded = GetWoundedTransferCount(
-                        prison,
-                        evaluation.Troop,
-                        count);
-                    prison.AddToCounts(
-                        evaluation.Troop,
-                        -count,
-                        false,
-                        -wounded,
-                        -offer.ConformityCost * count,
-                        true,
-                        -1);
-                    garrison.MemberRoster.AddToCounts(
-                        evaluation.Troop,
-                        count,
-                        false,
-                        wounded,
-                        0,
-                        true,
-                        -1);
-                    prisonerRecruited += count;
+                    if (!PrisonerGarrisonRecruitmentService.TryCommit(
+                        settlement, garrison, evaluation, count,
+                        out int committed)) continue;
+                    count = committed;
+                    prisonerRecruited += committed;
                 }
                 else
                 {
@@ -597,219 +565,8 @@ namespace ModifiedArmy.Models
                 out int readyCount,
                 out int soldCount)
         {
-            List<RecruitmentCandidate> result =
-                new List<RecruitmentCandidate>();
-            TroopRoster prisonRoster = settlement.Party.PrisonRoster;
-            TroopRoster saleRoster = TroopRoster.CreateDummyTroopRoster();
-            bool allowAutomaticSale =
-                settlement.OwnerClan != Clan.PlayerClan;
-            targetCount = 0;
-            readyCount = 0;
-            soldCount = 0;
-
-            if (prisonRoster == null)
-            {
-                return result;
-            }
-
-            // Hero prisoners are never sold. Their occupied capacity is
-            // deducted first so retained regular prisoners keep the whole
-            // prison roster as close as possible to half of its limit.
-            int remainingRetentionCapacity = Math.Max(
-                0,
-                settlement.Party.PrisonerSizeLimit / 2 -
-                    prisonRoster.TotalHeroes);
-
-            foreach (TroopRosterElement element in
-                prisonRoster.GetTroopRoster())
-            {
-                CharacterObject troop = element.Character;
-
-                if (troop == null || troop.IsHero)
-                {
-                    continue;
-                }
-
-                int retainedCount = GetTargetRetentionCount(
-                    troop,
-                    Math.Min(element.Number, remainingRetentionCapacity));
-                int sellCount = allowAutomaticSale
-                    ? element.Number - retainedCount
-                    : 0;
-
-                if (sellCount > 0)
-                {
-                    saleRoster.AddToCounts(
-                        troop,
-                        sellCount,
-                        false,
-                        Math.Min(sellCount, element.WoundedNumber),
-                        0,
-                        true,
-                        -1);
-                }
-
-                if (retainedCount <= 0)
-                {
-                    continue;
-                }
-
-                remainingRetentionCapacity -= retainedCount;
-                targetCount += retainedCount;
-                int dailyConformity = CalculateDailyConformity(settlement);
-                prisonRoster.AddXpToTroop(troop, dailyConformity);
-                int conformityNeeded = Campaign.Current.Models
-                    .PrisonerRecruitmentCalculationModel
-                    .GetConformityNeededToRecruitPrisoner(troop);
-                int recruitableCount = conformityNeeded <= 0
-                    ? retainedCount
-                    : Math.Min(
-                        retainedCount,
-                        prisonRoster.GetElementXp(troop) /
-                            conformityNeeded);
-
-                if (recruitableCount <= 0)
-                {
-                    continue;
-                }
-
-                readyCount += recruitableCount;
-                result.Add(new RecruitmentCandidate(
-                    troop,
-                    recruitableCount,
-                    RecruitmentSource.Prisoner,
-                    new PrisonerRecruitmentOffer(conformityNeeded)));
-            }
-
-            soldCount = saleRoster.TotalRegulars;
-
-            if (soldCount > 0)
-            {
-                SellPrisonersAction.ApplyForSelectedPrisoners(
-                    settlement.Party,
-                    null,
-                    saleRoster);
-            }
-
-            return result;
-        }
-
-        private static int GetTargetRetentionCount(
-            CharacterObject troop,
-            int availableCount)
-        {
-            if (!IsRegularGarrisonTroop(troop) || availableCount <= 0)
-            {
-                return 0;
-            }
-
-            // This threshold is a prisoner-retention economy rule, not a
-            // desired army ratio. It prevents cheap low-tier captives from
-            // occupying the reserve while preserving useful trained troops.
-            return troop.Tier >= 3 ? availableCount : 0;
-        }
-
-        private static int CalculateDailyConformity(
-            Settlement settlement)
-        {
-            float hourlyConformity = 10f;
-            Hero governor = settlement.Town?.Governor;
-
-            if (governor != null)
-            {
-                hourlyConformity += governor.GetSkillValue(
-                    DefaultSkills.Leadership) * 0.05f;
-            }
-
-            return Math.Max(
-                0,
-                MathF.Round(hourlyConformity * CampaignTime.HoursInDay));
-        }
-
-        /// <summary>
-        /// Transfers approved prisoners directly between rosters. Recruitment
-        /// grants no ransom gold and fires no prisoner-sale event. Wounded
-        /// state is retained during the transfer.
-        /// </summary>
-        private static int ExecutePlan(
-            Settlement settlement,
-            MobileParty garrison,
-            RecruitmentPlan plan,
-            int dailyLimit)
-        {
-            TroopRoster prisonRoster = settlement.Party.PrisonRoster;
-            int recruited = 0;
-
-            foreach (RecruitmentEvaluationResult evaluation in
-                plan.Evaluations)
-            {
-                if (recruited >= dailyLimit)
-                {
-                    break;
-                }
-
-                CharacterObject troop = evaluation.Troop;
-                int currentCount = troop == null
-                    ? 0
-                    : prisonRoster.GetTroopCount(troop);
-                int transferCount = Math.Min(
-                    Math.Min(evaluation.RecruitableCount, currentCount),
-                    dailyLimit - recruited);
-
-                if (transferCount <= 0 ||
-                    !(evaluation.Candidate?.SourceContext is
-                        PrisonerRecruitmentOffer offer))
-                {
-                    continue;
-                }
-
-                int woundedCount = GetWoundedTransferCount(
-                    prisonRoster,
-                    troop,
-                    transferCount);
-                prisonRoster.AddToCounts(
-                    troop,
-                    -transferCount,
-                    false,
-                    -woundedCount,
-                    -offer.ConformityCost * transferCount,
-                    true,
-                    -1);
-                garrison.MemberRoster.AddToCounts(
-                    troop,
-                    transferCount,
-                    false,
-                    woundedCount,
-                    0,
-                    true,
-                    -1);
-                settlement.OwnerClan.AutoRecruitmentExpenses +=
-                    evaluation.UnitRecruitmentCost * transferCount;
-                ClanRecruitmentBudgetManager.CommitRecruitment(
-                    garrison,
-                    transferCount,
-                    evaluation.UnitRecruitmentCost,
-                    evaluation.UnitDailyWage);
-                recruited += transferCount;
-            }
-
-            return recruited;
-        }
-
-        private static int GetWoundedTransferCount(
-            TroopRoster roster,
-            CharacterObject troop,
-            int transferCount)
-        {
-            foreach (TroopRosterElement element in roster.GetTroopRoster())
-            {
-                if (element.Character == troop)
-                {
-                    return Math.Min(transferCount, element.WoundedNumber);
-                }
-            }
-
-            return 0;
+            return PrisonerGarrisonRecruitmentService.SelectAndPrepare(
+                settlement, out targetCount, out readyCount, out soldCount);
         }
 
         private static void LogDailyResult(
@@ -896,39 +653,13 @@ namespace ModifiedArmy.Models
         /// </summary>
         private static int NormalizeGarrison(MobileParty garrison)
         {
-            TroopRoster roster = garrison.MemberRoster;
-            int dismissed = 0;
-
-            foreach (TroopRosterElement element in
-                new List<TroopRosterElement>(roster.GetTroopRoster()))
-            {
-                if (element.Character == null ||
-                    element.Character.IsHero ||
-                    IsRegularGarrisonTroop(element.Character))
-                {
-                    continue;
-                }
-
-                roster.AddToCounts(
-                    element.Character,
-                    -element.Number,
-                    false,
-                    -element.WoundedNumber,
-                    0,
-                    true,
-                    -1);
-                dismissed += element.Number;
-            }
-
-            return dismissed;
+            return PrisonerGarrisonRecruitmentService.NormalizeGarrison(
+                garrison);
         }
 
         private static bool IsRegularGarrisonTroop(CharacterObject troop)
         {
-            return troop != null &&
-                !troop.IsHero &&
-                (troop.Occupation == Occupation.Soldier ||
-                    troop.Occupation == Occupation.Mercenary);
+            return PrisonerGarrisonRecruitmentService.IsRegularTroop(troop);
         }
 
         private static void LogWeeklyAdjustment(
@@ -980,14 +711,5 @@ namespace ModifiedArmy.Models
             }
         }
 
-        private sealed class PrisonerRecruitmentOffer
-        {
-            public PrisonerRecruitmentOffer(int conformityCost)
-            {
-                ConformityCost = Math.Max(0, conformityCost);
-            }
-
-            public int ConformityCost { get; }
-        }
     }
 }
