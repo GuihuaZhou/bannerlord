@@ -136,84 +136,10 @@ namespace ModifiedArmy.Garrison.Supply
                 Settlement source,
                 Hero payer)
         {
-            int footTroops = party.MemberRoster
-                .GetTroopRoster()
-                .Where(element => !element.Character.IsMounted)
-                .Sum(element => element.Number);
-            int requestedMounts = Math.Max(
-                0,
-                footTroops - party.ItemRoster.NumberOfMounts);
-
-            if (requestedMounts <= 0 || payer.Gold <= 0)
-            {
-                return new SupplyMountPurchaseResult();
-            }
-
-            List<ItemRosterElement> candidates = source.ItemRoster
-                .Where(element =>
-                    element.Amount > 0
-                    && element.EquipmentElement.Item?.IsMountable == true
-                    && element.EquipmentElement.Item.ItemCategory
-                        == DefaultItemCategories.Horse)
-                .OrderBy(element => source.Town.GetItemPrice(
-                    element.EquipmentElement,
-                    null,
-                    false))
-                .ToList();
-
-            int remainingMounts = requestedMounts;
-            int remainingGold = payer.Gold;
-            int purchased = 0;
-            int totalCost = 0;
-
-            foreach (ItemRosterElement element in candidates)
-            {
-                if (remainingMounts <= 0 || remainingGold <= 0)
-                {
-                    break;
-                }
-
-                int unitPrice = Math.Max(
-                    1,
-                    source.Town.GetItemPrice(
-                        element.EquipmentElement,
-                        null,
-                        false));
-                int amount = Math.Min(
-                    Math.Min(element.Amount, remainingMounts),
-                    remainingGold / unitPrice);
-
-                if (amount <= 0)
-                {
-                    continue;
-                }
-
-                source.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    -amount);
-                party.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    amount);
-
-                int cost = amount * unitPrice;
-                remainingMounts -= amount;
-                remainingGold -= cost;
-                purchased += amount;
-                totalCost += cost;
-            }
-
-            if (totalCost > 0)
-            {
-                GiveGoldAction.ApplyForCharacterToSettlement(
-                    payer,
-                    source,
-                    totalCost,
-                    true);
-            }
-
+            SupplyAnimalResult result = Cargo.PurchaseRidingMounts(
+                party, source, payer);
             return new SupplyMountPurchaseResult(
-                purchased,
-                totalCost);
+                result.Purchased, result.GoldCost);
         }
 
         /// <summary>
@@ -224,40 +150,7 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty garrison,
             MobileParty party)
         {
-            int footTroops = party.MemberRoster
-                .GetTroopRoster()
-                .Where(element => !element.Character.IsMounted)
-                .Sum(element => element.Number);
-            int remaining = Math.Max(
-                0,
-                footTroops - party.ItemRoster.NumberOfMounts);
-            int requested = remaining;
-
-            for (int index = garrison.ItemRoster.Count - 1;
-                index >= 0 && remaining > 0;
-                index--)
-            {
-                ItemRosterElement element = garrison.ItemRoster[index];
-                ItemObject item = element.EquipmentElement.Item;
-
-                if (element.Amount <= 0
-                    || item?.IsMountable != true
-                    || item.ItemCategory != DefaultItemCategories.Horse)
-                {
-                    continue;
-                }
-
-                int amount = Math.Min(element.Amount, remaining);
-                garrison.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    -amount);
-                party.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    amount);
-                remaining -= amount;
-            }
-
-            return requested - remaining;
+            return Cargo.TransferRidingMounts(garrison, party);
         }
 
         private static int CalculateCapacityForItem(
@@ -288,53 +181,10 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty party,
             Hero payer)
         {
-            int targetAmount = Math.Max(
-                1,
-                (int)Math.Floor(
-                    party.MemberRoster.TotalManCount
-                    * PackAnimalsPerEscort));
-            int fromGranary = TransferPackAnimals(
-                garrison.ItemRoster,
-                party.ItemRoster,
-                targetAmount);
-            int shortage = targetAmount - fromGranary;
-
-            if (shortage <= 0 || payer == null || payer.Gold <= 0)
-            {
-                return new PackAnimalPreparationResult(
-                    fromGranary,
-                    0,
-                    0);
-            }
-
-            ItemObject packAnimal = FindCheapestPackAnimal();
-
-            if (packAnimal == null)
-            {
-                return new PackAnimalPreparationResult(
-                    fromGranary,
-                    0,
-                    0);
-            }
-
-            int unitPrice = Math.Max(1, packAnimal.Value);
-            int purchased = Math.Min(shortage, payer.Gold / unitPrice);
-            int goldCost = purchased * unitPrice;
-
-            if (purchased > 0)
-            {
-                party.ItemRoster.AddToCounts(packAnimal, purchased);
-                GiveGoldAction.ApplyBetweenCharacters(
-                    payer,
-                    null,
-                    goldCost,
-                    true);
-            }
-
-            return new PackAnimalPreparationResult(
-                fromGranary,
-                purchased,
-                goldCost);
+            SupplyAnimalResult result = Cargo.PreparePackAnimals(
+                garrison, party, payer, PackAnimalsPerEscort);
+            return new PackAnimalPreparationResult(result.FromGranary,
+                result.Purchased, result.GoldCost);
         }
 
         private static int TransferPackAnimals(
@@ -342,48 +192,13 @@ namespace ModifiedArmy.Garrison.Supply
             ItemRoster destination,
             int requestedAmount)
         {
-            int remaining = requestedAmount;
-
-            for (int index = source.Count - 1;
-                index >= 0 && remaining > 0;
-                index--)
-            {
-                ItemRosterElement element = source[index];
-                ItemObject item = element.EquipmentElement.Item;
-
-                if (item?.ItemCategory != DefaultItemCategories.PackAnimal
-                    || element.Amount <= 0)
-                {
-                    continue;
-                }
-
-                int amount = Math.Min(element.Amount, remaining);
-                source.AddToCounts(element.EquipmentElement, -amount);
-                destination.AddToCounts(element.EquipmentElement, amount);
-                remaining -= amount;
-            }
-
-            return requestedAmount - remaining;
+            return Cargo.TransferPackAnimals(
+                source, destination, requestedAmount);
         }
 
         private static ItemObject FindCheapestPackAnimal()
         {
-            ItemObject packAnimal = null;
-            int lowestValue = int.MaxValue;
-
-            foreach (ItemObject item in
-                MBObjectManager.Instance.GetObjectTypeList<ItemObject>())
-            {
-                if (item.ItemCategory == DefaultItemCategories.PackAnimal
-                    && !item.NotMerchandise
-                    && item.Value < lowestValue)
-                {
-                    packAnimal = item;
-                    lowestValue = item.Value;
-                }
-            }
-
-            return packAnimal;
+            return Cargo.FindCheapestPackAnimal();
         }
 
         private sealed class SupplyAcquisitionResult

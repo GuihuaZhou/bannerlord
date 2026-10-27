@@ -151,26 +151,9 @@ namespace ModifiedArmy.Garrison.Supply
             }
             catch (Exception exception)
             {
-                if (party?.IsActive == true)
-                {
-                    SupplyPartyComponent failed = GetComponent(party);
-                    failed?.CompleteMission();
-                    RestoreTroops(party.MemberRoster,
-                        garrison.MemberRoster);
-                    RemovePurchasedPackAnimals(party.ItemRoster,
-                        packAnimals.Purchased);
-                    TransferAllItems(party.ItemRoster,
-                        garrison.ItemRoster);
-                    DestroyPartyAction.Apply(null, party);
-                }
-                else
-                {
-                    RestoreTroops(escort, garrison.MemberRoster);
-                }
-                if (packAnimals.GoldCost > 0 &&
-                    source.OwnerClan?.Leader != null)
-                    GiveGoldAction.ApplyBetweenCharacters(null,
-                        source.OwnerClan.Leader, packAnimals.GoldCost, true);
+                Cargo.RollbackDeparture(source, garrison, party, escort,
+                    packAnimals.Purchased, packAnimals.GoldCost,
+                    LogSupplyEscortCapacity);
                 ModLogger.Error("Supply aid creation failed: " +
                     exception.Message);
                 return null;

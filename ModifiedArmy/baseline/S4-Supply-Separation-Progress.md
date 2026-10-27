@@ -65,10 +65,10 @@
 - Aid-return recovery, partial-capacity handling and party destruction now run
   through `SupplyRecoveryService.CompleteAidReturn`.
 - The partial files remain as compatibility call surfaces for formulas and
-  diagnostics. Food purchase/transfer, compensation and recovery completion
-  are owned by the extracted services. The final static scan still finds
-  specialized riding-mount/pack-animal writes and the aid-creation catch
-  compensation in the partial files; these must migrate before S4 closes.
+  diagnostics. Food, riding-mount and pack-animal purchase/transfer,
+  compensation and recovery completion are owned by the extracted services.
+- The final static resource-write scan reports no `GiveGoldAction`, direct
+  `ItemRoster.AddToCounts`, or `DestroyPartyAction` in the three partial files.
 
 - ROLLBACK: discard the uncommitted S4 working-tree files.
 - NEXT_PHASE_ALLOWED: **NO pending T08-T12 runtime evidence**. Static/build

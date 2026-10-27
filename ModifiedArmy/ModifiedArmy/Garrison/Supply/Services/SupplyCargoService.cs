@@ -1,5 +1,7 @@
 using System;
 using ModifiedArmy.Garrison.Models;
+using System.Linq;
+using TaleWorlds.ObjectSystem;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem;
@@ -221,6 +223,135 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 party.InventoryCapacity - party.TotalWeightCarried) /
                 item.Weight));
         }
+
+        public SupplyAnimalResult PurchaseRidingMounts(
+            MobileParty party, Settlement source, Hero payer)
+        {
+            int footTroops = party.MemberRoster.GetTroopRoster()
+                .Where(element => !element.Character.IsMounted)
+                .Sum(element => element.Number);
+            int requested = Math.Max(0,
+                footTroops - party.ItemRoster.NumberOfMounts);
+            if (requested <= 0 || payer?.Gold <= 0)
+                return new SupplyAnimalResult(0, 0, 0);
+            int remaining = requested;
+            int remainingGold = payer.Gold;
+            int purchased = 0;
+            int totalCost = 0;
+            foreach (ItemRosterElement element in source.ItemRoster
+                .Where(element => element.Amount > 0 &&
+                    element.EquipmentElement.Item?.IsMountable == true &&
+                    element.EquipmentElement.Item.ItemCategory ==
+                        DefaultItemCategories.Horse)
+                .OrderBy(element => source.Town.GetItemPrice(
+                    element.EquipmentElement, null, false)).ToList())
+            {
+                if (remaining <= 0 || remainingGold <= 0) break;
+                int unitPrice = Math.Max(1, source.Town.GetItemPrice(
+                    element.EquipmentElement, null, false));
+                int amount = Math.Min(Math.Min(element.Amount, remaining),
+                    remainingGold / unitPrice);
+                if (amount <= 0) continue;
+                source.ItemRoster.AddToCounts(
+                    element.EquipmentElement, -amount);
+                party.ItemRoster.AddToCounts(
+                    element.EquipmentElement, amount);
+                int cost = amount * unitPrice;
+                remaining -= amount;
+                remainingGold -= cost;
+                purchased += amount;
+                totalCost += cost;
+            }
+            if (totalCost > 0)
+                GiveGoldAction.ApplyForCharacterToSettlement(
+                    payer, source, totalCost, true);
+            return new SupplyAnimalResult(0, purchased, totalCost);
+        }
+
+        public int TransferRidingMounts(
+            MobileParty garrison, MobileParty party)
+        {
+            int footTroops = party.MemberRoster.GetTroopRoster()
+                .Where(element => !element.Character.IsMounted)
+                .Sum(element => element.Number);
+            int remaining = Math.Max(0,
+                footTroops - party.ItemRoster.NumberOfMounts);
+            int requested = remaining;
+            for (int index = garrison.ItemRoster.Count - 1;
+                index >= 0 && remaining > 0; index--)
+            {
+                ItemRosterElement element = garrison.ItemRoster[index];
+                ItemObject item = element.EquipmentElement.Item;
+                if (element.Amount <= 0 || item?.IsMountable != true ||
+                    item.ItemCategory != DefaultItemCategories.Horse)
+                    continue;
+                int amount = Math.Min(element.Amount, remaining);
+                garrison.ItemRoster.AddToCounts(
+                    element.EquipmentElement, -amount);
+                party.ItemRoster.AddToCounts(
+                    element.EquipmentElement, amount);
+                remaining -= amount;
+            }
+            return requested - remaining;
+        }
+
+        public SupplyAnimalResult PreparePackAnimals(
+            MobileParty garrison, MobileParty party, Hero payer,
+            float packAnimalsPerEscort)
+        {
+            int target = Math.Max(1, (int)Math.Floor(
+                party.MemberRoster.TotalManCount * packAnimalsPerEscort));
+            int fromGranary = TransferPackAnimals(
+                garrison.ItemRoster, party.ItemRoster, target);
+            int shortage = target - fromGranary;
+            if (shortage <= 0 || payer?.Gold <= 0)
+                return new SupplyAnimalResult(fromGranary, 0, 0);
+            ItemObject packAnimal = MBObjectManager.Instance
+                .GetObjectTypeList<ItemObject>()
+                .Where(item => item.ItemCategory ==
+                        DefaultItemCategories.PackAnimal &&
+                    !item.NotMerchandise)
+                .OrderBy(item => item.Value).FirstOrDefault();
+            if (packAnimal == null)
+                return new SupplyAnimalResult(fromGranary, 0, 0);
+            int unitPrice = Math.Max(1, packAnimal.Value);
+            int purchased = Math.Min(shortage, payer.Gold / unitPrice);
+            int goldCost = purchased * unitPrice;
+            if (purchased > 0)
+            {
+                party.ItemRoster.AddToCounts(packAnimal, purchased);
+                GiveGoldAction.ApplyBetweenCharacters(
+                    payer, null, goldCost, true);
+            }
+            return new SupplyAnimalResult(fromGranary, purchased, goldCost);
+        }
+
+        public int TransferPackAnimals(
+            ItemRoster source, ItemRoster destination, int requested)
+        {
+            int remaining = requested;
+            for (int index = source.Count - 1;
+                index >= 0 && remaining > 0; index--)
+            {
+                ItemRosterElement element = source[index];
+                if (element.EquipmentElement.Item?.ItemCategory !=
+                        DefaultItemCategories.PackAnimal ||
+                    element.Amount <= 0)
+                    continue;
+                int amount = Math.Min(element.Amount, remaining);
+                source.AddToCounts(element.EquipmentElement, -amount);
+                destination.AddToCounts(element.EquipmentElement, amount);
+                remaining -= amount;
+            }
+            return requested - remaining;
+        }
+
+        public ItemObject FindCheapestPackAnimal() => MBObjectManager.Instance
+            .GetObjectTypeList<ItemObject>()
+            .Where(item => item.ItemCategory ==
+                    DefaultItemCategories.PackAnimal &&
+                !item.NotMerchandise)
+            .OrderBy(item => item.Value).FirstOrDefault();
     }
 
     public readonly struct SupplyFoodPurchaseResult
@@ -232,5 +363,18 @@ namespace ModifiedArmy.Garrison.Supply.Services
         }
         public int Food { get; }
         public int Gold { get; }
+    }
+
+    public readonly struct SupplyAnimalResult
+    {
+        public SupplyAnimalResult(int fromGranary, int purchased, int goldCost)
+        {
+            FromGranary = fromGranary;
+            Purchased = purchased;
+            GoldCost = goldCost;
+        }
+        public int FromGranary { get; }
+        public int Purchased { get; }
+        public int GoldCost { get; }
     }
 }
