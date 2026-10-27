@@ -8,6 +8,7 @@
 	<ModuleType value ="Community" />
 	<DependedModules>
 		<DependedModule Id="ModifiedTroop" DependentVersion="v1.0.0" />
+		<DependedModule Id="ModifiedPolitics" />
 	</DependedModules>
 	<Xmls>    
 		<XmlNode>   
