@@ -9,6 +9,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using TaleWorlds.CampaignSystem.Roster;
 
 namespace ModifiedArmy.Garrison.Supply.Services
 {
@@ -102,6 +103,38 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 "HOME_NAME", component.HomeSettlement.Name);
             message.SetTextVariable("COOLDOWN_DAYS", cooldownDays);
             ModLogger.Notice(message.ToString());
+        }
+
+        public void CompleteAidReturn(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement settlement,
+            SupplyCargoService cargo,
+            Func<Settlement, SupplyPartyComponent, bool> isValidRecovery,
+            Func<TroopRoster, TroopRoster, int, int> transferTroops,
+            Action<string, MobileParty, int> logAid)
+        {
+            if (!isValidRecovery(settlement, component))
+            {
+                component.BeginRecovery(null);
+                return;
+            }
+            MobileParty garrison = settlement.Town.GarrisonParty;
+            int reservedEscort = party.MemberRoster.TotalManCount;
+            int moved = transferTroops(party.MemberRoster,
+                garrison.MemberRoster,
+                GarrisonRecruitmentCapacity.GetHardFreeSlots(garrison) +
+                    reservedEscort);
+            if (party.MemberRoster.TotalManCount > 0)
+            {
+                component.BeginRecovery(null);
+                logAid?.Invoke("RecoveryPartial", party, moved);
+                return;
+            }
+            cargo.TransferAllItems(party.ItemRoster, garrison.ItemRoster);
+            component.CompleteMission();
+            logAid?.Invoke("Completed", party, moved);
+            DestroyPartyAction.Apply(null, party);
         }
     }
 }

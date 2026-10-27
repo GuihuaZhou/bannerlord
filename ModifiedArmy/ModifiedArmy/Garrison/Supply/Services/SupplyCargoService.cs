@@ -167,5 +167,70 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 remaining -= amount;
             }
         }
+
+        public SupplyFoodPurchaseResult PurchaseFood(
+            MobileParty party,
+            Settlement source,
+            Hero payer,
+            int requestedFood,
+            Func<ItemRosterElement, int> getUnitPrice)
+        {
+            if (party == null || source == null || payer == null ||
+                payer.Gold <= 0 || requestedFood <= 0)
+                return new SupplyFoodPurchaseResult(0, 0);
+            int remainingFood = requestedFood;
+            int remainingGold = payer.Gold;
+            int acquiredFood = 0;
+            int totalCost = 0;
+            for (int index = source.ItemRoster.Count - 1;
+                index >= 0 && remainingFood > 0 && remainingGold > 0;
+                index--)
+            {
+                ItemRosterElement element = source.ItemRoster[index];
+                ItemObject item = element.EquipmentElement.Item;
+                if (item?.IsFood != true || element.Amount <= 0) continue;
+                int unitPrice = Math.Max(1, getUnitPrice(element));
+                int capacity = CalculateCapacityForItem(party, item);
+                int amount = Math.Min(Math.Min(
+                    Math.Min(element.Amount, remainingFood),
+                    remainingGold / unitPrice), capacity);
+                if (amount <= 0) continue;
+                source.ItemRoster.AddToCounts(
+                    element.EquipmentElement, -amount);
+                party.ItemRoster.AddToCounts(
+                    element.EquipmentElement, amount);
+                int cost = amount * unitPrice;
+                remainingFood -= amount;
+                remainingGold -= cost;
+                acquiredFood += amount;
+                totalCost += cost;
+            }
+            if (totalCost > 0)
+                GiveGoldAction.ApplyForCharacterToSettlement(
+                    payer, source, totalCost, true);
+            return new SupplyFoodPurchaseResult(acquiredFood, totalCost);
+        }
+
+        private static int CalculateCapacityForItem(
+            MobileParty party,
+            ItemObject item)
+        {
+            if (party == null || item == null) return 0;
+            if (item.Weight <= 0f) return int.MaxValue;
+            return Math.Max(0, (int)Math.Floor(Math.Max(0f,
+                party.InventoryCapacity - party.TotalWeightCarried) /
+                item.Weight));
+        }
+    }
+
+    public readonly struct SupplyFoodPurchaseResult
+    {
+        public SupplyFoodPurchaseResult(int food, int gold)
+        {
+            Food = food;
+            Gold = gold;
+        }
+        public int Food { get; }
+        public int Gold { get; }
     }
 }

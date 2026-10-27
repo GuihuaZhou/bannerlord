@@ -1,4 +1,5 @@
 using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Garrison.Supply.Services;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -89,64 +90,11 @@ namespace ModifiedArmy.Garrison.Supply
         {
             Hero payer = component.HomeSettlement.OwnerClan?.Leader;
 
-            if (payer == null || payer.Gold <= 0)
-            {
-                return new SupplyAcquisitionResult();
-            }
-
-            int remainingFood = requestedFood;
-            int remainingGold = payer.Gold;
-            int acquiredFood = 0;
-            int totalCost = 0;
-
-            for (int index = source.ItemRoster.Count - 1;
-                index >= 0 && remainingFood > 0 && remainingGold > 0;
-                index--)
-            {
-                ItemRosterElement element = source.ItemRoster[index];
-                ItemObject item = element.EquipmentElement.Item;
-
-                if (item?.IsFood != true || element.Amount <= 0)
-                {
-                    continue;
-                }
-
-                int unitPrice = Math.Max(1, item.Value);
-                int amount = Math.Min(
-                    Math.Min(
-                        Math.Min(element.Amount, remainingFood),
-                        remainingGold / unitPrice),
-                    CalculateCapacityForItem(party, item));
-
-                if (amount <= 0)
-                {
-                    continue;
-                }
-
-                source.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    -amount);
-                party.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    amount);
-
-                int cost = amount * unitPrice;
-                remainingFood -= amount;
-                remainingGold -= cost;
-                acquiredFood += amount;
-                totalCost += cost;
-            }
-
-            if (totalCost > 0)
-            {
-                GiveGoldAction.ApplyForCharacterToSettlement(
-                    payer,
-                    source,
-                    totalCost,
-                    true);
-            }
-
-            return new SupplyAcquisitionResult(acquiredFood, totalCost);
+            SupplyFoodPurchaseResult purchase = Cargo.PurchaseFood(
+                party, source, payer, requestedFood,
+                element => element.EquipmentElement.Item.Value);
+            return new SupplyAcquisitionResult(
+                purchase.Food, purchase.Gold);
         }
 
         private static SupplyAcquisitionResult PurchaseFoodFromTown(
@@ -165,70 +113,14 @@ namespace ModifiedArmy.Garrison.Supply
             SupplyMountPurchaseResult mountPurchase =
                 PurchaseRidingMountsFromTown(party, source, payer);
 
-            int remainingFood = requestedFood;
-            int remainingGold = payer.Gold;
-            int acquiredFood = 0;
-            int totalCost = 0;
-
-            for (int index = source.ItemRoster.Count - 1;
-                index >= 0 && remainingFood > 0 && remainingGold > 0;
-                index--)
-            {
-                ItemRosterElement element = source.ItemRoster[index];
-                ItemObject item = element.EquipmentElement.Item;
-
-                if (item?.IsFood != true || element.Amount <= 0)
-                {
-                    continue;
-                }
-
-                int unitPrice = Math.Max(
-                    1,
-                    source.Town.GetItemPrice(
-                        element.EquipmentElement,
-                        null,
-                        false));
-                int affordableAmount = remainingGold / unitPrice;
-                int capacityAmount = CalculateCapacityForItem(
-                    party,
-                    item);
-                int amount = Math.Min(
-                    Math.Min(
-                        Math.Min(element.Amount, remainingFood),
-                        affordableAmount),
-                    capacityAmount);
-
-                if (amount <= 0)
-                {
-                    continue;
-                }
-
-                source.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    -amount);
-                party.ItemRoster.AddToCounts(
-                    element.EquipmentElement,
-                    amount);
-
-                int cost = amount * unitPrice;
-                remainingFood -= amount;
-                remainingGold -= cost;
-                acquiredFood += amount;
-                totalCost += cost;
-            }
-
-            if (totalCost > 0)
-            {
-                GiveGoldAction.ApplyForCharacterToSettlement(
-                    payer,
-                    source,
-                    totalCost,
-                    true);
-            }
+            SupplyFoodPurchaseResult purchase = Cargo.PurchaseFood(
+                party, source, payer, requestedFood,
+                element => source.Town.GetItemPrice(
+                    element.EquipmentElement, null, false));
 
             return new SupplyAcquisitionResult(
-                acquiredFood,
-                totalCost + mountPurchase.GoldCost,
+                purchase.Food,
+                purchase.Gold + mountPurchase.GoldCost,
                 mountPurchase.Amount,
                 mountPurchase.GoldCost);
         }

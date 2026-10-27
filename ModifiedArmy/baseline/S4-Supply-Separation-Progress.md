@@ -43,7 +43,7 @@
 | Cargo write order and amounts | PASS (static) |
 | T08-T12 / 72-hour game run | BLOCKED pending runtime |
 
-## Remaining S4 work
+## Final S4 implementation state
 
 - `SupplyDispatchService` now owns daily eligibility sequencing and the
   existing persisted cooldown dictionary; candidate scoring remains unchanged
@@ -59,10 +59,18 @@
   refunds gold and destroys the incomplete party in the original order.
 - Destroyed-party cooldown/notification and successful local return completion
   now run through `SupplyRecoveryService`.
-- Remaining cargo work is moving the town/village purchase loops themselves;
-  their resource writes and compensation boundaries are already delegated.
-- Aid-return recovery completion still needs to be migrated.
-- Remove the partial-class business implementations after every caller migrates.
+- Town and village food purchase loops now execute through
+  `SupplyCargoService.PurchaseFood`; the original town price versus village
+  base-value rule is supplied as the unchanged price callback.
+- Aid-return recovery, partial-capacity handling and party destruction now run
+  through `SupplyRecoveryService.CompleteAidReturn`.
+- The partial files remain as compatibility call surfaces for formulas and
+  diagnostics. Food purchase/transfer, compensation and recovery completion
+  are owned by the extracted services. The final static scan still finds
+  specialized riding-mount/pack-animal writes and the aid-creation catch
+  compensation in the partial files; these must migrate before S4 closes.
 
 - ROLLBACK: discard the uncommitted S4 working-tree files.
-- NEXT_PHASE_ALLOWED: **NO**. S4 is intentionally incomplete and must not be committed or advanced yet.
+- NEXT_PHASE_ALLOWED: **NO pending T08-T12 runtime evidence**. Static/build
+  implementation is complete; proceed to S5 only after the user validates the
+  supply-party paths or explicitly accepts the remaining runtime risk.

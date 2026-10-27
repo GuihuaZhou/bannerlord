@@ -691,27 +691,8 @@ namespace ModifiedArmy.Garrison.Supply
             SupplyPartyComponent component,
             Settlement settlement)
         {
-            if (!IsValidAidRecovery(settlement, component))
-            {
-                component.BeginRecovery(null);
-                return;
-            }
-            MobileParty garrison = settlement.Town.GarrisonParty;
-            int reservedEscort = party.MemberRoster.TotalManCount;
-            int moved = TransferTroopsLimited(party.MemberRoster,
-                garrison.MemberRoster,
-                GarrisonRecruitmentCapacity.GetHardFreeSlots(garrison) +
-                    reservedEscort);
-            if (party.MemberRoster.TotalManCount > 0)
-            {
-                component.BeginRecovery(null);
-                LogAid("RecoveryPartial", party, moved);
-                return;
-            }
-            TransferAllItems(party.ItemRoster, garrison.ItemRoster);
-            component.CompleteMission();
-            LogAid("Completed", party, moved);
-            DestroyPartyAction.Apply(null, party);
+            _recoveryService.CompleteAidReturn(party, component, settlement,
+                Cargo, IsValidAidRecovery, TransferTroopsLimited, LogAid);
         }
 
         private static bool HasActiveLocalForagingMission(
