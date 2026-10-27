@@ -22,6 +22,9 @@
 - Owns the active low-level food, item and escort restoration mutations.
 - Existing `SupplyPartyBehavior` helpers are compatibility delegates, so all current call sites retain their exact order and return values.
 - No amount, reserve, capacity, purchase, wounded or compensation formula changed.
+- Outbound food-capacity calculation and the weight-aware committed transfer
+  now execute inside the cargo service; `SupplyProvisionModel.Plan` remains the
+  pure calculation authority.
 
 ## Preserved boundaries
 

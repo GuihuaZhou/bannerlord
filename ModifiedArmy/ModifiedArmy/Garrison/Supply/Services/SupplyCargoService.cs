@@ -1,5 +1,6 @@
 using System;
 using TaleWorlds.CampaignSystem.Roster;
+using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
 
 namespace ModifiedArmy.Garrison.Supply.Services
@@ -45,6 +46,62 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 remaining -= amount;
             }
             return requestedAmount - remaining;
+        }
+
+        public int CalculateFoodCapacity(ItemRoster source, MobileParty party)
+        {
+            if (source == null || party == null) return 0;
+            float remainingWeight = Math.Max(0f,
+                party.InventoryCapacity - party.TotalWeightCarried);
+            int capacity = 0;
+            for (int index = source.Count - 1; index >= 0; index--)
+            {
+                ItemRosterElement element = source[index];
+                ItemObject item = element.EquipmentElement.Item;
+                if (item?.IsFood != true || element.Amount <= 0) continue;
+                if (item.Weight <= 0f)
+                {
+                    capacity += element.Amount;
+                    continue;
+                }
+                int amount = Math.Min(element.Amount,
+                    (int)Math.Floor(remainingWeight / item.Weight));
+                capacity += Math.Max(0, amount);
+                remainingWeight -= Math.Max(0, amount) * item.Weight;
+            }
+            return capacity;
+        }
+
+        public int TransferFoodWithinCapacity(
+            ItemRoster source,
+            ItemRoster destination,
+            int requested,
+            MobileParty party)
+        {
+            int remaining = Math.Max(0, requested);
+            float remainingWeight = party == null
+                ? float.MaxValue
+                : Math.Max(0f,
+                    party.InventoryCapacity - party.TotalWeightCarried);
+            for (int index = source.Count - 1;
+                index >= 0 && remaining > 0; index--)
+            {
+                ItemRosterElement element = source[index];
+                ItemObject item = element.EquipmentElement.Item;
+                if (item?.IsFood != true || element.Amount <= 0) continue;
+                int itemCapacity = item.Weight <= 0f
+                    ? int.MaxValue
+                    : (int)Math.Floor(remainingWeight / item.Weight);
+                int amount = Math.Min(Math.Min(element.Amount, remaining),
+                    Math.Max(0, itemCapacity));
+                if (amount <= 0) continue;
+                source.AddToCounts(element.EquipmentElement, -amount);
+                destination.AddToCounts(element.EquipmentElement, amount);
+                remaining -= amount;
+                if (item.Weight > 0f)
+                    remainingWeight -= amount * item.Weight;
+            }
+            return requested - remaining;
         }
     }
 }

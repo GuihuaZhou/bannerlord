@@ -108,28 +108,7 @@ namespace ModifiedArmy.Garrison.Supply
             ItemRoster source,
             MobileParty party)
         {
-            if (source == null || party == null) return 0;
-            float remainingWeight = Math.Max(0f,
-                party.InventoryCapacity - party.TotalWeightCarried);
-            int capacity = 0;
-            // Match TransferFood's reverse traversal so the estimate and the
-            // actual load choose the same stacks and therefore the same weight.
-            for (int index = source.Count - 1; index >= 0; index--)
-            {
-                ItemRosterElement element = source[index];
-                ItemObject item = element.EquipmentElement.Item;
-                if (item?.IsFood != true || element.Amount <= 0) continue;
-                if (item.Weight <= 0f)
-                {
-                    capacity += element.Amount;
-                    continue;
-                }
-                int amount = Math.Min(element.Amount,
-                    (int)Math.Floor(remainingWeight / item.Weight));
-                capacity += Math.Max(0, amount);
-                remainingWeight -= Math.Max(0, amount) * item.Weight;
-            }
-            return capacity;
+            return Cargo.CalculateFoodCapacity(source, party);
         }
 
         private static int TransferFoodWithinCapacity(
@@ -138,33 +117,8 @@ namespace ModifiedArmy.Garrison.Supply
             int requested,
             MobileParty party = null)
         {
-            // The destination belongs to the supply party in the only current
-            // call site. Resolve it explicitly there if future callers are added.
-            int remaining = Math.Max(0, requested);
-            float remainingWeight = party == null
-                ? float.MaxValue
-                : Math.Max(0f,
-                    party.InventoryCapacity - party.TotalWeightCarried);
-            for (int index = source.Count - 1;
-                index >= 0 && remaining > 0;
-                index--)
-            {
-                ItemRosterElement element = source[index];
-                ItemObject item = element.EquipmentElement.Item;
-                if (item?.IsFood != true || element.Amount <= 0) continue;
-                int capacity = item.Weight <= 0f
-                    ? int.MaxValue
-                    : (int)Math.Floor(remainingWeight / item.Weight);
-                int amount = Math.Min(Math.Min(element.Amount, remaining),
-                    Math.Max(0, capacity));
-                if (amount <= 0) continue;
-                source.AddToCounts(element.EquipmentElement, -amount);
-                destination.AddToCounts(element.EquipmentElement, amount);
-                remaining -= amount;
-                if (item.Weight > 0f)
-                    remainingWeight -= amount * item.Weight;
-            }
-            return requested - remaining;
+            return Cargo.TransferFoodWithinCapacity(
+                source, destination, requested, party);
         }
 
         /// <summary>
