@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Garrison.Supply.Models;
+using ModifiedArmy.Garrison.Supply.Services;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
@@ -53,19 +54,15 @@ namespace ModifiedArmy.Garrison.Supply
         private Dictionary<Settlement, CampaignTime>
             _nextDispatchTimes =
                 new Dictionary<Settlement, CampaignTime>();
-        private const float ThreatRecoveryDelayHours = 6f;
-        private readonly Dictionary<string, CampaignTime>
-            _threatAvoidanceUntil =
-                new Dictionary<string, CampaignTime>();
-        private readonly Dictionary<string, int> _lastRouteMismatchDay =
-            new Dictionary<string, int>();
+        private readonly SupplyRouteController _routeController =
+            new SupplyRouteController();
+        private static readonly SupplyCargoService Cargo =
+            new SupplyCargoService();
         private readonly Dictionary<string, SupplyHealthSnapshot>
             _lastHealthSnapshots =
                 new Dictionary<string, SupplyHealthSnapshot>();
         private readonly Dictionary<string, int> _lastFoodRiskDay =
             new Dictionary<string, int>();
-        private readonly Dictionary<string, double>
-            LastRouteCommandHours = new Dictionary<string, double>();
 
         public override void RegisterEvents()
         {
@@ -390,11 +387,9 @@ namespace ModifiedArmy.Garrison.Supply
         {
             if (party != null)
             {
-                _threatAvoidanceUntil.Remove(party.StringId);
-                _lastRouteMismatchDay.Remove(party.StringId);
+                _routeController.ForgetParty(party.StringId);
                 _lastHealthSnapshots.Remove(party.StringId);
                 _lastFoodRiskDay.Remove(party.StringId);
-                LastRouteCommandHours.Remove(party.StringId);
             }
             SupplyPartyComponent component = GetComponent(party);
 
@@ -597,32 +592,19 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty party,
             SupplyPartyComponent component)
         {
-            bool nativeAvoidance =
-                TransportThreatModel.IsNativeAvoidanceActive(party);
-            bool superiorEnemy = TransportThreatModel.HasSuperiorEnemy(party,
-                party.Position, party.MapFaction);
-            bool threatened = nativeAvoidance || superiorEnemy;
-            if (threatened)
-            {
-                if (!_threatAvoidanceUntil.ContainsKey(party.StringId))
+            return _routeController.ShouldPauseForThreat(
+                party,
+                (nativeAvoidance, superiorEnemy) =>
                 {
                     LogSupplyRoute("AvoidingThreat", party, component);
                     LogThreatDiagnostic(party, component, nativeAvoidance,
                         superiorEnemy, false);
-                }
-                _threatAvoidanceUntil[party.StringId] = CampaignTime.Now +
-                    CampaignTime.Hours(ThreatRecoveryDelayHours);
-                return true;
-            }
-            if (_threatAvoidanceUntil.TryGetValue(party.StringId,
-                    out CampaignTime avoidanceUntil))
-            {
-                if (!avoidanceUntil.IsPast) return true;
-                _threatAvoidanceUntil.Remove(party.StringId);
-                LogSupplyRoute("RouteResumed", party, component);
-                LogThreatDiagnostic(party, component, false, false, true);
-            }
-            return false;
+                },
+                () =>
+                {
+                    LogSupplyRoute("RouteResumed", party, component);
+                    LogThreatDiagnostic(party, component, false, false, true);
+                });
         }
 
         private static void LogSupplyRoute(
@@ -1307,34 +1289,14 @@ namespace ModifiedArmy.Garrison.Supply
             TroopRoster source,
             TroopRoster destination)
         {
-            foreach (TroopRosterElement element in
-                source.GetTroopRoster())
-            {
-                destination.AddToCounts(
-                    element.Character,
-                    element.Number,
-                    false,
-                    element.WoundedNumber,
-                    0,
-                    true,
-                    -1);
-            }
+            Cargo.RestoreTroops(source, destination);
         }
 
         private static void TransferAllItems(
             ItemRoster source,
             ItemRoster destination)
         {
-            for (int index = source.Count - 1; index >= 0; index--)
-            {
-                ItemRosterElement element = source[index];
-                destination.AddToCounts(
-                    element.EquipmentElement,
-                    element.Amount);
-                source.AddToCounts(
-                    element.EquipmentElement,
-                    -element.Amount);
-            }
+            Cargo.TransferAllItems(source, destination);
         }
 
         private static int TransferFood(
@@ -1342,27 +1304,7 @@ namespace ModifiedArmy.Garrison.Supply
             ItemRoster destination,
             int requestedAmount)
         {
-            int remaining = requestedAmount;
-
-            for (int index = source.Count - 1;
-                index >= 0 && remaining > 0;
-                index--)
-            {
-                ItemRosterElement element = source[index];
-
-                if (element.EquipmentElement.Item?.IsFood != true
-                    || element.Amount <= 0)
-                {
-                    continue;
-                }
-
-                int amount = Math.Min(element.Amount, remaining);
-                source.AddToCounts(element.EquipmentElement, -amount);
-                destination.AddToCounts(element.EquipmentElement, amount);
-                remaining -= amount;
-            }
-
-            return requestedAmount - remaining;
+            return Cargo.TransferFood(source, destination, requestedAmount);
         }
 
         private SourceSelection FindBestSource(

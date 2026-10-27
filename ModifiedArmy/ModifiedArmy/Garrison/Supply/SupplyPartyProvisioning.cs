@@ -326,8 +326,7 @@ namespace ModifiedArmy.Garrison.Supply
                  !RecruitmentLogFilter.ShouldLog(
                      component.HomeSettlement?.OwnerClan)))
                 return;
-            LastRouteCommandHours[party.StringId] =
-                CampaignTime.Now.ToHours;
+            _routeController.RecordRouteCommand(party);
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_supply_route_command");
             SetRouteVariables(message, party, component, destination);
@@ -345,23 +344,9 @@ namespace ModifiedArmy.Garrison.Supply
             SupplyPartyComponent component,
             Settlement expected)
         {
-            if (party == null || expected == null ||
-                party.CurrentSettlement == expected ||
-                (party.DefaultBehavior == AiBehavior.GoToSettlement &&
-                 party.TargetSettlement == expected))
+            if (!_routeController.ShouldReportUnexpectedOverride(
+                    party, expected))
                 return;
-            // Entering or leaving a settlement may temporarily expose Hold
-            // immediately after our own visit order. Give the engine two game
-            // hours to settle before calling that transition a route conflict.
-            if (LastRouteCommandHours.TryGetValue(party.StringId,
-                    out double commandHour) &&
-                CampaignTime.Now.ToHours - commandHour < 2d)
-                return;
-            int day = (int)Math.Floor(CampaignTime.Now.ToDays);
-            if (_lastRouteMismatchDay.TryGetValue(party.StringId,
-                    out int loggedDay) && loggedDay == day)
-                return;
-            _lastRouteMismatchDay[party.StringId] = day;
             if (!RecruitmentLogFilter.ShouldLog(party) &&
                 !RecruitmentLogFilter.ShouldLog(
                     component.HomeSettlement?.OwnerClan))
