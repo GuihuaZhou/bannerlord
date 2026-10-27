@@ -1,0 +1,23 @@
+Category,Owner,StateOrKey,Lifetime,Authority,RestoreRule,Notes
+Campaign scope,ForceManagementFacade,"_campaign; _current",Runtime,Facade,"Replace when Campaign.Current changes; reset runtime diagnostics only",Must not clear persistent state in Current getter
+Transfer idempotency,PartyExchangeService,_completedOperationIds,Runtime,Transaction service,"S1 must add persisted projection before relying on cross-load idempotency",Current gap
+Transfer recovery,PartyExchangeService,RecoveryRequired operations,Missing,Transaction service,"S1 must persist frozen operation projection and rebuild indexes",Current gap
+War/rest planning,WarRestPlanningService,_progress,Campaign runtime,Planning service,"Reset with campaign scope/day rules",Never cross saves
+Politics fallback,WarDispositionBridge,ReportedFallbacks,Campaign runtime,Integration adapter,"Clear on campaign switch",Diagnostic suppression only
+Garrison diagnostics,GarrisonRecruitmentCapacity,static warning sets,Campaign runtime,Diagnostic model,"ResetRuntimeDiagnostics on campaign switch",No gameplay authority
+Food diagnostics,NewSettlementFoodModel,static runtime state,Campaign runtime,Diagnostic/model,"ResetRuntimeState on campaign switch",No persistent authority
+Recruitment budget,ClanRecruitmentBudgetManager,static runtime state,Campaign runtime,Budget manager,"ResetRuntimeState on campaign switch",Must not retain old Clan references
+Basic troop groups,BasicTroopGroupManager,static cache,Campaign runtime,Recruitment model,"Clear on campaign switch",Rebuilt from current campaign XML/data
+Fief manpower,FiefPartyManager,_mobilizedHearth,Persistent,FiefPartyManager,"SyncData key _mobilizedHearth unchanged",Authoritative hearth ledger
+Fief ownership,FiefPartyManager,_mobilizationOwners,Persistent,FiefPartyManager,"SyncData key _mobilizationOwners unchanged",Authoritative origin mapping
+Fief migration,FiefPartyManager,_mobilizationMigrationComplete,Persistent,FiefPartyManager,"SyncData key unchanged",Compatibility state
+Fief legacy balance,FiefPartyManager,_legacyUntrackedMobilization,Persistent,FiefPartyManager,"SyncData key unchanged",Compatibility balance
+Fief parties,FiefPartyManager,_fiefDataMap,Persistent,FiefPartyManager,"Saveable field ids unchanged; rebuild serving index after load",Authoritative party and service-batch state
+AI tasks,AiForcePlanningBehavior,_savedTaskRecords,Persistent,Behavior serialization entry,"SyncData key modifiedarmy_force_task_records_v1 unchanged; rebuild runtime _tasks",Do not replay resource operations
+Party visit gate,PartyExchangeBehavior,_lastProcessedDays,Persistent,Behavior,"Existing SyncData key unchanged",Daily gate is distinct from OperationId
+Legacy reinforcement,ReinforcementMissionBehavior,_missions,Persistent compatibility,Compatibility behavior,"Read existing key then cancel active legacy missions",Save type id 8 retained
+Reinforcement transport,ReinforcementPartyComponent,Saveable properties 1-8,Persistent,Party component,"Save type id 9 retained; recover by transport behavior",Do not recreate identity on load
+Supply dispatch,SupplyPartyBehavior,_nextDispatchTimes,Persistent,Behavior,"Existing SyncData key unchanged",Other throttles are runtime and campaign-scoped
+Supply mission,SupplyPartyComponent,Saveable properties 1-10,Persistent,Party component,"Supply SaveDefiner ids unchanged",Covers local and cross-settlement supply
+Manpower production,SettlementManpowerProductionBehavior,production data map,Persistent,Behavior,"Existing SyncData key unchanged",Consumption authority stays in existing behavior until S6
+Wage exemptions,FiefWageExemptionManager,_exemptionMap,Persistent,Fief wage manager,"SyncData key _exemptionMap unchanged",Saveable ids unchanged

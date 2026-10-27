@@ -1,0 +1,20 @@
+PatchArea,PatchFile,Kind,Contract,OriginalExecutionRule,Stage
+Garrison food,GarrisonFoodConsumptionPatch.cs,Prefix/Postfix,"Preserve target signature and __state food snapshot",Do not change Prefix return or postfix order,S7 audit only
+Granary UI,GarrisonGranaryReadOnlyPatch.cs,Patch,"Read-only presentation",Preserve original execution,S7 audit only
+Inspection UI,GarrisonInspectionReadOnlyPatch.cs,Patch,"Read-only presentation",Preserve original execution,S7 audit only
+Starvation,GarrisonStarvationPatch.cs,Patch,"Protect configured garrison rules",Preserve current interception semantics,S7 audit only
+Troop donation,GarrisonTroopDonationPatch.cs,Patch,"Thin adapter to donation service",Preserve current interception semantics,Already structurally thin
+Wage limit,GarrisonWageLimitPatch.cs,Patch,"Delegates configured wage calculation",Preserve player/AI caps and return semantics,S7 audit
+Kingdom settlement VM,KingdomSettlementItemVMPatch.cs,Patch,"Presentation adapter",Preserve target and ordering,Already structurally thin
+Settlement,Fief/Patches/SettlementPatch.cs,Patch,"Fief integration",Preserve target and return semantics,S7 audit
+Mercenary market,MercenaryMarketPatch.cs,Prefix,"Market generation and selection currently in patch",Do not alter return false behavior without separate defect evidence,S7 extraction
+Clan finance,ClanFinancialEvaluationPatch.cs,Patch,"Wage-cap iteration and recording",Preserve target return and player/AI values,S7 extraction if justified
+AI settlement recruitment,AiSettlementRecruitmentPatch.cs,Patch,"Recruitment adapter",Preserve target and original execution decision,S7 audit
+Disband merge,DisbandPartyGarrisonMergePatch.cs,Patch,"Delegates disband settlement behavior",Preserve original execution decision,Already structurally thin
+Garrison recruitment,GarrisonRecruitmentPatch.cs,Patch,"Recruitment adapter",Preserve target and original execution decision,S7 audit
+Hero spawn,HeroSpawnSettlementPatch.cs,Patch,"Recruitment initialization",Preserve target and ordering,S7 audit
+Native volunteers,NativeVolunteerRecruitmentPatch.cs,Patch,"Recruitment policy adapter",Preserve original execution decision,S7 audit
+Prisoner recruitment,PrisonerRecruitmentPatch.cs,Patch,"Delegates prisoner recruitment",Preserve target and original execution decision,Already structurally thin
+Prisoner sale,PrisonerSalePatch.cs,Patch,"Delegates prisoner sale",Preserve target and original execution decision,Already structurally thin
+Rescued prisoner filter,RescuedPrisonerFilterPatch.cs,Patch,"Delegates filter service",Preserve target and original execution decision,Already structurally thin
+Settlement inspection,SettlementManagementReadOnlyPatch.cs,Patch,"Read-only presentation",Preserve original execution,S7 audit only

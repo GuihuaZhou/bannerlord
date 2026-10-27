@@ -1,0 +1,20 @@
+Resource,Writer,MethodOrPattern,Authorization,RollbackOrReconciliation,Risk
+Troop roster,PartyExchangeService,ExecuteRosterTransfer/MemberRoster.AddToCounts,PartyTransferOwnershipPolicy plus validated plan,Reverse actions and roster snapshots,High: exception between source and destination
+Fief troops,PartyExchangeService,ExecuteFiefMobilization/ExecuteFiefReturn,Approved fief operation,FiefPartyManager authoritative result and service batches,High: operation replay
+Mercenary gold,UnifiedRecruitmentExecutionService,ExecuteMercenary/GiveGoldAction,Approved recruitment plan and budget,None across all four writes today,Critical S1 gap
+Mercenary market,UnifiedRecruitmentExecutionService,ExecuteMercenary/ChangeMercenaryCount,Approved market offer,None across all four writes today,Critical S1 gap
+Mercenary troops,UnifiedRecruitmentExecutionService,ExecuteMercenary/MemberRoster.AddToCounts,Approved recruitment plan,None across all four writes today,Critical S1 gap
+Recruitment budget,UnifiedRecruitmentExecutionService,ExecuteMercenary/budget commit,Approved recruitment plan,None across all four writes today,Critical S1 gap
+Fief hearths,FiefPartyManager,TryConsumeProfessionalHearth and release paths,Fief ownership and recruitment rules,Manager reconciliation,High authoritative ledger
+Fief service batches,FiefPartyData/FiefPartyManager,recruit/return/reconcile methods,Fief service rules,BatchId reconciliation,High persistent identity
+Supply food,SupplyPartyTransaction and SupplyPartyProvisioning,ItemRoster.AddToCounts,Supply dispatch plan,Local reverse transfer is method-specific,High multi-resource transaction
+Supply animals,SupplyPartyTransaction,ItemRoster.AddToCounts,Provision plan and affordability,Method-specific compensation,High multi-resource transaction
+Supply gold,SupplyPartyTransaction/GiveGoldAction,Provision plan and payer,Method-specific compensation,High multi-resource transaction
+Reinforcement troops,ReinforcementTransferService,TroopRoster.AddToCounts,Transport component and destination,Return/cancel handlers,High load recovery
+Reinforcement food/items,ReinforcementTransferService,ItemRoster.AddToCounts,Transport component and destination,Return/cancel handlers,High load recovery
+Prisoners,PrisonerRecruitmentService,PrisonRoster.AddToCounts,Recruitment eligibility and approval,Explicit local compensation paths,Medium
+Garrison recruits,GarrisonRecruitFromPrisonersBehavior,MemberRoster.AddToCounts,Capacity and offer approval,Weekly cleanup/reconciliation only,High behavior owns writes
+Professional offers,SettlementManpowerProductionBehavior,TryConsumeProfessionalOffer,Settlement culture and production ledger,Production ledger reconciliation,High must stay out of prediction
+Disband transfer,DisbandSettlementService,MemberRoster.AddToCounts,Managed party and settlement policy,Source/destination accounting,Medium
+Direct garrison transfer,TroopTransferService,MemberRoster.AddToCounts,Transfer policy,Source/destination accounting,Medium
+Fief internal roster,FiefPartyRecruitment/FiefPartyReinforcement,TroopRoster writes,Fief rules,Fief data reconciliation,High
