@@ -92,6 +92,12 @@ namespace ModifiedArmy.Models.Fief
         private readonly Dictionary<MobileParty, List<ServingDetachmentRef>>
             _servingDetachmentIndex = new Dictionary<MobileParty, List<ServingDetachmentRef>>();
 
+        private FiefManpowerLedger ManpowerLedger => new FiefManpowerLedger(
+            _mobilizedHearth, _mobilizationOwners, _legacyUntrackedMobilization);
+
+        private FiefServiceLedger ServiceLedger =>
+            new FiefServiceLedger(_servingDetachmentIndex);
+
         public override void RegisterEvents()
         {
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
@@ -248,10 +254,7 @@ namespace ModifiedArmy.Models.Fief
 
         public int GetMobilizedHearth(Village village)
         {
-            if (village?.Settlement == null) return 0;
-            return _mobilizedHearth.TryGetValue(village.Settlement, out int value)
-                ? Math.Max(0, value)
-                : 0;
+            return ManpowerLedger.GetMobilizedHearth(village);
         }
 
         /// <summary>
@@ -260,33 +263,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public bool TryMobilize(Settlement fief, int count, int hearthPerTroop)
         {
-            if (fief == null || count <= 0 || hearthPerTroop <= 0) return false;
-            List<Village> villages = fief.BoundVillages
-                .Where(v => v?.Settlement != null)
-                .OrderBy(v => v.Settlement.StringId)
-                .ToList();
-            int required = checked(count * hearthPerTroop);
-            int capacity = villages.Sum(v => Math.Max(0, (int)Math.Floor(v.Hearth) - 100));
-            if (capacity < required) return false;
-
-            int remaining = required;
-            while (remaining > 0)
-            {
-                bool changed = false;
-                foreach (Village village in villages)
-                {
-                    if (remaining <= 0) break;
-                    if (village.Hearth <= 100f) continue;
-                    village.Hearth -= 1f;
-                    Settlement key = village.Settlement;
-                    _mobilizedHearth[key] = GetMobilizedHearth(village) + 1;
-                    _mobilizationOwners[key] = fief;
-                    remaining--;
-                    changed = true;
-                }
-                if (!changed) return false;
-            }
-            return true;
+            return ManpowerLedger.TryMobilize(fief, count, hearthPerTroop);
         }
 
         public bool TryConsumeProfessionalHearth(Settlement source, int count)
@@ -323,52 +300,12 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int ReleaseMobilization(Settlement fief, int count, bool restoreHearth)
         {
-            if (fief == null || count <= 0) return 0;
-            List<Settlement> villages = _mobilizationOwners
-                .Where(p => p.Value == fief && _mobilizedHearth.TryGetValue(p.Key, out int n) && n > 0)
-                .Select(p => p.Key)
-                .OrderBy(s => s.StringId)
-                .ToList();
-            int released = 0;
-            while (released < count)
-            {
-                bool changed = false;
-                foreach (Settlement settlement in villages)
-                {
-                    if (released >= count) break;
-                    if (!_mobilizedHearth.TryGetValue(settlement, out int value) || value <= 0) continue;
-                    _mobilizedHearth[settlement] = value - 1;
-                    if (restoreHearth && settlement.Village != null) settlement.Village.Hearth += 1f;
-                    released++;
-                    changed = true;
-                }
-                if (!changed) break;
-            }
-            foreach (Settlement settlement in villages.Where(s => _mobilizedHearth[s] <= 0).ToList())
-            {
-                _mobilizedHearth.Remove(settlement);
-                _mobilizationOwners.Remove(settlement);
-            }
-            return released;
+            return ManpowerLedger.Release(fief, count, restoreHearth);
         }
 
         public int ReleaseFiefService(Settlement fief, int count, bool restoreHearth)
         {
-            if (fief == null || count <= 0) return 0;
-            int legacy = _legacyUntrackedMobilization.TryGetValue(fief, out int value)
-                ? Math.Max(0, value)
-                : 0;
-            int legacyReleased = Math.Min(count, legacy);
-            if (legacyReleased > 0)
-            {
-                int remainingLegacy = legacy - legacyReleased;
-                if (remainingLegacy > 0) _legacyUntrackedMobilization[fief] = remainingLegacy;
-                else _legacyUntrackedMobilization.Remove(fief);
-            }
-            return ReleaseMobilization(
-                fief,
-                count - legacyReleased,
-                restoreHearth);
+            return ManpowerLedger.ReleaseService(fief, count, restoreHearth);
         }
 
         /// <summary>
@@ -378,14 +315,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         internal int GetTrackedMobilizationCount(Settlement fief)
         {
-            if (fief == null) return 0;
-            return _mobilizationOwners
-                .Where(pair => pair.Value == fief)
-                .Sum(pair => _mobilizedHearth.TryGetValue(
-                    pair.Key,
-                    out int count)
-                        ? Math.Max(0, count)
-                        : 0);
+            return ManpowerLedger.GetTrackedCount(fief);
         }
 
         /// <summary>
@@ -399,52 +329,8 @@ namespace ModifiedArmy.Models.Fief
             int count,
             out Dictionary<Settlement, int> releasedByVillage)
         {
-            releasedByVillage = new Dictionary<Settlement, int>();
-            if (fief == null || count <= 0 ||
-                GetTrackedMobilizationCount(fief) < count)
-            {
-                return false;
-            }
-
-            List<Settlement> villages = _mobilizationOwners
-                .Where(pair => pair.Value == fief &&
-                    _mobilizedHearth.TryGetValue(pair.Key, out int value) &&
-                    value > 0)
-                .Select(pair => pair.Key)
-                .OrderBy(settlement => settlement.StringId)
-                .ToList();
-            int released = 0;
-            while (released < count)
-            {
-                foreach (Settlement village in villages)
-                {
-                    if (released >= count) break;
-                    if (!_mobilizedHearth.TryGetValue(
-                            village,
-                            out int current) || current <= 0)
-                    {
-                        continue;
-                    }
-                    _mobilizedHearth[village] = current - 1;
-                    if (village.Village != null) village.Village.Hearth += 1f;
-                    releasedByVillage[village] = releasedByVillage.TryGetValue(
-                        village,
-                        out int previous)
-                            ? previous + 1
-                            : 1;
-                    released++;
-                }
-            }
-            foreach (Settlement village in villages
-                .Where(item => _mobilizedHearth.TryGetValue(
-                    item,
-                    out int value) && value <= 0)
-                .ToList())
-            {
-                _mobilizedHearth.Remove(village);
-                _mobilizationOwners.Remove(village);
-            }
-            return released == count;
+            return ManpowerLedger.TryReleaseExact(
+                fief, count, out releasedByVillage);
         }
 
         /// <summary>
@@ -455,72 +341,31 @@ namespace ModifiedArmy.Models.Fief
             Settlement fief,
             IReadOnlyDictionary<Settlement, int> releasedByVillage)
         {
-            if (fief == null || releasedByVillage == null) return;
-            foreach (var pair in releasedByVillage)
-            {
-                if (pair.Key == null || pair.Value <= 0) continue;
-                _mobilizedHearth[pair.Key] = _mobilizedHearth.TryGetValue(
-                    pair.Key,
-                    out int current)
-                        ? current + pair.Value
-                        : pair.Value;
-                _mobilizationOwners[pair.Key] = fief;
-                if (pair.Key.Village != null)
-                    pair.Key.Village.Hearth -= pair.Value;
-            }
+            ManpowerLedger.RollbackRelease(fief, releasedByVillage);
         }
 
         public void RebuildServingDetachmentIndex()
         {
-            _servingDetachmentIndex.Clear();
-            foreach (var pair in _fiefDataMap)
-            {
-                foreach (FiefServiceBatch batch in
-                    pair.Value?.ServiceBatches ??
-                    Enumerable.Empty<FiefServiceBatch>())
-                {
-                    batch?.ResolveServingParty();
-                    if (batch?.ServingParty == null || batch.IsEmpty())
-                    {
-                        if (batch != null && !batch.IsEmpty())
-                            ModLogger.Warn($"[Fief Service] Invalid service batch at {pair.Key?.Name} has no serving party and was removed.");
-                        continue;
-                    }
-                    batch.Repair(batch.ServingParty);
-                    RegisterServingDetachment(pair.Key, batch);
-                }
-            }
+            ServiceLedger.Rebuild(_fiefDataMap);
         }
 
         public void RegisterServingDetachment(
             Settlement source,
             FiefServiceBatch batch)
         {
-            if (source == null || batch?.ServingParty == null || batch.IsEmpty()) return;
-            if (!_servingDetachmentIndex.TryGetValue(batch.ServingParty, out var list))
-            {
-                list = new List<ServingDetachmentRef>();
-                _servingDetachmentIndex[batch.ServingParty] = list;
-            }
-            if (!list.Any(item => item.SourceFief == source && item.Detachment == batch))
-                list.Add(new ServingDetachmentRef(source, batch));
+            ServiceLedger.Register(source, batch);
         }
 
         public void UnregisterServingDetachment(
             Settlement source,
             FiefServiceBatch batch)
         {
-            MobileParty party = batch?.ServingParty;
-            if (party == null || !_servingDetachmentIndex.TryGetValue(party, out var list)) return;
-            list.RemoveAll(item => item.SourceFief == source && item.Detachment == batch);
-            if (list.Count == 0) _servingDetachmentIndex.Remove(party);
+            ServiceLedger.Unregister(source, batch);
         }
 
         internal List<ServingDetachmentRef> GetServingDetachments(MobileParty party)
         {
-            return party != null && _servingDetachmentIndex.TryGetValue(party, out var list)
-                ? list.ToList()
-                : new List<ServingDetachmentRef>();
+            return ServiceLedger.Get(party);
         }
 
         public void AdvanceServiceDays(MobileParty party)
@@ -551,70 +396,15 @@ namespace ModifiedArmy.Models.Fief
             string batchId,
             int maximumCount)
         {
-            FiefReturnResult rejected = new FiefReturnResult
-            {
-                SourceFief = sourceFief,
-                BatchId = batchId,
-                RequestedCount = Math.Max(0, maximumCount),
-                ReasonCode = "InvalidRequest"
-            };
-            if (servingParty == null || !servingParty.IsActive ||
-                servingParty.MapEvent != null || sourceFief == null ||
-                servingParty.ActualClan == null ||
-                sourceFief.OwnerClan != servingParty.ActualClan ||
-                string.IsNullOrEmpty(batchId) || maximumCount <= 0)
-            {
-                LogFiefReturn(servingParty, rejected, 0, 0);
-                return rejected;
-            }
-
-            AdvanceServiceDays(servingParty);
-            ReconcilePartyFiefTroops(servingParty);
-            ServingDetachmentRef selected = GetServingDetachments(servingParty)
-                .FirstOrDefault(item => item.SourceFief == sourceFief &&
-                    item.Detachment?.BatchId == batchId &&
-                    !item.Detachment.IsEmpty());
-            if (selected.Detachment == null ||
-                !_fiefDataMap.TryGetValue(sourceFief, out FiefPartyData data) ||
-                data == null)
-            {
-                rejected.ReasonCode = "NoEligibleBatch";
-                LogFiefReturn(servingParty, rejected, 0, 0);
-                return rejected;
-            }
-
-            int trackedMobilization = GetTrackedMobilizationCount(sourceFief);
-            if (trackedMobilization <= 0)
-            {
-                rejected.ReasonCode = "NoTrackedMobilization";
-                LogFiefReturn(
-                    servingParty,
-                    rejected,
-                    selected.Detachment.GetTotalCount(),
-                    0);
-                return rejected;
-            }
-
-            FiefReturnResult result = data.TryCommitFiefReturn(
-                this,
-                servingParty,
-                selected.Detachment,
-                maximumCount,
-                trackedMobilization);
-            LogFiefReturn(
-                servingParty,
-                result,
-                selected.Detachment.GetTotalCount(),
-                MilitaryConfigManager.Instance.RequireActiveConfig()
-                    .GetDoctrine(sourceFief).Service.ReturnCooldownWeeks);
-            return result;
+            return FiefReturnService.TryReturn(
+                this, servingParty, sourceFief, batchId, maximumCount);
         }
 
         /// <summary>
         /// Writes one auditable result for both successful and rejected return
         /// attempts without displaying a diagnostic UI message.
         /// </summary>
-        private static void LogFiefReturn(
+        internal static void LogFiefReturn(
             MobileParty party,
             FiefReturnResult result,
             int remainingBatch,
