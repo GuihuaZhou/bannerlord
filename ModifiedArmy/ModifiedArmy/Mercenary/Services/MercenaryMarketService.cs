@@ -1,3 +1,5 @@
+using System.Reflection;
+using HarmonyLib;
 using ModifiedArmy.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
@@ -41,7 +43,58 @@ namespace ModifiedArmy.Mercenary.Services
             if (MBRandom.RandomFloat < Campaign.Current.Models
                 .TavernMercenaryTroopsModel.RegularMercenariesSpawnChance)
             {
-                CharacterObject ignored = town.Culture.CaravanGuard;
+                CharacterObject caravanGuard = town.Culture.CaravanGuard;
+                if (caravanGuard != null && TrySelectNativeMercenary(
+                        behavior, caravanGuard, out CharacterObject selected,
+                        out int count))
+                {
+                    data.ChangeMercenaryType(selected, count);
+                    Log(town, selected, count);
+                }
+            }
+        }
+
+        private static bool TrySelectNativeMercenary(
+            RecruitmentCampaignBehavior behavior,
+            CharacterObject root,
+            out CharacterObject selected,
+            out int count)
+        {
+            selected = null;
+            count = 0;
+            try
+            {
+                FieldInfo selectedField = AccessTools.Field(
+                    typeof(RecruitmentCampaignBehavior), "_selectedTroop");
+                MethodInfo totalMethod = AccessTools.Method(
+                    typeof(RecruitmentCampaignBehavior),
+                    "FindTotalMercenaryProbability");
+                MethodInfo selectMethod = AccessTools.Method(
+                    typeof(RecruitmentCampaignBehavior),
+                    "FindRandomMercenaryTroop");
+                MethodInfo countMethod = AccessTools.Method(
+                    typeof(RecruitmentCampaignBehavior),
+                    "FindNumberOfMercenariesWillBeAdded");
+                if (selectedField == null || totalMethod == null ||
+                    selectMethod == null || countMethod == null) return false;
+                selectedField.SetValue(behavior, null);
+                float total = (float)totalMethod.Invoke(
+                    behavior, new object[] { root, 1f });
+                selectMethod.Invoke(behavior, new object[]
+                {
+                    root, 1f, MBRandom.RandomFloat * total
+                });
+                selected = selectedField.GetValue(behavior) as CharacterObject;
+                if (selected == null) return false;
+                count = (int)countMethod.Invoke(
+                    behavior, new object[] { selected, false });
+                return count > 0;
+            }
+            catch (System.Exception exception)
+            {
+                ModLogger.Error(
+                    "Caravan guard market refresh failed: " + exception);
+                return false;
             }
         }
 

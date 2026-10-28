@@ -1,12 +1,11 @@
 # Known Issues
 
-## KI-01 Caravan guard refresh is a no-op
+## KI-01 Caravan guard refresh (resolved in review follow-up)
 
-`MercenaryMarketService` preserves the previous behavior: it performs the
-independent native caravan-guard probability roll and reads the culture's
-caravan guard, but does not change the market before the Prefix suppresses the
-native method. This needs a dedicated gameplay reproduction and an explicit
-rule-change decision; it was not altered during architecture remediation.
+The independent caravan-guard probability branch now reuses the native private
+upgrade-tree weighting and amount calculation before updating the town market.
+Runtime verification is still required because the integration intentionally
+uses reflection to stay aligned with the current native implementation.
 
 ## KI-02 Full integration evidence is incomplete
 
