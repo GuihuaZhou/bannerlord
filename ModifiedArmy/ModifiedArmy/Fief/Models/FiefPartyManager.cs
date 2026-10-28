@@ -268,6 +268,16 @@ namespace ModifiedArmy.Models.Fief
 
         public bool TryConsumeProfessionalHearth(Settlement source, int count)
         {
+            return TryConsumeProfessionalHearth(
+                source, count, out Dictionary<Settlement, int> _);
+        }
+
+        internal bool TryConsumeProfessionalHearth(
+            Settlement source,
+            int count,
+            out Dictionary<Settlement, int> consumedByVillage)
+        {
+            consumedByVillage = new Dictionary<Settlement, int>();
             if (source == null || count <= 0) return false;
             List<Village> villages = source.IsVillage
                 ? new List<Village> { source.Village }
@@ -288,10 +298,24 @@ namespace ModifiedArmy.Models.Fief
                     if (remaining <= 0) break;
                     if (village.Hearth <= 100f) continue;
                     village.Hearth -= 1f;
+                    consumedByVillage[village.Settlement] =
+                        consumedByVillage.TryGetValue(
+                            village.Settlement, out int consumed)
+                                ? consumed + 1
+                                : 1;
                     remaining--;
                 }
             }
             return true;
+        }
+
+        internal void RollbackProfessionalHearth(
+            IReadOnlyDictionary<Settlement, int> consumedByVillage)
+        {
+            if (consumedByVillage == null) return;
+            foreach (var pair in consumedByVillage)
+                if (pair.Key?.Village != null && pair.Value > 0)
+                    pair.Key.Village.Hearth += pair.Value;
         }
 
         /// <summary>

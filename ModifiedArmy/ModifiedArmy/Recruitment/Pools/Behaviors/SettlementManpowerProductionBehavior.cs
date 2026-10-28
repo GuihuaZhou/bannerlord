@@ -14,6 +14,14 @@ using ModifiedArmy.Tool;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
+    internal sealed class ProfessionalOfferConsumption
+    {
+        public Settlement Settlement { get; set; }
+        public CharacterObject Troop { get; set; }
+        public int Count { get; set; }
+        public Dictionary<Settlement, int> ConsumedHearth { get; set; }
+    }
+
     /// <summary>
     /// Converts settlement manpower into daily professional offers and direct
     /// fief-party reinforcement. No generated troop inventory is persisted.
@@ -198,6 +206,17 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             CharacterObject troop,
             int count)
         {
+            return TryConsumeProfessionalOffer(
+                settlement, troop, count, out ProfessionalOfferConsumption _);
+        }
+
+        internal bool TryConsumeProfessionalOffer(
+            Settlement settlement,
+            CharacterObject troop,
+            int count,
+            out ProfessionalOfferConsumption consumption)
+        {
+            consumption = null;
             if (troop == null || count <= 0)
             {
                 LogOfferConsumption(
@@ -265,7 +284,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                         "str_modifiedarmy_manpower_reason_manager_unavailable"));
                 return false;
             }
-            if (!manager.TryConsumeProfessionalHearth(settlement, count))
+            if (!manager.TryConsumeProfessionalHearth(
+                    settlement,
+                    count,
+                    out Dictionary<Settlement, int> consumedHearth))
             {
                 LogOfferConsumption(
                     settlement,
@@ -286,8 +308,37 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             {
                 troops.Remove(troop);
             }
-
+            consumption = new ProfessionalOfferConsumption
+            {
+                Settlement = settlement,
+                Troop = troop,
+                Count = count,
+                ConsumedHearth = consumedHearth
+            };
             return true;
+        }
+
+        internal void RollbackProfessionalOffer(
+            ProfessionalOfferConsumption consumption)
+        {
+            if (consumption?.Settlement == null || consumption.Troop == null ||
+                consumption.Count <= 0) return;
+            int day = (int)CampaignTime.Now.ToDays;
+            if (!_professionalOfferDays.TryGetValue(
+                    consumption.Settlement, out int offerDay) ||
+                offerDay != day) return;
+            if (!_dailyProfessionalOffers.TryGetValue(
+                    consumption.Settlement, out var offers))
+            {
+                offers = new Dictionary<CharacterObject, int>();
+                _dailyProfessionalOffers[consumption.Settlement] = offers;
+            }
+            offers[consumption.Troop] = offers.TryGetValue(
+                consumption.Troop, out int current)
+                    ? current + consumption.Count
+                    : consumption.Count;
+            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                .RollbackProfessionalHearth(consumption.ConsumedHearth);
         }
 
         private static void LogOfferConsumption(
