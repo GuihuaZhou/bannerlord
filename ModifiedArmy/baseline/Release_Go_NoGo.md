@@ -30,3 +30,11 @@ the user's unrelated workspace files. Restore test saves from copies if a
 resource-conservation or serialization problem appears.
 
 `NEXT_PHASE_ALLOWED=NO`
+
+## Automated static gate
+
+Run `tools/Test-ArchitectureReleaseGate.ps1` from the ModifiedArmy module or
+repository workspace after architecture changes. It builds both projects and
+checks dependency direction, SaveId 8/9, protected files, retired references,
+and critical Behavior ownership boundaries. A PASS does not replace T01-T24
+runtime evidence.

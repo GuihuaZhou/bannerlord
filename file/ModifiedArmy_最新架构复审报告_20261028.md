@@ -121,6 +121,10 @@
 - **商队护卫刷新已修复**：保留现有独立概率门禁，复用原版升级树权重与
   数量计算方法选出实际兵种，并写回城镇佣兵市场；反射不兼容时记录错误
   并安全跳过，不使 Harmony Prefix 抛出启动异常。
+- **S8 静态闸门已自动化**：新增 `Test-ArchitectureReleaseGate.ps1`，每次
+  运行同时构建 Army/Politics，并检查依赖方向、SaveId 8/9、保护文件、
+  退役引用以及 Supply/AI/Garrison Behavior 的关键职责边界。该脚本明确
+  不替代 T01-T24 游戏场景证据。
 
 仍需运行环境完成：有/无 ModifiedPolitics 两种启动、冻结任务读档、事件
 异常注入、T08-T12、职业兵 offer 写入异常注入，以及 T01-T24 全矩阵。
