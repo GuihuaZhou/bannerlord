@@ -168,6 +168,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
+                campaignStarter.AddModel(new NewBanditDensityModel());
                 campaignStarter.AddModel(new NewClanTierModel());
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
                 campaignStarter.AddModel(new NewSettlementGarrisonModel());

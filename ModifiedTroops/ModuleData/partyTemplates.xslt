@@ -8,6 +8,14 @@
     
     <xsl:template match="MBPartyTemplate[@id='main_hero_party_template']"/>
 
+    <!-- Replace only the six ordinary land-bandit templates. -->
+    <xsl:template match="MBPartyTemplate[@id='looters_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='sea_raiders_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='mountain_bandits_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='forest_bandits_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='desert_bandits_template']"/>
+    <xsl:template match="MBPartyTemplate[@id='steppe_bandits_template']"/>
+
     <xsl:template match="MBPartyTemplate[@id='villager_empire_template']"/>
     <xsl:template match="MBPartyTemplate[@id='villager_aserai_template']"/>
     <xsl:template match="MBPartyTemplate[@id='villager_sturgia_template']"/>
