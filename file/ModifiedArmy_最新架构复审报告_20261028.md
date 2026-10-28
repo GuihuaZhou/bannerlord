@@ -109,6 +109,12 @@
 - **征粮兵员写入已迁出 Behavior**：两类健康护卫提取和伤员保持的限量
   转移统一进入 `SupplyCargoService`；Behavior 内不再直接执行兵员
   `AddToCounts`。
+- **S3 重复实现已清理**：Behavior 内旧的任务序列化/解析、路线应用、常规
+  捐兵、战时返乡和和平复员 helper 已删除；对应职责只保留在
+  Persistence、Coordinator 与 VisitExecutionService。
+- **S6 每日执行已收口**：新增 `GarrisonRecruitmentExecutionService`，统一
+  承担职业兵/俘虏共享额度、容量复核、费用与预算提交；Behavior 只调用
+  执行结果并负责事件时序和日志。
 
 仍需运行环境完成：有/无 ModifiedPolitics 两种启动、冻结任务读档、事件
 异常注入、T08-T12、职业兵 offer 写入异常注入，以及 T01-T24 全矩阵。
