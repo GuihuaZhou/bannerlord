@@ -125,6 +125,10 @@
   运行同时构建 Army/Politics，并检查依赖方向、SaveId 8/9、保护文件、
   退役引用以及 Supply/AI/Garrison Behavior 的关键职责边界。该脚本明确
   不替代 T01-T24 游戏场景证据。
+- **S8 运行证据闸门已建立**：新增 `Test-RuntimeAcceptanceEvidence.ps1`，
+  校验 T01-T24 行完整性、状态和 PASS 证据字段；发布模式要求 T01-T20
+  全部 PASS，T21-T24 必须 PASS 或留下明确豁免理由，避免短时冒烟被误记
+  为完整验收。
 
 仍需运行环境完成：有/无 ModifiedPolitics 两种启动、冻结任务读档、事件
 异常注入、T08-T12、职业兵 offer 写入异常注入，以及 T01-T24 全矩阵。

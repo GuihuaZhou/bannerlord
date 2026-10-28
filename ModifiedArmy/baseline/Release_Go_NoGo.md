@@ -38,3 +38,11 @@ repository workspace after architecture changes. It builds both projects and
 checks dependency direction, SaveId 8/9, protected files, retired references,
 and critical Behavior ownership boundaries. A PASS does not replace T01-T24
 runtime evidence.
+
+## Runtime evidence gate
+
+Run `tools/Test-RuntimeAcceptanceEvidence.ps1` while filling in
+`baseline/T01_T24_ResultMatrix.md`. It rejects incomplete or duplicate rows and
+prevents a PASS without concrete evidence, tester and commit. Use `-RequireGo`
+only for a release decision: T01-T20 must all be PASS, while T21-T24 must be
+PASS or carry an explicit WAIVED rationale.
