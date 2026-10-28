@@ -3,7 +3,9 @@
 - Base commit: `f1ecd23`
 - Scope: professional-offer commit, prisoner retention/conformity/transfer,
   and weekly garrison normalization
-- Commit status: not committed; awaiting game verification and explicit approval
+- Commit status: committed through `05062ec`, with follow-up cleanup and
+  compensation fixes through `d670ceb`; full T01/T15/T17/T19 evidence remains
+  BLOCKED
 
 ## Implemented
 

@@ -2,7 +2,8 @@
 
 - Base commit: `ddc0b11`
 - Scope: fief manpower, active service-batch indexing, reconciliation and return dispatch
-- Commit status: not committed; awaiting game verification and explicit approval
+- Commit status: committed as `f1ecd23`; short runtime smoke reported, full
+  T07/T19 evidence remains BLOCKED
 
 ## Implemented
 

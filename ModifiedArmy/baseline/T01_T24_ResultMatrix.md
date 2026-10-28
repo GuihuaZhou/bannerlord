@@ -4,6 +4,9 @@ The user reported that each staged build ran for several minutes without an
 observed problem. That evidence is recorded as a general startup/basic-running
 smoke test and is not promoted into scenario-specific PASS results below.
 
+Execution steps and evidence requirements are defined in
+`S8-Runtime-Acceptance-Runbook.md`.
+
 | ID | Scenario / invariant | Status | Save ID / evidence | Tester | Relevant commit |
 |---|---|---|---|---|---|
 | T01 | Same actor/settlement garrison reinforcement, approved equals actual | BLOCKED | No roster before/after snapshot | User environment required | `05062ec` |
@@ -35,6 +38,6 @@ smoke test and is not promoted into scenario-specific PASS results below.
 
 - Tester: user.
 - Save identifier: not supplied.
-- Evidence: repeated report “运行了几分钟，没问题” after S1-S7.
+- Evidence: repeated report “运行了几分钟，没问题” through the S8 evidence-gate stage.
 - Result: PASS for launch/basic short-duration running only.
 

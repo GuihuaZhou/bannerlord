@@ -3,7 +3,8 @@
 ## Decision: NO-GO for full release
 
 - Base: `72ef039`
-- Candidate: `4fdca37`
+- Candidate: record `git rev-parse HEAD` at the start of each runtime batch
+- Last committed validation tooling: `95891fc`
 - Release build: PASS (0 errors, 7 existing warnings)
 - Protected-file and static compatibility review: PASS
 - Short user runtime smoke after each stage: PASS
@@ -25,7 +26,8 @@ save-load, or duplicate-Harmony failure is an automatic NO-GO.
 ## Rollback
 
 Each remediation stage is an independent commit from `6824929` through
-`4fdca37`. Revert in reverse dependency order. Do not use a hard reset or erase
+`0038f93`; validation tooling follows through `95891fc`. Revert in reverse
+dependency order. Do not use a hard reset or erase
 the user's unrelated workspace files. Restore test saves from copies if a
 resource-conservation or serialization problem appears.
 
@@ -46,3 +48,13 @@ Run `tools/Test-RuntimeAcceptanceEvidence.ps1` while filling in
 prevents a PASS without concrete evidence, tester and commit. Use `-RequireGo`
 only for a release decision: T01-T20 must all be PASS, while T21-T24 must be
 PASS or carry an explicit WAIVED rationale.
+
+Use `baseline/S8-Runtime-Acceptance-Runbook.md` to execute the matrix in five
+isolated batches. Resource snapshots, named save copies and matching log time
+ranges are required; a general smoke run remains separate evidence.
+
+## Unified command
+
+Run `tools/Invoke-ReleaseValidation.ps1` for the build, architecture and matrix
+structure checks together. Before release, add `-RequireGo`; exit code 2 means
+the static checks passed but runtime evidence still requires work.

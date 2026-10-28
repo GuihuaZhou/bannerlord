@@ -1,7 +1,8 @@
 # Architecture Remediation Acceptance
 
 - Remediation base: `72ef039`
-- Current implementation: `4fdca37`
+- Remediation implementation: commits through `0038f93`
+- Validation tooling: commits through `95891fc`, plus the current S8 closeout
 - Reference upstream anchor: `a3d46c90c9328bc776a5d480b7997d6d7c09613d`
 
 ## Resulting call chain
@@ -49,4 +50,5 @@ Main / Campaign events
 - Release build on the user's configured workspace: PASS, 0 errors.
 - User-reported short runtime smoke after each stage: PASS for startup/basic running only.
 - Full T01-T24 acceptance: BLOCKED; see the result matrix.
+- Unified static/evidence validation: `tools/Invoke-ReleaseValidation.ps1`.
 
