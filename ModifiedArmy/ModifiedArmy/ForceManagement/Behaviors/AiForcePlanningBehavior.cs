@@ -40,6 +40,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         /// <summary>Registers the unified daily planning pass.</summary>
         public override void RegisterEvents()
         {
+            PartyMovementTracePatch.LogInstallationStatus();
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(
                 this,
                 OnDailyTick);

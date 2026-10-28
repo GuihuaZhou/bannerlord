@@ -355,17 +355,50 @@
     <string id="str_modifiedarmy_force_diag_daily"
         text="{=ModifiedArmy_ForceDiagDaily}[兵力诊断] {PARTY_NAME}（{PARTY_ID}）在第{DAY}日拥有{CURRENT}名士兵，目标兵力为{TARGET}人，缺额{GAP}人（{GAP_RATIO}%）。补员需求评分为{SCORE}，最低门槛为{THRESHOLD}，随机门槛{GATE}。规划结果：{REASON}；任务状态：{TASK_STATUS}；目标定居点：{SETTLEMENT_NAME}；兵源：{SOURCE}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_target_changed"
-        text="{=ModifiedArmy_ForceDiagTargetChanged}[兵力任务] {PARTY_NAME}（{PARTY_ID}）的补员任务目标为{PLANNED_TARGET}，当前移动目标已变为{CURRENT_TARGET}。默认行为：{DEFAULT_BEHAVIOR}；短期行为：{SHORT_BEHAVIOR}；在军团中：{IN_ARMY}；处于战斗中：{IN_BATTLE}。系统按现行规则取消原任务；本记录不推定命令变化的发起者。任务追踪标识：{TRACE_ID}。" />
+        text="{=ModifiedArmy_ForceDiagTargetChanged}[兵力任务诊断] {PARTY_NAME}（{PARTY_ID}）的补员任务目标为{PLANNED_TARGET}，每日规划在第{TASK_AGE}个任务日发现当前移动目标已变为{CURRENT_TARGET}。最近路线变化事件：{EVENT_ID}，发生于游戏小时{CHANGE_TIME}，触发方法为{CHANGE_METHOD}。当前驻留地点：{CURRENT_SETTLEMENT}；目标部队：{TARGET_PARTY}；短期目标部队：{SHORT_TARGET_PARTY}；默认行为：{DEFAULT_BEHAVIOR}；短期行为：{SHORT_BEHAVIOR}；警戒状态：{ALERTED}；在军团中：{IN_ARMY}；处于战斗中：{IN_BATTLE}。系统按现行规则取消原任务；本记录不推定命令变化的发起者。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_task_continued"
-        text="{=ModifiedArmy_ForceDiagTaskContinued}[兵力任务] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的任务。任务状态：{TASK_STATUS}；持有移动指令：{OWNS_ORDER}；当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。任务追踪标识：{TRACE_ID}。" />
+        text="{=ModifiedArmy_ForceDiagTaskContinued}[兵力任务] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的任务。状态判定：{STATE_SUMMARY}；任务状态：{TASK_STATUS}；持有移动指令：{OWNS_ORDER}；当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。最近路线变化事件：{EVENT_ID}，游戏小时{CHANGE_TIME}，触发方法为{CHANGE_METHOD}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_task_without_order"
-        text="{=ModifiedArmy_ForceDiagTaskWithoutOrder}[兵力任务警告] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的补员任务，但任务状态为{TASK_STATUS}且未持有移动指令。当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。本次仅记录状态，不主动更改部队命令。任务追踪标识：{TRACE_ID}。" />
+        text="{=ModifiedArmy_ForceDiagTaskWithoutOrder}[兵力任务警告] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的补员任务，但任务状态为{TASK_STATUS}且未持有移动指令。状态判定：{STATE_SUMMARY}；当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。最近路线变化事件：{EVENT_ID}，游戏小时{CHANGE_TIME}，触发方法为{CHANGE_METHOD}。本次仅记录状态，不主动更改部队命令。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_route_issued"
         text="{=ModifiedArmy_ForceDiagRouteIssued}[兵力任务] 已向{PARTY_NAME}下达前往{SETTLEMENT_NAME}的移动指令。引擎当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_route_blocked"
         text="{=ModifiedArmy_ForceDiagRouteBlocked}[兵力任务] {PARTY_NAME}已建立前往{SETTLEMENT_NAME}的任务，但本次未下达移动指令。原因：{BLOCKER}。当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit"
-        text="{=ModifiedArmy_ForceDiagVisit}[兵力访问诊断] {PARTY_NAME}（{PARTY_ID}）在{SETTLEMENT_NAME}收到“{EVENT}”。处理结果：{OUTCOME}；最近检查日：{LAST_DAY}；当前存在补员任务：{HAS_TASK}。任务追踪标识：{TRACE_ID}。" />
+        text="{=ModifiedArmy_ForceDiagVisit}[兵力访问诊断] {PARTY_NAME}（{PARTY_ID}）在{SETTLEMENT_NAME}收到“{EVENT}”。处理结果：{OUTCOME}；最近检查日：{LAST_DAY}；当前存在补员任务：{HAS_TASK}；任务目标：{TASK_TARGET}；实际访问地点与任务目标匹配：{TARGET_MATCHES}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_visit_no_task"
+        text="{=ModifiedArmy_ForceDiagVisitNoTask}[兵力访问诊断] {PARTY_NAME}访问{ACTUAL_SETTLEMENT}时不存在活动补员任务。本次后续事务属于普通定居点访问处理。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_visit_wrong_target"
+        text="{=ModifiedArmy_ForceDiagVisitWrongTarget}[兵力访问诊断] {PARTY_NAME}进入{ACTUAL_SETTLEMENT}，当前补员任务指定地点为{TASK_TARGET}。本次访问不满足原定补员任务的执行条件，未对任务目标驻军发起调兵审批；后续事务属于普通定居点访问处理。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_visit_task_target"
+        text="{=ModifiedArmy_ForceDiagVisitTaskTarget}[兵力访问诊断] {PARTY_NAME}已抵达补员任务指定地点{TASK_TARGET}，系统将按现有规则进行目标兵源的实时审批。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_route_change"
+        text="{=ModifiedArmy_ForceDiagRouteChange}[兵力路线追踪] 检测到{PARTY_NAME}（{PARTY_ID}）的移动指令发生变化。诊断事件：{EVENT_ID}；游戏小时：{CAMPAIGN_HOUR}；触发方法：{METHOD}；目标方法程序集：{ASSEMBLY}。默认行为由“{BEFORE_DEFAULT}”变为“{AFTER_DEFAULT}”，短期行为由“{BEFORE_SHORT}”变为“{AFTER_SHORT}”；目标定居点由{BEFORE_TARGET}变为{AFTER_TARGET}，目标部队由{BEFORE_PARTY}变为{AFTER_PARTY}。原定补员地点：{PLANNED_TARGET}；任务状态：{TASK_STATUS}；任务持有移动指令：{OWNS_ORDER}；在军团中：{IN_ARMY}；处于战斗中：{IN_BATTLE}；警戒状态：{ALERTED}。调用路径：{CALL_PATH}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_movement_patch"
+        text="{=ModifiedArmy_ForceDiagMovementPatch}[兵力路线追踪] 移动诊断目标 MobileParty.{METHOD}（{SIGNATURE}）：{STATUS}。" />
+    <string id="str_modifiedarmy_force_diag_continue_valid" text="{=ModifiedArmy_ForceDiagContinueValid}任务有效，部队仍按目标路线移动" />
+    <string id="str_modifiedarmy_force_diag_continue_no_order" text="{=ModifiedArmy_ForceDiagContinueNoOrder}任务存在，但尚未取得移动指令" />
+    <string id="str_modifiedarmy_force_diag_continue_mismatch" text="{=ModifiedArmy_ForceDiagContinueMismatch}任务存在，但当前目标与计划不一致" />
+    <string id="str_modifiedarmy_force_diag_continue_avoidance" text="{=ModifiedArmy_ForceDiagContinueAvoidance}原版临时避敌行为当前生效" />
+    <string id="str_modifiedarmy_force_diag_continue_terminal" text="{=ModifiedArmy_ForceDiagContinueTerminal}任务已终止或不再符合继续执行条件" />
+    <string id="str_modifiedarmy_force_diag_behavior_hold" text="{=ModifiedArmy_ForceDiagBehaviorHold}原地待命" />
+    <string id="str_modifiedarmy_force_diag_behavior_go_settlement" text="{=ModifiedArmy_ForceDiagBehaviorGoSettlement}前往定居点" />
+    <string id="str_modifiedarmy_force_diag_behavior_go_point" text="{=ModifiedArmy_ForceDiagBehaviorGoPoint}前往地图位置" />
+    <string id="str_modifiedarmy_force_diag_behavior_engage" text="{=ModifiedArmy_ForceDiagBehaviorEngage}接战目标部队" />
+    <string id="str_modifiedarmy_force_diag_behavior_escort" text="{=ModifiedArmy_ForceDiagBehaviorEscort}护送目标部队" />
+    <string id="str_modifiedarmy_force_diag_behavior_raid" text="{=ModifiedArmy_ForceDiagBehaviorRaid}袭击定居点" />
+    <string id="str_modifiedarmy_force_diag_behavior_besiege" text="{=ModifiedArmy_ForceDiagBehaviorBesiege}围攻定居点" />
+    <string id="str_modifiedarmy_force_diag_behavior_defend" text="{=ModifiedArmy_ForceDiagBehaviorDefend}防守定居点" />
+    <string id="str_modifiedarmy_force_diag_behavior_none" text="{=ModifiedArmy_ForceDiagBehaviorNone}无默认移动行为" />
+    <string id="str_modifiedarmy_force_diag_behavior_other" text="{=ModifiedArmy_ForceDiagBehaviorOther}其他移动行为（{TECHNICAL_VALUE}）" />
+    <string id="str_modifiedarmy_force_diag_status_planned" text="{=ModifiedArmy_ForceDiagStatusPlanned}已制定计划" />
+    <string id="str_modifiedarmy_force_diag_status_traveling" text="{=ModifiedArmy_ForceDiagStatusTraveling}正在前往目标定居点" />
+    <string id="str_modifiedarmy_force_diag_status_visiting" text="{=ModifiedArmy_ForceDiagStatusVisiting}正在访问目标定居点" />
+    <string id="str_modifiedarmy_force_diag_status_executing" text="{=ModifiedArmy_ForceDiagStatusExecuting}正在执行调兵事务" />
+    <string id="str_modifiedarmy_force_diag_status_completed" text="{=ModifiedArmy_ForceDiagStatusCompleted}任务已完成" />
+    <string id="str_modifiedarmy_force_diag_status_cancelled" text="{=ModifiedArmy_ForceDiagStatusCancelled}任务已取消" />
+    <string id="str_modifiedarmy_force_diag_status_suspended" text="{=ModifiedArmy_ForceDiagStatusSuspended}任务已暂停" />
+    <string id="str_modifiedarmy_force_diag_status_unknown" text="{=ModifiedArmy_ForceDiagStatusUnknown}任务状态未知" />
     <string id="str_modifiedarmy_force_diag_execution"
         text="{=ModifiedArmy_ForceDiagExecution}[统一调兵诊断] {PARTY_NAME}在{SETTLEMENT_NAME}执行访问事务，部队人数由{BEFORE}变为{AFTER}。申请{REQUESTED}人，审批{APPROVED}人，实际转移{TRANSFERRED}人；事务状态：{STATUS}；原因：{REASON}；操作标识：{OPERATION_ID}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_live_approval"

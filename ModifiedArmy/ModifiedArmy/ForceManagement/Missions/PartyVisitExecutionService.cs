@@ -23,6 +23,8 @@ namespace ModifiedArmy.ForceManagement.Missions
             PartyForceTask task)
         {
             int before = party?.MemberRoster?.TotalRegulars ?? 0;
+            ForceRecruitmentDiagnostics.LogVisitTaskMatch(
+                party, settlement, task);
             if (task == null || task.TargetSettlement != settlement)
             {
                 PartyExchangeExecutionResult donation =
