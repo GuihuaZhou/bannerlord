@@ -849,31 +849,12 @@ namespace ModifiedArmy.Garrison.Supply
         private static TroopRoster ExtractAidEscortRoster(
             MobileParty garrison)
         {
-            TroopRoster result = TroopRoster.CreateDummyTroopRoster();
             Dictionary<CharacterObject, int> protectedCounts =
                 Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
                     .GetServingTroopCounts(garrison) ??
                 new Dictionary<CharacterObject, int>();
-            int remaining = EscortSize;
-            foreach (TroopRosterElement element in garrison.MemberRoster
-                .GetTroopRoster().Where(x => x.Character != null &&
-                    !x.Character.IsHero).OrderBy(x => x.Character.Tier)
-                .ToList())
-            {
-                int protectedCount = protectedCounts.TryGetValue(
-                    element.Character, out int count) ? count : 0;
-                int eligible = Math.Max(0, element.Number -
-                    element.WoundedNumber - protectedCount);
-                int amount = Math.Min(remaining, eligible);
-                if (amount <= 0) continue;
-                garrison.MemberRoster.AddToCounts(element.Character,
-                    -amount, false, 0, 0, true, -1);
-                result.AddToCounts(element.Character, amount,
-                    false, 0, 0, true, -1);
-                remaining -= amount;
-                if (remaining <= 0) break;
-            }
-            return result;
+            return Cargo.ExtractHealthyEscort(
+                garrison, EscortSize, protectedCounts);
         }
 
         private static int TransferTroopsLimited(
@@ -881,24 +862,8 @@ namespace ModifiedArmy.Garrison.Supply
             TroopRoster destination,
             int maximum)
         {
-            int remaining = Math.Max(0, maximum);
-            int moved = 0;
-            foreach (TroopRosterElement element in source.GetTroopRoster()
-                .Where(x => x.Character != null && !x.Character.IsHero)
-                .ToList())
-            {
-                int amount = Math.Min(remaining, element.Number);
-                if (amount <= 0) continue;
-                int wounded = Math.Min(amount, element.WoundedNumber);
-                source.AddToCounts(element.Character, -amount, false,
-                    -wounded, 0, true, -1);
-                destination.AddToCounts(element.Character, amount, false,
-                    wounded, 0, true, -1);
-                moved += amount;
-                remaining -= amount;
-                if (remaining <= 0) break;
-            }
-            return moved;
+            return Cargo.TransferTroopsLimited(
+                source, destination, maximum);
         }
 
         private static void LogAid(
@@ -1041,52 +1006,7 @@ namespace ModifiedArmy.Garrison.Supply
         private static TroopRoster ExtractEscortRoster(
             MobileParty garrison)
         {
-            TroopRoster escort = TroopRoster.CreateDummyTroopRoster();
-            int remaining = EscortSize;
-
-            IEnumerable<TroopRosterElement> candidates = garrison
-                .MemberRoster
-                .GetTroopRoster()
-                .Where(element =>
-                    !element.Character.IsHero
-                    && element.Number - element.WoundedNumber > 0)
-                .OrderBy(element => element.Character.Tier);
-
-            foreach (TroopRosterElement element in candidates)
-            {
-                int healthy = element.Number - element.WoundedNumber;
-                int count = Math.Min(healthy, remaining);
-
-                if (count <= 0)
-                {
-                    continue;
-                }
-
-                garrison.MemberRoster.AddToCounts(
-                    element.Character,
-                    -count,
-                    false,
-                    0,
-                    0,
-                    true,
-                    -1);
-                escort.AddToCounts(
-                    element.Character,
-                    count,
-                    false,
-                    0,
-                    0,
-                    true,
-                    -1);
-                remaining -= count;
-
-                if (remaining <= 0)
-                {
-                    break;
-                }
-            }
-
-            return escort;
+            return Cargo.ExtractHealthyEscort(garrison, EscortSize);
         }
 
         private void CompleteMission(

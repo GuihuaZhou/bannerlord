@@ -192,6 +192,20 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private void RevalidateLoadedTask(PartyForceTask task)
         {
                 MobileParty party = task.Party;
+                TransferOperationJournalBehavior journal = Campaign.Current?
+                    .GetCampaignBehavior<TransferOperationJournalBehavior>();
+                bool frozen = journal?.IsDomainFrozen(
+                    party?.StringId ?? task.PartyId) == true;
+                if (task.Status == PartyForceTaskStatus.Suspended || frozen)
+                {
+                    task.Status = PartyForceTaskStatus.Suspended;
+                    task.ReasonCode = frozen
+                        ? "TransferDomainFrozenForRecovery"
+                        : task.ReasonCode ?? "SavedTaskSuspended";
+                    task.LastValidatedDay = (int)CampaignTime.Now.ToDays;
+                    task.OwnsMovementOrder = false;
+                    return;
+                }
                 bool ownsRoute = party?.DefaultBehavior ==
                         AiBehavior.GoToSettlement &&
                     party.TargetSettlement == task.TargetSettlement;
@@ -369,82 +383,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             bool randomGateOpen)
         {
             return Coordinator.EvaluateParty(party, randomGateOpen);
-        }
-
-        /// <summary>Stores the planner result and takes ownership of its route.</summary>
-        private void ApplyLivePlan(
-            MobileParty party,
-            PartyForceTask current,
-            PartyForcePlan plan,
-            int today)
-        {
-            PartyForceTask next = plan?.Task;
-            if (next == current)
-            {
-                current.LastValidatedDay = today;
-                if (current.Status == PartyForceTaskStatus.Completed ||
-                    current.Status == PartyForceTaskStatus.Cancelled ||
-                    current.TargetSettlement == null)
-                    ReleaseOwnedMovementOrder(party, current);
-                return;
-            }
-            if (current != null)
-            {
-                ReleaseOwnedMovementOrder(party, current);
-                current.Status = PartyForceTaskStatus.Cancelled;
-                current.ReasonCode = "ReplacedByDailyPlan";
-            }
-            // A planner result with no replacement is still a cancellation;
-            // the old route was released above if this behavior owned it.
-            if (next == null) return;
-            if (next.Status == PartyForceTaskStatus.Completed ||
-                next.TargetSettlement == null)
-                return;
-            next.Party = party;
-            next.PartyId = party?.StringId;
-            next.ClanId = party?.ActualClan?.StringId;
-            next.LastValidatedDay = today;
-            next.OwnsMovementOrder = false;
-            _tasks.Add(next);
-            if (ManagedPartyPolicy.IsModManagedAiParty(party) &&
-                party.Army == null && party.MapEvent == null &&
-                !TransportThreatModel.IsNativeAvoidanceActive(party))
-            {
-                party.SetMoveGoToSettlement(
-                    next.TargetSettlement,
-                    MobileParty.NavigationType.Default,
-                    isTargetingThePort: false);
-                next.OwnsMovementOrder = true;
-                next.Status = PartyForceTaskStatus.Traveling;
-            }
-        }
-
-        /// <summary>
-        /// Clears only the exact GoToSettlement order previously issued by
-        /// this behavior. Army, combat, avoidance, or externally replaced
-        /// orders are never taken over.
-        /// </summary>
-        private static void ReleaseOwnedMovementOrder(
-            MobileParty party,
-            PartyForceTask task)
-        {
-            if (task?.OwnsMovementOrder != true || party == null)
-                return;
-            bool stillOurOrder = party.Army == null && party.MapEvent == null &&
-                !TransportThreatModel.IsNativeAvoidanceActive(party) &&
-                party.DefaultBehavior == AiBehavior.GoToSettlement &&
-                party.TargetSettlement == task.TargetSettlement;
-            task.OwnsMovementOrder = false;
-            if (!stillOurOrder) return;
-            party.SetMoveModeHold();
-            if (!RecruitmentLogFilter.ShouldLog(party)) return;
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_force_route_released");
-            message.SetTextVariable(
-                "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
-            message.SetTextVariable(
-                "SETTLEMENT_NAME", task.TargetSettlement.Name);
-            ModLogger.Info(message.ToString());
         }
 
         /// <summary>

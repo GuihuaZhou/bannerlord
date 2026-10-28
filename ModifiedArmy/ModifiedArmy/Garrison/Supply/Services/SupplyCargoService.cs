@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using ModifiedArmy.Garrison.Models;
 using System.Linq;
 using TaleWorlds.ObjectSystem;
@@ -14,6 +15,62 @@ namespace ModifiedArmy.Garrison.Supply.Services
     /// <summary>Authoritative low-level cargo and escort roster mutations.</summary>
     public sealed class SupplyCargoService
     {
+        public TroopRoster ExtractHealthyEscort(
+            MobileParty garrison,
+            int maximum,
+            IReadOnlyDictionary<CharacterObject, int> protectedCounts = null)
+        {
+            TroopRoster result = TroopRoster.CreateDummyTroopRoster();
+            if (garrison == null || maximum <= 0) return result;
+            int remaining = maximum;
+            foreach (TroopRosterElement element in garrison.MemberRoster
+                .GetTroopRoster().Where(item => item.Character != null &&
+                    !item.Character.IsHero)
+                .OrderBy(item => item.Character.Tier).ToList())
+            {
+                int protectedCount = protectedCounts != null &&
+                    protectedCounts.TryGetValue(element.Character, out int value)
+                        ? value : 0;
+                int eligible = Math.Max(0, element.Number -
+                    element.WoundedNumber - protectedCount);
+                int count = Math.Min(remaining, eligible);
+                if (count <= 0) continue;
+                garrison.MemberRoster.AddToCounts(element.Character,
+                    -count, false, 0, 0, true, -1);
+                result.AddToCounts(element.Character, count,
+                    false, 0, 0, true, -1);
+                remaining -= count;
+                if (remaining <= 0) break;
+            }
+            return result;
+        }
+
+        public int TransferTroopsLimited(
+            TroopRoster source,
+            TroopRoster destination,
+            int maximum)
+        {
+            if (source == null || destination == null || maximum <= 0) return 0;
+            int remaining = maximum;
+            int moved = 0;
+            foreach (TroopRosterElement element in source.GetTroopRoster()
+                .Where(item => item.Character != null && !item.Character.IsHero)
+                .ToList())
+            {
+                int count = Math.Min(remaining, element.Number);
+                if (count <= 0) continue;
+                int wounded = Math.Min(count, element.WoundedNumber);
+                source.AddToCounts(element.Character, -count, false,
+                    -wounded, 0, true, -1);
+                destination.AddToCounts(element.Character, count, false,
+                    wounded, 0, true, -1);
+                moved += count;
+                remaining -= count;
+                if (remaining <= 0) break;
+            }
+            return moved;
+        }
+
         public void RestoreTroops(TroopRoster source, TroopRoster destination)
         {
             foreach (TroopRosterElement element in source.GetTroopRoster())

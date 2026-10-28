@@ -33,7 +33,7 @@ Main / Campaign events
 | Fief service | `_fiefDataMap`, three original mobilization dictionaries, `ServiceBatches` | ledgers operate those exact objects; reconciler matches real roster; return service commits actual counts | runtime serving index rebuilt from saved batches and real parties |
 | Recruitment | `_settlementRecruitmentPools` and production data | prediction is calculation-only; services own professional/prisoner roster commits | daily offers are runtime state regenerated from the saved production ledger |
 | Finance | PartyManagement finance models | service evaluates and logs wage limits | no additional persisted state |
-| War disposition | `ModifiedPolitics` behavior | bridge reads required external behavior | explicit required module dependency |
+| War disposition | `ModifiedPolitics` behavior when installed | reflection bridge reads the external behavior without a compile/load dependency | absent or incompatible integration falls back to formal-war state |
 
 ## Compatibility boundaries
 

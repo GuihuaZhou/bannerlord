@@ -28,7 +28,7 @@ smoke test and is not promoted into scenario-specific PASS results below.
 | T20 | New game runs 30 campaign days | BLOCKED | Several-minute smoke is insufficient | User environment required | `4fdca37` |
 | T21 | Replaying a committed operation ID causes no second resource write | BLOCKED | No replay fixture | User environment required | `6824929` |
 | T22 | Campaign recovery barrier blocks writes until dependencies are ready | BLOCKED | No controlled load-order trace | User environment required | `0fe64f9` |
-| T23 | Required ModifiedPolitics dependency loads before ModifiedArmy | BLOCKED | Module declaration PASS; launcher order log not supplied | User environment required | `4fdca37` |
+| T23 | Optional ModifiedPolitics integration works both present and absent | BLOCKED | Dependency cycle removed and both projects build; launcher logs not supplied | User environment required | post-review hotfix |
 | T24 | Mercenary and wage Prefixes suppress native execution exactly once | BLOCKED | Static Prefix contract PASS; no runtime counter/log | User environment required | `4fdca37` |
 
 ## General smoke evidence

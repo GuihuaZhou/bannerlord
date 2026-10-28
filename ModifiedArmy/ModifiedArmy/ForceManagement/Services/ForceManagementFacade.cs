@@ -4,9 +4,10 @@ using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Tool;
-using ModifiedPolitics.Models.WarDisposition;
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Core;
@@ -130,18 +131,56 @@ namespace ModifiedArmy.ForceManagement.Services
                 return false;
             }
 
-            WarDispositionManager manager = Campaign.Current
-                .GetCampaignBehavior<WarDispositionManager>();
-            if (manager != null &&
-                manager.TryGetData(clan, out WarDispositionData data) &&
-                data != null)
+            if (TryReadExternalDisposition(clan, out disposition))
             {
-                disposition = data.Value;
                 return true;
             }
 
             LogFallback(clan);
             return false;
+        }
+
+        private static bool TryReadExternalDisposition(
+            Clan clan,
+            out float disposition)
+        {
+            disposition = 0f;
+            try
+            {
+                Type managerType = Type.GetType(
+                    "ModifiedPolitics.Models.WarDisposition.WarDispositionManager, ModifiedPolitics",
+                    false);
+                if (managerType == null) return false;
+                MethodInfo getter = typeof(Campaign).GetMethods(
+                        BindingFlags.Instance | BindingFlags.Public)
+                    .FirstOrDefault(method =>
+                        method.Name == "GetCampaignBehavior" &&
+                        method.IsGenericMethodDefinition &&
+                        method.GetParameters().Length == 0);
+                object manager = getter?.MakeGenericMethod(managerType)
+                    .Invoke(Campaign.Current, null);
+                if (manager == null) return false;
+                MethodInfo tryGet = managerType.GetMethods(
+                        BindingFlags.Instance | BindingFlags.Public)
+                    .FirstOrDefault(method =>
+                        method.Name == "TryGetData" &&
+                        method.GetParameters().Length == 2);
+                if (tryGet == null) return false;
+                object[] arguments = { clan, null };
+                if (!(tryGet.Invoke(manager, arguments) is bool found) ||
+                    !found || arguments[1] == null) return false;
+                PropertyInfo valueProperty = arguments[1].GetType()
+                    .GetProperty("Value",
+                        BindingFlags.Instance | BindingFlags.Public);
+                object value = valueProperty?.GetValue(arguments[1]);
+                if (value == null) return false;
+                disposition = Convert.ToSingle(value);
+                return true;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
         }
 
         private void LogFallback(Clan clan)

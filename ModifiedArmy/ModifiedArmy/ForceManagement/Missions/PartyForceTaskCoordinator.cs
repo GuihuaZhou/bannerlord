@@ -33,6 +33,28 @@ namespace ModifiedArmy.ForceManagement.Missions
             bool randomGateOpen)
         {
             PartyForceTask current = FindTask(party);
+            TransferOperationJournalBehavior journal = Campaign.Current?
+                .GetCampaignBehavior<TransferOperationJournalBehavior>();
+            bool frozen = journal?.IsDomainFrozen(
+                party?.StringId ?? current?.PartyId) == true;
+            if (current?.Status == PartyForceTaskStatus.Suspended || frozen)
+            {
+                if (current != null)
+                {
+                    ReleaseOwnedMovementOrder(party, current);
+                    current.Status = PartyForceTaskStatus.Suspended;
+                    current.ReasonCode = frozen
+                        ? "TransferDomainFrozenForRecovery"
+                        : current.ReasonCode ?? "TaskSuspended";
+                    current.LastValidatedDay = (int)CampaignTime.Now.ToDays;
+                }
+                return new PartyForcePlan
+                {
+                    Task = current,
+                    ReasonCode = current?.ReasonCode ??
+                        "TransferDomainFrozenForRecovery"
+                };
+            }
             if (current?.OwnsMovementOrder == true &&
                 party.TargetSettlement != current.TargetSettlement)
             {
@@ -59,7 +81,8 @@ namespace ModifiedArmy.ForceManagement.Missions
                 !task.Party.IsActive ||
                 task.Status == PartyForceTaskStatus.Completed ||
                 task.Status == PartyForceTaskStatus.Cancelled ||
-                today - task.LastValidatedDay > 7);
+                (task.Status != PartyForceTaskStatus.Suspended &&
+                    today - task.LastValidatedDay > 7));
         }
 
         public PartyForceTask FindTask(MobileParty party) => _tasks()

@@ -229,24 +229,6 @@ namespace ModifiedArmy.ForceManagement.Services
                     journal?.Record(failure, CurrentDay());
                 return failure;
             }
-            CampaignEventDispatcher.Instance.OnTroopRecruited(
-                party.LeaderHero,
-                settlement,
-                null,
-                market.TroopType,
-                count);
-            if (RecruitmentLogFilter.ShouldLog(party))
-            {
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_unified_mercenary_recruited");
-                message.SetTextVariable(
-                    "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
-                message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
-                message.SetTextVariable("COUNT", count);
-                message.SetTextVariable("TROOP_NAME", market.TroopType.Name);
-                message.SetTextVariable("COST", count * cost);
-                ModLogger.Info(message.ToString());
-            }
             PartyExchangeExecutionResult result = new PartyExchangeExecutionResult
             {
                 Status = TransferCommitStatus.Committed,
@@ -261,6 +243,35 @@ namespace ModifiedArmy.ForceManagement.Services
                 FreezeDomain = domain
             };
             journal?.Record(result, CurrentDay());
+            try
+            {
+                CampaignEventDispatcher.Instance.OnTroopRecruited(
+                    party.LeaderHero,
+                    settlement,
+                    null,
+                    market.TroopType,
+                    count);
+                if (RecruitmentLogFilter.ShouldLog(party))
+                {
+                    TextObject message = GameTexts.FindText(
+                        "str_modifiedarmy_unified_mercenary_recruited");
+                    message.SetTextVariable(
+                        "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
+                    message.SetTextVariable(
+                        "SETTLEMENT_NAME", settlement.Name);
+                    message.SetTextVariable("COUNT", count);
+                    message.SetTextVariable(
+                        "TROOP_NAME", market.TroopType.Name);
+                    message.SetTextVariable("COST", count * cost);
+                    ModLogger.Info(message.ToString());
+                }
+            }
+            catch (Exception notificationException)
+            {
+                ModLogger.Error(
+                    "Mercenary purchase committed but notification failed: " +
+                    notificationException);
+            }
             return result;
         }
 

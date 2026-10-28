@@ -21,9 +21,11 @@ The project still contains local Bannerlord DLL hint paths. The current machine
 builds successfully, but a portable build-path redesign was intentionally kept
 out of the architecture commits.
 
-## KI-04 Required external integration
+## KI-04 Optional external integration requires runtime coverage
 
-`ModifiedPolitics` is now explicitly declared as required because the assembly
-is referenced directly. Absence or an incompatible version should prevent load;
-launcher behavior still requires a runtime test.
+The Army-side compile and manifest dependency was removed to break the module
+cycle. War disposition is now read through a guarded reflection adapter and
+falls back to formal-war state when Politics is absent or incompatible. Both
+with-Politics and without-Politics launcher scenarios still require runtime
+coverage.
 
