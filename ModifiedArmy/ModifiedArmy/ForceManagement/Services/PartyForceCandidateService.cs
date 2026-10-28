@@ -1,5 +1,6 @@
 using HarmonyLib;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
@@ -64,6 +65,7 @@ namespace ModifiedArmy.ForceManagement.Services
                     config,
                     atWar),
                 RecruitmentNeedThreshold = config.AiNeedThreshold,
+                IsDailyRandomGateOpen = randomGateOpen,
                 IsRandomGateOpen = randomGateOpen &&
                     !ForceManagementFacade.Current.WarRestPlanning
                         .ShouldSuppressRecruitment(party),
@@ -153,7 +155,18 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty garrison = settlement.Town?.GarrisonParty;
             int safe = GarrisonTransferPolicyModel
                 .GetTransferableGarrisonTroopCount(settlement);
-            if (garrison == null || safe <= 0) return;
+            GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
+                .GarrisonDefense.Evaluate(settlement);
+            if (garrison == null)
+            {
+                ForceRecruitmentDiagnostics.LogGarrisonCandidate(
+                    party, settlement, 0,
+                    defense?.ActiveSupplyEscortCount ?? 0,
+                    defense?.EffectiveGarrisonCount ?? 0,
+                    defense?.MinimumCount ?? 0,
+                    safe, 0, 0, 0, target.GapCount);
+                return;
+            }
             Dictionary<CharacterObject, int> protectedCounts = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>()?
                 .GetServingTroopCounts(garrison) ?? new Dictionary<CharacterObject, int>();
@@ -168,9 +181,22 @@ namespace ModifiedArmy.ForceManagement.Services
                     RecruitmentSource.Transfer))
                 .Where(item => item.AvailableCount > 0)
                 .ToList();
-            int approved = RecruitmentModelManager.Model.BuildPlan(party, offers)
-                .Evaluations.Sum(item => Math.Max(0, item.RecruitableCount));
+            int approved = safe <= 0 ? 0 :
+                RecruitmentModelManager.Model.BuildPlan(party, offers)
+                    .Evaluations.Sum(item => Math.Max(0, item.RecruitableCount));
             approved = Math.Min(target.GapCount, Math.Min(safe, approved));
+            ForceRecruitmentDiagnostics.LogGarrisonCandidate(
+                party,
+                settlement,
+                garrison.MemberRoster.TotalRegulars,
+                defense?.ActiveSupplyEscortCount ?? 0,
+                defense?.EffectiveGarrisonCount ?? 0,
+                defense?.MinimumCount ?? 0,
+                safe,
+                protectedCounts.Values.Sum(value => Math.Max(0, value)),
+                offers.Sum(item => Math.Max(0, item.AvailableCount)),
+                approved,
+                target.GapCount);
             if (approved <= 0) return;
             float culture = party.LeaderHero?.Culture == settlement.Culture
                 ? 1f

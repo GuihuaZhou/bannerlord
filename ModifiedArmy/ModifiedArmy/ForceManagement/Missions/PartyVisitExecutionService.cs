@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Behaviors;
+using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Behaviors;
 using System;
@@ -21,14 +22,26 @@ namespace ModifiedArmy.ForceManagement.Missions
             Settlement settlement,
             PartyForceTask task)
         {
+            int before = party?.MemberRoster?.TotalRegulars ?? 0;
             if (task == null || task.TargetSettlement != settlement)
             {
                 PartyExchangeExecutionResult donation =
                     ExecuteRoutineDonation(party, settlement);
-                if (donation.Executed) return donation;
+                if (donation.Executed)
+                {
+                    ForceRecruitmentDiagnostics.LogExecution(
+                        party, settlement, task, donation, before,
+                        party?.MemberRoster?.TotalRegulars ?? 0);
+                    return donation;
+                }
                 TryPeaceDemobilization(party, settlement);
-                return new PartyExchangeExecutionResult
+                PartyExchangeExecutionResult noMatch =
+                    new PartyExchangeExecutionResult
                     { ReasonCode = donation.ReasonCode ?? "NoMatchingForceTask" };
+                ForceRecruitmentDiagnostics.LogExecution(
+                    party, settlement, task, noMatch, before,
+                    party?.MemberRoster?.TotalRegulars ?? 0);
+                return noMatch;
             }
             task.Status = PartyForceTaskStatus.Executing;
             string operationId = string.Format(
@@ -44,6 +57,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                     { ReasonCode = "TaskHasNoArrivalOperation" }
             };
             ApplyResult(task, result);
+            ForceRecruitmentDiagnostics.LogExecution(
+                party, settlement, task, result, before,
+                party?.MemberRoster?.TotalRegulars ?? 0);
             return result;
         }
 

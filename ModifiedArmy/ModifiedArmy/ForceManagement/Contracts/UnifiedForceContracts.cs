@@ -152,6 +152,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
             Array.Empty<PartyForceCandidate>();
         public float RecruitmentNeedScore { get; set; }
         public float RecruitmentNeedThreshold { get; set; }
+        public bool IsDailyRandomGateOpen { get; set; }
         public bool IsRandomGateOpen { get; set; }
         public bool IsProtectedByHigherPriorityOrder { get; set; }
         public int Today { get; set; }

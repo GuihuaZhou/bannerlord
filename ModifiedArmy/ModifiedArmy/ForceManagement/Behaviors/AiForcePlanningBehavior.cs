@@ -1,4 +1,5 @@
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Missions;
 using ModifiedArmy.ForceManagement.Transport;
@@ -307,11 +308,16 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private PartyForceTask FindTask(MobileParty party) =>
             Coordinator.FindTask(party);
 
+        internal PartyForceTask GetTaskForDiagnostics(MobileParty party) =>
+            FindTask(party);
+
         /// <summary>Writes an explainable shadow decision using display names.</summary>
         internal static void LogPlan(
             MobileParty party,
-            PartyForcePlan plan)
+            PartyForcePlan plan,
+            PartyForcePlanningContext context)
         {
+            ForceRecruitmentDiagnostics.LogDailyPlan(party, context, plan);
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
             PartyForceTask task = plan?.Task;
             PartyForceIntent? intent = task?.Intent;

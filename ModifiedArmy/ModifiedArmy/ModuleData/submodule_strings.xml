@@ -124,7 +124,7 @@
     <string id="str_modifiedarmy_unified_mercenary_recruited" text="{=ModifiedArmy_UnifiedMercenaryRecruited}[统一招兵] {PARTY_NAME}在{SETTLEMENT_NAME}招募了{COUNT}名{TROOP_NAME}，本次花费{COST}第纳尔。" />
     <string id="str_modifiedarmy_force_task_resumed" text="{=ModifiedArmy_ForceTaskResumed}[兵力任务恢复] {PARTY_NAME}读档后继续前往{SETTLEMENT_NAME}，任务类型为{INTENT}。" />
     <string id="str_modifiedarmy_force_task_cancelled_on_load" text="{=ModifiedArmy_ForceTaskCancelledOnLoad}[兵力任务恢复] {PARTY_NAME}原定前往{SETTLEMENT_NAME}的{INTENT}任务已经失效，读档后已安全取消，没有调整兵员。" />
-    <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。" />
+    <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。释放原因：{REASON}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_plan_recruit" text="{=ModifiedArmy_ForcePlanRecruit}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}补充兵力，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
     <string id="str_modifiedarmy_force_plan_war_rest" text="{=ModifiedArmy_ForcePlanWarRest}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}进行战时休整，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
     <string id="str_modifiedarmy_force_plan_maintain" text="{=ModifiedArmy_ForcePlanMaintain}[兵力调度] {PARTY_NAME}今天不需要调整兵力，因为{REASON}。" />
@@ -352,4 +352,24 @@
         text="{=ModifiedArmy_ForceSavedTaskFailed}[统一调兵] 部队{PARTY_ID}的存档任务重新验证时发生异常，该任务已取消。异常：{EXCEPTION}" />
     <string id="str_modifiedarmy_force_daily_plan_failed"
         text="{=ModifiedArmy_ForceDailyPlanFailed}[统一调兵] 部队{PARTY_ID}执行每日兵力规划时发生异常，该部队的当前任务已取消。异常：{EXCEPTION}" />
+    <string id="str_modifiedarmy_force_diag_daily"
+        text="{=ModifiedArmy_ForceDiagDaily}[兵力诊断] {PARTY_NAME}（{PARTY_ID}）在第{DAY}日拥有{CURRENT}名士兵，目标兵力为{TARGET}人，缺额{GAP}人（{GAP_RATIO}%）。补员需求评分为{SCORE}，最低门槛为{THRESHOLD}，随机门槛{GATE}。规划结果：{REASON}；任务状态：{TASK_STATUS}；目标定居点：{SETTLEMENT_NAME}；兵源：{SOURCE}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_target_changed"
+        text="{=ModifiedArmy_ForceDiagTargetChanged}[兵力任务] {PARTY_NAME}（{PARTY_ID}）的补员任务目标为{PLANNED_TARGET}，当前移动目标已变为{CURRENT_TARGET}。默认行为：{DEFAULT_BEHAVIOR}；短期行为：{SHORT_BEHAVIOR}；在军团中：{IN_ARMY}；处于战斗中：{IN_BATTLE}。系统按现行规则取消原任务；本记录不推定命令变化的发起者。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_task_continued"
+        text="{=ModifiedArmy_ForceDiagTaskContinued}[兵力任务] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的任务。任务状态：{TASK_STATUS}；持有移动指令：{OWNS_ORDER}；当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_task_without_order"
+        text="{=ModifiedArmy_ForceDiagTaskWithoutOrder}[兵力任务警告] {PARTY_NAME}今日继续沿用前往{SETTLEMENT_NAME}的补员任务，但任务状态为{TASK_STATUS}且未持有移动指令。当前目标匹配：{TARGET_MATCHES}；默认行为：{DEFAULT_BEHAVIOR}。本次仅记录状态，不主动更改部队命令。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_route_issued"
+        text="{=ModifiedArmy_ForceDiagRouteIssued}[兵力任务] 已向{PARTY_NAME}下达前往{SETTLEMENT_NAME}的移动指令。引擎当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_route_blocked"
+        text="{=ModifiedArmy_ForceDiagRouteBlocked}[兵力任务] {PARTY_NAME}已建立前往{SETTLEMENT_NAME}的任务，但本次未下达移动指令。原因：{BLOCKER}。当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_visit"
+        text="{=ModifiedArmy_ForceDiagVisit}[兵力访问诊断] {PARTY_NAME}（{PARTY_ID}）在{SETTLEMENT_NAME}收到“{EVENT}”。处理结果：{OUTCOME}；最近检查日：{LAST_DAY}；当前存在补员任务：{HAS_TASK}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_execution"
+        text="{=ModifiedArmy_ForceDiagExecution}[统一调兵诊断] {PARTY_NAME}在{SETTLEMENT_NAME}执行访问事务，部队人数由{BEFORE}变为{AFTER}。申请{REQUESTED}人，审批{APPROVED}人，实际转移{TRANSFERRED}人；事务状态：{STATUS}；原因：{REASON}；操作标识：{OPERATION_ID}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_live_approval"
+        text="{=ModifiedArmy_ForceDiagLiveApproval}[统一调兵诊断] {PARTY_NAME}在{SETTLEMENT_NAME}提出实时调兵申请。申请{REQUESTED}人，计划批准{PLAN_APPROVED}人；计划原因：{PLAN_REASON}。执行前来源名册{SOURCE_BEFORE}人，接收方名册{DESTINATION_BEFORE}人；事务状态：{STATUS}，实际转移{TRANSFERRED}人，执行原因：{REASON}。操作标识：{OPERATION_ID}。" />
+    <string id="str_modifiedarmy_force_diag_garrison_candidate"
+        text="{=ModifiedArmy_ForceDiagGarrisonCandidate}[驻军调拨诊断] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出护卫预留{RESERVED}人，有效守军{EFFECTIVE}人，最低留守要求{MINIMUM}人。按现有防务规则可安全调出{SAFE}人，在役封邑兵保护{PROTECTED}人，可供审批普通士兵{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募模型审批{APPROVED}人。" />
 </strings>

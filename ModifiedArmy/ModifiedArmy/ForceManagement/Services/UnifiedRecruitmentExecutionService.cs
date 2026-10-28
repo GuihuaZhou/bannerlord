@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Behaviors;
+using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Finance;
@@ -326,7 +327,10 @@ namespace ModifiedArmy.ForceManagement.Services
             Runner.PrepareContext(context);
             PartyExchangePlan plan = ForceManagementFacade.Current
                 .PartyExchange.BuildPlan(context);
-            return Runner.Execute(plan);
+            PartyExchangeExecutionResult result = Runner.Execute(plan);
+            ForceRecruitmentDiagnostics.LogLiveApproval(
+                context, plan, result);
+            return result;
         }
 
         /// <summary>Creates a live mobile-party source descriptor.</summary>

@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Recruitment.Diagnostics;
@@ -41,7 +42,15 @@ namespace ModifiedArmy.ForceManagement.Missions
             {
                 if (current != null)
                 {
-                    ReleaseOwnedMovementOrder(party, current);
+                    ForceRecruitmentDiagnostics.LogTaskRouteDecision(
+                        party,
+                        current,
+                        false,
+                        frozen
+                            ? "调兵恢复域被冻结"
+                            : "任务当前处于暂停状态");
+                    ReleaseOwnedMovementOrder(
+                        party, current, "任务已暂停或恢复域被冻结");
                     current.Status = PartyForceTaskStatus.Suspended;
                     current.ReasonCode = frozen
                         ? "TransferDomainFrozenForRecovery"
@@ -58,6 +67,7 @@ namespace ModifiedArmy.ForceManagement.Missions
             if (current?.OwnsMovementOrder == true &&
                 party.TargetSettlement != current.TargetSettlement)
             {
+                ForceRecruitmentDiagnostics.LogMovementChanged(party, current);
                 current.OwnsMovementOrder = false;
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "MovementOrderChangedExternally";
@@ -70,7 +80,7 @@ namespace ModifiedArmy.ForceManagement.Missions
             PartyForcePlan plan = ForceManagementFacade.Current.ForcePlanning
                 .BuildDailyPlan(context);
             ApplyLivePlan(party, current, plan, context.Today);
-            AiForcePlanningBehavior.LogPlan(party, plan);
+            AiForcePlanningBehavior.LogPlan(party, plan, context);
             return plan;
         }
 
@@ -102,16 +112,19 @@ namespace ModifiedArmy.ForceManagement.Missions
             PartyForceTask next = plan?.Task;
             if (next == current)
             {
+                ForceRecruitmentDiagnostics.LogTaskContinuation(party, current);
                 current.LastValidatedDay = today;
                 if (current.Status == PartyForceTaskStatus.Completed ||
                     current.Status == PartyForceTaskStatus.Cancelled ||
                     current.TargetSettlement == null)
-                    ReleaseOwnedMovementOrder(party, current);
+                    ReleaseOwnedMovementOrder(
+                        party, current, "任务已终止或目标定居点不可用");
                 return;
             }
             if (current != null)
             {
-                ReleaseOwnedMovementOrder(party, current);
+                ReleaseOwnedMovementOrder(
+                    party, current, "每日规划已替换原任务");
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "ReplacedByDailyPlan";
             }
@@ -125,21 +138,36 @@ namespace ModifiedArmy.ForceManagement.Missions
             next.LastValidatedDay = today;
             next.OwnsMovementOrder = false;
             _tasks().Add(next);
-            if (ManagedPartyPolicy.IsModManagedAiParty(party) &&
-                party.Army == null && party.MapEvent == null &&
-                !TransportThreatModel.IsNativeAvoidanceActive(party))
+            bool managed = ManagedPartyPolicy.IsModManagedAiParty(party);
+            bool inArmy = party?.Army != null;
+            bool inBattle = party?.MapEvent != null;
+            bool avoiding = TransportThreatModel.IsNativeAvoidanceActive(party);
+            if (managed && !inArmy && !inBattle && !avoiding)
             {
                 party.SetMoveGoToSettlement(next.TargetSettlement,
                     MobileParty.NavigationType.Default,
                     isTargetingThePort: false);
                 next.OwnsMovementOrder = true;
                 next.Status = PartyForceTaskStatus.Traveling;
+                ForceRecruitmentDiagnostics.LogTaskRouteDecision(
+                    party, next, true, null);
+            }
+            else
+            {
+                string blocker = !managed ? "不是受 Mod 管理的 AI 领主部队" :
+                    inArmy ? "当前处于军团中" :
+                    inBattle ? "当前处于战斗中" :
+                    avoiding ? "当前处于原版避敌状态" :
+                    "现有条件未允许下达移动指令";
+                ForceRecruitmentDiagnostics.LogTaskRouteDecision(
+                    party, next, false, blocker);
             }
         }
 
         private static void ReleaseOwnedMovementOrder(
             MobileParty party,
-            PartyForceTask task)
+            PartyForceTask task,
+            string reason)
         {
             if (task?.OwnsMovementOrder != true || party == null) return;
             bool stillOurOrder = party.Army == null && party.MapEvent == null &&
@@ -156,6 +184,10 @@ namespace ModifiedArmy.ForceManagement.Missions
                 "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable(
                 "SETTLEMENT_NAME", task.TargetSettlement.Name);
+            message.SetTextVariable("REASON", reason ?? "未说明");
+            message.SetTextVariable(
+                "TRACE_ID",
+                ForceRecruitmentDiagnostics.GetTraceId(party, task));
             ModLogger.Info(message.ToString());
         }
     }
