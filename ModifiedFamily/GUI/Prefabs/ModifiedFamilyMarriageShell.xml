@@ -12,8 +12,8 @@
       <Children>
         <NavigationForcedScopeCollectionTargeter CollectionID="ModifiedFamilyMarriageForcedScopeCollection" UseRootAsTarget="true" />
 
-        <!-- Reuse the native encyclopedia frame so the shell scales exactly like an encyclopedia page. -->
-        <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Encyclopedia.Frame.Width" SuggestedHeight="!Encyclopedia.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.Frame">
+        <!-- The custom sprite is the marriage panel itself; do not render the encyclopedia frame underneath it. -->
+        <Widget Id="ModifiedFamilyMarriagePanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Encyclopedia.Frame.Width" SuggestedHeight="!Encyclopedia.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="negotiation_center_decoration">
           <Children>
             <ButtonWidget Command.Click="ExecuteBack" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="48" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="40" Brush="ButtonRightBigArrowBrush1" IsEnabled="@CanGoBack" />
             <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="576" SuggestedHeight="150" PositionYOffset="-17" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="StdAssets\tabbar_popup" DoNotAcceptEvents="true">
@@ -371,7 +371,7 @@
               </Children>
             </Widget>
           </Children>
-        </BrushWidget>
+        </Widget>
 
         <!-- Native encyclopedia close-button placement and visuals, bound to this screen's close command. -->
         <ButtonWidget Command.Click="ExecuteClose" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.CloseButton.Width" SuggestedHeight="!Popup.CloseButton.Height" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-465" MarginLeft="1465" Brush="Popup.CloseButton" />
