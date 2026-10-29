@@ -12,6 +12,11 @@
     <string id="ModifiedArmy_ExchangeNoGarrisonSurplus" text="[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，但扣除当地最低防守兵力后，驻军已经没有可以安全调出的士兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="ModifiedArmy_ExchangeBuildRejectedDiagnostic" text="[统一调兵] 调兵记录{OPERATION_ID}原计划调动{REQUESTED}人，但未能建立安全的调兵方案，原因是{REASON}。来源归属为{SOURCE_CLAN}，接收方归属为{DESTINATION_CLAN}，定居点归属为{OWNER_CLAN}。" />
     <string id="ModifiedArmy_CommonUnknown" text="尚未取得名称" />
+    <string id="ModifiedArmy_CommonYes" text="是" />
+    <string id="ModifiedArmy_CommonNo" text="否" />
+    <string id="ModifiedArmy_CommonNotRecorded" text="尚无记录" />
+    <string id="ModifiedArmy_CommonPassed" text="已通过" />
+    <string id="ModifiedArmy_CommonNotPassed" text="未通过" />
     <string id="ModifiedArmy_ExchangeDiagSourceKind" text="来源和接收方的部队类型不符合本次调兵方向" />
     <string id="ModifiedArmy_ExchangeDiagNotArrived" text="野战部队尚未真正抵达目标定居点" />
     <string id="ModifiedArmy_ExchangeDiagSourceOwner" text="无法确认来源部队的有效归属" />
@@ -276,11 +281,27 @@
     <string id="ModifiedArmy_DisbandGarrisonMerge" text="[整队解散] {PARTY_NAME}在{SETTLEMENT_NAME}完成了人员安置：{FIEF_RETURNED}名封建兵返乡，{FIEF_TRANSFERRED}名封建兵随原服役身份进入驻军，{ORDINARY_ACCEPTED}名普通士兵进入驻军；另有{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
     <string id="ModifiedArmy_DisbandFinalization" text="[整队解散] {PARTY_NAME}在{DESTINATION_NAME}结束服役：{FIEF_RETURNED}名封建兵正常返乡；{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
     <string id="ModifiedArmy_NoValidDestination" text="没有合法目的地的地点" />
-    <string id="ModifiedArmy_PartyBindingReservation" text="[部队基地绑定] 预留操作：{ACTION}；英雄={HERO_ID}；家族={CLAN_ID}；定居点={SETTLEMENT_ID}；令牌={TOKEN_ID}；原因={REASON}。" />
-    <string id="ModifiedArmy_PartyBindingCommitted" text="[部队基地绑定] 已将{PARTY_NAME}（{PARTY_ID}）绑定到定居点{SETTLEMENT_ID}；版本={VERSION}。" />
-    <string id="ModifiedArmy_PartyBindingReleased" text="[部队基地绑定] 已解除{PARTY_NAME}（{PARTY_ID}）的绑定；原因={REASON}。" />
-    <string id="ModifiedArmy_PartyBindingRejected" text="[部队基地绑定] 已拒绝{PARTY_NAME}（{PARTY_ID}）在定居点{SETTLEMENT_ID}执行操作{OPERATION}；原因={REASON}。" />
-    <string id="ModifiedArmy_PartyBindingRecovery" text="[部队基地绑定恢复] 记录={RECORDS}；已绑定={BOUND}；未绑定={UNBOUND}；冲突={CONFLICTS}。" />
-    <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 阶段={PHASE}；英雄={HERO_ID}；家族={CLAN_ID}；部队={PARTY_ID}；正规兵={REGULARS}；出生点={SPAWN}；当前位置={CURRENT}；当前目标={TARGET}；新游戏={NEW_GAME}。" />
+    <string id="ModifiedArmy_PartyBindingReservation" text="[部队基地绑定] 本次预留操作为{ACTION}。申请涉及家族{CLAN_ID}的英雄{HERO_ID}以及定居点{SETTLEMENT_ID}。预留令牌为{TOKEN_ID}。记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingCommitted" text="[部队基地绑定] 已将{PARTY_NAME}绑定到定居点{SETTLEMENT_ID}。该部队的内部标识为{PARTY_ID}，绑定版本为{VERSION}。" />
+    <string id="ModifiedArmy_PartyBindingReleased" text="[部队基地绑定] 已解除{PARTY_NAME}的基地绑定。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRejected" text="[部队基地绑定] 已拒绝{PARTY_NAME}在定居点{SETTLEMENT_ID}执行操作{OPERATION}。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRecovery" text="[部队基地绑定恢复] 本次恢复检查了{RECORDS}条记录，恢复了{BOUND}项定居点绑定，发现{UNBOUND}支部队尚未绑定基地，并检测到{CONFLICTS}项冲突。" />
+    <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 创建流程已到达{PHASE}阶段，涉及家族{CLAN_ID}的英雄{HERO_ID}。部队内部标识为{PARTY_ID}，当前拥有{REGULARS}名正规兵。出生定居点为{SPAWN}，当前所在定居点为{CURRENT}，移动目标为{TARGET}。新游戏状态为{NEW_GAME}。" />
+    <string id="ModifiedArmy_GarrisonWageLimitBorderLog" text="驻军工资评估将边境据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />
+    <string id="ModifiedArmy_GarrisonWageLimitInteriorLog" text="驻军工资评估将内陆据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />
+    <string id="ModifiedArmy_ForceDiagVisit" text="兵力访问诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，在{SETTLEMENT_NAME}收到{EVENT}。本次评估认定，{OUTCOME}。最近一次评估发生在第{LAST_DAY}日。当前存在兵力任务：{HAS_TASK}。任务目的地为{TASK_TARGET}。本次访问地点与任务目的地一致：{TARGET_MATCHES}。追踪标识为{TRACE_ID}。" />
+    <string id="ModifiedArmy_ForceDiagRouteDestinationChanged" text="兵力路线诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，其定居点目标由{BEFORE_TARGET}调整为{AFTER_TARGET}。原版程序集{ASSEMBLY}中的方法{METHOD}在游戏第{CAMPAIGN_HOUR}小时应用了此次调整。当前兵力任务计划前往{PLANNED_TARGET}，任务状态为{TASK_STATUS}。任务持有移动指令：{OWNS_ORDER}。部队属于军团：{IN_ARMY}。部队正在战斗：{IN_BATTLE}。部队处于警戒状态：{ALERTED}。事件标识为{EVENT_ID}。追踪标识为{TRACE_ID}。" />
+    <string id="ModifiedArmy_ForceDiagRouteBehaviorChanged" text="兵力路线诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，其默认行为由{BEFORE_DEFAULT}调整为{AFTER_DEFAULT}，短期行为由{BEFORE_SHORT}调整为{AFTER_SHORT}。目标部队由{BEFORE_PARTY}调整为{AFTER_PARTY}。原版程序集{ASSEMBLY}中的方法{METHOD}在游戏第{CAMPAIGN_HOUR}小时应用了此次调整。当前兵力任务计划前往{PLANNED_TARGET}，任务状态为{TASK_STATUS}。事件标识为{EVENT_ID}。追踪标识为{TRACE_ID}。" />
+    <string id="ModifiedArmy_ForceDiagRouteCallPath" text="兵力路线诊断记录了事件{EVENT_ID}的调用路径。{CALL_PATH}。" />
+    <string id="ModifiedArmy_ForceDiagVisitEventEntered" text="定居点进入事件" />
+    <string id="ModifiedArmy_ForceDiagVisitEventDaily" text="每日驻留检查" />
+    <string id="ModifiedArmy_ForceDiagVisitEventUnknown" text="未明确类型的访问事件" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeDisabled" text="统一兵力规划当前未启用" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeNotPresent" text="部队当前并未实际驻留在该定居点" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeDuplicate" text="同一部队和定居点在当前游戏日已经完成评估，因此本次重复评估已被跳过" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeAccepted" text="本次访问已通过每日重复检查，可以继续评估兵力任务" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeCapture" text="本次访问已交由攻城结束后的一次性驻军移交流程处理" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeForceTask" text="本次访问已交由常规兵力任务执行流程处理" />
+    <string id="ModifiedArmy_ForceDiagVisitOutcomeUnknown" text="本次访问产生了未明确分类的处理结果" />
   </strings>
 </base>

@@ -73,15 +73,19 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             message.SetTextVariable("GAP_RATIO", ratio);
             message.SetTextVariable(
                 "GATE",
-                context.IsDailyRandomGateOpen ? "已通过" : "未通过");
+                GameTexts.FindText(context.IsDailyRandomGateOpen
+                    ? "str_modifiedarmy_common_passed"
+                    : "str_modifiedarmy_common_not_passed"));
             message.SetTextVariable("SCORE", context.RecruitmentNeedScore);
             message.SetTextVariable(
                 "THRESHOLD", context.RecruitmentNeedThreshold);
             message.SetTextVariable("REASON", plan?.ReasonCode ?? "<none>");
-            message.SetTextVariable("TASK_STATUS", task?.Status.ToString() ?? "无");
+            message.SetTextVariable(
+                "TASK_STATUS", task?.Status.ToString() ?? None().ToString());
             message.SetTextVariable(
                 "SETTLEMENT_NAME", task?.TargetSettlement?.Name ?? None());
-            message.SetTextVariable("SOURCE", task?.SourceKind.ToString() ?? "无");
+            message.SetTextVariable(
+                "SOURCE", task?.SourceKind.ToString() ?? None().ToString());
             message.SetTextVariable("TRACE_ID", GetTraceId(party, task));
             ModLogger.Debug(message.ToString());
         }
@@ -98,13 +102,20 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 "PLANNED_TARGET", task.TargetSettlement?.Name ?? None());
             message.SetTextVariable(
                 "CURRENT_TARGET", party?.TargetSettlement?.Name ?? None());
-            message.SetTextVariable("DEFAULT_BEHAVIOR", party?.DefaultBehavior.ToString() ?? "无");
-            message.SetTextVariable("SHORT_BEHAVIOR", party?.ShortTermBehavior.ToString() ?? "无");
-            message.SetTextVariable("IN_ARMY", party?.Army != null ? "是" : "否");
-            message.SetTextVariable("IN_BATTLE", party?.MapEvent != null ? "是" : "否");
+            message.SetTextVariable(
+                "DEFAULT_BEHAVIOR",
+                party?.DefaultBehavior.ToString() ?? None().ToString());
+            message.SetTextVariable(
+                "SHORT_BEHAVIOR",
+                party?.ShortTermBehavior.ToString() ?? None().ToString());
+            message.SetTextVariable("IN_ARMY", GetBooleanText(party?.Army != null));
+            message.SetTextVariable(
+                "IN_BATTLE", GetBooleanText(party?.MapEvent != null));
             MovementTraceEvent trace = GetLatestMovementChange(party);
-            message.SetTextVariable("EVENT_ID", trace?.EventId ?? "未记录");
-            message.SetTextVariable("CHANGE_METHOD", trace?.Method ?? "尚未确认");
+            message.SetTextVariable(
+                "EVENT_ID", trace?.EventId ?? NotRecorded().ToString());
+            message.SetTextVariable(
+                "CHANGE_METHOD", trace?.Method ?? Unknown().ToString());
             message.SetTextVariable(
                 "CHANGE_TIME",
                 FormatHour(trace?.CampaignHour));
@@ -115,7 +126,7 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             message.SetTextVariable(
                 "SHORT_TARGET_PARTY", party?.ShortTermTargetParty?.Name ?? None());
             message.SetTextVariable(
-                "ALERTED", party?.Ai?.IsAlerted == true ? "是" : "否");
+                "ALERTED", GetBooleanText(party?.Ai?.IsAlerted == true));
             message.SetTextVariable(
                 "TASK_AGE",
                 Math.Max(0, (int)CampaignTime.Now.ToDays - task.CreatedDay));
@@ -148,15 +159,17 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                         EventId = "route-" + (++_nextMovementEventId),
                         PartyId = party.StringId,
                         TraceId = GetTraceId(party, task),
-                        Method = method ?? "尚未确认",
+                        Method = method ?? "Unknown method",
                         CampaignHour = CampaignTime.Now.ToHours,
                         CallPath = BuildCallPath()
                     };
                     LatestMovementChanges[party.StringId ?? string.Empty] = trace;
                 }
 
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_force_diag_route_change");
+                bool destinationChanged = beforeSettlement != afterSettlement;
+                TextObject message = GameTexts.FindText(destinationChanged
+                    ? "str_modifiedarmy_force_diag_route_destination_changed"
+                    : "str_modifiedarmy_force_diag_route_behavior_changed");
                 SetParty(message, party);
                 message.SetTextVariable("EVENT_ID", trace.EventId);
                 message.SetTextVariable(
@@ -173,23 +186,24 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 message.SetTextVariable(
                     "AFTER_SHORT", GetBehaviorText(afterShortTerm));
                 message.SetTextVariable(
-                    "BEFORE_TARGET", beforeSettlement ?? "无");
+                    "BEFORE_TARGET", beforeSettlement ?? None().ToString());
                 message.SetTextVariable(
-                    "AFTER_TARGET", afterSettlement ?? "无");
+                    "AFTER_TARGET", afterSettlement ?? None().ToString());
                 message.SetTextVariable(
-                    "BEFORE_PARTY", beforeTargetParty ?? "无");
+                    "BEFORE_PARTY", beforeTargetParty ?? None().ToString());
                 message.SetTextVariable(
-                    "AFTER_PARTY", afterTargetParty ?? "无");
+                    "AFTER_PARTY", afterTargetParty ?? None().ToString());
                 message.SetTextVariable(
                     "PLANNED_TARGET", task.TargetSettlement?.Name ?? None());
                 message.SetTextVariable("TASK_STATUS", GetTaskStatusText(task.Status));
                 message.SetTextVariable(
-                    "OWNS_ORDER", task.OwnsMovementOrder ? "是" : "否");
-                message.SetTextVariable("IN_ARMY", party.Army != null ? "是" : "否");
-                message.SetTextVariable("IN_BATTLE", party.MapEvent != null ? "是" : "否");
+                    "OWNS_ORDER", GetBooleanText(task.OwnsMovementOrder));
                 message.SetTextVariable(
-                    "ALERTED", party.Ai?.IsAlerted == true ? "是" : "否");
-                message.SetTextVariable("CALL_PATH", trace.CallPath);
+                    "IN_ARMY", GetBooleanText(party.Army != null));
+                message.SetTextVariable(
+                    "IN_BATTLE", GetBooleanText(party.MapEvent != null));
+                message.SetTextVariable(
+                    "ALERTED", GetBooleanText(party.Ai?.IsAlerted == true));
                 message.SetTextVariable("TRACE_ID", trace.TraceId);
                 bool lostPlannedRoute = task.OwnsMovementOrder &&
                     (afterDefault != AiBehavior.GoToSettlement ||
@@ -198,6 +212,12 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                     ModLogger.Warn(message.ToString());
                 else
                     ModLogger.Debug(message.ToString());
+
+                TextObject callPath = GameTexts.FindText(
+                    "str_modifiedarmy_force_diag_route_call_path");
+                callPath.SetTextVariable("EVENT_ID", trace.EventId);
+                callPath.SetTextVariable("CALL_PATH", trace.CallPath);
+                ModLogger.Debug(callPath.ToString());
             }
             catch
             {
@@ -235,16 +255,20 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 "SETTLEMENT_NAME", task.TargetSettlement?.Name ?? None());
             message.SetTextVariable("TASK_STATUS", task.Status.ToString());
             message.SetTextVariable(
-                "OWNS_ORDER", task.OwnsMovementOrder ? "是" : "否");
+                "OWNS_ORDER", GetBooleanText(task.OwnsMovementOrder));
             message.SetTextVariable(
-                "TARGET_MATCHES", targetMatches ? "是" : "否");
-            message.SetTextVariable("DEFAULT_BEHAVIOR", party?.DefaultBehavior.ToString() ?? "无");
+                "TARGET_MATCHES", GetBooleanText(targetMatches));
+            message.SetTextVariable(
+                "DEFAULT_BEHAVIOR",
+                party?.DefaultBehavior.ToString() ?? None().ToString());
             message.SetTextVariable(
                 "STATE_SUMMARY",
                 GetContinuationStateText(party, task, targetMatches));
             MovementTraceEvent trace = GetLatestMovementChange(party);
-            message.SetTextVariable("EVENT_ID", trace?.EventId ?? "未记录");
-            message.SetTextVariable("CHANGE_METHOD", trace?.Method ?? "尚未确认");
+            message.SetTextVariable(
+                "EVENT_ID", trace?.EventId ?? NotRecorded().ToString());
+            message.SetTextVariable(
+                "CHANGE_METHOD", trace?.Method ?? Unknown().ToString());
             message.SetTextVariable(
                 "CHANGE_TIME",
                 FormatHour(trace?.CampaignHour));
@@ -268,8 +292,11 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             SetParty(message, party);
             message.SetTextVariable(
                 "SETTLEMENT_NAME", task.TargetSettlement?.Name ?? None());
-            message.SetTextVariable("BLOCKER", blocker ?? "无");
-            message.SetTextVariable("DEFAULT_BEHAVIOR", party?.DefaultBehavior.ToString() ?? "无");
+            message.SetTextVariable(
+                "BLOCKER", blocker ?? None().ToString());
+            message.SetTextVariable(
+                "DEFAULT_BEHAVIOR",
+                party?.DefaultBehavior.ToString() ?? None().ToString());
             message.SetTextVariable(
                 "CURRENT_TARGET", party?.TargetSettlement?.Name ?? None());
             message.SetTextVariable("TRACE_ID", GetTraceId(party, task));
@@ -290,15 +317,16 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             SetParty(message, party);
             message.SetTextVariable(
                 "SETTLEMENT_NAME", settlement?.Name ?? None());
-            message.SetTextVariable("EVENT", eventName ?? "未知");
-            message.SetTextVariable("OUTCOME", outcome ?? "未知");
+            message.SetTextVariable("EVENT", GetVisitEventText(eventName));
+            message.SetTextVariable("OUTCOME", GetVisitOutcomeText(outcome));
             message.SetTextVariable("LAST_DAY", lastDay);
-            message.SetTextVariable("HAS_TASK", task != null ? "是" : "否");
+            message.SetTextVariable(
+                "HAS_TASK", GetBooleanText(task != null));
             message.SetTextVariable(
                 "TASK_TARGET", task?.TargetSettlement?.Name ?? None());
             message.SetTextVariable(
                 "TARGET_MATCHES",
-                task?.TargetSettlement == settlement ? "是" : "否");
+                GetBooleanText(task?.TargetSettlement == settlement));
             message.SetTextVariable("TRACE_ID", GetTraceId(party, task));
             ModLogger.Debug(message.ToString());
         }
@@ -343,9 +371,12 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             message.SetTextVariable("REQUESTED", result?.RequestedCount ?? 0);
             message.SetTextVariable("APPROVED", result?.ApprovedCount ?? 0);
             message.SetTextVariable("TRANSFERRED", result?.TransferredCount ?? 0);
-            message.SetTextVariable("STATUS", result?.Status.ToString() ?? "无");
-            message.SetTextVariable("REASON", result?.ReasonCode ?? "无");
-            message.SetTextVariable("OPERATION_ID", result?.OperationId ?? "无");
+            message.SetTextVariable(
+                "STATUS", result?.Status.ToString() ?? None().ToString());
+            message.SetTextVariable(
+                "REASON", result?.ReasonCode ?? None().ToString());
+            message.SetTextVariable(
+                "OPERATION_ID", result?.OperationId ?? None().ToString());
             message.SetTextVariable("TRACE_ID", GetTraceId(party, task));
             ModLogger.Info(message.ToString());
         }
@@ -366,17 +397,19 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             message.SetTextVariable(
                 "PLAN_APPROVED", plan?.SourceToDestination?.TotalCount ?? 0);
             message.SetTextVariable(
-                "PLAN_REASON", plan?.ReasonCode ?? "无");
+                "PLAN_REASON", plan?.ReasonCode ?? None().ToString());
             message.SetTextVariable(
                 "SOURCE_BEFORE", context?.SourceSnapshot?.RegularCount ?? 0);
             message.SetTextVariable(
                 "DESTINATION_BEFORE",
                 context?.DestinationSnapshot?.RegularCount ?? 0);
-            message.SetTextVariable("STATUS", result?.Status.ToString() ?? "无");
-            message.SetTextVariable("TRANSFERRED", result?.TransferredCount ?? 0);
-            message.SetTextVariable("REASON", result?.ReasonCode ?? "无");
             message.SetTextVariable(
-                "OPERATION_ID", context?.OperationId ?? "无");
+                "STATUS", result?.Status.ToString() ?? None().ToString());
+            message.SetTextVariable("TRANSFERRED", result?.TransferredCount ?? 0);
+            message.SetTextVariable(
+                "REASON", result?.ReasonCode ?? None().ToString());
+            message.SetTextVariable(
+                "OPERATION_ID", context?.OperationId ?? None().ToString());
             ModLogger.Debug(message.ToString());
         }
 
@@ -421,6 +454,12 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
         private static TextObject None() =>
             GameTexts.FindText("str_modifiedarmy_common_none");
 
+        private static TextObject Unknown() =>
+            GameTexts.FindText("str_modifiedarmy_common_unknown");
+
+        private static TextObject NotRecorded() =>
+            GameTexts.FindText("str_modifiedarmy_common_not_recorded");
+
         private static void EnsureMovementCampaign()
         {
             if (ReferenceEquals(_movementCampaign, Campaign.Current)) return;
@@ -441,18 +480,18 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                         method.DeclaringType != typeof(ForceRecruitmentDiagnostics))
                     .Take(12)
                     .Select(method => string.Format(
-                        "{0}:{1}.{2}",
+                        "the {0} assembly method {1}.{2}",
                         method.Module?.Assembly?.GetName()?.Name ?? "<unknown>",
                         method.DeclaringType?.FullName ?? "<unknown>",
                         method.Name)) ?? Array.Empty<string>();
-                string result = string.Join(" <- ", frames);
+                string result = string.Join(" which was called by ", frames);
                 return string.IsNullOrWhiteSpace(result)
-                    ? "调用来源尚未确认"
+                    ? "The calling method could not be determined"
                     : result;
             }
             catch
             {
-                return "调用来源尚未确认";
+                return "The calling method could not be determined";
             }
         }
 
@@ -463,7 +502,47 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
 
         private static string FormatHour(double? hour) => hour.HasValue
             ? hour.Value.ToString("F1", CultureInfo.InvariantCulture)
-            : "未记录";
+            : GameTexts.FindText(
+                "str_modifiedarmy_common_not_recorded").ToString();
+
+        private static TextObject GetBooleanText(bool value) =>
+            GameTexts.FindText(value
+                ? "str_modifiedarmy_common_yes"
+                : "str_modifiedarmy_common_no");
+
+        private static TextObject GetVisitEventText(string eventName)
+        {
+            string id = eventName switch
+            {
+                "SettlementEntered" =>
+                    "str_modifiedarmy_force_diag_visit_event_entered",
+                "DailyResidenceCheck" =>
+                    "str_modifiedarmy_force_diag_visit_event_daily",
+                _ => "str_modifiedarmy_force_diag_visit_event_unknown"
+            };
+            return GameTexts.FindText(id);
+        }
+
+        private static TextObject GetVisitOutcomeText(string outcome)
+        {
+            string id = outcome switch
+            {
+                "UnifiedPlanningDisabled" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_disabled",
+                "PartyNotPresent" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_not_present",
+                "DuplicateDailyEvaluation" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_duplicate",
+                "EvaluationAccepted" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_accepted",
+                "CaptureDonationSelected" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_capture",
+                "ForceTaskExecutionSelected" =>
+                    "str_modifiedarmy_force_diag_visit_outcome_force_task",
+                _ => "str_modifiedarmy_force_diag_visit_outcome_unknown"
+            };
+            return GameTexts.FindText(id);
+        }
 
         private static TextObject GetBehaviorText(AiBehavior behavior)
         {

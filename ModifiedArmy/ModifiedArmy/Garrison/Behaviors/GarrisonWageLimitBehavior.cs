@@ -2,6 +2,8 @@ using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Behaviors
 {
@@ -91,12 +93,20 @@ namespace ModifiedArmy.Garrison.Behaviors
                 if (clan.Kingdom == Clan.PlayerClan?.Kingdom &&
                     System.Math.Abs(previousLimit - newLimit) >= meaningfulChange)
                 {
-                    ModLogger.Debug(
-                        $"[GarrisonWageLimit] {town.Name}'s wage limit changed " +
-                        $"from {previousLimit} to {newLimit}. The desired garrison " +
-                        $"size is {desiredSize}, expected average wage is " +
-                        $"{expectedAverageWage:F2}, wealth factor is {goldFactor:F2}, " +
-                        $"raw limit is {rawWageLimit:F2}, and border status is {isBorder}.");
+                    TextObject message = GameTexts.FindText(isBorder
+                        ? "str_modifiedarmy_garrison_wage_limit_border_log"
+                        : "str_modifiedarmy_garrison_wage_limit_interior_log");
+                    message.SetTextVariable("SETTLEMENT_NAME", town.Name);
+                    message.SetTextVariable("PREVIOUS_LIMIT", previousLimit);
+                    message.SetTextVariable("NEW_LIMIT", newLimit);
+                    message.SetTextVariable("DESIRED_SIZE", desiredSize);
+                    message.SetTextVariable(
+                        "AVERAGE_WAGE", expectedAverageWage.ToString("F2"));
+                    message.SetTextVariable(
+                        "WEALTH_FACTOR", goldFactor.ToString("F2"));
+                    message.SetTextVariable(
+                        "RAW_LIMIT", rawWageLimit.ToString("F2"));
+                    ModLogger.Debug(message.ToString());
                 }
             }
         }

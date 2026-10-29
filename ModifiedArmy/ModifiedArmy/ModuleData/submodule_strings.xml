@@ -97,7 +97,7 @@
     <string id="str_modifiedarmy_exchange_no_garrison_capacity" text="{=ModifiedArmy_ExchangeNoGarrisonCapacity}[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但驻军当前没有接收空间，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="str_modifiedarmy_exchange_no_garrison_surplus" text="{=ModifiedArmy_ExchangeNoGarrisonSurplus}[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，但扣除当地最低防守兵力后，驻军已经没有可以安全调出的士兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="str_modifiedarmy_exchange_build_rejected_diagnostic" text="{=ModifiedArmy_ExchangeBuildRejectedDiagnostic}[统一调兵] 调兵记录{OPERATION_ID}原计划调动{REQUESTED}人，但未能建立安全的调兵方案，原因是{REASON}。来源归属为{SOURCE_CLAN}，接收方归属为{DESTINATION_CLAN}，定居点归属为{OWNER_CLAN}。" />
-    <string id="str_modifiedarmy_common_unknown" text="{=ModifiedArmy_CommonUnknown}尚未取得名称" />
+    <string id="str_modifiedarmy_common_unknown" text="{=ModifiedArmy_CommonUnknown}Unknown" />
     <string id="str_modifiedarmy_exchange_diag_source_kind" text="{=ModifiedArmy_ExchangeDiagSourceKind}来源和接收方的部队类型不符合本次调兵方向" />
     <string id="str_modifiedarmy_exchange_diag_not_arrived" text="{=ModifiedArmy_ExchangeDiagNotArrived}野战部队尚未真正抵达目标定居点" />
     <string id="str_modifiedarmy_exchange_diag_source_owner" text="{=ModifiedArmy_ExchangeDiagSourceOwner}无法确认来源部队的有效归属" />
@@ -148,7 +148,12 @@
     <string id="str_modifiedarmy_force_source_fief" text="{=ModifiedArmy_ForceSourceFief}封邑兵" />
     <string id="str_modifiedarmy_force_source_professional" text="{=ModifiedArmy_ForceSourceProfessional}驻军职业兵" />
     <string id="str_modifiedarmy_force_source_mercenary" text="{=ModifiedArmy_ForceSourceMercenary}雇佣兵" />
-    <string id="str_modifiedarmy_common_none" text="{=ModifiedArmy_CommonNone}无" />
+    <string id="str_modifiedarmy_common_none" text="{=ModifiedArmy_CommonNone}None" />
+    <string id="str_modifiedarmy_common_yes" text="{=ModifiedArmy_CommonYes}Yes" />
+    <string id="str_modifiedarmy_common_no" text="{=ModifiedArmy_CommonNo}No" />
+    <string id="str_modifiedarmy_common_not_recorded" text="{=ModifiedArmy_CommonNotRecorded}Not recorded" />
+    <string id="str_modifiedarmy_common_passed" text="{=ModifiedArmy_CommonPassed}Passed" />
+    <string id="str_modifiedarmy_common_not_passed" text="{=ModifiedArmy_CommonNotPassed}Not passed" />
     <string id="str_modifiedarmy_force_patch_audit" text="{=ModifiedArmy_ForcePatchAudit}[兵力入口检查] {TYPE_NAME}.{METHOD_NAME}当前补丁：{PATCHES}。" />
     <string id="str_modifiedarmy_force_patch_none" text="{=ModifiedArmy_ForcePatchNone}无补丁" />
     <string id="str_modifiedarmy_force_patch_item" text="{=ModifiedArmy_ForcePatchItem}{OWNER}（优先级{PRIORITY}）" />
@@ -365,15 +370,29 @@
     <string id="str_modifiedarmy_force_diag_route_blocked"
         text="{=ModifiedArmy_ForceDiagRouteBlocked}[兵力任务] {PARTY_NAME}已建立前往{SETTLEMENT_NAME}的任务，但本次未下达移动指令。原因：{BLOCKER}。当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit"
-        text="{=ModifiedArmy_ForceDiagVisit}[兵力访问诊断] {PARTY_NAME}（{PARTY_ID}）在{SETTLEMENT_NAME}收到“{EVENT}”。处理结果：{OUTCOME}；最近检查日：{LAST_DAY}；当前存在补员任务：{HAS_TASK}；任务目标：{TASK_TARGET}；实际访问地点与任务目标匹配：{TARGET_MATCHES}。任务追踪标识：{TRACE_ID}。" />
+        text="{=ModifiedArmy_ForceDiagVisit}Force visit diagnostics recorded that {PARTY_NAME}, identified as {PARTY_ID}, received the {EVENT} event at {SETTLEMENT_NAME}. The evaluation concluded that {OUTCOME}. The most recent evaluation day was {LAST_DAY}. An active force task exists: {HAS_TASK}. Its destination is {TASK_TARGET}. The visited settlement matches that destination: {TARGET_MATCHES}. The trace identifier is {TRACE_ID}." />
     <string id="str_modifiedarmy_force_diag_visit_no_task"
         text="{=ModifiedArmy_ForceDiagVisitNoTask}[兵力访问诊断] {PARTY_NAME}访问{ACTUAL_SETTLEMENT}时不存在活动补员任务。本次后续事务属于普通定居点访问处理。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit_wrong_target"
         text="{=ModifiedArmy_ForceDiagVisitWrongTarget}[兵力访问诊断] {PARTY_NAME}进入{ACTUAL_SETTLEMENT}，当前补员任务指定地点为{TASK_TARGET}。本次访问不满足原定补员任务的执行条件，未对任务目标驻军发起调兵审批；后续事务属于普通定居点访问处理。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit_task_target"
         text="{=ModifiedArmy_ForceDiagVisitTaskTarget}[兵力访问诊断] {PARTY_NAME}已抵达补员任务指定地点{TASK_TARGET}，系统将按现有规则进行目标兵源的实时审批。任务追踪标识：{TRACE_ID}。" />
-    <string id="str_modifiedarmy_force_diag_route_change"
-        text="{=ModifiedArmy_ForceDiagRouteChange}[兵力路线追踪] 检测到{PARTY_NAME}（{PARTY_ID}）的移动指令发生变化。诊断事件：{EVENT_ID}；游戏小时：{CAMPAIGN_HOUR}；触发方法：{METHOD}；目标方法程序集：{ASSEMBLY}。默认行为由“{BEFORE_DEFAULT}”变为“{AFTER_DEFAULT}”，短期行为由“{BEFORE_SHORT}”变为“{AFTER_SHORT}”；目标定居点由{BEFORE_TARGET}变为{AFTER_TARGET}，目标部队由{BEFORE_PARTY}变为{AFTER_PARTY}。原定补员地点：{PLANNED_TARGET}；任务状态：{TASK_STATUS}；任务持有移动指令：{OWNS_ORDER}；在军团中：{IN_ARMY}；处于战斗中：{IN_BATTLE}；警戒状态：{ALERTED}。调用路径：{CALL_PATH}。任务追踪标识：{TRACE_ID}。" />
+    <string id="str_modifiedarmy_force_diag_route_destination_changed"
+        text="{=ModifiedArmy_ForceDiagRouteDestinationChanged}Force route diagnostics recorded that {PARTY_NAME}, identified as {PARTY_ID}, changed its settlement destination from {BEFORE_TARGET} to {AFTER_TARGET}. The native method {METHOD} in assembly {ASSEMBLY} applied the change during campaign hour {CAMPAIGN_HOUR}. The active task plans to visit {PLANNED_TARGET} and is currently {TASK_STATUS}. The task owns the movement order: {OWNS_ORDER}. The party belongs to an army: {IN_ARMY}. The party is in battle: {IN_BATTLE}. The party is alerted: {ALERTED}. The event identifier is {EVENT_ID}. The trace identifier is {TRACE_ID}." />
+    <string id="str_modifiedarmy_force_diag_route_behavior_changed"
+        text="{=ModifiedArmy_ForceDiagRouteBehaviorChanged}Force route diagnostics recorded that {PARTY_NAME}, identified as {PARTY_ID}, changed its default behavior from {BEFORE_DEFAULT} to {AFTER_DEFAULT} and its short term behavior from {BEFORE_SHORT} to {AFTER_SHORT}. Its target party changed from {BEFORE_PARTY} to {AFTER_PARTY}. The native method {METHOD} in assembly {ASSEMBLY} applied the change during campaign hour {CAMPAIGN_HOUR}. The active task plans to visit {PLANNED_TARGET} and is currently {TASK_STATUS}. The event identifier is {EVENT_ID}. The trace identifier is {TRACE_ID}." />
+    <string id="str_modifiedarmy_force_diag_route_call_path"
+        text="{=ModifiedArmy_ForceDiagRouteCallPath}Force route diagnostics recorded the following call path for event {EVENT_ID}. {CALL_PATH}." />
+    <string id="str_modifiedarmy_force_diag_visit_event_entered" text="{=ModifiedArmy_ForceDiagVisitEventEntered}settlement entry" />
+    <string id="str_modifiedarmy_force_diag_visit_event_daily" text="{=ModifiedArmy_ForceDiagVisitEventDaily}daily residence check" />
+    <string id="str_modifiedarmy_force_diag_visit_event_unknown" text="{=ModifiedArmy_ForceDiagVisitEventUnknown}unspecified visit" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_disabled" text="{=ModifiedArmy_ForceDiagVisitOutcomeDisabled}unified force planning is disabled" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_not_present" text="{=ModifiedArmy_ForceDiagVisitOutcomeNotPresent}the party is not currently present at this settlement" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_duplicate" text="{=ModifiedArmy_ForceDiagVisitOutcomeDuplicate}the same party and settlement were already evaluated on this campaign day, so the repeated evaluation was skipped" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_accepted" text="{=ModifiedArmy_ForceDiagVisitOutcomeAccepted}the visit passed the daily duplicate check and force task evaluation may continue" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_capture" text="{=ModifiedArmy_ForceDiagVisitOutcomeCapture}the visit was assigned to the one time post capture donation process" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_force_task" text="{=ModifiedArmy_ForceDiagVisitOutcomeForceTask}the visit was assigned to normal force task execution" />
+    <string id="str_modifiedarmy_force_diag_visit_outcome_unknown" text="{=ModifiedArmy_ForceDiagVisitOutcomeUnknown}the visit produced an unspecified result" />
     <string id="str_modifiedarmy_force_diag_movement_patch"
         text="{=ModifiedArmy_ForceDiagMovementPatch}[兵力路线追踪] 移动诊断目标 MobileParty.{METHOD}（{SIGNATURE}）：{STATUS}。" />
     <string id="str_modifiedarmy_force_diag_continue_valid" text="{=ModifiedArmy_ForceDiagContinueValid}任务有效，部队仍按目标路线移动" />
@@ -406,15 +425,19 @@
     <string id="str_modifiedarmy_force_diag_garrison_candidate"
         text="{=ModifiedArmy_ForceDiagGarrisonCandidate}[驻军调拨诊断] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出护卫预留{RESERVED}人，有效守军{EFFECTIVE}人，最低留守要求{MINIMUM}人。按现有防务规则可安全调出{SAFE}人，在役封邑兵保护{PROTECTED}人，可供审批普通士兵{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募模型审批{APPROVED}人。" />
     <string id="str_modifiedarmy_party_binding_reservation"
-        text="{=ModifiedArmy_PartyBindingReservation}[Party binding] Reservation {ACTION}; hero={HERO_ID}; clan={CLAN_ID}; settlement={SETTLEMENT_ID}; token={TOKEN_ID}; reason={REASON}." />
+        text="{=ModifiedArmy_PartyBindingReservation}[Party binding] The reservation action was {ACTION}. The request concerned hero {HERO_ID} of clan {CLAN_ID} and settlement {SETTLEMENT_ID}. The reservation token was {TOKEN_ID}. The recorded reason was {REASON}." />
     <string id="str_modifiedarmy_party_binding_committed"
-        text="{=ModifiedArmy_PartyBindingCommitted}[Party binding] Committed {PARTY_NAME} ({PARTY_ID}) to settlement {SETTLEMENT_ID}; version={VERSION}." />
+        text="{=ModifiedArmy_PartyBindingCommitted}[Party binding] {PARTY_NAME}, identified as {PARTY_ID}, was bound to settlement {SETTLEMENT_ID}. The binding version is {VERSION}." />
     <string id="str_modifiedarmy_party_binding_released"
-        text="{=ModifiedArmy_PartyBindingReleased}[Party binding] Released {PARTY_NAME} ({PARTY_ID}); reason={REASON}." />
+        text="{=ModifiedArmy_PartyBindingReleased}[Party binding] The binding for {PARTY_NAME}, identified as {PARTY_ID}, was released. The recorded reason was {REASON}." />
     <string id="str_modifiedarmy_party_binding_rejected"
-        text="{=ModifiedArmy_PartyBindingRejected}[Party binding] Rejected operation {OPERATION} for {PARTY_NAME} ({PARTY_ID}) at settlement {SETTLEMENT_ID}; reason={REASON}." />
+        text="{=ModifiedArmy_PartyBindingRejected}[Party binding] Operation {OPERATION} was rejected for {PARTY_NAME}, identified as {PARTY_ID}, at settlement {SETTLEMENT_ID}. The recorded reason was {REASON}." />
     <string id="str_modifiedarmy_party_binding_recovery"
-        text="{=ModifiedArmy_PartyBindingRecovery}[Party binding recovery] records={RECORDS}; bound={BOUND}; unbound={UNBOUND}; conflicts={CONFLICTS}." />
+        text="{=ModifiedArmy_PartyBindingRecovery}[Party binding recovery] Recovery examined {RECORDS} records. It restored {BOUND} settlement bindings and found {UNBOUND} parties without a binding. It detected {CONFLICTS} conflicts." />
     <string id="str_modifiedarmy_party_creation_probe"
-        text="{=ModifiedArmy_PartyCreationProbe}[Party creation probe] phase={PHASE}; hero={HERO_ID}; clan={CLAN_ID}; party={PARTY_ID}; regulars={REGULARS}; spawn={SPAWN}; current={CURRENT}; target={TARGET}; newGame={NEW_GAME}." />
+        text="{=ModifiedArmy_PartyCreationProbe}[Party creation probe] The creation sequence reached phase {PHASE} for hero {HERO_ID} of clan {CLAN_ID}. The party identifier was {PARTY_ID}, and the party contained {REGULARS} regular soldiers. The spawn settlement was {SPAWN}, the current settlement was {CURRENT}, and the movement target was {TARGET}. The new game indicator was {NEW_GAME}." />
+    <string id="str_modifiedarmy_garrison_wage_limit_border_log"
+        text="{=ModifiedArmy_GarrisonWageLimitBorderLog}The garrison wage assessment revised the wage limit for the border settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
+    <string id="str_modifiedarmy_garrison_wage_limit_interior_log"
+        text="{=ModifiedArmy_GarrisonWageLimitInteriorLog}The garrison wage assessment revised the wage limit for the interior settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
 </strings>

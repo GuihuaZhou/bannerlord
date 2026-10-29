@@ -47,7 +47,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             Settlement settlement,
             Hero hero)
         {
-            EvaluateVisit(party, settlement, "进入定居点事件");
+            EvaluateVisit(party, settlement, "SettlementEntered");
         }
 
         /// <summary>Retries a legal task for a party that remains in town overnight.</summary>
@@ -55,7 +55,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             if (party?.CurrentSettlement != null)
                 EvaluateVisit(
-                    party, party.CurrentSettlement, "每日驻留检查");
+                    party, party.CurrentSettlement, "DailyResidenceCheck");
         }
 
         /// <summary>Applies the once-per-party, settlement and day visit gate.</summary>
@@ -74,7 +74,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             {
                 ForceRecruitmentDiagnostics.LogVisit(
                     party, settlement, eventName,
-                    "统一调兵模式未启用", -1, task);
+                    "UnifiedPlanningDisabled", -1, task);
                 return;
             }
             if (party == null || settlement == null ||
@@ -82,7 +82,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             {
                 ForceRecruitmentDiagnostics.LogVisit(
                     party, settlement, eventName,
-                    "部队当前并未实际驻留在该定居点", -1, task);
+                    "PartyNotPresent", -1, task);
                 return;
             }
 
@@ -95,7 +95,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             {
                 ForceRecruitmentDiagnostics.LogVisit(
                     party, settlement, eventName,
-                    "同一部队、定居点和游戏日已经检查，按现有规则跳过",
+                    "DuplicateDailyEvaluation",
                     lastDay, task);
                 return;
             }
@@ -104,7 +104,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             {
                 ForceRecruitmentDiagnostics.LogVisit(
                     party, settlement, eventName,
-                    "通过访问去重，准备检查统一调兵任务", day, task);
+                    "EvaluationAccepted", day, task);
                 try
                 {
                     GarrisonCaptureSupplyBehavior capture = Campaign.Current?
@@ -116,7 +116,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     {
                         ForceRecruitmentDiagnostics.LogVisit(
                             party, settlement, eventName,
-                            "进入攻城后一次性驻军移交入口", day, task);
+                            "CaptureDonationSelected", day, task);
                         Campaign.Current?.GetCampaignBehavior<
                             AiForcePlanningBehavior>()?.ExecuteCaptureDonation(
                                 party, settlement, capture);
@@ -124,7 +124,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     }
                     ForceRecruitmentDiagnostics.LogVisit(
                         party, settlement, eventName,
-                        "进入普通补员任务入口", day, task);
+                        "ForceTaskExecutionSelected", day, task);
                     planning?.ExecuteAtSettlement(party, settlement);
                     return;
                 }
