@@ -276,5 +276,11 @@
     <string id="ModifiedArmy_DisbandGarrisonMerge" text="[整队解散] {PARTY_NAME}在{SETTLEMENT_NAME}完成了人员安置：{FIEF_RETURNED}名封建兵返乡，{FIEF_TRANSFERRED}名封建兵随原服役身份进入驻军，{ORDINARY_ACCEPTED}名普通士兵进入驻军；另有{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
     <string id="ModifiedArmy_DisbandFinalization" text="[整队解散] {PARTY_NAME}在{DESTINATION_NAME}结束服役：{FIEF_RETURNED}名封建兵正常返乡；{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
     <string id="ModifiedArmy_NoValidDestination" text="没有合法目的地的地点" />
+    <string id="ModifiedArmy_PartyBindingReservation" text="[部队基地绑定] 预留操作：{ACTION}；英雄={HERO_ID}；家族={CLAN_ID}；定居点={SETTLEMENT_ID}；令牌={TOKEN_ID}；原因={REASON}。" />
+    <string id="ModifiedArmy_PartyBindingCommitted" text="[部队基地绑定] 已将{PARTY_NAME}（{PARTY_ID}）绑定到定居点{SETTLEMENT_ID}；版本={VERSION}。" />
+    <string id="ModifiedArmy_PartyBindingReleased" text="[部队基地绑定] 已解除{PARTY_NAME}（{PARTY_ID}）的绑定；原因={REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRejected" text="[部队基地绑定] 已拒绝{PARTY_NAME}（{PARTY_ID}）在定居点{SETTLEMENT_ID}执行操作{OPERATION}；原因={REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRecovery" text="[部队基地绑定恢复] 记录={RECORDS}；已绑定={BOUND}；未绑定={UNBOUND}；冲突={CONFLICTS}。" />
+    <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 阶段={PHASE}；英雄={HERO_ID}；家族={CLAN_ID}；部队={PARTY_ID}；正规兵={REGULARS}；出生点={SPAWN}；当前位置={CURRENT}；当前目标={TARGET}；新游戏={NEW_GAME}。" />
   </strings>
 </base>

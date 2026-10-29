@@ -1,4 +1,5 @@
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.PartyManagement.Bindings;
 using System;
 using TaleWorlds.CampaignSystem;
 
@@ -84,7 +85,12 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     .GetCampaignBehavior<FiefPartyManager>();
                 fiefs?.RebuildServingDetachmentIndex();
 
-                // Revalidate saved AI tasks only after fief batches resolve.
+                Campaign.Current?
+                    .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                    .RevalidateAndRebuildIndexes();
+
+                // Revalidate saved AI tasks only after fief batches and party
+                // settlement bindings resolve.
                 Campaign.Current?
                     .GetCampaignBehavior<AiForcePlanningBehavior>()?
                     .RevalidateAfterCampaignRecovery();

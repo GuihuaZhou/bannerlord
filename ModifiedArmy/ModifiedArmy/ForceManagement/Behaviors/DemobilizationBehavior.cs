@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using ModifiedArmy.common;
@@ -59,6 +60,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (!IsEnabled()) return;
             if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
                 string.IsNullOrEmpty(party.StringId)) return;
+            if (Campaign.Current?
+                    .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                    .IsBoundSettlement(party, settlement) != true)
+                return;
 
             _routingTargets.Remove(party.StringId);
 

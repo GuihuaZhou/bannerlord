@@ -5,6 +5,7 @@ using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyManagement.Finance.Models;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.common;
@@ -86,6 +87,11 @@ namespace ModifiedArmy.ForceManagement.Services
                 return result;
             FiefPartyManager fiefs = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
+            PartySettlementBindingBehavior bindings = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>();
+            HashSet<Settlement> boundSettlements = new HashSet<Settlement>(
+                bindings?.GetBoundSettlements(party) ??
+                    Array.Empty<Settlement>());
             foreach (Settlement settlement in Settlement.All
                 .Where(item => item != null)
                 .OrderBy(item => item.StringId, StringComparer.Ordinal))
@@ -93,7 +99,8 @@ namespace ModifiedArmy.ForceManagement.Services
                 if (settlement.IsUnderSiege) continue;
                 if (!TryGetTravelDistance(party, settlement, out float distance))
                     continue;
-                if (settlement.OwnerClan == party.ActualClan &&
+                if (boundSettlements.Contains(settlement) &&
+                    settlement.OwnerClan == party.ActualClan &&
                     settlement.IsFortification)
                 {
                     AddFiefCandidate(

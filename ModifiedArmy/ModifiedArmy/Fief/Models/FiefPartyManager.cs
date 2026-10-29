@@ -5,6 +5,7 @@ using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.PartyManagement.Bindings;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -48,6 +49,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(FiefReturnBatch), 7);
             base.AddClassDefinition(typeof(ReinforcementMission), 8);
             base.AddClassDefinition(typeof(ReinforcementPartyComponent), 9);
+            base.AddClassDefinition(typeof(PartySettlementBindingRecord), 10);
         }
 
         protected override void DefineContainerDefinitions()
@@ -65,6 +67,8 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(List<FiefWageExemption>));
             base.ConstructContainerDefinition(typeof(Dictionary<String, List<FiefWageExemption>>));
             base.ConstructContainerDefinition(typeof(List<ReinforcementMission>));
+            base.ConstructContainerDefinition(
+                typeof(Dictionary<string, PartySettlementBindingRecord>));
         }
     }
 

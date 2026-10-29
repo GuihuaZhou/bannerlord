@@ -2,6 +2,7 @@ using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Garrison.Behaviors;
 using System;
 using System.Linq;
@@ -44,6 +45,18 @@ namespace ModifiedArmy.ForceManagement.Missions
                     party, settlement, task, noMatch, before,
                     party?.MemberRoster?.TotalRegulars ?? 0);
                 return noMatch;
+            }
+            if (task.Intent == PartyForceIntent.Recruit &&
+                task.SourceKind != PartyForceSourceKind.Mercenary &&
+                Campaign.Current?
+                    .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                    .IsBoundSettlement(party, settlement) != true)
+            {
+                task.Status = PartyForceTaskStatus.Cancelled;
+                task.OwnsMovementOrder = false;
+                task.ReasonCode = "RecruitmentSettlementBindingInvalid";
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = task.ReasonCode };
             }
             task.Status = PartyForceTaskStatus.Executing;
             string operationId = string.Format(
@@ -90,6 +103,11 @@ namespace ModifiedArmy.ForceManagement.Missions
             MobileParty party,
             Settlement settlement)
         {
+            PartySettlementBindingBehavior bindings = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>();
+            if (bindings?.IsBoundSettlement(party, settlement) != true)
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "SettlementNotBoundToParty" };
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             int surplus = ForceManagementFacade.Current.GetSafeFieldSurplus(party);
             if (garrison == null || settlement.OwnerClan != party?.ActualClan ||
@@ -193,7 +211,10 @@ namespace ModifiedArmy.ForceManagement.Missions
             MobileParty party,
             Settlement settlement)
         {
-            if (!ForceManagementFacade.IsAtFormalWar(party?.ActualClan))
+            PartySettlementBindingBehavior bindings = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>();
+            if (!ForceManagementFacade.IsAtFormalWar(party?.ActualClan) &&
+                bindings?.IsBoundSettlement(party, settlement) == true)
                 Campaign.Current?.GetCampaignBehavior<DemobilizationBehavior>()?
                     .OnNaturalVisit(party, settlement);
         }

@@ -405,4 +405,16 @@
         text="{=ModifiedArmy_ForceDiagLiveApproval}[统一调兵诊断] {PARTY_NAME}在{SETTLEMENT_NAME}提出实时调兵申请。申请{REQUESTED}人，计划批准{PLAN_APPROVED}人；计划原因：{PLAN_REASON}。执行前来源名册{SOURCE_BEFORE}人，接收方名册{DESTINATION_BEFORE}人；事务状态：{STATUS}，实际转移{TRANSFERRED}人，执行原因：{REASON}。操作标识：{OPERATION_ID}。" />
     <string id="str_modifiedarmy_force_diag_garrison_candidate"
         text="{=ModifiedArmy_ForceDiagGarrisonCandidate}[驻军调拨诊断] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出护卫预留{RESERVED}人，有效守军{EFFECTIVE}人，最低留守要求{MINIMUM}人。按现有防务规则可安全调出{SAFE}人，在役封邑兵保护{PROTECTED}人，可供审批普通士兵{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募模型审批{APPROVED}人。" />
+    <string id="str_modifiedarmy_party_binding_reservation"
+        text="{=ModifiedArmy_PartyBindingReservation}[Party binding] Reservation {ACTION}; hero={HERO_ID}; clan={CLAN_ID}; settlement={SETTLEMENT_ID}; token={TOKEN_ID}; reason={REASON}." />
+    <string id="str_modifiedarmy_party_binding_committed"
+        text="{=ModifiedArmy_PartyBindingCommitted}[Party binding] Committed {PARTY_NAME} ({PARTY_ID}) to settlement {SETTLEMENT_ID}; version={VERSION}." />
+    <string id="str_modifiedarmy_party_binding_released"
+        text="{=ModifiedArmy_PartyBindingReleased}[Party binding] Released {PARTY_NAME} ({PARTY_ID}); reason={REASON}." />
+    <string id="str_modifiedarmy_party_binding_rejected"
+        text="{=ModifiedArmy_PartyBindingRejected}[Party binding] Rejected operation {OPERATION} for {PARTY_NAME} ({PARTY_ID}) at settlement {SETTLEMENT_ID}; reason={REASON}." />
+    <string id="str_modifiedarmy_party_binding_recovery"
+        text="{=ModifiedArmy_PartyBindingRecovery}[Party binding recovery] records={RECORDS}; bound={BOUND}; unbound={UNBOUND}; conflicts={CONFLICTS}." />
+    <string id="str_modifiedarmy_party_creation_probe"
+        text="{=ModifiedArmy_PartyCreationProbe}[Party creation probe] phase={PHASE}; hero={HERO_ID}; clan={CLAN_ID}; party={PARTY_ID}; regulars={REGULARS}; spawn={SPAWN}; current={CURRENT}; target={TARGET}; newGame={NEW_GAME}." />
 </strings>

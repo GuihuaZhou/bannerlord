@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Missions;
 using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
@@ -69,6 +70,16 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 task.TargetSettlement == null ||
                 party?.CurrentSettlement == task.TargetSettlement)
                 return;
+
+            if (!IsRecruitmentDestinationAuthorized(party, task))
+            {
+                task.Status = PartyForceTaskStatus.Cancelled;
+                task.OwnsMovementOrder = false;
+                task.ReasonCode = "RecruitmentSettlementBindingInvalid";
+                if (party?.Ai != null)
+                    party.Ai.RethinkAtNextHourlyTick = true;
+                return;
+            }
 
             Settlement target = task.TargetSettlement;
             GetBestNavigationData(
@@ -145,6 +156,18 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     : float.MaxValue;
             }
             return score;
+        }
+
+        private static bool IsRecruitmentDestinationAuthorized(
+            MobileParty party,
+            PartyForceTask task)
+        {
+            if (task?.Intent != PartyForceIntent.Recruit ||
+                task.SourceKind == PartyForceSourceKind.Mercenary)
+                return true;
+            return Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                .IsBoundSettlement(party, task.TargetSettlement) == true;
         }
 
         /// <summary>
@@ -251,11 +274,12 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 }
                 if (valid && task.Intent == PartyForceIntent.Recruit)
                 {
+                    valid = IsRecruitmentDestinationAuthorized(party, task);
                     PartyForcePlanningContext context = _candidates.BuildContext(
                         party,
                         task,
                         true);
-                    valid = context.Candidates.Any(candidate =>
+                    valid = valid && context.Candidates.Any(candidate =>
                         candidate.Settlement == task.TargetSettlement &&
                         candidate.SourceKind == task.SourceKind &&
                         candidate.IsSafe);

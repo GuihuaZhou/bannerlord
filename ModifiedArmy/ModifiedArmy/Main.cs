@@ -8,6 +8,7 @@ using ModifiedArmy.Logistics.Models;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyManagement.Behaviors;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
@@ -182,6 +183,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(new FiefPartyManager());
                 campaignStarter.AddBehavior(new FiefMenuBehavior());
 
+                campaignStarter.AddBehavior(
+                    new PartySettlementBindingBehavior());
                 campaignStarter.AddBehavior(new AiForcePlanningBehavior());
                 campaignStarter.AddBehavior(new ForceManagementBehavior());
                 campaignStarter.AddBehavior(new DemobilizationBehavior());
