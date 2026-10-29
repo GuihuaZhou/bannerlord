@@ -2,20 +2,15 @@ using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
-using ModifiedArmy.ForceManagement.Transport;
-using ModifiedArmy.Recruitment.Diagnostics;
-using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
-using TaleWorlds.Core;
-using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Missions
 {
-    /// <summary>Owns runtime task selection, pruning and movement orders.</summary>
+    /// <summary>Owns runtime task selection and pruning.</summary>
     public sealed class PartyForceTaskCoordinator
     {
         private readonly Func<List<PartyForceTask>> _tasks;
@@ -49,8 +44,7 @@ namespace ModifiedArmy.ForceManagement.Missions
                         frozen
                             ? "调兵恢复域被冻结"
                             : "任务当前处于暂停状态");
-                    ReleaseOwnedMovementOrder(
-                        party, current, "任务已暂停或恢复域被冻结");
+                    ReleaseOwnedMovementOrder(party, current);
                     current.Status = PartyForceTaskStatus.Suspended;
                     current.ReasonCode = frozen
                         ? "TransferDomainFrozenForRecovery"
@@ -64,18 +58,8 @@ namespace ModifiedArmy.ForceManagement.Missions
                         "TransferDomainFrozenForRecovery"
                 };
             }
-            if (current?.OwnsMovementOrder == true &&
-                party.TargetSettlement != current.TargetSettlement)
-            {
-                ForceRecruitmentDiagnostics.LogMovementChanged(party, current);
-                current.OwnsMovementOrder = false;
-                current.Status = PartyForceTaskStatus.Cancelled;
-                current.ReasonCode = "MovementOrderChangedExternally";
-            }
             PartyForcePlanningContext context = _candidates.BuildContext(
-                party,
-                current?.Status == PartyForceTaskStatus.Cancelled
-                    ? null : current,
+                party, current,
                 randomGateOpen);
             PartyForcePlan plan = ForceManagementFacade.Current.ForcePlanning
                 .BuildDailyPlan(context);
@@ -117,14 +101,12 @@ namespace ModifiedArmy.ForceManagement.Missions
                 if (current.Status == PartyForceTaskStatus.Completed ||
                     current.Status == PartyForceTaskStatus.Cancelled ||
                     current.TargetSettlement == null)
-                    ReleaseOwnedMovementOrder(
-                        party, current, "任务已终止或目标定居点不可用");
+                    ReleaseOwnedMovementOrder(party, current);
                 return;
             }
             if (current != null)
             {
-                ReleaseOwnedMovementOrder(
-                    party, current, "每日规划已替换原任务");
+                ReleaseOwnedMovementOrder(party, current);
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "ReplacedByDailyPlan";
             }
@@ -137,58 +119,20 @@ namespace ModifiedArmy.ForceManagement.Missions
             next.ClanId = party?.ActualClan?.StringId;
             next.LastValidatedDay = today;
             next.OwnsMovementOrder = false;
+            next.Status = PartyForceTaskStatus.Planned;
             _tasks().Add(next);
-            bool managed = ManagedPartyPolicy.IsModManagedAiParty(party);
-            bool inArmy = party?.Army != null;
-            bool inBattle = party?.MapEvent != null;
-            bool avoiding = TransportThreatModel.IsNativeAvoidanceActive(party);
-            if (managed && !inArmy && !inBattle && !avoiding)
-            {
-                party.SetMoveGoToSettlement(next.TargetSettlement,
-                    MobileParty.NavigationType.Default,
-                    isTargetingThePort: false);
-                next.OwnsMovementOrder = true;
-                next.Status = PartyForceTaskStatus.Traveling;
-                ForceRecruitmentDiagnostics.LogTaskRouteDecision(
-                    party, next, true, null);
-            }
-            else
-            {
-                string blocker = !managed ? "不是受 Mod 管理的 AI 领主部队" :
-                    inArmy ? "当前处于军团中" :
-                    inBattle ? "当前处于战斗中" :
-                    avoiding ? "当前处于原版避敌状态" :
-                    "现有条件未允许下达移动指令";
-                ForceRecruitmentDiagnostics.LogTaskRouteDecision(
-                    party, next, false, blocker);
-            }
+            if (party?.Ai != null)
+                party.Ai.RethinkAtNextHourlyTick = true;
         }
 
         private static void ReleaseOwnedMovementOrder(
             MobileParty party,
-            PartyForceTask task,
-            string reason)
+            PartyForceTask task)
         {
-            if (task?.OwnsMovementOrder != true || party == null) return;
-            bool stillOurOrder = party.Army == null && party.MapEvent == null &&
-                !TransportThreatModel.IsNativeAvoidanceActive(party) &&
-                party.DefaultBehavior == AiBehavior.GoToSettlement &&
-                party.TargetSettlement == task.TargetSettlement;
+            if (task == null) return;
             task.OwnsMovementOrder = false;
-            if (!stillOurOrder) return;
-            party.SetMoveModeHold();
-            if (!RecruitmentLogFilter.ShouldLog(party)) return;
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_force_route_released");
-            message.SetTextVariable(
-                "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
-            message.SetTextVariable(
-                "SETTLEMENT_NAME", task.TargetSettlement.Name);
-            message.SetTextVariable("REASON", reason ?? "未说明");
-            message.SetTextVariable(
-                "TRACE_ID",
-                ForceRecruitmentDiagnostics.GetTraceId(party, task));
-            ModLogger.Info(message.ToString());
+            if (party?.Ai != null)
+                party.Ai.RethinkAtNextHourlyTick = true;
         }
     }
 }

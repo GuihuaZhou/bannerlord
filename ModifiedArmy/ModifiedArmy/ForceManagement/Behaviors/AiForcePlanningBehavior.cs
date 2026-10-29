@@ -1,3 +1,4 @@
+using Helpers;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
@@ -20,7 +21,7 @@ using TaleWorlds.Localization;
 namespace ModifiedArmy.ForceManagement.Behaviors
 {
     /// <summary>
-    /// Owns the single daily AI force plan and every route created by it.
+    /// Owns the daily force plan and contributes it to native AI scoring.
     /// </summary>
     public sealed class AiForcePlanningBehavior : CampaignBehaviorBase
     {
@@ -41,12 +42,109 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         public override void RegisterEvents()
         {
             PartyMovementTracePatch.LogInstallationStatus();
+            CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(
+                this,
+                OnAiHourlyTick);
             CampaignEvents.DailyTickEvent.AddNonSerializedListener(
                 this,
                 OnDailyTick);
             CampaignEvents.OnGameLoadFinishedEvent.AddNonSerializedListener(
                 this,
                 OnGameLoadFinished);
+        }
+
+        /// <summary>
+        /// Offers active force tasks to the native strategic AI. The daily
+        /// planner owns the destination; the native AI owns movement.
+        /// </summary>
+        private void OnAiHourlyTick(MobileParty party, PartyThinkParams p)
+        {
+            PartyForceTask task = FindTask(party);
+            if (task == null || p == null ||
+                (task.Intent != PartyForceIntent.Recruit &&
+                    task.Intent != PartyForceIntent.WarRest) ||
+                task.Status == PartyForceTaskStatus.Completed ||
+                task.Status == PartyForceTaskStatus.Cancelled ||
+                task.Status == PartyForceTaskStatus.Suspended ||
+                task.TargetSettlement == null ||
+                party?.CurrentSettlement == task.TargetSettlement)
+                return;
+
+            Settlement target = task.TargetSettlement;
+            GetBestNavigationData(
+                party,
+                target,
+                out MobileParty.NavigationType navigationType,
+                out bool isFromPort,
+                out bool isTargetingPort);
+            if (navigationType == MobileParty.NavigationType.None) return;
+
+            AIBehaviorData candidate = new AIBehaviorData(
+                target,
+                AiBehavior.GoToSettlement,
+                navigationType,
+                false,
+                isFromPort,
+                isTargetingPort);
+            float score = CalculateTaskBehaviorScore(p);
+            if (p.TryGetBehaviorScore(candidate, out float oldScore))
+                p.SetBehaviorScore(
+                    candidate,
+                    float.IsNaN(oldScore) || float.IsInfinity(oldScore)
+                        ? score
+                        : Math.Max(oldScore, score));
+            else
+                p.AddBehaviorScore((candidate, score));
+        }
+
+        private static void GetBestNavigationData(
+            MobileParty party,
+            Settlement target,
+            out MobileParty.NavigationType navigationType,
+            out bool isFromPort,
+            out bool isTargetingPort)
+        {
+            navigationType = MobileParty.NavigationType.None;
+            isFromPort = false;
+            isTargetingPort = false;
+            float bestDistance = float.MaxValue;
+
+            if (!target.HasPort || target.SiegeEvent == null ||
+                target.SiegeEvent.IsBlockadeActive ||
+                !party.HasNavalNavigationCapability)
+            {
+                AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(
+                    party, target, false, out navigationType,
+                    out bestDistance, out isFromPort);
+            }
+
+            if (!party.HasNavalNavigationCapability || !target.HasPort) return;
+
+            AiHelper.GetBestNavigationTypeAndAdjustedDistanceOfSettlementForMobileParty(
+                party, target, true,
+                out MobileParty.NavigationType portNavigationType,
+                out float portDistance, out bool portIsFromPort);
+            if (portDistance >= bestDistance) return;
+
+            navigationType = portNavigationType;
+            isFromPort = portIsFromPort;
+            isTargetingPort = true;
+        }
+
+        private static float CalculateTaskBehaviorScore(PartyThinkParams p)
+        {
+            float score = 1000f;
+            foreach (var behaviorScore in p.AIBehaviorScores)
+            {
+                float existing = behaviorScore.Item2;
+                if (float.IsNaN(existing) || float.IsInfinity(existing) ||
+                    existing < score)
+                    continue;
+                score = existing < float.MaxValue / 1.000001f
+                    ? existing + Math.Max(1f, existing * 0.000001f)
+                    : float.MaxValue;
+            }
+            return score;
         }
 
         /// <summary>
@@ -132,15 +230,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     task.OwnsMovementOrder = false;
                     return;
                 }
-                bool ownsRoute = party?.DefaultBehavior ==
-                        AiBehavior.GoToSettlement &&
-                    party.TargetSettlement == task.TargetSettlement;
                 bool valid = ManagedPartyPolicy.IsModManagedAiParty(party) &&
                     task.OwnerKey == "ModifiedArmy.AiForcePlanning" &&
                     task.ClanId == party.ActualClan?.StringId &&
                     task.TargetSettlement != null &&
-                    !task.TargetSettlement.IsUnderSiege &&
-                    ownsRoute;
+                    !task.TargetSettlement.IsUnderSiege;
                 if (valid && task.Intent == PartyForceIntent.WarRest)
                 {
                     WarRestContext rest = ForceManagementFacade.Current
@@ -167,10 +261,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         candidate.IsSafe);
                 }
                 task.LastValidatedDay = (int)CampaignTime.Now.ToDays;
-                task.OwnsMovementOrder = valid;
+                task.OwnsMovementOrder = false;
                 if (valid)
                 {
-                    task.Status = PartyForceTaskStatus.Traveling;
+                    task.Status = PartyForceTaskStatus.Planned;
+                    party.Ai.RethinkAtNextHourlyTick = true;
                     if (!RecruitmentLogFilter.ShouldLog(party)) return;
                     TextObject resumed = GameTexts.FindText(
                         "str_modifiedarmy_force_task_resumed");
@@ -186,6 +281,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 {
                     task.Status = PartyForceTaskStatus.Cancelled;
                     task.ReasonCode = "SavedTaskFailedRevalidation";
+                    if (party?.Ai != null)
+                        party.Ai.RethinkAtNextHourlyTick = true;
                     if (!RecruitmentLogFilter.ShouldLog(party)) return;
                     TextObject cancelled = GameTexts.FindText(
                         "str_modifiedarmy_force_task_cancelled_on_load");
@@ -209,7 +306,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         }
 
         /// <summary>Parses one versioned primitive task record defensively.</summary>
-        /// <summary>Runs the single daily planning pass and owns approved routes.</summary>
+        /// <summary>Runs the single daily planning pass.</summary>
         private void OnDailyTick()
         {
             MilitaryConfig config = MilitaryConfigManager.Instance
@@ -241,6 +338,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                                 task.Status = PartyForceTaskStatus.Cancelled;
                                 task.OwnsMovementOrder = false;
                                 task.ReasonCode = "DailyPlanningException";
+                                if (party?.Ai != null)
+                                    party.Ai.RethinkAtNextHourlyTick = true;
                             }
                             if (RecruitmentLogFilter.ShouldLog(party))
                             {
@@ -268,8 +367,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         }
 
         /// <summary>
-        /// Produces a task decision and applies only the movement order owned
-        /// by that task. Roster mutation remains arrival-only.
+        /// Produces a task decision. Native strategic AI owns movement, while
+        /// roster mutation remains arrival-only.
         /// </summary>
         public PartyForcePlan EvaluateParty(
             MobileParty party,
