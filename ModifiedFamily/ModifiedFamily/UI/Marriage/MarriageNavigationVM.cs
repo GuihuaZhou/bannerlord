@@ -25,6 +25,7 @@ namespace ModifiedFamily.UI.Marriage
 {
     internal enum MarriageUiPage
     {
+        OwnHeroList,
         ClanList,
         ClanDetail,
         HeroDetail
@@ -38,6 +39,7 @@ namespace ModifiedFamily.UI.Marriage
         private string _emptyStateText;
         private MarriageClanDetailsVM _clanDetails;
         private MarriageHeroDetailsVM _heroDetails;
+        private MarriageOwnHeroDetailsVM _ownHeroDetails;
         private bool _isTermsOpen;
         private bool _isSubmitting;
         private MarriageDirection _selectedDirection;
@@ -45,10 +47,11 @@ namespace ModifiedFamily.UI.Marriage
         private int _giftAmount;
         private string _termsValidationText;
 
-        internal MarriageNavigationVM(Hero ownHero)
+        internal MarriageNavigationVM()
         {
-            OwnHero = ownHero;
+            Hero ownHero = null;
             _service = GameCampaign.Current?.GetCampaignBehavior<FamilyCampaignBehavior>()?.Service;
+            OwnHeroes = new MBBindingList<MarriageOwnHeroItemVM>();
             Clans = new MBBindingList<MarriageClanItemVM>();
             Title = new TextObject("{=MF_UI_MarriageScreenTitle}Marriage Screen Title").ToString();
             ClanListTitle = new TextObject("{=MF_UI_MarriageClanListTitle}Marriage Clan List Title").ToString();
@@ -101,15 +104,20 @@ namespace ModifiedFamily.UI.Marriage
             RelationColumnText = new TextObject("{=MF_UI_MarriageRelationColumn}Marriage Relation Column").ToString();
             CandidateColumnText = new TextObject("{=MF_UI_MarriageCandidateColumn}Marriage Candidate Column").ToString();
             EmptyStateText = new TextObject("{=MF_UI_NoMarriageCandidates}No Marriage Candidates").ToString();
-            LoadClans();
-            SetPage(MarriageUiPage.ClanList);
+            OwnHeroesTitle = new TextObject("{=MF_UI_EligibleMarriageHeroes}Eligible Marriage Heroes").ToString();
+            NoOwnHeroesText = new TextObject("{=MF_UI_NoEligiblePlayerMarriageHeroes}No Eligible Player Marriage Heroes").ToString();
+            LoadOwnHeroes();
+            if (OwnHeroes.Count > 0) PreviewOwnHero(OwnHeroes[0]);
+            SetPage(MarriageUiPage.OwnHeroList);
         }
 
-        internal Hero OwnHero { get; }
+        internal Hero OwnHero { get; private set; }
         internal CampaignClan SelectedTargetClan { get; private set; }
         internal Hero SelectedTargetHero { get; private set; }
 
+        [DataSourceProperty] public MBBindingList<MarriageOwnHeroItemVM> OwnHeroes { get; }
         [DataSourceProperty] public MBBindingList<MarriageClanItemVM> Clans { get; }
+        [DataSourceProperty] public MarriageOwnHeroDetailsVM OwnHeroDetails { get => _ownHeroDetails; private set { _ownHeroDetails = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public MarriageClanDetailsVM ClanDetails { get => _clanDetails; private set { _clanDetails = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public MarriageHeroDetailsVM HeroDetails { get => _heroDetails; private set { _heroDetails = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string Title { get; }
@@ -122,7 +130,7 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageDirectionSelector { get; }
         [DataSourceProperty] public SelectorVM<SelectorItemVM> MarriageGiftSelector { get; }
         [DataSourceProperty] public bool OwnHeroHasSkills => OwnHeroSkills.Count > 0;
-        [DataSourceProperty] public string SkillsText => new TextObject("{=hVve5rNi}Skills").ToString();
+        [DataSourceProperty] public string SkillsText => new TextObject("{=MF_UI_Skills}Skills").ToString();
         [DataSourceProperty] public string OwnHeroNameText { get; }
         [DataSourceProperty] public string OwnHeroClanText { get; }
         [DataSourceProperty] public string OwnHeroCultureText { get; }
@@ -134,7 +142,12 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public string MatchColumnText { get; }
         [DataSourceProperty] public string RelationColumnText { get; }
         [DataSourceProperty] public string CandidateColumnText { get; }
+        [DataSourceProperty] public string OwnHeroesTitle { get; }
+        [DataSourceProperty] public string NoOwnHeroesText { get; }
+        [DataSourceProperty] public bool HasOwnHeroes => OwnHeroes.Count > 0;
         [DataSourceProperty] public bool HasClans => Clans.Count > 0;
+        [DataSourceProperty] public bool IsOwnHeroListVisible => _page == MarriageUiPage.OwnHeroList;
+        [DataSourceProperty] public bool IsOwnHeroAndClanListVisible => _page == MarriageUiPage.OwnHeroList || _page == MarriageUiPage.ClanList;
         [DataSourceProperty] public bool IsClanListVisible => _page == MarriageUiPage.ClanList;
         [DataSourceProperty] public bool IsClanDetailVisible => _page == MarriageUiPage.ClanDetail;
         [DataSourceProperty] public bool IsHeroDetailVisible => _page == MarriageUiPage.HeroDetail;
@@ -176,7 +189,7 @@ namespace ModifiedFamily.UI.Marriage
         [DataSourceProperty] public string OpenTermsText => new TextObject("{=MF_UI_OpenMarriageTerms}Open Marriage Terms").ToString();
         [DataSourceProperty] public string SubmitTermsText => new TextObject("{=MF_UI_SubmitMarriageProposal}Submit Marriage Proposal").ToString();
         [DataSourceProperty] public string CancelTermsText => new TextObject("{=MF_UI_Cancel}Cancel").ToString();
-        [DataSourceProperty] public bool CanGoBack => _page != MarriageUiPage.ClanList;
+        [DataSourceProperty] public bool CanGoBack => _page != MarriageUiPage.OwnHeroList;
         [DataSourceProperty] public string BreadcrumbText { get => _breadcrumbText; private set { _breadcrumbText = value; OnPropertyChangedWithValue(value); } }
         [DataSourceProperty] public string EmptyStateText { get => _emptyStateText; private set { _emptyStateText = value; OnPropertyChangedWithValue(value); } }
 
@@ -184,6 +197,7 @@ namespace ModifiedFamily.UI.Marriage
         {
             if (_page == MarriageUiPage.HeroDetail) SetPage(MarriageUiPage.ClanDetail);
             else if (_page == MarriageUiPage.ClanDetail) SetPage(MarriageUiPage.ClanList);
+            else if (_page == MarriageUiPage.ClanList) SetPage(MarriageUiPage.OwnHeroList);
         }
 
         public void ExecuteClose() => FamilyActionScreenHost.Close();
@@ -260,8 +274,50 @@ namespace ModifiedFamily.UI.Marriage
         public override void OnFinalize()
         {
             HeroDetails?.OnFinalize();
+            OwnHeroDetails?.OnFinalize();
             OwnHeroCharacter?.OnFinalize();
             base.OnFinalize();
+        }
+
+        private void LoadOwnHeroes()
+        {
+            CampaignClan playerClan = CampaignClan.PlayerClan;
+            if (playerClan == null) return;
+            foreach (Hero hero in playerClan.Heroes
+                .Where(hero => hero != null && hero.Clan == playerClan &&
+                    MarriageEligibilityModel.CanNegotiateHero(hero).IsAllowed)
+                .OrderByDescending(hero => hero == Hero.MainHero)
+                .ThenByDescending(hero => hero.Age)
+                .ThenBy(hero => hero.Name?.ToString(), StringComparer.CurrentCulture))
+                OwnHeroes.Add(new MarriageOwnHeroItemVM(hero, OpenClanListForOwnHero));
+        }
+
+        private void PreviewOwnHero(MarriageOwnHeroItemVM item)
+        {
+            if (item?.Hero == null) return;
+            foreach (MarriageOwnHeroItemVM row in OwnHeroes) row.IsSelected = row == item;
+            OwnHero = item.Hero;
+            OwnHeroDetails?.OnFinalize();
+            OwnHeroDetails = new MarriageOwnHeroDetailsVM(OwnHero);
+            SelectedTargetClan = null;
+            SelectedTargetHero = null;
+            ClanDetails = null;
+            HeroDetails?.OnFinalize();
+            HeroDetails = null;
+            IsTermsOpen = false;
+            Clans.Clear();
+            EmptyStateText = new TextObject("{=MF_UI_NoMarriageCandidates}No Marriage Candidates").ToString();
+            OnPropertyChanged(nameof(HasClans));
+            OnPropertyChanged(nameof(CanSubmitTerms));
+        }
+
+        private void OpenClanListForOwnHero(MarriageOwnHeroItemVM item)
+        {
+            PreviewOwnHero(item);
+            LoadClans();
+            OnPropertyChanged(nameof(HasClans));
+            SetPage(MarriageUiPage.ClanList);
+            FamilyDiagnostics.DebugLog($"Marriage screen selected player hero: {OwnHero.StringId}/{OwnHero.Name}; eligibleClans={Clans.Count}.");
         }
 
         private void LoadClans()
@@ -443,14 +499,18 @@ namespace ModifiedFamily.UI.Marriage
         private void SetPage(MarriageUiPage page)
         {
             _page = page;
-            BreadcrumbText = page == MarriageUiPage.ClanList
-                ? new TextObject("{=MF_UI_MarriageBreadcrumbClans}Marriage Breadcrumb Clans").ToString()
-                : page == MarriageUiPage.ClanDetail
+            BreadcrumbText = page == MarriageUiPage.OwnHeroList
+                ? new TextObject("{=MF_UI_MarriageBreadcrumbOwnHeroes}Marriage Breadcrumb Own Heroes").ToString()
+                : page == MarriageUiPage.ClanList
+                    ? new TextObject("{=MF_UI_MarriageBreadcrumbClans}Marriage Breadcrumb Clans").ToString()
+                    : page == MarriageUiPage.ClanDetail
                     ? new TextObject("{=MF_UI_MarriageBreadcrumbClanDetail}Marriage Breadcrumb Clan Detail {CLAN}").SetTextVariable("CLAN", SelectedTargetClan?.Name ?? new TextObject("-")).ToString()
                     : new TextObject("{=MF_UI_MarriageBreadcrumbHeroDetail}Marriage Breadcrumb Hero Detail {CLAN} {HERO}")
                         .SetTextVariable("CLAN", SelectedTargetClan?.Name ?? new TextObject("-"))
                         .SetTextVariable("HERO", SelectedTargetHero?.Name ?? new TextObject("-"))
                         .ToString();
+            OnPropertyChanged(nameof(IsOwnHeroListVisible));
+            OnPropertyChanged(nameof(IsOwnHeroAndClanListVisible));
             OnPropertyChanged(nameof(IsClanListVisible));
             OnPropertyChanged(nameof(IsClanDetailVisible));
             OnPropertyChanged(nameof(IsHeroDetailVisible));
@@ -582,5 +642,60 @@ namespace ModifiedFamily.UI.Marriage
             if (tier == 2) return new TextObject("{=MF_UI_MatchSameRealm}Match Same Realm").ToString();
             return "-";
         }
+    }
+
+    internal sealed class MarriageOwnHeroItemVM : ViewModel
+    {
+        private readonly Action<MarriageOwnHeroItemVM> _select;
+        private bool _isSelected;
+
+        internal MarriageOwnHeroItemVM(Hero hero, Action<MarriageOwnHeroItemVM> select)
+        {
+            Hero = hero;
+            _select = select;
+            Name = hero?.Name?.ToString() ?? "-";
+            AgeText = new TextObject("{=MF_UI_MarriageHeroAge}Marriage Hero Age {AGE}")
+                .SetTextVariable("AGE", hero == null ? "-" : ((int)hero.Age).ToString())
+                .ToString();
+            RoleText = hero?.Clan?.Leader == hero
+                ? new TextObject("{=MF_UI_ClanLeaderRole}Clan Leader Role").ToString()
+                : new TextObject("{=MF_UI_ClanMemberRole}Clan Member Role").ToString();
+            CultureText = new TextObject("{=MF_UI_MarriageCultureField}Marriage Culture Field {VALUE}")
+                .SetTextVariable("VALUE", hero?.Culture?.Name?.ToString() ?? "-")
+                .ToString();
+            Portrait = hero == null
+                ? null
+                : new CharacterImageIdentifierVM(CharacterCode.CreateFrom(hero.CharacterObject));
+            Traits = new MBBindingList<EncyclopediaTraitItemVM>();
+            if (hero != null)
+            {
+                foreach (TraitObject trait in DefaultTraits.Personality)
+                {
+                    int value = hero.GetTraitLevel(trait);
+                    if (value != 0) Traits.Add(new EncyclopediaTraitItemVM(trait, value));
+                }
+            }
+        }
+
+        internal Hero Hero { get; }
+        [DataSourceProperty] public string Name { get; }
+        [DataSourceProperty] public string AgeText { get; }
+        [DataSourceProperty] public string RoleText { get; }
+        [DataSourceProperty] public string CultureText { get; }
+        [DataSourceProperty] public CharacterImageIdentifierVM Portrait { get; }
+        [DataSourceProperty] public MBBindingList<EncyclopediaTraitItemVM> Traits { get; }
+        [DataSourceProperty]
+        public bool IsSelected
+        {
+            get => _isSelected;
+            set
+            {
+                if (value == _isSelected) return;
+                _isSelected = value;
+                OnPropertyChangedWithValue(value);
+            }
+        }
+
+        public void ExecuteSelect() => _select?.Invoke(this);
     }
 }

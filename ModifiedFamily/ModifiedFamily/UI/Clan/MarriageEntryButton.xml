@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<BrushWidget Id="ModifiedFamilyMarriageEntry" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Management.LeftTuple.Width" SuggestedHeight="!Clan.Management.LeftTuple.Height" Brush="Clan.Management.LeftTuple">
+  <Children>
+    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Clan.Management.LeftTuple" Command.Click="ExecuteOpenMarriage" IsEnabled="@CanOpenMarriage" UpdateChildrenStates="true">
+      <Children>
+        <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Text="@MarriageText" Brush="Clan.Management.Collapser.Text" Brush.FontSize="28" Brush.TextHorizontalAlignment="Center" />
+      </Children>
+    </ButtonWidget>
+  </Children>
+</BrushWidget>

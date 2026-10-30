@@ -137,12 +137,15 @@
     <string id="MF_UI_Continue" text="继续" />
     <string id="MF_UI_MarriageButton" text="联姻" />
     <string id="MF_UI_AdoptionButton" text="收养" />
-    <string id="MF_UI_EligibleMarriageHeroes" text="可联姻成员" />
+    <string id="MF_UI_EligibleMarriageHeroes" text="家族成员" />
+    <string id="MF_UI_Skills" text="技能" />
+    <string id="MF_UI_NoEligiblePlayerMarriageHeroes" text="玩家家族当前没有可以安排联姻的成员。" />
     <string id="MF_UI_SelectMarriageHero" text="选择对象" />
     <string id="MF_UI_NoMarriageCandidates" text="当前没有符合全部联姻条件且未被其他提议占用的家族或成员。" />
     <string id="MF_UI_OwnHeroProposalLocked" text="{HERO}已有一份正在处理的家族事务，当前不能再次安排联姻。（请求：{ID}）" />
-    <string id="MF_UI_MarriageClanListTitle" text="可联姻家族" />
+    <string id="MF_UI_MarriageClanListTitle" text="联姻家族" />
     <string id="MF_UI_MarriageForHero" text="为 {HERO} 寻找联姻对象" />
+    <string id="MF_UI_MarriageBreadcrumbOwnHeroes" text="联姻  &gt;  家族成员" />
     <string id="MF_UI_MarriageBreadcrumbClans" text="联姻  &gt;  选择家族" />
     <string id="MF_UI_MarriageBreadcrumbClanDetail" text="联姻  &gt;  选择家族  &gt;  {CLAN}" />
     <string id="MF_UI_MarriageBreadcrumbHeroDetail" text="联姻  &gt;  {CLAN}  &gt;  {HERO}" />
@@ -155,7 +158,7 @@
     <string id="MF_UI_MarriageCultureField" text="文化：{VALUE}" />
     <string id="MF_UI_MarriageLeaderField" text="领袖：{VALUE}" />
     <string id="MF_UI_MarriageRelationField" text="关系：{VALUE}" />
-    <string id="MF_UI_MarriageCandidateField" text="候选人数：{VALUE}" />
+    <string id="MF_UI_MarriageCandidateField" text="联姻人数：{VALUE}" />
     <string id="MF_UI_MarriageTierField" text="家族等级：{VALUE}" />
     <string id="MF_UI_MarriageFiefField" text="封地数量：{VALUE}" />
     <string id="MF_UI_MarriageEligibleClanMembers" text="可联姻的家族成员（{COUNT}）" />

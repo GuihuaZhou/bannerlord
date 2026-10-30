@@ -77,7 +77,7 @@ namespace ModifiedFamily.UI.Marriage
                 .SetTextVariable("OWN", ownHero?.Name ?? new TextObject("-"))
                 .SetTextVariable("TARGET", targetHero?.Name ?? new TextObject("-"))
                 .ToString();
-            SkillsText = new TextObject("{=hVve5rNi}Skills").ToString();
+            SkillsText = new TextObject("{=MF_UI_Skills}Skills").ToString();
         }
 
         internal Hero TargetHero { get; }
