@@ -244,8 +244,12 @@ namespace ModifiedArmy.ForceManagement.Models
             int establishmentSurplus = Math.Max(
                 0,
                 snapshot.EffectiveGarrisonCount - snapshot.MinimumCount);
+            int residentFloor = Math.Min(75, Math.Max(0, snapshot.HardLimit));
+            int residentSurplus = Math.Max(
+                0,
+                snapshot.ResidentCount - residentFloor);
             return Math.Min(
-                establishmentSurplus,
+                Math.Min(establishmentSurplus, residentSurplus),
                 Math.Max(0, roster.TotalRegulars));
         }
 

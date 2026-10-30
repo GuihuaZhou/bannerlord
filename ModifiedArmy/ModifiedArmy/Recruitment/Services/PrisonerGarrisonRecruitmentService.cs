@@ -12,6 +12,17 @@ using TaleWorlds.Library;
 
 namespace ModifiedArmy.Recruitment.Services
 {
+    internal sealed class PrisonerRecruitmentCommit
+    {
+        public Settlement Settlement { get; set; }
+        public MobileParty Garrison { get; set; }
+        public CharacterObject Troop { get; set; }
+        public int Count { get; set; }
+        public int Wounded { get; set; }
+        public int ConformitySpent { get; set; }
+        public int GarrisonCountBefore { get; set; }
+    }
+
     internal sealed class PrisonerRecruitmentOffer
     {
         public PrisonerRecruitmentOffer(int conformityCost)
@@ -76,9 +87,11 @@ namespace ModifiedArmy.Recruitment.Services
 
         public static bool TryCommit(Settlement settlement, MobileParty garrison,
             RecruitmentEvaluationResult evaluation, int requested,
-            out int committed)
+            out int committed,
+            out PrisonerRecruitmentCommit commit)
         {
             committed = 0;
+            commit = null;
             if (settlement == null || garrison == null || evaluation?.Troop == null ||
                 requested <= 0 || !(evaluation.Candidate?.SourceContext is
                     PrisonerRecruitmentOffer offer)) return false;
@@ -87,11 +100,62 @@ namespace ModifiedArmy.Recruitment.Services
                 prison.GetTroopCount(evaluation.Troop));
             if (committed <= 0) return false;
             int wounded = GetWoundedCount(prison, evaluation.Troop, committed);
+            int garrisonCountBefore = garrison.MemberRoster.GetElementNumber(
+                evaluation.Troop);
             prison.AddToCounts(evaluation.Troop, -committed, false, -wounded,
                 -offer.ConformityCost * committed, true, -1);
-            garrison.MemberRoster.AddToCounts(evaluation.Troop, committed,
-                false, wounded, 0, true, -1);
-            return true;
+            try
+            {
+                garrison.MemberRoster.AddToCounts(evaluation.Troop, committed,
+                    false, wounded, 0, true, -1);
+                commit = new PrisonerRecruitmentCommit
+                {
+                    Settlement = settlement,
+                    Garrison = garrison,
+                    Troop = evaluation.Troop,
+                    Count = committed,
+                    Wounded = wounded,
+                    ConformitySpent = offer.ConformityCost * committed,
+                    GarrisonCountBefore = garrisonCountBefore
+                };
+                return true;
+            }
+            catch
+            {
+                prison.AddToCounts(evaluation.Troop, committed, false, wounded,
+                    offer.ConformityCost * committed, true, -1);
+                committed = 0;
+                throw;
+            }
+        }
+
+        public static bool TryRollback(
+            PrisonerRecruitmentCommit commit,
+            out Exception failure)
+        {
+            failure = null;
+            if (commit?.Settlement?.Party?.PrisonRoster == null ||
+                commit.Garrison == null || commit.Troop == null) return false;
+            try
+            {
+                int added = Math.Max(0,
+                    commit.Garrison.MemberRoster.GetElementNumber(commit.Troop) -
+                    commit.GarrisonCountBefore);
+                if (added > 0)
+                    commit.Garrison.MemberRoster.AddToCounts(
+                        commit.Troop, -added, false,
+                        -Math.Min(added, commit.Wounded), 0, true, -1);
+                commit.Settlement.Party.PrisonRoster.AddToCounts(
+                    commit.Troop, commit.Count, false, commit.Wounded,
+                    commit.ConformitySpent, true, -1);
+                return commit.Garrison.MemberRoster.GetElementNumber(
+                    commit.Troop) == commit.GarrisonCountBefore;
+            }
+            catch (Exception exception)
+            {
+                failure = exception;
+                return false;
+            }
         }
 
         public static bool IsRegularTroop(CharacterObject troop) => troop != null &&

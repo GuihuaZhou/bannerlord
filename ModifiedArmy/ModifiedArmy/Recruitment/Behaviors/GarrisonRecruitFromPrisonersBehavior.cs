@@ -6,6 +6,9 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Recruitment.Services;
+using ModifiedArmy.common;
+using ModifiedArmy.Recruitment.Orders.Behaviors;
+using ModifiedArmy.Recruitment.Orders.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -63,6 +66,14 @@ namespace ModifiedArmy.Models
                 ?.GetOrCreateProductionData(settlement);
             int day = (int)CampaignTime.Now.ToDays;
             productionData?.RecordProfessionalRecruitment(day, 0);
+
+            bool orderSchedulingEnabled = MilitaryConfigManager.Instance
+                .GetActiveConfig()?.AiRecruitment.ForceManagement
+                .GarrisonRecruitmentOrders.Enabled == true;
+            if (orderSchedulingEnabled && settlement.OwnerClan != Clan.PlayerClan)
+            {
+                return;
+            }
 
             if (town.GarrisonParty == null &&
                 town.GarrisonAutoRecruitmentIsEnabled &&
@@ -432,6 +443,19 @@ namespace ModifiedArmy.Models
                 return 0;
             }
 
+            bool orderSchedulingEnabled = MilitaryConfigManager.Instance
+                .GetActiveConfig()?.AiRecruitment.ForceManagement
+                .GarrisonRecruitmentOrders.Enabled == true;
+            int orderRemaining = int.MaxValue;
+            if (orderSchedulingEnabled && settlement.OwnerClan != Clan.PlayerClan)
+            {
+                GarrisonRecruitmentOrderRecord order = Campaign.Current
+                    .GetCampaignBehavior<GarrisonRecruitmentOrderBehavior>()?
+                    .GetActive(settlement);
+                if (order == null || order.Remaining <= 0) return 0;
+                orderRemaining = order.Remaining;
+            }
+
             List<RecruitmentCandidate> candidates =
                 new List<RecruitmentCandidate>();
             SettlementManpowerProductionBehavior pools = Campaign.Current
@@ -480,11 +504,13 @@ namespace ModifiedArmy.Models
                 return 0;
             }
 
-            RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
-                garrison,
-                candidates);
+            RecruitmentPlan plan = orderRemaining == int.MaxValue
+                ? RecruitmentModelManager.Model.BuildPlan(garrison, candidates)
+                : RecruitmentModelManager.Model.BuildPlan(
+                    garrison, candidates,
+                    new AiGarrisonOrderRecruitmentContext(orderRemaining));
             return Math.Min(
-                GetDailyRecruitmentLimit(town),
+                Math.Min(GetDailyRecruitmentLimit(town), orderRemaining),
                 plan.Evaluations.Sum(result => result.RecruitableCount));
         }
 

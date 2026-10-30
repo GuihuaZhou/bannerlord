@@ -440,4 +440,18 @@
         text="{=ModifiedArmy_GarrisonWageLimitBorderLog}The garrison wage assessment revised the wage limit for the border settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
     <string id="str_modifiedarmy_garrison_wage_limit_interior_log"
         text="{=ModifiedArmy_GarrisonWageLimitInteriorLog}The garrison wage assessment revised the wage limit for the interior settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
+    <string id="str_modifiedarmy_garrison_order_plan"
+        text="{=ModifiedArmy_GarrisonOrderPlan}[Garrison order] Event {EVENT} reviewed clan {CLAN_ID}, settlement {SETTLEMENT_ID}, and order {ORDER_ID} on day {DAY}. Stock was {STOCK}, target S was {TARGET}, reorder point s was {REORDER}, safe capacity was {SAFE_CAPACITY}, outstanding planned commitment was {OUTSTANDING}, remaining authorization was {REMAINING}, and reason code was {REASON}." />
+    <string id="str_modifiedarmy_garrison_order_execution"
+        text="{=ModifiedArmy_GarrisonOrderExecution}[Garrison order] Clan {CLAN_ID}, settlement {SETTLEMENT_ID}, order {ORDER_ID}, operation {OPERATION_ID}: remaining authorization changed from {BEFORE} to {AFTER}; {PROFESSIONAL} professional soldiers and {PRISONER} prisoners were committed. The remaining daily commitment budget was {BUDGET}; reason code was {REASON}." />
+    <string id="str_modifiedarmy_garrison_order_config_loaded"
+        text="{=ModifiedArmy_GarrisonOrderConfigLoaded}[Garrison order config] Enabled={ENABLED}, resident floor={FLOOR}, wealth saturation={SATURATION}, reorder fraction={REORDER}, planning share={SHARE}, minimum order={MINIMUM}, cooldown days={COOLDOWN}." />
+    <string id="str_modifiedarmy_garrison_order_source_failure"
+        text="{=ModifiedArmy_GarrisonOrderSourceFailure}[Garrison order error] Operation {OPERATION_ID} at settlement {SETTLEMENT_ID} could not safely commit {COUNT} soldiers of troop {TROOP_ID}; recruitment is frozen for recovery. Error: {ERROR}" />
+    <string id="str_modifiedarmy_garrison_order_finance_failure"
+        text="{=ModifiedArmy_GarrisonOrderFinanceFailure}[Garrison order error] Operation {OPERATION_ID} at settlement {SETTLEMENT_ID} failed while charging {COUNT} soldiers of troop {TROOP_ID}. Rollback succeeded={ROLLBACK}. Error: {ERROR}. Rollback error: {ROLLBACK_ERROR}" />
+    <string id="str_modifiedarmy_professional_recruitment_rollback_failed"
+        text="{=ModifiedArmy_ProfessionalRecruitmentRollbackFailed}[Professional recruitment error] Source and roster rollback failed. Error: {ERROR}" />
+    <string id="str_modifiedarmy_professional_recruitment_commit_failed"
+        text="{=ModifiedArmy_ProfessionalRecruitmentCommitFailed}[Professional recruitment error] The source-to-roster commit failed. Error: {ERROR}" />
 </strings>

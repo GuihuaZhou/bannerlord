@@ -30,7 +30,16 @@ namespace ModifiedArmy.Recruitment.Models
 
         public RecruitmentBudget Budget { get; private set; }
 
+        public int RemainingIntake { get; private set; }
+
         public static RecruitmentSimulationState Create(MobileParty party)
+        {
+            return Create(party, int.MaxValue);
+        }
+
+        public static RecruitmentSimulationState Create(
+            MobileParty party,
+            int maximumIntake)
         {
             RecruitmentSimulationState result =
                 new RecruitmentSimulationState
@@ -43,7 +52,8 @@ namespace ModifiedArmy.Recruitment.Models
                             .GetActiveSupplyEscortCount(
                                 party.CurrentSettlement)
                         : 0,
-                    Budget = RecruitmentBudget.Create(party)
+                    Budget = RecruitmentBudget.Create(party),
+                    RemainingIntake = Math.Max(0, maximumIntake)
                 };
 
             result.ProjectedDailyWage =
@@ -71,6 +81,7 @@ namespace ModifiedArmy.Recruitment.Models
             ProjectedMemberCount += count;
             ProjectedDailyWage += count * unitDailyWage;
             CommittedRecruitmentCost += count * unitRecruitmentCost;
+            RemainingIntake = Math.Max(0, RemainingIntake - count);
         }
     }
 }

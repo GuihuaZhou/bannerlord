@@ -28,10 +28,27 @@ namespace ModifiedArmy.Recruitment.Models
             MobileParty party,
             IReadOnlyList<RecruitmentCandidate> candidates)
         {
+            return BuildPlanCore(party, candidates, null);
+        }
+
+        public override RecruitmentPlan BuildPlan(
+            MobileParty party,
+            IReadOnlyList<RecruitmentCandidate> candidates,
+            AiGarrisonOrderRecruitmentContext context)
+        {
+            return BuildPlanCore(party, candidates, context);
+        }
+
+        private RecruitmentPlan BuildPlanCore(
+            MobileParty party,
+            IReadOnlyList<RecruitmentCandidate> candidates,
+            AiGarrisonOrderRecruitmentContext context)
+        {
             RecruitmentPartyType partyType = GetPartyType(party);
             string cultureId = GetCultureId(party, partyType);
             RecruitmentSimulationState state =
-                RecruitmentSimulationState.Create(party);
+                RecruitmentSimulationState.Create(
+                    party, context?.Remaining ?? int.MaxValue);
             List<RecruitmentEvaluationResult> results =
                 new List<RecruitmentEvaluationResult>();
 
@@ -62,7 +79,8 @@ namespace ModifiedArmy.Recruitment.Models
                         candidate.Troop,
                         candidate.AvailableCount,
                         candidate.Source,
-                        state);
+                        state,
+                        context);
                 evaluation.Candidate = candidate;
 
                 results.Add(evaluation);
@@ -96,6 +114,18 @@ namespace ModifiedArmy.Recruitment.Models
             RecruitmentSource source,
             RecruitmentSimulationState state)
         {
+            return EvaluateRecruitment(
+                party, troop, availableCount, source, state, null);
+        }
+
+        private RecruitmentEvaluationResult EvaluateRecruitment(
+            MobileParty party,
+            CharacterObject troop,
+            int availableCount,
+            RecruitmentSource source,
+            RecruitmentSimulationState state,
+            AiGarrisonOrderRecruitmentContext context)
+        {
             RecruitmentEvaluationResult result =
                 CreateBaseResult(troop, source, availableCount);
 
@@ -121,7 +151,8 @@ namespace ModifiedArmy.Recruitment.Models
             int recruitmentTarget = GetRecruitmentTarget(
                 party,
                 state,
-                source);
+                source,
+                context);
             ForceOperation operation = source == RecruitmentSource.Transfer
                 ? party.IsGarrison
                     ? ForceOperation.FieldToGarrison
@@ -214,6 +245,9 @@ namespace ModifiedArmy.Recruitment.Models
                 result.AllowedByWageLimit,
                 result.AllowedByRecruitmentCost,
                 result.AllowedByMaintenance);
+            result.RecruitableCount = Math.Min(
+                result.RecruitableCount,
+                state.RemainingIntake);
             result.PrimaryLimit = FindPrimaryLimit(result);
             result.SustainableDays = isExistingTroopTransfer
                 ? int.MaxValue
@@ -391,10 +425,15 @@ namespace ModifiedArmy.Recruitment.Models
         private static int GetRecruitmentTarget(
             MobileParty party,
             RecruitmentSimulationState state,
-            RecruitmentSource source)
+            RecruitmentSource source,
+            AiGarrisonOrderRecruitmentContext context)
         {
             if (party?.IsGarrison == true)
             {
+                if (context != null)
+                {
+                    return state.PartySizeLimit;
+                }
                 return GarrisonRecruitmentCapacity
                     .GetAutomaticRecruitmentTarget(party);
             }

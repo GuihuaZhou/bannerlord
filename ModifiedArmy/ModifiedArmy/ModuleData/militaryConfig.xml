@@ -117,6 +117,14 @@
         待实机遇敌、读档与长期运行验收后再显式启用。
       -->
       <ForceManagement>
+        <GarrisonRecruitmentOrders enabled="true">
+          <ResidentFloor value="75"/>
+          <WealthSaturationGold value="80000"/>
+          <ReorderFraction value="0.50"/>
+          <PlanningCommitmentShare value="0.35"/>
+          <MinimumNewOrderCount value="5"/>
+          <OrderCooldownDays value="3"/>
+        </GarrisonRecruitmentOrders>
         <!-- PeaceTargetRatio：和平时目标兵力占队伍编制上限的比例。 -->
         <PeaceTargetRatio value="0.35"/>
         <!-- PeaceMinimumCount：和平目标的最低人数；仍不会突破实际编制上限。 -->
