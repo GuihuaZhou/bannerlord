@@ -60,8 +60,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         /// </summary>
         private void OnAiHourlyTick(MobileParty party, PartyThinkParams p)
         {
+            if (p == null) return;
+            AddLowStrengthStayCandidate(party, p);
             PartyForceTask task = FindTask(party);
-            if (task == null || p == null ||
+            if (task == null ||
                 (task.Intent != PartyForceIntent.Recruit &&
                     task.Intent != PartyForceIntent.WarRest) ||
                 task.Status == PartyForceTaskStatus.Completed ||
@@ -106,6 +108,36 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         : Math.Max(oldScore, score));
             else
                 p.AddBehaviorScore((candidate, score));
+        }
+
+        private static void AddLowStrengthStayCandidate(
+            MobileParty party, PartyThinkParams p)
+        {
+            Settlement current = party?.CurrentSettlement;
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
+                current?.IsFortification != true ||
+                party.MemberRoster.TotalRegulars >= 50 ||
+                party.Army != null || party.MapEvent != null ||
+                party.IsDisbanding || party.TargetParty != null ||
+                party.ShortTermTargetParty != null || party.Party.IsStarving ||
+                current.SiegeEvent != null ||
+                TransportThreatModel.IsNativeAvoidanceActive(party))
+                return;
+            AIBehaviorData candidate = new AIBehaviorData(
+                current, AiBehavior.GoToSettlement,
+                party.IsCurrentlyAtSea
+                    ? MobileParty.NavigationType.Naval
+                    : MobileParty.NavigationType.Default,
+                false, false, false);
+            float score = CalculateTaskBehaviorScore(p);
+            if (p.TryGetBehaviorScore(candidate, out float existing))
+                p.SetBehaviorScore(candidate,
+                    float.IsNaN(existing) || float.IsInfinity(existing)
+                        ? score : Math.Max(existing, score));
+            else
+                p.AddBehaviorScore((candidate, score));
+            ForceRecruitmentDiagnostics.LogStayCandidate(
+                party, current, party.MemberRoster.TotalRegulars, score);
         }
 
         private static void GetBestNavigationData(
@@ -400,6 +432,14 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             return Coordinator.EvaluateParty(party, randomGateOpen);
         }
+
+        public bool TryRegisterInitialRecruitTask(MobileParty party,
+            Settlement boundSettlement, PartyForceSourceKind preferredSource) =>
+            Coordinator.TryRegisterInitialRecruitTask(
+                party, boundSettlement, preferredSource);
+
+        public void CancelTask(MobileParty party, string reason) =>
+            Coordinator.CancelTask(party, reason);
 
         /// <summary>
         /// Executes only the task whose stored destination matches this visit.

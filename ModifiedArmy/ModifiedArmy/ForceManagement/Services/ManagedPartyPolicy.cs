@@ -22,6 +22,15 @@ namespace ModifiedArmy.ForceManagement.Services
                 party.ActualClan != Clan.PlayerClan;
         }
 
+        public static bool IsModManagedAiLeader(Hero leader)
+        {
+            Clan clan = leader?.Clan;
+            return IsEnabled() && leader != null && leader.IsAlive &&
+                !leader.IsHumanPlayerCharacter && clan != null &&
+                clan != Clan.PlayerClan && !clan.IsMinorFaction &&
+                !clan.IsRebelClan && !clan.IsEliminated;
+        }
+
         /// <summary>Reads the atomic-switch flag with a safe false fallback.</summary>
         public static bool IsEnabled()
         {

@@ -313,5 +313,7 @@
     <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
     <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
+    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 家族{CLAN_ID}、领队{LEADER_ID}、部队{PARTY_ID}与定居点{SETTLEMENT_ID}进入阶段{PHASE}。预计驻军兵源{GARRISON}人，预计封邑兵源{FIEF}人，预计合计{TOTAL}人，首次来源为{SOURCE}。原因：{REASON}。" />
+    <string id="ModifiedArmy_ForceStayCandidate" text="[兵力规划] 部队{PARTY_ID}在定居点{SETTLEMENT_ID}拥有{REGULARS}名正规兵；已向本体AI提交评分为{SCORE}的驻留候选。" />
   </strings>
 </base>

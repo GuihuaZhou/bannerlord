@@ -450,4 +450,6 @@
     <string id="str_modifiedarmy_professional_weight_range" text="{=ModifiedArmy_ProfessionalWeightRange}Weight must be between 0 and 20." />
     <string id="str_modifiedarmy_professional_preference_reconciled" text="{=ModifiedArmy_ProfessionalPreferenceReconciled}[Professional preference] Settlement {SETTLEMENT_ID} reconciled preferences for reason {REASON}. Entries changed from {BEFORE} to {AFTER}; added {ADDED}, removed {REMOVED}." />
     <string id="str_modifiedarmy_professional_preference_rejected" text="{=ModifiedArmy_ProfessionalPreferenceRejected}[Professional preference] Settlement {SETTLEMENT_ID} rejected a preference write. Reason: {REASON}." />
+    <string id="str_modifiedarmy_party_creation_transaction" text="{=ModifiedArmy_PartyCreationTransaction}[Party creation] Clan {CLAN_ID}, leader {LEADER_ID}, party {PARTY_ID}, and settlement {SETTLEMENT_ID} reached phase {PHASE}. Estimated garrison supply: {GARRISON}; estimated fief supply: {FIEF}; estimated total: {TOTAL}; initial source: {SOURCE}. Reason: {REASON}." />
+    <string id="str_modifiedarmy_force_stay_candidate" text="{=ModifiedArmy_ForceStayCandidate}[Force planning] Party {PARTY_ID} has {REGULARS} regular soldiers at settlement {SETTLEMENT_ID}; a native stay candidate was submitted with score {SCORE}." />
 </strings>

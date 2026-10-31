@@ -13,6 +13,8 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Party.PartyComponents;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
+using TaleWorlds.CampaignSystem.Roster;
+using ModifiedArmy.PartyManagement.Models;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 
@@ -20,6 +22,14 @@ namespace ModifiedArmy.Models
 {
     public class NewPartySizeLimitModel : DefaultPartySizeLimitModel
     {
+        public override TroopRoster FindAppropriateInitialRosterForMobileParty(
+            MobileParty party, PartyTemplateObject partyTemplate)
+        {
+            if (PartyCreationScope.Matches(party?.LeaderHero))
+                return TroopRoster.CreateDummyTroopRoster();
+            return base.FindAppropriateInitialRosterForMobileParty(
+                party, partyTemplate);
+        }
         /// <summary>
         /// Supply escorts are intentionally created with fifty soldiers. Give
         /// the custom party a matching legal size limit so the native speed

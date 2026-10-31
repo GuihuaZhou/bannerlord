@@ -7,6 +7,11 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
+using ModifiedArmy.PartyManagement.Bindings;
+using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.Models.Fief;
+using ModifiedArmy.PartyManagement.Models;
 
 namespace ModifiedArmy.ForceManagement.Missions
 {
@@ -86,6 +91,81 @@ namespace ModifiedArmy.ForceManagement.Missions
                 task.Status != PartyForceTaskStatus.Cancelled)
             .OrderByDescending(task => task.Version)
             .FirstOrDefault();
+
+        public bool TryRegisterInitialRecruitTask(MobileParty party,
+            Settlement boundSettlement, PartyForceSourceKind preferredSource)
+        {
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
+                boundSettlement == null ||
+                preferredSource != PartyForceSourceKind.Fief &&
+                preferredSource != PartyForceSourceKind.Professional ||
+                Campaign.Current?.GetCampaignBehavior<
+                    PartySettlementBindingBehavior>()?.IsBoundSettlement(
+                        party, boundSettlement) != true)
+                return false;
+            PartyForceTask current = FindTask(party);
+            if (current != null)
+                return current.Intent == PartyForceIntent.Recruit &&
+                    current.TargetSettlement == boundSettlement &&
+                    current.SourceKind == preferredSource;
+
+            PartyForceSourceKind source = SelectAvailableSource(
+                boundSettlement, preferredSource);
+            if (source != PartyForceSourceKind.Fief &&
+                source != PartyForceSourceKind.Professional)
+                return false;
+            int today = (int)CampaignTime.Now.ToDays;
+            int version = _tasks().Where(task => task?.PartyId == party.StringId)
+                .Select(task => task.Version).DefaultIfEmpty(0).Max() + 1;
+            _tasks().Add(new PartyForceTask
+            {
+                Party = party,
+                PartyId = party.StringId,
+                ClanId = party.ActualClan.StringId,
+                OwnerKey = "ModifiedArmy.AiForcePlanning",
+                Intent = PartyForceIntent.Recruit,
+                SourceKind = source,
+                TargetSettlement = boundSettlement,
+                Status = PartyForceTaskStatus.Planned,
+                ReasonCode = "InitialPartyRecruitment",
+                CreatedDay = today,
+                LastValidatedDay = today,
+                Version = version,
+                OwnsMovementOrder = false
+            });
+            if (party.Ai != null) party.Ai.RethinkAtNextHourlyTick = true;
+            return true;
+        }
+
+        private static PartyForceSourceKind SelectAvailableSource(
+            Settlement settlement, PartyForceSourceKind preferred)
+        {
+            FiefPartyManager fiefs = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            int minimumFiefBatch = ModifiedArmy.common.MilitaryConfigManager
+                .Instance.RequireActiveConfig().AiRecruitment.ForceManagement
+                .MinimumFiefRecruitBatch;
+            bool hasFief = PartyCreationSettlementModel.GetEligibleFiefRegulars(
+                    fiefs, settlement) >=
+                Math.Max(1, minimumFiefBatch);
+            bool hasGarrison = GarrisonTransferPolicyModel
+                .GetTransferableGarrisonTroopCount(settlement) > 0;
+            if (preferred == PartyForceSourceKind.Fief && hasFief ||
+                preferred == PartyForceSourceKind.Professional && hasGarrison)
+                return preferred;
+            if (hasFief) return PartyForceSourceKind.Fief;
+            if (hasGarrison) return PartyForceSourceKind.Professional;
+            return PartyForceSourceKind.None;
+        }
+
+        public void CancelTask(MobileParty party, string reason)
+        {
+            PartyForceTask task = FindTask(party);
+            if (task == null) return;
+            task.Status = PartyForceTaskStatus.Cancelled;
+            task.OwnsMovementOrder = false;
+            task.ReasonCode = reason ?? "CancelledByCaller";
+        }
 
         private void ApplyLivePlan(
             MobileParty party,

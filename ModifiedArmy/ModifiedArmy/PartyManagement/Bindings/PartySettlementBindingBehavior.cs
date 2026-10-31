@@ -77,6 +77,12 @@ namespace ModifiedArmy.PartyManagement.Bindings
             _records.TryGetValue(party.StringId, out var record) &&
             record.LegacyUnbound;
 
+        public bool CanReserveForCreation(
+            Hero leader, Clan clan, Settlement primary) =>
+            leader != null && clan != null && primary != null &&
+            leader.Clan == clan && IsLegalBase(clan, primary) &&
+            IsAvailable(primary, null);
+
         public bool TryBindSecondary(MobileParty party, Settlement settlement)
         {
             if (!TryGetValidRecord(party, out var record) ||

@@ -49,6 +49,20 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 task.Intent);
         }
 
+        internal static void LogStayCandidate(MobileParty party,
+            Settlement settlement, int regulars, float score)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_force_stay_candidate");
+            message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable(
+                "SETTLEMENT_ID", settlement?.StringId ?? "none");
+            message.SetTextVariable("REGULARS", regulars);
+            message.SetTextVariable("SCORE", score);
+            ModLogger.Debug(message.ToString());
+        }
+
         internal static void LogDailyPlan(
             MobileParty party,
             PartyForcePlanningContext context,
