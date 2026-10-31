@@ -16,8 +16,7 @@ namespace ModifiedFamily.UI.Marriage
             return FamilyActionScreenHost.Open(
                 "ModifiedFamilyMarriageShell",
                 "ModifiedFamilyMarriageLayer",
-                new MarriageNavigationVM(),
-                "ui_familyproposal");
+                new MarriageNavigationVM());
         }
     }
 }

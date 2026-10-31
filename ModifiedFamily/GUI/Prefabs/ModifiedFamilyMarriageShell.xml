@@ -12,14 +12,13 @@
       <Children>
         <NavigationForcedScopeCollectionTargeter CollectionID="ModifiedFamilyMarriageForcedScopeCollection" UseRootAsTarget="true" />
 
-        <!-- The custom sprite is the marriage panel itself; do not render the encyclopedia frame underneath it. -->
-        <Widget Id="ModifiedFamilyMarriagePanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1515" SuggestedHeight="919" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="marriage_proposal_background">
+        <!-- Reuse the native encyclopedia frame so the shell scales exactly like an encyclopedia page. -->
+        <BrushWidget Id="ModifiedFamilyMarriagePanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Encyclopedia.Frame.Width" SuggestedHeight="!Encyclopedia.Frame.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Encyclopedia.Frame">
           <Children>
             <ButtonWidget Command.Click="ExecuteBack" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="41" SuggestedHeight="48" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="40" Brush="ButtonRightBigArrowBrush1" IsEnabled="@CanGoBack" />
-            <!-- Preserve the betrothal title's 3:1 aspect ratio; offset half its height so its fold line coincides with the panel's top border. -->
-            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="480" SuggestedHeight="160" PositionYOffset="-70" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="marriage_proposal_title_betrothal" DoNotAcceptEvents="true">
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="576" SuggestedHeight="150" PositionYOffset="-17" HorizontalAlignment="Center" VerticalAlignment="Top" Sprite="StdAssets\tabbar_popup" DoNotAcceptEvents="true">
               <Children>
-                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" PositionYOffset="0" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="38" Text="@Title" />
+                <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" PositionYOffset="-22" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="46" Text="@Title" />
               </Children>
             </Widget>
             <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="48" MinWidth="508" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="40" MarginTop="100" Sprite="Encyclopedia\navbar">
@@ -406,7 +405,7 @@
               </Children>
             </Widget>
           </Children>
-        </Widget>
+        </BrushWidget>
 
         <!-- Native encyclopedia close-button placement and visuals, bound to this screen's close command. -->
         <ButtonWidget Command.Click="ExecuteClose" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.CloseButton.Width" SuggestedHeight="!Popup.CloseButton.Height" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-455" MarginLeft="1465" Brush="Popup.CloseButton" />
