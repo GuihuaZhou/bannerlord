@@ -17,17 +17,10 @@ namespace ModifiedArmy.Models
         public CharacterObject Troop { get; }
         public int Weight { get; set; }
 
-        /// <summary>
-        /// 招募此兵种所需的最低兵营等级。
-        /// 0 表示无要求。
-        /// </summary>
-        public int RequiredBarracksLevel { get; }
-
-        public BasicTroopEntry(CharacterObject troop, int weight, int requiredBarracksLevel = 0)
+        public BasicTroopEntry(CharacterObject troop, int weight)
         {
             Troop = troop;
             Weight = weight;
-            RequiredBarracksLevel = requiredBarracksLevel;
         }
 
         /// <summary>
@@ -85,20 +78,17 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// 读取一个平铺基础兵种，只保留兵种和兵营等级。
+        /// 读取一个平铺基础兵种。生产参数由具体生产模板负责。
         /// </summary>
         private void ParseTroopNode(MBObjectManager objectManager, XmlNode node)
         {
             CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
-            int barracksLevel = node.Attributes?["barracksLevel"] == null
-                ? 0
-                : XmlHelper.ReadInt(node, "barracksLevel");
             if (troop == null)
             {
                 ModLogger.Warn($"[BasicTroopGroup] Failed to load troop: id='{XmlHelper.ReadString(node, "id")}'");
                 return;
             }
-            Troops.Add(new BasicTroopEntry(troop, 1, barracksLevel));
+            Troops.Add(new BasicTroopEntry(troop, 1));
         }
     }
 
@@ -145,8 +135,7 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// 按具体兵种查找基础配置。封邑和职业兵生产只关心兵营等级，
-        /// 调用方只需提供具体兵种，不需要任何额外分类。
+        /// 按具体兵种查找基础配置。
         /// </summary>
         public static BasicTroopEntry FindBasicTroop(CultureObject culture, CharacterObject troop)
         {

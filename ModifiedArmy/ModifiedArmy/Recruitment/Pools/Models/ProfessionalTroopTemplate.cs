@@ -11,8 +11,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
 {
     /// <summary>
     /// Deserializes one culture and settlement-specific professional manpower
-    /// template. Troop classification and barracks requirements are resolved
-    /// from basic_troop_config.xml.
+    /// template. Basic troop identity comes from basic_troop_config.xml while
+    /// production requirements remain local to this template.
     /// </summary>
     public sealed class ProfessionalTroopTemplate : MBObjectBase,
         ITroopProductionTemplate
@@ -77,12 +77,16 @@ namespace ModifiedArmy.Recruitment.Pools.Models
                     troopNode,
                     "weight",
                     1);
+                int barracksLevel = TroopProductionTemplateUtility.ReadOptionalInt(
+                    troopNode,
+                    "barracksLevel",
+                    0);
                 // Zero is a supported opt-out value. Negative values are also
                 // normalized to zero by TroopProductionEntry.
                 _troopEntries.Add(new TroopProductionEntry(
                     troop,
                     weight,
-                    basicTroop.RequiredBarracksLevel));
+                    barracksLevel));
         }
 
         private BasicTroopEntry FindBasicTroop(CharacterObject troop)

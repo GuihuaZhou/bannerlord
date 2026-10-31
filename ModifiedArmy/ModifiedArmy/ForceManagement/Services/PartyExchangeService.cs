@@ -324,10 +324,18 @@ namespace ModifiedArmy.ForceManagement.Services
                 destination.CurrentSettlement != source ||
                 destination.MapEvent != null || source.IsUnderSiege)
                 return Result(false, "UnsafeAtExecution", 0);
+            IReadOnlyDictionary<CharacterObject, int> liveApprovals = manager
+                .PreviewFiefRecruitmentApprovals(
+                    source,
+                    destination,
+                    plan.RequestedCount);
+            if (!FiefManifestMatches(plan.SourceToDestination, liveApprovals))
+                return Result(false, "AuthoritativeFiefManifestChanged", 0);
             int recruited = manager.RecruitFiefTroopsFromSettlement(
                 source,
                 destination,
-                plan.SourceToDestination.TotalCount);
+                plan.RequestedCount,
+                liveApprovals);
             if (recruited <= 0)
                 return Result(false, "AuthoritativeFiefResultChanged", 0);
             return recruited == plan.SourceToDestination.TotalCount
@@ -336,6 +344,25 @@ namespace ModifiedArmy.ForceManagement.Services
                     TransferCommitStatus.PartiallyCommitted,
                     "AuthoritativeFiefResultChanged",
                     recruited);
+        }
+
+        private static bool FiefManifestMatches(
+            TroopExchangeManifest planned,
+            IReadOnlyDictionary<CharacterObject, int> liveApprovals)
+        {
+            if (planned?.Troops == null || liveApprovals == null ||
+                planned.Troops.Count != liveApprovals.Count)
+                return false;
+            foreach (var pair in planned.Troops)
+            {
+                if (pair.Key == null || pair.Value == null ||
+                    pair.Value.Count <= 0 || pair.Value.WoundedCount != 0 ||
+                    !liveApprovals.TryGetValue(pair.Key, out int count) ||
+                    count != pair.Value.Count)
+                    return false;
+            }
+            return liveApprovals.All(pair =>
+                pair.Key != null && pair.Value > 0);
         }
 
         /// <summary>Returns exactly one approved service batch through D2.</summary>

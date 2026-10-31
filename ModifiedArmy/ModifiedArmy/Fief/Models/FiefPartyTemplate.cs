@@ -99,7 +99,7 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
-        /// 解析一个具体兵种及其生产权重，并从基础兵配置取得兵营等级。
+        /// 解析一个具体兵种及其生产权重。封邑条目的兵营要求默认为 0。
         /// </summary>
         private void ParseTroop(MBObjectManager objectManager, XmlNode troopNode)
         {
@@ -118,8 +118,7 @@ namespace ModifiedArmy.Models.Fief
                 : XmlHelper.ReadInt(troopNode, "weight");
             _troopEntries.Add(new TroopProductionEntry(
                 troop,
-                troopWeight,
-                basicTroop.RequiredBarracksLevel));
+                troopWeight));
         }
 
 

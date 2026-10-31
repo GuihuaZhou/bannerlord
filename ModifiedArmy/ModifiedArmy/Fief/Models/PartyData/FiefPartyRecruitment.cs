@@ -54,10 +54,11 @@ namespace ModifiedArmy.Models.Fief
         /// - AI 征召：不产生 Prosperity / Hearth 成本
         /// </summary>
         /// <param name="targetParty">目标部队</param>
-        /// <returns>总招募人数（必为 10 的倍数）</returns>
+        /// <returns>实际招募人数</returns>
         public int RecruitTroopsToParty(
             MobileParty targetParty,
-            int maximumCount = int.MaxValue)
+            int maximumCount = int.MaxValue,
+            IReadOnlyDictionary<CharacterObject, int> expectedApprovals = null)
         {
             if (targetParty == null || _fiefParty == null)
                 return 0;
@@ -67,6 +68,8 @@ namespace ModifiedArmy.Models.Fief
 
             if (_settlement.OwnerClan != targetParty.LeaderHero.Clan)
                 return 0;
+            bool useTemplateWeights =
+                targetParty.LeaderHero.Clan != Clan.PlayerClan;
 
             int currentMembers = targetParty.Party.NumberOfAllMembers;
             int partySizeLimit = targetParty.Party.PartySizeLimit;
@@ -96,7 +99,10 @@ namespace ModifiedArmy.Models.Fief
                 GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
 
             List<RecruitmentCandidate> candidates =
-                BuildAvailableRecruitmentCandidates(remainSize);
+                BuildAvailableRecruitmentCandidates(
+                    remainSize,
+                    useTemplateWeights);
+            LogWeightedCandidateManifest(targetParty, remainSize, candidates);
 
             RecruitmentPlan aiPlan = null;
             Dictionary<CharacterObject, int> approvedTroops =
@@ -110,6 +116,11 @@ namespace ModifiedArmy.Models.Fief
                         out aiPlan);
 
             int approvedCount = approvedTroops.Values.Sum();
+            if (expectedApprovals != null &&
+                !RecruitmentManifestEquals(approvedTroops, expectedApprovals))
+            {
+                return 0;
+            }
             int minimumAiBatch = MilitaryConfigManager.Instance
                 .RequireActiveConfig()
                 .AiRecruitment.ForceManagement.MinimumFiefRecruitBatch;
@@ -150,7 +161,15 @@ namespace ModifiedArmy.Models.Fief
                 }
 
                 // 审批与实际提交之间名册可能变化，因此提交时再次收紧数量。
-                taken = Math.Min(taken, _fiefParty.GetElementNumber(troop));
+                TroopRosterElement liveElement = _fiefParty.GetTroopRoster()
+                    .FirstOrDefault(item => item.Character == troop);
+                int healthyAvailable = Math.Max(
+                    0,
+                    liveElement.Number - liveElement.WoundedNumber);
+                int liveAvailable = useTemplateWeights
+                    ? healthyAvailable
+                    : liveElement.Number;
+                taken = Math.Min(taken, liveAvailable);
                 if (taken <= 0 || _fiefPartyTemplate?.IsEnableTroop(troop) != true)
                     continue;
                 RemoveTroopsFromParty(_fiefParty, troop, taken);
@@ -242,9 +261,53 @@ namespace ModifiedArmy.Models.Fief
             return totalRecruited;
         }
 
+        private static bool RecruitmentManifestEquals(
+            IReadOnlyDictionary<CharacterObject, int> left,
+            IReadOnlyDictionary<CharacterObject, int> right)
+        {
+            if (left == null || right == null || left.Count != right.Count)
+                return false;
+            foreach (var pair in left)
+            {
+                if (pair.Key == null || pair.Value <= 0 ||
+                    !right.TryGetValue(pair.Key, out int count) ||
+                    count != pair.Value)
+                    return false;
+            }
+            return right.All(pair => pair.Key != null && pair.Value > 0);
+        }
+
+        private void LogWeightedCandidateManifest(
+            MobileParty targetParty,
+            int requestedCount,
+            IReadOnlyList<RecruitmentCandidate> candidates)
+        {
+            if (targetParty?.LeaderHero?.Clan == null ||
+                targetParty.LeaderHero.Clan == Clan.PlayerClan ||
+                !RecruitmentLogFilter.ShouldLog(targetParty))
+                return;
+            string manifest = string.Join(
+                ",",
+                candidates
+                    .OrderBy(candidate => candidate.Troop?.StringId,
+                        StringComparer.Ordinal)
+                    .Select(candidate => string.Format(
+                        "{0}:{1}",
+                        candidate.Troop?.StringId ?? "unknown",
+                        candidate.AvailableCount)));
+            ModLogger.Debug(string.Format(
+                "AI fief weighted candidates: Template={0}; Settlement={1}; " +
+                "Requested={2}; Offered={3}; Manifest={4}",
+                _fiefPartyTemplate?.TemplateId ?? "unknown",
+                _settlement?.StringId ?? "unknown",
+                requestedCount,
+                candidates.Sum(candidate => candidate.AvailableCount),
+                manifest));
+        }
+
         /// <summary>
-        /// Builds the same template-weighted offers used by recruitment,
-        /// without changing the fief, party, budget, or service records.
+        /// Builds the same AI-weighted or legacy-player offers used by
+        /// recruitment without changing fief, party, budget, or service records.
         /// </summary>
         internal IReadOnlyList<RecruitmentCandidate>
             PreviewFiefRecruitmentCandidates(
@@ -260,14 +323,31 @@ namespace ModifiedArmy.Models.Fief
                 Math.Max(0, maximumCount));
             if (remainSize <= 0) return candidates;
 
-            return BuildAvailableRecruitmentCandidates(remainSize);
+            bool useTemplateWeights = targetParty.LeaderHero?.Clan != null &&
+                targetParty.LeaderHero.Clan != Clan.PlayerClan;
+            return BuildAvailableRecruitmentCandidates(
+                remainSize,
+                useTemplateWeights);
         }
 
         /// <summary>
         /// 为预览和最终征召建立同一份只读候选。候选只来自当前真实就绪名册，
         /// 并由当前封邑模板判定身份；XML生产权重不限制已有士兵的抽调。
         /// </summary>
-        private List<RecruitmentCandidate> BuildAvailableRecruitmentCandidates(int maximumCount)
+        private List<RecruitmentCandidate> BuildAvailableRecruitmentCandidates(
+            int maximumCount,
+            bool useTemplateWeights)
+        {
+            return useTemplateWeights
+                ? BuildTemplateWeightedRecruitmentCandidates(maximumCount)
+                : BuildLegacyRecruitmentCandidates(maximumCount);
+        }
+
+        /// <summary>
+        /// Preserves the existing automatic player ordering and limits.
+        /// </summary>
+        private List<RecruitmentCandidate> BuildLegacyRecruitmentCandidates(
+            int maximumCount)
         {
             List<RecruitmentCandidate> candidates = new();
             int remaining = Math.Max(0, maximumCount);
@@ -290,6 +370,209 @@ namespace ModifiedArmy.Models.Fief
                 remaining -= count;
             }
             return candidates;
+        }
+
+        /// <summary>
+        /// Builds deterministic AI offers from the template's positive-weight
+        /// roots. Existing healthy troops are assigned to the nearest matching
+        /// root and scarce quota is redistributed without mutating game state.
+        /// </summary>
+        private List<RecruitmentCandidate>
+            BuildTemplateWeightedRecruitmentCandidates(int maximumCount)
+        {
+            var candidates = new List<RecruitmentCandidate>();
+            if (_fiefParty == null || _fiefPartyTemplate == null ||
+                maximumCount <= 0)
+                return candidates;
+
+            List<WeightedRecruitmentRoot> roots = BuildWeightedRoots();
+            if (roots.Count == 0) return candidates;
+
+            var healthyStock = new Dictionary<CharacterObject, int>();
+            foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
+            {
+                CharacterObject troop = element.Character;
+                int healthy = Math.Max(0, element.Number - element.WoundedNumber);
+                if (troop == null || troop.IsHero || healthy <= 0 ||
+                    !_fiefPartyTemplate.IsEnableTroop(troop))
+                    continue;
+                healthyStock[troop] = healthyStock.TryGetValue(troop, out int old)
+                    ? old + healthy
+                    : healthy;
+            }
+
+            foreach (var stock in healthyStock)
+            {
+                WeightedRecruitmentRoot selected = null;
+                int selectedDistance = int.MaxValue;
+                foreach (WeightedRecruitmentRoot root in roots)
+                {
+                    int distance = GetUpgradeDistance(root.Troop, stock.Key);
+                    if (distance < 0 || distance > selectedDistance) continue;
+                    if (distance < selectedDistance || selected == null ||
+                        root.Ordinal < selected.Ordinal ||
+                        root.Ordinal == selected.Ordinal &&
+                        string.CompareOrdinal(
+                            root.Troop.StringId,
+                            selected.Troop.StringId) < 0)
+                    {
+                        selected = root;
+                        selectedDistance = distance;
+                    }
+                }
+                if (selected != null)
+                    selected.Stock[stock.Key] = stock.Value;
+            }
+
+            int target = Math.Min(
+                maximumCount,
+                roots.Sum(root => root.Stock.Values.Sum()));
+            AllocateWeightedQuota(roots, target);
+
+            foreach (WeightedRecruitmentRoot root in roots
+                .OrderBy(item => item.Ordinal)
+                .ThenBy(item => item.Troop.StringId, StringComparer.Ordinal))
+            {
+                int quota = root.Allocation;
+                foreach (var stock in root.Stock
+                    .OrderByDescending(item => item.Key.Tier)
+                    .ThenBy(item => item.Key.StringId, StringComparer.Ordinal))
+                {
+                    if (quota <= 0) break;
+                    int taken = Math.Min(quota, stock.Value);
+                    if (taken <= 0) continue;
+                    candidates.Add(new RecruitmentCandidate(
+                        stock.Key,
+                        taken,
+                        RecruitmentSource.Fief));
+                    quota -= taken;
+                }
+            }
+            return candidates;
+        }
+
+        private List<WeightedRecruitmentRoot> BuildWeightedRoots()
+        {
+            var roots = new List<WeightedRecruitmentRoot>();
+            var byTroop = new Dictionary<CharacterObject, WeightedRecruitmentRoot>();
+            int ordinal = 0;
+            foreach (var entry in _fiefPartyTemplate.TroopEntries)
+            {
+                CharacterObject troop = entry?.Troop;
+                int weight = entry?.Weight ?? 0;
+                if (troop == null || weight <= 0)
+                {
+                    ordinal++;
+                    continue;
+                }
+                if (byTroop.TryGetValue(troop, out WeightedRecruitmentRoot existing))
+                {
+                    existing.Weight += weight;
+                }
+                else
+                {
+                    var root = new WeightedRecruitmentRoot(troop, weight, ordinal);
+                    roots.Add(root);
+                    byTroop[troop] = root;
+                }
+                ordinal++;
+            }
+            return roots;
+        }
+
+        private static int GetUpgradeDistance(
+            CharacterObject root,
+            CharacterObject target)
+        {
+            if (root == null || target == null) return -1;
+            if (root == target) return 0;
+            var visited = new HashSet<CharacterObject> { root };
+            var queue = new Queue<KeyValuePair<CharacterObject, int>>();
+            queue.Enqueue(new KeyValuePair<CharacterObject, int>(root, 0));
+            while (queue.Count > 0)
+            {
+                KeyValuePair<CharacterObject, int> current = queue.Dequeue();
+                CharacterObject[] upgrades = current.Key.UpgradeTargets;
+                if (upgrades == null) continue;
+                foreach (CharacterObject upgrade in upgrades)
+                {
+                    if (upgrade == null || !visited.Add(upgrade)) continue;
+                    int distance = current.Value + 1;
+                    if (upgrade == target) return distance;
+                    queue.Enqueue(new KeyValuePair<CharacterObject, int>(
+                        upgrade,
+                        distance));
+                }
+            }
+            return -1;
+        }
+
+        private static void AllocateWeightedQuota(
+            IReadOnlyList<WeightedRecruitmentRoot> roots,
+            int requestedCount)
+        {
+            int remaining = Math.Max(0, requestedCount);
+            while (remaining > 0)
+            {
+                List<WeightedRecruitmentRoot> active = roots
+                    .Where(root => root.Weight > 0 && root.RemainingCapacity > 0)
+                    .OrderBy(root => root.Ordinal)
+                    .ThenBy(root => root.Troop.StringId, StringComparer.Ordinal)
+                    .ToList();
+                if (active.Count == 0) break;
+                long totalWeight = active.Sum(root => (long)root.Weight);
+                var quotas = new Dictionary<WeightedRecruitmentRoot, int>();
+                var remainders = new Dictionary<WeightedRecruitmentRoot, long>();
+                int assigned = 0;
+                foreach (WeightedRecruitmentRoot root in active)
+                {
+                    long weighted = (long)remaining * root.Weight;
+                    int quota = (int)(weighted / totalWeight);
+                    quotas[root] = quota;
+                    remainders[root] = weighted % totalWeight;
+                    assigned += quota;
+                }
+                int remainderSeats = remaining - assigned;
+                foreach (WeightedRecruitmentRoot root in active
+                    .OrderByDescending(root => remainders[root])
+                    .ThenBy(root => root.Ordinal)
+                    .ThenBy(root => root.Troop.StringId, StringComparer.Ordinal)
+                    .Take(remainderSeats))
+                {
+                    quotas[root]++;
+                }
+
+                int progressed = 0;
+                foreach (WeightedRecruitmentRoot root in active)
+                {
+                    int taken = Math.Min(quotas[root], root.RemainingCapacity);
+                    root.Allocation += taken;
+                    progressed += taken;
+                }
+                if (progressed <= 0) break;
+                remaining -= progressed;
+            }
+        }
+
+        private sealed class WeightedRecruitmentRoot
+        {
+            public WeightedRecruitmentRoot(
+                CharacterObject troop,
+                int weight,
+                int ordinal)
+            {
+                Troop = troop;
+                Weight = weight;
+                Ordinal = ordinal;
+            }
+
+            public CharacterObject Troop { get; }
+            public int Weight { get; set; }
+            public int Ordinal { get; }
+            public int Allocation { get; set; }
+            public Dictionary<CharacterObject, int> Stock { get; } = new();
+            public int RemainingCapacity =>
+                Math.Max(0, Stock.Values.Sum() - Allocation);
         }
 
         /// <summary>

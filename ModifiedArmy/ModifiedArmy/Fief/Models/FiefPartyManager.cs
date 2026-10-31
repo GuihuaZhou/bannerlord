@@ -630,7 +630,8 @@ namespace ModifiedArmy.Models.Fief
         public int RecruitFiefTroopsFromSettlement(
             Settlement settlement,
             MobileParty targetParty,
-            int maximumCount = int.MaxValue)
+            int maximumCount = int.MaxValue,
+            IReadOnlyDictionary<CharacterObject, int> expectedApprovals = null)
         {
             if (settlement == null || targetParty == null)
             {
@@ -639,7 +640,10 @@ namespace ModifiedArmy.Models.Fief
             }
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
-                return data.RecruitTroopsToParty(targetParty, maximumCount);
+                return data.RecruitTroopsToParty(
+                    targetParty,
+                    maximumCount,
+                    expectedApprovals);
             }
             return 0;
         }
