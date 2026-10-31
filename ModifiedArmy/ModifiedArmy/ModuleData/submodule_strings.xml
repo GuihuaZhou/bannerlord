@@ -440,18 +440,14 @@
         text="{=ModifiedArmy_GarrisonWageLimitBorderLog}The garrison wage assessment revised the wage limit for the border settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
     <string id="str_modifiedarmy_garrison_wage_limit_interior_log"
         text="{=ModifiedArmy_GarrisonWageLimitInteriorLog}The garrison wage assessment revised the wage limit for the interior settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
-    <string id="str_modifiedarmy_garrison_order_plan"
-        text="{=ModifiedArmy_GarrisonOrderPlan}[Garrison order] Event {EVENT} reviewed clan {CLAN_ID}, settlement {SETTLEMENT_ID}, and order {ORDER_ID} on day {DAY}. Stock was {STOCK}, target S was {TARGET}, reorder point s was {REORDER}, safe capacity was {SAFE_CAPACITY}, outstanding planned commitment was {OUTSTANDING}, remaining authorization was {REMAINING}, and reason code was {REASON}." />
-    <string id="str_modifiedarmy_garrison_order_execution"
-        text="{=ModifiedArmy_GarrisonOrderExecution}[Garrison order] Clan {CLAN_ID}, settlement {SETTLEMENT_ID}, order {ORDER_ID}, operation {OPERATION_ID}: remaining authorization changed from {BEFORE} to {AFTER}; {PROFESSIONAL} professional soldiers and {PRISONER} prisoners were committed. The remaining daily commitment budget was {BUDGET}; reason code was {REASON}." />
-    <string id="str_modifiedarmy_garrison_order_config_loaded"
-        text="{=ModifiedArmy_GarrisonOrderConfigLoaded}[Garrison order config] Enabled={ENABLED}, resident floor={FLOOR}, wealth saturation={SATURATION}, reorder fraction={REORDER}, planning share={SHARE}, minimum order={MINIMUM}, cooldown days={COOLDOWN}." />
-    <string id="str_modifiedarmy_garrison_order_source_failure"
-        text="{=ModifiedArmy_GarrisonOrderSourceFailure}[Garrison order error] Operation {OPERATION_ID} at settlement {SETTLEMENT_ID} could not safely commit {COUNT} soldiers of troop {TROOP_ID}; recruitment is frozen for recovery. Error: {ERROR}" />
-    <string id="str_modifiedarmy_garrison_order_finance_failure"
-        text="{=ModifiedArmy_GarrisonOrderFinanceFailure}[Garrison order error] Operation {OPERATION_ID} at settlement {SETTLEMENT_ID} failed while charging {COUNT} soldiers of troop {TROOP_ID}. Rollback succeeded={ROLLBACK}. Error: {ERROR}. Rollback error: {ROLLBACK_ERROR}" />
-    <string id="str_modifiedarmy_professional_recruitment_rollback_failed"
-        text="{=ModifiedArmy_ProfessionalRecruitmentRollbackFailed}[Professional recruitment error] Source and roster rollback failed. Error: {ERROR}" />
-    <string id="str_modifiedarmy_professional_recruitment_commit_failed"
-        text="{=ModifiedArmy_ProfessionalRecruitmentCommitFailed}[Professional recruitment error] The source-to-roster commit failed. Error: {ERROR}" />
+    <string id="str_modifiedarmy_professional_preferences" text="{=ModifiedArmy_ProfessionalPreferences}Professional recruitment preferences" />
+    <string id="str_modifiedarmy_professional_preferences_desc" text="{=ModifiedArmy_ProfessionalPreferencesDesc}Select a troop to edit its weight (0 disables new professional offers)." />
+    <string id="str_modifiedarmy_professional_preference_hint" text="{=ModifiedArmy_ProfessionalPreferenceHint}Barracks {REQUIRED}; effective {EFFECTIVE}; default {DEFAULT}" />
+    <string id="str_modifiedarmy_professional_reset_all" text="{=ModifiedArmy_ProfessionalResetAll}Reset all to defaults" />
+    <string id="str_modifiedarmy_professional_edit" text="{=ModifiedArmy_ProfessionalEdit}Edit" />
+    <string id="str_modifiedarmy_save" text="{=ModifiedArmy_Save}Save" />
+    <string id="str_modifiedarmy_cancel" text="{=ModifiedArmy_Cancel}Cancel" />
+    <string id="str_modifiedarmy_professional_weight_range" text="{=ModifiedArmy_ProfessionalWeightRange}Weight must be between 0 and 20." />
+    <string id="str_modifiedarmy_professional_preference_reconciled" text="{=ModifiedArmy_ProfessionalPreferenceReconciled}[Professional preference] Settlement {SETTLEMENT_ID} reconciled preferences for reason {REASON}. Entries changed from {BEFORE} to {AFTER}; added {ADDED}, removed {REMOVED}." />
+    <string id="str_modifiedarmy_professional_preference_rejected" text="{=ModifiedArmy_ProfessionalPreferenceRejected}[Professional preference] Settlement {SETTLEMENT_ID} rejected a preference write. Reason: {REASON}." />
 </strings>

@@ -6,7 +6,7 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.PartyManagement.Bindings;
-using ModifiedArmy.Recruitment.Orders.Models;
+using ModifiedArmy.Recruitment.Preferences.Models;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -51,7 +51,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(ReinforcementMission), 8);
             base.AddClassDefinition(typeof(ReinforcementPartyComponent), 9);
             base.AddClassDefinition(typeof(PartySettlementBindingRecord), 10);
-            base.AddClassDefinition(typeof(GarrisonRecruitmentOrderRecord), 11);
+            base.AddClassDefinition(typeof(SettlementProfessionalPreferenceRecord), 11);
         }
 
         protected override void DefineContainerDefinitions()
@@ -72,7 +72,7 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(
                 typeof(Dictionary<string, PartySettlementBindingRecord>));
             base.ConstructContainerDefinition(
-                typeof(Dictionary<string, GarrisonRecruitmentOrderRecord>));
+                typeof(Dictionary<string, SettlementProfessionalPreferenceRecord>));
             base.ConstructContainerDefinition(typeof(Dictionary<string, int>));
         }
     }

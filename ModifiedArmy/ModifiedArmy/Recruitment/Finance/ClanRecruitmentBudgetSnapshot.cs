@@ -10,14 +10,12 @@ namespace ModifiedArmy.Recruitment.Finance
             int campaignDay,
             float dailyNetIncome,
             float expectedReserve,
-            float safeCapacity,
             float totalCommitmentBudget,
             float totalPurchaseBudget)
         {
             CampaignDay = campaignDay;
             DailyNetIncome = dailyNetIncome;
             ExpectedReserve = expectedReserve;
-            SafeCapacity = safeCapacity;
             TotalCommitmentBudget = totalCommitmentBudget;
             RemainingCommitmentBudget = totalCommitmentBudget;
             TotalPurchaseBudget = totalPurchaseBudget;
@@ -29,8 +27,6 @@ namespace ModifiedArmy.Recruitment.Finance
         public float DailyNetIncome { get; }
 
         public float ExpectedReserve { get; }
-
-        public float SafeCapacity { get; }
 
         public float TotalCommitmentBudget { get; }
 

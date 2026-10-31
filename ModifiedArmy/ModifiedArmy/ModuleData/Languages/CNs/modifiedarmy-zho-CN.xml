@@ -303,12 +303,15 @@
     <string id="ModifiedArmy_ForceDiagVisitOutcomeCapture" text="本次访问已交由攻城结束后的一次性驻军移交流程处理" />
     <string id="ModifiedArmy_ForceDiagVisitOutcomeForceTask" text="本次访问已交由常规兵力任务执行流程处理" />
     <string id="ModifiedArmy_ForceDiagVisitOutcomeUnknown" text="本次访问产生了未明确分类的处理结果" />
-    <string id="ModifiedArmy_GarrisonOrderPlan" text="[驻军订单] 第{DAY}日，事件{EVENT}检查了家族{CLAN_ID}、定居点{SETTLEMENT_ID}和订单{ORDER_ID}。现有库存为{STOCK}，目标S为{TARGET}，再订货点s为{REORDER}，安全资金容量为{SAFE_CAPACITY}，计划中的未完成承诺为{OUTSTANDING}，订单剩余授权为{REMAINING}，原因代码为{REASON}。" />
-    <string id="ModifiedArmy_GarrisonOrderExecution" text="[驻军订单] 家族{CLAN_ID}、定居点{SETTLEMENT_ID}、订单{ORDER_ID}、操作{OPERATION_ID}：剩余授权从{BEFORE}变为{AFTER}；实际提交职业兵{PROFESSIONAL}人、俘虏{PRISONER}人。剩余每日承诺预算为{BUDGET}，原因代码为{REASON}。" />
-    <string id="ModifiedArmy_GarrisonOrderConfigLoaded" text="[驻军订单配置] 启用={ENABLED}，现场保留线={FLOOR}，财富饱和值={SATURATION}，再订货比例={REORDER}，规划承诺份额={SHARE}，最小订单={MINIMUM}，冷却天数={COOLDOWN}。" />
-    <string id="ModifiedArmy_GarrisonOrderSourceFailure" text="[驻军订单错误] 定居点{SETTLEMENT_ID}的操作{OPERATION_ID}无法安全提交兵种{TROOP_ID}共{COUNT}人；招募域已经冻结并等待恢复。错误：{ERROR}" />
-    <string id="ModifiedArmy_GarrisonOrderFinanceFailure" text="[驻军订单错误] 定居点{SETTLEMENT_ID}的操作{OPERATION_ID}在为兵种{TROOP_ID}共{COUNT}人记账时失败。回滚成功={ROLLBACK}。错误：{ERROR}。回滚错误：{ROLLBACK_ERROR}" />
-    <string id="ModifiedArmy_ProfessionalRecruitmentRollbackFailed" text="[职业兵招募错误] 兵源与名册回滚失败。错误：{ERROR}" />
-    <string id="ModifiedArmy_ProfessionalRecruitmentCommitFailed" text="[职业兵招募错误] 从兵源到名册的提交失败。错误：{ERROR}" />
+    <string id="ModifiedArmy_ProfessionalPreferences" text="职业兵招募偏好" />
+    <string id="ModifiedArmy_ProfessionalPreferencesDesc" text="选择兵种编辑权重（0表示停止生成新的该职业兵候选）。" />
+    <string id="ModifiedArmy_ProfessionalPreferenceHint" text="兵营要求：{REQUIRED}；当前有效等级：{EFFECTIVE}；默认权重：{DEFAULT}" />
+    <string id="ModifiedArmy_ProfessionalResetAll" text="全部恢复默认" />
+    <string id="ModifiedArmy_ProfessionalEdit" text="编辑" />
+    <string id="ModifiedArmy_Save" text="保存" />
+    <string id="ModifiedArmy_Cancel" text="取消" />
+    <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
+    <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
+    <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
   </strings>
 </base>

@@ -241,15 +241,12 @@ namespace ModifiedArmy.ForceManagement.Models
                 return 0;
             }
 
-            int establishmentSurplus = Math.Max(
-                0,
-                snapshot.EffectiveGarrisonCount - snapshot.MinimumCount);
             int residentFloor = Math.Min(75, Math.Max(0, snapshot.HardLimit));
             int residentSurplus = Math.Max(
                 0,
                 snapshot.ResidentCount - residentFloor);
             return Math.Min(
-                Math.Min(establishmentSurplus, residentSurplus),
+                residentSurplus,
                 Math.Max(0, roster.TotalRegulars));
         }
 

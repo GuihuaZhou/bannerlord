@@ -1,6 +1,6 @@
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyManagement.Bindings;
-using ModifiedArmy.Recruitment.Orders.Behaviors;
+using ModifiedArmy.Recruitment.Preferences.Behaviors;
 using System;
 using TaleWorlds.CampaignSystem;
 
@@ -97,7 +97,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     .RevalidateAfterCampaignRecovery();
 
                 Campaign.Current?
-                    .GetCampaignBehavior<GarrisonRecruitmentOrderBehavior>()?
+                    .GetCampaignBehavior<SettlementProfessionalPreferenceBehavior>()?
                     .RevalidateAfterCampaignRecovery();
 
                 // Reading the journal here proves SyncData has produced its

@@ -4,7 +4,6 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
-$powerShell = (Get-Process -Id $PID).Path
 $failures = [System.Collections.Generic.List[string]]::new()
 
 function Add-Check {
@@ -22,11 +21,6 @@ Push-Location $RepositoryRoot
 try {
     dotnet build .\ModifiedArmy\ModifiedArmy.sln -c Release --nologo --verbosity quiet
     Add-Check "ModifiedArmy build" ($LASTEXITCODE -eq 0) "Release build"
-
-    & $powerShell -NoProfile -File `
-        (Join-Path $PSScriptRoot "Test-GarrisonRecruitmentOrderMath.ps1")
-    Add-Check "Garrison recruitment order math" ($LASTEXITCODE -eq 0) `
-        "Pure (s,S) and order revision boundaries"
 
     dotnet build .\ModifiedPolitics\ModifiedPolitics.sln -c Release --nologo --verbosity quiet
     Add-Check "ModifiedPolitics build" ($LASTEXITCODE -eq 0) "Release build"

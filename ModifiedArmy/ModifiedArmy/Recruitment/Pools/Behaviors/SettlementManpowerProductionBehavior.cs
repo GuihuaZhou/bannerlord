@@ -5,12 +5,13 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
-using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Recruitment.Preferences.Behaviors;
+using ModifiedArmy.Recruitment.Preferences.Models;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
@@ -29,30 +30,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
     public sealed class SettlementManpowerProductionBehavior :
         CampaignBehaviorBase
     {
-        private const float HighProfessionalProductionRate = 1f;
-        private const float MediumProfessionalProductionRate = 0.5f;
-        private const float LowProfessionalProductionRate = 0.25f;
-
-        private sealed class ProfessionalProductionRule
-        {
-            public ProfessionalProductionRule(
-                CultureObject culture,
-                float productionRate,
-                int maximumRecruitableBarracksLevel)
-            {
-                Culture = culture;
-                ProductionRate = productionRate;
-                MaximumRecruitableBarracksLevel =
-                    maximumRecruitableBarracksLevel;
-            }
-
-            public CultureObject Culture { get; }
-
-            public float ProductionRate { get; }
-
-            public int MaximumRecruitableBarracksLevel { get; }
-        }
-
         private Dictionary<Settlement, SettlementManpowerProductionData>
             _settlementProductionData =
                 new Dictionary<Settlement, SettlementManpowerProductionData>();
@@ -119,9 +96,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             {
                 return 0f;
             }
-            int barracksLevel = GetBarracksLevel(settlement);
-            ProfessionalProductionRule professionalRule =
-                ResolveProfessionalProductionRule(settlement);
+            ProfessionalRecruitmentEligibilitySnapshot professionalRule =
+                ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
             if (professionalRule == null)
             {
                 return 0f;
@@ -131,7 +107,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 .RequireActiveConfig().GetDoctrine(
                     professionalRule.Culture);
             return doctrine.GetTraining(settlement).GetDailyProduction(
-                barracksLevel) * professionalRule.ProductionRate;
+                professionalRule.BarracksLevel) * professionalRule.ProductionRate;
         }
 
         /// <summary>
@@ -148,7 +124,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 offerDay != (int)CampaignTime.Now.ToDays ||
                 !_dailyProfessionalOffers.TryGetValue(settlement, out var offers))
                 return new Dictionary<CharacterObject, int>();
-            return new Dictionary<CharacterObject, int>(offers);
+            IReadOnlyDictionary<string, int> weights = GetEffectiveWeights(settlement);
+            return offers.Where(x => x.Key != null && x.Value > 0 &&
+                    weights.TryGetValue(x.Key.StringId, out int weight) && weight > 0)
+                .ToDictionary(x => x.Key, x => x.Value);
         }
 
         /// <summary>
@@ -192,6 +171,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 template,
                 settlement,
                 forecast.AllowedRecruitmentLevel,
+                GetEffectiveWeights(settlement),
                 predictedCount,
                 data,
                 false);
@@ -260,7 +240,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
 
             if (!troops.TryGetValue(troop, out int available) ||
-                available < count)
+                available < count || !GetEffectiveWeights(settlement)
+                    .TryGetValue(troop.StringId, out int effectiveWeight) ||
+                effectiveWeight <= 0)
             {
                 LogOfferConsumption(
                     settlement,
@@ -404,6 +386,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return;
             }
 
+            Campaign.Current?.GetCampaignBehavior<
+                SettlementProfessionalPreferenceBehavior>()?.Reconcile(settlement);
             int day = (int)CampaignTime.Now.ToDays;
             if (_professionalOfferDays.TryGetValue(
                     settlement,
@@ -442,10 +426,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 TroopProductionTemplateRepository.Instance.Resolve(
                     settlement,
                     TroopProductionKind.Professional) as ProfessionalTroopTemplate;
-            int professionalCount = ConvertProgressToCount(
-                data,
-                TroopProductionKind.Professional,
-                forecast.ProfessionalAllocation);
+            IReadOnlyDictionary<string, int> effectiveWeights =
+                GetEffectiveWeights(settlement);
+            int professionalCount = effectiveWeights.Values.Any(x => x > 0)
+                ? ConvertProgressToCount(data, TroopProductionKind.Professional,
+                    forecast.ProfessionalAllocation)
+                : 0;
             int fiefCount = ConvertProgressToCount(
                 data,
                 TroopProductionKind.Fief,
@@ -458,6 +444,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     professionalTemplate,
                     settlement,
                     forecast.AllowedRecruitmentLevel,
+                    effectiveWeights,
                     professionalCount,
                     data,
                     true);
@@ -532,13 +519,15 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             FiefPartyData fiefData = manager?.GetFiefData(settlement);
             if (fiefData == null) return null;
 
-            ProfessionalTroopTemplate professionalTemplate =
-                TroopProductionTemplateRepository.Instance.Resolve(
-                    settlement,
-                    TroopProductionKind.Professional) as ProfessionalTroopTemplate;
+            ProfessionalRecruitmentEligibilitySnapshot eligibility =
+                ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
+            ProfessionalTroopTemplate professionalTemplate = eligibility?.Template;
             float supply = CalculateSettlementSupply(settlement, fiefData, manager);
+            IReadOnlyDictionary<string, int> effectiveWeights =
+                GetEffectiveWeights(settlement);
             bool professionalEnabled = professionalTemplate != null &&
-                settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true;
+                settlement.Town?.GarrisonAutoRecruitmentIsEnabled == true &&
+                effectiveWeights.Values.Any(x => x > 0);
             float professionalTrainingCapacity = professionalTemplate != null
                 ? GetDailyProduction(
                     settlement,
@@ -557,15 +546,14 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 fiefProduction.DailyRate,
                 Math.Max(0, capacity - current));
             float ratio = doctrine.ProfessionalShare;
-            ProfessionalProductionRule productionRule =
-                ResolveProfessionalProductionRule(settlement);
+            ProfessionalRecruitmentEligibilitySnapshot productionRule = eligibility;
             ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
             int barracksLevel = GetBarracksLevel(settlement);
             int allowedRecruitmentLevel = productionRule == null
                 ? 0
                 : Math.Min(
                     barracksLevel,
-                    productionRule.MaximumRecruitableBarracksLevel);
+                    productionRule.AllowedRecruitmentLevel);
             float rawTraining = training.GetDailyProduction(
                 barracksLevel) *
                 (productionRule?.ProductionRate ?? 0f);
@@ -639,6 +627,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             ProfessionalTroopTemplate template,
             Settlement settlement,
             int allowedRecruitmentLevel,
+            IReadOnlyDictionary<string, int> weights,
             int count,
             SettlementManpowerProductionData data,
             bool commitLedger)
@@ -646,7 +635,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             Dictionary<CharacterObject, int> result = new();
             List<TroopProductionEntry> entries = template.TroopEntries
                 .Where(e => e?.Troop != null &&
-                    e.Weight > 0 &&
+                    weights != null && weights.TryGetValue(
+                        e.Troop.StringId, out int weight) && weight > 0 &&
                     e.RequiredBarracksLevel <= allowedRecruitmentLevel)
                 .OrderBy(e => e.Troop.StringId)
                 .ToList();
@@ -659,13 +649,14 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             string signature = BuildProductionSignature(
                 template,
                 settlement,
-                entries);
+                entries,
+                weights);
             bool rebuiltLedger = data != null &&
                 !data.IsProfessionalLedgerCurrent(signature);
             Dictionary<CharacterObject, int> ledger = data
                 ?.CopyProfessionalLedger(signature)
                 ?? new Dictionary<CharacterObject, int>();
-            int totalWeight = entries.Sum(entry => entry.Weight);
+            int totalWeight = entries.Sum(entry => weights[entry.Troop.StringId]);
             long historicalTotal = entries.Sum(entry =>
                 (long)GetLedgerCount(ledger, entry.Troop));
 
@@ -674,7 +665,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 long nextTotal = historicalTotal + 1;
                 TroopProductionEntry selected = entries
                     .OrderByDescending(entry =>
-                        nextTotal * (double)entry.Weight / totalWeight -
+                        nextTotal * (double)weights[entry.Troop.StringId] / totalWeight -
                         GetLedgerCount(ledger, entry.Troop))
                     .ThenBy(entry => entry.Troop.StringId)
                     .First();
@@ -716,7 +707,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         private static string BuildProductionSignature(
             ProfessionalTroopTemplate template,
             Settlement settlement,
-            IEnumerable<TroopProductionEntry> entries)
+            IEnumerable<TroopProductionEntry> entries,
+            IReadOnlyDictionary<string, int> weights)
         {
             return (template?.TemplateId ?? "unknown") + "|" +
                 (settlement?.OwnerClan?.StringId ?? "no_owner") + "|" +
@@ -725,7 +717,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 string.Join(
                     ";",
                     entries.Select(entry =>
-                        entry.Troop.StringId + ":" + entry.Weight));
+                        entry.Troop.StringId + ":" + weights[entry.Troop.StringId]));
         }
 
         /// <summary>
@@ -817,89 +809,43 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return total;
         }
 
-        private static ProfessionalProductionRule
-            ResolveProfessionalProductionRule(Settlement settlement)
-        {
-            CultureObject settlementCulture = settlement?.Culture;
-            Clan ownerClan = settlement?.OwnerClan;
-            CultureObject clanCulture = ownerClan?.Culture;
-            if (settlementCulture == null || ownerClan == null ||
-                ownerClan.IsEliminated || clanCulture == null)
-            {
-                return null;
-            }
-
-            Kingdom kingdom = ownerClan.Kingdom;
-            if (kingdom != null && kingdom.Culture == null)
-            {
-                return null;
-            }
-
-            CultureObject kingdomCulture = kingdom?.Culture ?? clanCulture;
-            bool settlementMatchesClan = CulturesMatch(
-                settlementCulture,
-                clanCulture);
-            bool settlementMatchesKingdom = CulturesMatch(
-                settlementCulture,
-                kingdomCulture);
-            bool clanMatchesKingdom = CulturesMatch(
-                clanCulture,
-                kingdomCulture);
-
-            if (settlementMatchesClan)
-            {
-                return new ProfessionalProductionRule(
-                    settlementCulture,
-                    HighProfessionalProductionRate,
-                    clanMatchesKingdom ? 3 : 2);
-            }
-
-            if (settlementMatchesKingdom)
-            {
-                return new ProfessionalProductionRule(
-                    settlementCulture,
-                    MediumProfessionalProductionRate,
-                    2);
-            }
-
-            if (clanMatchesKingdom)
-            {
-                return new ProfessionalProductionRule(
-                    settlementCulture,
-                    MediumProfessionalProductionRate,
-                    2);
-            }
-
-            return new ProfessionalProductionRule(
-                settlementCulture,
-                LowProfessionalProductionRate,
-                1);
-        }
-
-        private static bool CulturesMatch(
-            CultureObject first,
-            CultureObject second)
-        {
-            return first != null && second != null &&
-                string.Equals(
-                    first.StringId,
-                    second.StringId,
-                    StringComparison.OrdinalIgnoreCase);
-        }
-
         public static int GetBarracksLevel(Settlement settlement)
         {
-            if (settlement?.Town == null)
-            {
-                return 0;
-            }
+            return ProfessionalRecruitmentEligibilityModel
+                .GetBarracksLevel(settlement);
+        }
 
-            BuildingType buildingType = settlement.IsCastle
-                ? DefaultBuildingTypes.CastleBarracks
-                : DefaultBuildingTypes.SettlementBarracks;
-            Building barracks = settlement.Town.Buildings.FirstOrDefault(
-                building => building.BuildingType == buildingType);
-            return Math.Max(0, Math.Min(3, barracks?.CurrentLevel ?? 0));
+        private static IReadOnlyDictionary<string, int> GetEffectiveWeights(
+            Settlement settlement)
+        {
+            SettlementProfessionalPreferenceBehavior behavior = Campaign.Current?
+                .GetCampaignBehavior<SettlementProfessionalPreferenceBehavior>();
+            if (behavior != null) return behavior.GetEffectiveWeights(settlement);
+            ProfessionalRecruitmentEligibilitySnapshot snapshot =
+                ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
+            return snapshot?.EligibleEntries.ToDictionary(
+                x => x.Troop.StringId, x => x.Weight) ??
+                new Dictionary<string, int>();
+        }
+
+        public void FilterProfessionalOffers(Settlement settlement)
+        {
+            if (settlement == null || !_dailyProfessionalOffers.TryGetValue(
+                    settlement, out var offers)) return;
+            IReadOnlyDictionary<string, int> weights = GetEffectiveWeights(settlement);
+            foreach (CharacterObject troop in offers.Keys.ToList())
+                if (troop == null || !weights.TryGetValue(
+                        troop.StringId, out int weight) || weight <= 0)
+                    offers.Remove(troop);
+        }
+
+        public void InvalidateProfessionalOffersForOwnershipChange(
+            Settlement settlement)
+        {
+            if (settlement == null) return;
+            _dailyProfessionalOffers.Remove(settlement);
+            // Deliberately retain _professionalOfferDays so the new owner cannot
+            // redraw production or consume hearth twice on the capture day.
         }
     }
 }

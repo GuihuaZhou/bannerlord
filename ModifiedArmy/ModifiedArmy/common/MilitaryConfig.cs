@@ -115,19 +115,6 @@ namespace ModifiedArmy.common
         public bool EnableAutomaticReinforcement { get; internal set; }
         public DemobilizationConfig Demobilization { get; } =
             new DemobilizationConfig();
-        public GarrisonRecruitmentOrdersConfig GarrisonRecruitmentOrders { get; } =
-            new GarrisonRecruitmentOrdersConfig();
-    }
-
-    public sealed class GarrisonRecruitmentOrdersConfig
-    {
-        public bool Enabled { get; internal set; } = true;
-        public int ResidentFloor { get; internal set; } = 75;
-        public float WealthSaturationGold { get; internal set; } = 80000f;
-        public float ReorderFraction { get; internal set; } = 0.50f;
-        public float PlanningCommitmentShare { get; internal set; } = 0.35f;
-        public int MinimumNewOrderCount { get; internal set; } = 5;
-        public int OrderCooldownDays { get; internal set; } = 3;
     }
 
     public sealed class DemobilizationConfig
@@ -186,26 +173,6 @@ namespace ModifiedArmy.common
             message.SetTextVariable("CONFIG_ID", ConfigId);
             message.SetTextVariable("DOCTRINE_COUNT", _doctrines.Count);
             ModLogger.Info(message.ToString());
-            GarrisonRecruitmentOrdersConfig orderConfig =
-                AiRecruitment.ForceManagement.GarrisonRecruitmentOrders;
-            TextObject orderMessage = GameTexts.FindText(
-                "str_modifiedarmy_garrison_order_config_loaded");
-            orderMessage.SetTextVariable("ENABLED", GameTexts.FindText(
-                orderConfig.Enabled
-                    ? "str_modifiedarmy_common_yes"
-                    : "str_modifiedarmy_common_no"));
-            orderMessage.SetTextVariable("FLOOR", orderConfig.ResidentFloor);
-            orderMessage.SetTextVariable(
-                "SATURATION", orderConfig.WealthSaturationGold);
-            orderMessage.SetTextVariable(
-                "REORDER", orderConfig.ReorderFraction);
-            orderMessage.SetTextVariable(
-                "SHARE", orderConfig.PlanningCommitmentShare);
-            orderMessage.SetTextVariable(
-                "MINIMUM", orderConfig.MinimumNewOrderCount);
-            orderMessage.SetTextVariable(
-                "COOLDOWN", orderConfig.OrderCooldownDays);
-            ModLogger.Info(orderMessage.ToString());
         }
 
         public CulturalMilitaryDoctrine GetDoctrine(CultureObject culture)
@@ -346,26 +313,6 @@ namespace ModifiedArmy.common
                 value.TransportMissionDeadlineDays);
             value.EnableAutomaticReinforcement = BooleanValue(
                 node, "EnableAutomaticReinforcement", false);
-            XmlNode orders = node.SelectSingleNode("GarrisonRecruitmentOrders");
-            if (orders != null)
-            {
-                GarrisonRecruitmentOrdersConfig orderConfig =
-                    value.GarrisonRecruitmentOrders;
-                orderConfig.Enabled = OptionalBooleanAttribute(
-                    orders, "enabled", true);
-                orderConfig.ResidentFloor = NonNegativeValue(
-                    orders, "ResidentFloor", orderConfig.ResidentFloor);
-                orderConfig.WealthSaturationGold = NonNegativeFloatValue(
-                    orders, "WealthSaturationGold", orderConfig.WealthSaturationGold);
-                orderConfig.ReorderFraction = RatioValue(
-                    orders, "ReorderFraction", orderConfig.ReorderFraction);
-                orderConfig.PlanningCommitmentShare = RatioValue(
-                    orders, "PlanningCommitmentShare", orderConfig.PlanningCommitmentShare);
-                orderConfig.MinimumNewOrderCount = NonNegativeValue(
-                    orders, "MinimumNewOrderCount", orderConfig.MinimumNewOrderCount);
-                orderConfig.OrderCooldownDays = NonNegativeValue(
-                    orders, "OrderCooldownDays", orderConfig.OrderCooldownDays);
-            }
             XmlNode demobilization = node.SelectSingleNode("Demobilization");
             if (demobilization != null)
             {
@@ -403,20 +350,6 @@ namespace ModifiedArmy.common
             return Math.Max(
                 0f,
                 Math.Min(1f, OptionalValue(parent, name, fallback)));
-        }
-
-        private static float NonNegativeFloatValue(
-            XmlNode parent,
-            string name,
-            float fallback)
-        {
-            float value = OptionalValue(parent, name, fallback);
-            if (float.IsNaN(value) || float.IsInfinity(value) || value < 0f)
-            {
-                throw new InvalidOperationException(
-                    name + " must be a finite non-negative number.");
-            }
-            return value;
         }
 
         /// <summary>
@@ -480,15 +413,6 @@ namespace ModifiedArmy.common
             return node == null
                 ? fallback
                 : bool.Parse(Attr(node, "value"));
-        }
-
-        private static bool OptionalBooleanAttribute(
-            XmlNode node,
-            string name,
-            bool fallback)
-        {
-            XmlAttribute attribute = node?.Attributes?[name];
-            return attribute == null ? fallback : bool.Parse(attribute.Value);
         }
 
         private static CulturalMilitaryDoctrine ParseDoctrine(XmlNode node, CultureObject culture)

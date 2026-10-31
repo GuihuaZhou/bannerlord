@@ -76,7 +76,6 @@ namespace ModifiedArmy.Recruitment.Finance
                     0f,
                     MinimumReserve,
                     0f,
-                    0f,
                     0f);
             }
 
@@ -126,7 +125,6 @@ namespace ModifiedArmy.Recruitment.Finance
                 campaignDay,
                 dailyNetIncome,
                 expectedReserve,
-                safeCapacity,
                 totalCommitmentBudget,
                 totalPurchaseBudget);
             Snapshots[clan] = snapshot;

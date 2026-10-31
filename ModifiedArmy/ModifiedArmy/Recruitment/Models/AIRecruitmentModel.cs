@@ -16,11 +16,6 @@ namespace ModifiedArmy.Recruitment.Models
             MobileParty party,
             IReadOnlyList<RecruitmentCandidate> candidates);
 
-        public abstract RecruitmentPlan BuildPlan(
-            MobileParty party,
-            IReadOnlyList<RecruitmentCandidate> candidates,
-            AiGarrisonOrderRecruitmentContext context);
-
         /// <summary>Evaluates one candidate against projected party state.</summary>
         public abstract RecruitmentEvaluationResult EvaluateRecruitment(
             MobileParty party,

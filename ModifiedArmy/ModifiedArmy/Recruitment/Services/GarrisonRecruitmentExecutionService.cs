@@ -28,21 +28,18 @@ namespace ModifiedArmy.Recruitment.Services
             out int professionalRecruited,
             out int prisonerRecruited)
         {
-            GarrisonRecruitmentExecutionResult result = ExecuteUnderOrder(
-                settlement, garrison, plan, dailyLimit, int.MaxValue,
-                false, pools, null);
+            GarrisonRecruitmentExecutionResult result = ExecuteDetailed(
+                settlement, garrison, plan, dailyLimit, pools, null);
             professionalRecruited = result.ProfessionalRecruited;
             prisonerRecruited = result.PrisonerRecruited;
             return result.TotalCommitted;
         }
 
-        public static GarrisonRecruitmentExecutionResult ExecuteUnderOrder(
+        private static GarrisonRecruitmentExecutionResult ExecuteDetailed(
             Settlement settlement,
             MobileParty garrison,
             RecruitmentPlan plan,
             int dailyLimit,
-            int maximumOrderCount,
-            bool bypassSoftRecruitmentTarget,
             SettlementManpowerProductionBehavior pools,
             string operationId)
         {
@@ -55,7 +52,7 @@ namespace ModifiedArmy.Recruitment.Services
             int recruited = 0;
             int reservedReturningMembers = GarrisonRecruitmentCapacity
                 .GetActiveSupplyEscortCount(settlement);
-            if (plan?.Evaluations == null || maximumOrderCount <= 0)
+            if (plan?.Evaluations == null)
             {
                 result.FailureReason = "NoAuthorizedPlan";
                 return result;
@@ -64,14 +61,12 @@ namespace ModifiedArmy.Recruitment.Services
             {
                 int count = Math.Min(evaluation.RecruitableCount,
                     dailyLimit - recruited);
-                count = Math.Min(count, maximumOrderCount - recruited);
                 count = Math.Min(count,
                     GarrisonRecruitmentCapacity.GetHardFreeSlots(
                         garrison, reservedReturningMembers));
-                if (!bypassSoftRecruitmentTarget)
-                    count = Math.Min(count,
-                        GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
-                            garrison, reservedReturningMembers));
+                count = Math.Min(count,
+                    GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
+                        garrison, reservedReturningMembers));
                 if (count <= 0 || evaluation.Troop == null) continue;
 
                 ProfessionalRecruitmentCommit professionalCommit = null;

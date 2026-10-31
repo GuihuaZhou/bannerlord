@@ -11,7 +11,9 @@ using ModifiedArmy.PartyManagement.Behaviors;
 using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
-using ModifiedArmy.Recruitment.Orders.Behaviors;
+using ModifiedArmy.Recruitment.Preferences.Behaviors;
+using ModifiedArmy.Recruitment.Preferences.Presentation;
+using ModifiedArmy.Recruitment.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.ForceManagement.Behaviors;
@@ -200,10 +202,11 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new SettlementManpowerProductionBehavior());
                 campaignStarter.AddBehavior(
-                    new GarrisonRecruitmentOrderBehavior());
-                campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
+                    new SettlementProfessionalPreferenceBehavior());
                 campaignStarter.AddBehavior(
-                    new ClanGarrisonRecruitmentCoordinator());
+                    new SettlementProfessionalPreferenceMenuBehavior());
+                campaignStarter.AddBehavior(new GarrisonRecruitFromPrisonersBehavior());
+                campaignStarter.AddBehavior(new ClanGarrisonRecruitmentCoordinator());
                 // Registered last so its recovery barrier runs after the
                 // specialist load handlers registered above.
                 campaignStarter.AddBehavior(
