@@ -21,7 +21,8 @@ namespace ModifiedArmy.Recruitment.Pools.Models
 
     /// <summary>
     /// Immutable, template-local configuration for one base troop.
-    /// Weight and barracks requirements belong to the concrete pool template.
+    /// Weight belongs to the pool template; barracks level belongs to the
+    /// troop and is copied from basic_troop_config.xml.
     /// </summary>
     public sealed class TroopProductionEntry
     {

@@ -17,10 +17,17 @@ namespace ModifiedArmy.Models
         public CharacterObject Troop { get; }
         public int Weight { get; set; }
 
-        public BasicTroopEntry(CharacterObject troop, int weight)
+        /// <summary>招募此兵种所需的最低兵营等级，0 表示无要求。</summary>
+        public int RequiredBarracksLevel { get; }
+
+        public BasicTroopEntry(
+            CharacterObject troop,
+            int weight,
+            int requiredBarracksLevel = 0)
         {
             Troop = troop;
             Weight = weight;
+            RequiredBarracksLevel = Math.Max(0, requiredBarracksLevel);
         }
 
         /// <summary>
@@ -78,17 +85,20 @@ namespace ModifiedArmy.Models
         }
 
         /// <summary>
-        /// 读取一个平铺基础兵种。生产参数由具体生产模板负责。
+        /// 读取一个平铺基础兵种及其统一兵营等级。
         /// </summary>
         private void ParseTroopNode(MBObjectManager objectManager, XmlNode node)
         {
             CharacterObject troop = objectManager.ReadObjectReferenceFromXml<CharacterObject>("id", node);
+            int barracksLevel = node.Attributes?["barracksLevel"] == null
+                ? 0
+                : XmlHelper.ReadInt(node, "barracksLevel");
             if (troop == null)
             {
                 ModLogger.Warn($"[BasicTroopGroup] Failed to load troop: id='{XmlHelper.ReadString(node, "id")}'");
                 return;
             }
-            Troops.Add(new BasicTroopEntry(troop, 1));
+            Troops.Add(new BasicTroopEntry(troop, 1, barracksLevel));
         }
     }
 
