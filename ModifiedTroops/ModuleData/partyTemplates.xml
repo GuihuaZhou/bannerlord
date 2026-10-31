@@ -10,7 +10,7 @@
 			<PartyTemplateStack 
 				min_value="19" 
 				max_value="19" 
-				troop="NPCCharacter.hire_steppe_guard" />
+				troop="NPCCharacter.hire_knight" />
 		</stacks>
 	</MBPartyTemplate>
 
@@ -210,7 +210,7 @@
 
 	<!-- Minor-faction field parties cannot rely on normal settlement recruitment. -->
 	<!-- Give every newly created party a dependable force instead of the native 28 troops. -->
-	<!-- Fixed distribution per party: 40 low-tier, 60 mid-tier, 50 high-tier; total 150. -->
+	<!-- Fixed proportional distribution per party: 27 low-tier, 40 mid-tier, 33 high-tier; total 100. -->
 	<!-- These overrides intentionally affect only the 15 native minor-faction templates. -->
 
 	<!-- Mercenary minor factions. -->
@@ -218,16 +218,16 @@
 		id="kingdom_hero_party_mercenary_aserai_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.ghilman_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.ghilman_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.ghilman_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.ghilman_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -235,16 +235,16 @@
 		id="kingdom_hero_party_mercenary_empire_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.legion_of_the_betrayed_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.legion_of_the_betrayed_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.legion_of_the_betrayed_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.legion_of_the_betrayed_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -252,16 +252,16 @@
 		id="kingdom_hero_party_mercenary_sturgia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.skolderbrotva_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.skolderbrotva_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.skolderbrotva_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.skolderbrotva_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -269,16 +269,16 @@
 		id="kingdom_hero_party_mercenary_vlandia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.company_of_the_boar_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.company_of_the_boar_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.company_of_the_boar_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.company_of_the_boar_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -287,16 +287,16 @@
 		id="kingdom_hero_party_outlaw_aserai_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.beni_zilal_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.beni_zilal_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.beni_zilal_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.beni_zilal_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -304,16 +304,16 @@
 		id="kingdom_hero_party_outlaw_battania_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.wolfskins_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.wolfskins_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.wolfskins_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.wolfskins_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -321,16 +321,16 @@
 		id="kingdom_hero_party_outlaw_empire_e_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="40"
-				max_value="40"
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.embers_of_flame_tier_1" />
 			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
+				min_value="40"
+				max_value="40"
 				troop="NPCCharacter.embers_of_flame_tier_2" />
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.embers_of_flame_tier_3" />
 		</stacks>
 	</MBPartyTemplate>
@@ -338,16 +338,16 @@
 		id="kingdom_hero_party_outlaw_empire_s_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.guardians_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.guardians_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.guardians_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.guardians_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -355,16 +355,16 @@
 		id="kingdom_hero_party_outlaw_empire_w_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="40"
-				max_value="40"
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.hidden_hand_tier_1" />
 			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
+				min_value="40"
+				max_value="40"
 				troop="NPCCharacter.hidden_hand_tier_2" />
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.hidden_hand_tier_3" />
 		</stacks>
 	</MBPartyTemplate>
@@ -372,16 +372,16 @@
 		id="kingdom_hero_party_outlaw_sturgia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="40"
-				max_value="40"
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.lakepike_tier_1" />
 			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
+				min_value="40"
+				max_value="40"
 				troop="NPCCharacter.lakepike_tier_2" />
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.lakepike_tier_3" />
 		</stacks>
 	</MBPartyTemplate>
@@ -389,16 +389,16 @@
 		id="kingdom_hero_party_outlaw_vlandia_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.brotherhood_of_woods_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.brotherhood_of_woods_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.brotherhood_of_woods_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.brotherhood_of_woods_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -407,16 +407,16 @@
 		id="kingdom_hero_party_jawwal_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.jawwal_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.jawwal_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.jawwal_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.jawwal_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -424,16 +424,16 @@
 		id="kingdom_hero_party_karakhuzaits_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.karakhuzaits_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.karakhuzaits_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.karakhuzaits_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.karakhuzaits_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -441,16 +441,16 @@
 		id="kingdom_hero_party_forest_people_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.forest_people_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.forest_people_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.forest_people_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.forest_people_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
@@ -458,16 +458,16 @@
 		id="kingdom_hero_party_eleftheroi_template">
 		<stacks>
 			<PartyTemplateStack
-				min_value="50"
-				max_value="50"
+				min_value="33"
+				max_value="33"
 				troop="NPCCharacter.eleftheroi_tier_3" />
-			<PartyTemplateStack
-				min_value="60"
-				max_value="60"
-				troop="NPCCharacter.eleftheroi_tier_2" />
 			<PartyTemplateStack
 				min_value="40"
 				max_value="40"
+				troop="NPCCharacter.eleftheroi_tier_2" />
+			<PartyTemplateStack
+				min_value="27"
+				max_value="27"
 				troop="NPCCharacter.eleftheroi_tier_1" />
 		</stacks>
 	</MBPartyTemplate>
