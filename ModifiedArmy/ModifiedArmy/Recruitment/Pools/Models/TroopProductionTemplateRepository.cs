@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
 
@@ -81,6 +82,62 @@ namespace ModifiedArmy.Recruitment.Pools.Models
             }
 
             return template;
+        }
+
+        /// <summary>
+        /// Computes structural production sources from the two templates for
+        /// this settlement. Barracks, weight, supply and capacity are runtime
+        /// constraints and deliberately do not change these booleans.
+        /// </summary>
+        public TroopProductionEligibility GetEligibility(
+            Settlement settlement,
+            CharacterObject troop)
+        {
+            if (settlement == null || troop == null)
+                return new TroopProductionEligibility(false, false);
+
+            ITroopProductionTemplate fief = Resolve(
+                settlement,
+                TroopProductionKind.Fief);
+            ITroopProductionTemplate professional = Resolve(
+                settlement,
+                TroopProductionKind.Professional);
+            return new TroopProductionEligibility(
+                IsTroopInTemplate(fief, troop),
+                IsTroopInTemplate(professional, troop));
+        }
+
+        private static bool IsTroopInTemplate(
+            ITroopProductionTemplate template,
+            CharacterObject troop)
+        {
+            if (template?.TroopEntries == null || troop == null)
+                return false;
+            foreach (TroopProductionEntry entry in template.TroopEntries)
+            {
+                CharacterObject root = entry?.Troop;
+                if (root == null) continue;
+                var visited = new HashSet<CharacterObject>();
+                var pending = new Stack<CharacterObject>();
+                pending.Push(root);
+                while (pending.Count > 0)
+                {
+                    CharacterObject current = pending.Pop();
+                    if (current == null || !visited.Add(current)) continue;
+                    if (current == troop) return true;
+                    CharacterObject[] upgrades = current.UpgradeTargets;
+                    if (upgrades == null) continue;
+                    foreach (CharacterObject upgrade in upgrades
+                        .Where(item => item != null)
+                        .OrderByDescending(
+                            item => item.StringId,
+                            StringComparer.Ordinal))
+                    {
+                        pending.Push(upgrade);
+                    }
+                }
+            }
+            return false;
         }
 
         public void Clear()

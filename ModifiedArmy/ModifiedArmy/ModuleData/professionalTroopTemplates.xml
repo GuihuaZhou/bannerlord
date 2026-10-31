@@ -19,6 +19,9 @@
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
       <troop id="NPCCharacter.empire_marine_t3" weight="2" />
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.empire" id="empire_town">
@@ -28,6 +31,9 @@
       <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.empire" id="empire_castle">
@@ -37,6 +43,9 @@
       <troop id="NPCCharacter.imperial_menavliaton" weight="2" />
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
+      <troop id="NPCCharacter.imperial_equite" weight="2" />
+      <troop id="NPCCharacter.imperial_infantryman" weight="4" />
+      <troop id="NPCCharacter.imperial_archer" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Aserai -->
@@ -47,6 +56,7 @@
       <troop id="NPCCharacter.aserai_marine_t4" weight="2" />
       <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
       <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_town">
@@ -55,6 +65,7 @@
       <troop id="NPCCharacter.aserai_infantry" weight="3" />
       <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
       <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.aserai" id="aserai_castle">
@@ -63,6 +74,7 @@
       <troop id="NPCCharacter.aserai_infantry" weight="3" />
       <troop id="NPCCharacter.aserai_mameluke_axeman" weight="2" />
       <troop id="NPCCharacter.aserai_mameluke_regular" weight="2" />
+      <troop id="NPCCharacter.aserai_tribesman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Sturgia -->
@@ -73,6 +85,8 @@
       <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
       <troop id="NPCCharacter.sturgian_archer" weight="2" />
       <troop id="NPCCharacter.sturgia_marine_t3" weight="2" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_town">
@@ -81,6 +95,8 @@
       <troop id="NPCCharacter.sturgian_spearman" weight="3" />
       <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
       <troop id="NPCCharacter.sturgian_archer" weight="2" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.sturgia" id="sturgia_castle">
@@ -89,6 +105,8 @@
       <troop id="NPCCharacter.sturgian_spearman" weight="3" />
       <troop id="NPCCharacter.sturgian_berzerker" weight="2" />
       <troop id="NPCCharacter.sturgian_archer" weight="2" />
+      <troop id="NPCCharacter.sturgian_warrior" weight="2" />
+      <troop id="NPCCharacter.sturgian_woodsman" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Vlandia -->
@@ -98,6 +116,8 @@
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
       <troop id="NPCCharacter.vlandian_marine_t4" weight="2" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_town">
@@ -105,6 +125,8 @@
       <troop id="NPCCharacter.vlandian_billman" weight="3" />
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_castle">
@@ -112,6 +134,8 @@
       <troop id="NPCCharacter.vlandian_billman" weight="3" />
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_footman" weight="3" />
+      <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Battania -->
@@ -120,18 +144,24 @@
       <troop id="NPCCharacter.battanian_falxman" weight="3" />
       <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
       <troop id="NPCCharacter.battanian_marine_t4" weight="2" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.battania" id="battania_town">
     <TroopComposition>
       <troop id="NPCCharacter.battanian_falxman" weight="3" />
       <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.battania" id="battania_castle">
     <TroopComposition>
       <troop id="NPCCharacter.battanian_falxman" weight="3" />
       <troop id="NPCCharacter.battanian_veteran_skirmisher" weight="2" />
+      <troop id="NPCCharacter.battanian_clanwarrior" weight="3" />
+      <troop id="NPCCharacter.battanian_woodrunner" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Khuzait -->
@@ -140,6 +170,7 @@
       <troop id="NPCCharacter.khuzait_torguud" weight="1" />
       <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
       <troop id="NPCCharacter.khuzait_archer" weight="2" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_town">
@@ -147,6 +178,7 @@
       <troop id="NPCCharacter.khuzait_torguud" weight="1" />
       <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
       <troop id="NPCCharacter.khuzait_archer" weight="2" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.khuzait" id="khuzait_castle">
@@ -154,6 +186,7 @@
       <troop id="NPCCharacter.khuzait_torguud" weight="1" />
       <troop id="NPCCharacter.khuzait_spear_infantry" weight="2" />
       <troop id="NPCCharacter.khuzait_archer" weight="2" />
+      <troop id="NPCCharacter.khuzait_footman" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Nord -->

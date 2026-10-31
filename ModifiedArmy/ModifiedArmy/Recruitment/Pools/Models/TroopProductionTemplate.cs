@@ -8,15 +8,34 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Recruitment.Pools.Models
 {
     /// <summary>
-    /// Identifies the settlement manpower pool that owns a template entry.
-    /// Flags allow one troop tree to be supplied by both systems.
+    /// Selects one production workflow and its corresponding progress ledger.
+    /// Troop eligibility is represented separately by two booleans.
     /// </summary>
-    [Flags]
     public enum TroopProductionKind
     {
         None = 0,
         Professional = 1,
         Fief = 2
+    }
+
+    /// <summary>
+    /// Read-only structural eligibility of one troop in the two templates
+    /// resolved for a specific settlement. This is not an immediate production
+    /// permission and is never persisted.
+    /// </summary>
+    public readonly struct TroopProductionEligibility
+    {
+        public TroopProductionEligibility(
+            bool isFief,
+            bool isProfessional)
+        {
+            IsFief = isFief;
+            IsProfessional = isProfessional;
+        }
+
+        public bool IsFief { get; }
+
+        public bool IsProfessional { get; }
     }
 
     /// <summary>
