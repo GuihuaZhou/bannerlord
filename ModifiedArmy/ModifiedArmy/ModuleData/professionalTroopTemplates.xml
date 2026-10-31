@@ -97,7 +97,6 @@
       <troop id="NPCCharacter.vlandian_billman" weight="3" />
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
       <troop id="NPCCharacter.vlandian_marine_t4" weight="2" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
@@ -106,7 +105,6 @@
       <troop id="NPCCharacter.vlandian_billman" weight="3" />
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <ProfessionalTroopTemplate culture="Culture.vlandia" id="vlandia_castle">
@@ -114,7 +112,6 @@
       <troop id="NPCCharacter.vlandian_billman" weight="3" />
       <troop id="NPCCharacter.vlandian_swordsman" weight="3" />
       <troop id="NPCCharacter.vlandian_hardened_crossbowman" weight="2" />
-      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
     </TroopComposition>
   </ProfessionalTroopTemplate>
   <!-- Battania -->

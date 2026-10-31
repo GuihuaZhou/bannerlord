@@ -75,13 +75,17 @@
   <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town_port">
     <TroopComposition>
       <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_feudal_infantry" weight="2" />
       <troop id="NPCCharacter.vlandian_footman" weight="3" />
       <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
     </TroopComposition>
   </FiefPartyTemplate>
   <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_town">
     <TroopComposition>
       <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
+      <troop id="NPCCharacter.vlandian_feudal_infantry" weight="2" />
       <troop id="NPCCharacter.vlandian_footman" weight="3" />
       <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
     </TroopComposition>
@@ -89,6 +93,8 @@
   <FiefPartyTemplate culture="Culture.vlandia" id="vlandia_castle">
     <TroopComposition>
       <troop id="NPCCharacter.vlandian_knight" weight="1" />
+      <troop id="NPCCharacter.vlandian_light_cavalry" weight="1" />
+      <troop id="NPCCharacter.vlandian_feudal_infantry" weight="2" />
       <troop id="NPCCharacter.vlandian_footman" weight="3" />
       <troop id="NPCCharacter.vlandian_levy_crossbowman" weight="2" />
     </TroopComposition>
