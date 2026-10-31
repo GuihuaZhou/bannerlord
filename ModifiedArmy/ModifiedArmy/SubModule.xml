@@ -55,6 +55,15 @@
 				<GameType value="EditorGame" />
 			</IncludedGameTypes>
 		</XmlNode>  
+		<XmlNode>
+			<XmlName id="partyTemplates" path="partyTemplates" />
+			<IncludedGameTypes>
+				<GameType value="Campaign" />
+				<GameType value="CampaignStoryMode" />
+				<GameType value="CustomGame" />
+				<GameType value="EditorGame" />
+			</IncludedGameTypes>
+		</XmlNode>
 		<XmlNode>                
 			<XmlName id="GameText" path="submodule_strings" />
 		</XmlNode>  

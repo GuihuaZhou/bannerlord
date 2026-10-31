@@ -20,15 +20,6 @@
 	</DependedModules>
 	<Xmls> 
 		<XmlNode>   
-			<XmlName id="partyTemplates" path="partyTemplates" />
-			<IncludedGameTypes>
-				<GameType value="Campaign" />
-				<GameType value="CampaignStoryMode" />
-				<GameType value="CustomGame" />
-				<GameType value="EditorGame" />
-			</IncludedGameTypes>
-		</XmlNode> 
-		<XmlNode>   
 			<XmlName id="NPCCharacters" path="Troops" />
 			<IncludedGameTypes>
 				<GameType value="Campaign" />
