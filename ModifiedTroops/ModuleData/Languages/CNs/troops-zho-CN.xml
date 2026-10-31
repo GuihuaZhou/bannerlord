@@ -77,13 +77,13 @@
   <string id="TwjhbnlW" text="帝国水兵"/>
   <string id="4o1howUZ" text="帝国资深水兵"/>
   
-  <string id="IfjWyWjc" text="（军区）帝国轻步兵"/>
-  <string id="IZ8OmByJ" text="（军区）帝国步兵"/>
-  <string id="LbjxH9yp" text="（军区）帝国轻装射手"/>
-  <string id="fHQ8ifKM" text="（军区）帝国射手"/>
-  <string id="1PsLlMaQ" text="（军区）帝国骑兵"/>
-  <string id="pRbbJHkU" text="（军区）帝国弓骑兵"/>
-  <string id="eYIMQafj" text="（军区）帝国重骑兵"/>
+  <string id="IfjWyWjc" text="帝国轻步兵"/>
+  <string id="IZ8OmByJ" text="帝国熟练步兵"/>
+  <string id="LbjxH9yp" text="帝国轻装射手"/>
+  <string id="fHQ8ifKM" text="帝国熟练射手"/>
+  <string id="1PsLlMaQ" text="帝国骑兵"/>
+  <string id="pRbbJHkU" text="帝国弓骑兵"/>
+  <string id="eYIMQafj" text="帝国重骑兵"/>
 
   <string id="G9ByT85b" text="军团青年兵"/>
   <string id="qMYpZKWo" text="军团壮年兵"/>
@@ -140,6 +140,8 @@
   <string id="UrSjhs4x" text="瓦兰迪亚戟兵"/>
   <string id="X6CQ9CMZ" text="瓦兰迪亚神射手"/>
   <string id="OQPDvtpk" text="瓦兰迪亚侠义骑兵"/>
+  <string id="vlandian_feudal_infantry" text="瓦兰迪亚封建步兵"/>
+  <string id="vlandian_veteran_feudal_infantry" text="瓦兰迪亚资深封建步兵"/>
 
 
   <string id="VpTQ5SyS" text="诺德利刃战士"/>

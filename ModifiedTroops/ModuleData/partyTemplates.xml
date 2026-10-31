@@ -7,10 +7,15 @@
 				min_value="1"
 				max_value="1"
 				troop="NPCCharacter.main_hero" />
-			<PartyTemplateStack 
-				min_value="19" 
-				max_value="19" 
-				troop="NPCCharacter.hire_knight" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="9"
+				troop="NPCCharacter.hire_steppe_lancer" />
+			<PartyTemplateStack
+				min_value="5"
+				max_value="10"
+				troop="NPCCharacter.hire_steppe_horse_archer" />
+
 		</stacks>
 	</MBPartyTemplate>
 
