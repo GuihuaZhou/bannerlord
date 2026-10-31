@@ -692,12 +692,13 @@
         </Components>
     </Settlement>
 
-    <!-- Pravend [town_V3]: Historic western imperial economic center: strengthen tax collection, storage, construction services, and municipal security. -->
-    <!-- Changes: guard_house 0 -&gt; 1; tax_office 1 -&gt; 2; warehouse 0 -&gt; 2; mason 0 -&gt; 1 -->
+    <!-- Pravend [town_V3]: Former imperial capital and historic western economic center: restore major city defenses and strengthen administration, storage, and municipal services. -->
+    <!-- Changes: fortifications 1 -&gt; 3; guard_house 0 -&gt; 1; tax_office 1 -&gt; 2; warehouse 0 -&gt; 2; mason 0 -&gt; 1 -->
     <Settlement id="town_V3">
         <Components>
             <Town id="town_comp_V3" is_castle="false">
                 <Buildings>
+                    <Building id="building_settlement_fortifications" level="3" />
                     <Building id="building_settlement_guard_house" level="1" />
                     <Building id="building_settlement_tax_office" level="2" />
                     <Building id="building_settlement_warehouse" level="2" />
@@ -707,12 +708,26 @@
         </Components>
     </Settlement>
 
-    <!-- Jaculan [town_V6]: Important Vlandian olive-producing area with four villages: provide a regional olive market and ample storage. -->
-    <!-- Changes: tax_office 0 -&gt; 1; marketplace 0 -&gt; 2; warehouse 0 -&gt; 2; mason 0 -&gt; 1; waterworks 1 -&gt; 2 -->
+    <!-- Galend [town_V5]: Western Vlandian regional port and frontier town: improve its weak starting defenses with a second-tier wall and a basic permanent barracks. -->
+    <!-- Changes: fortifications 1 -&gt; 2; barracks 0 -&gt; 1 -->
+    <Settlement id="town_V5">
+        <Components>
+            <Town id="town_comp_V5" is_castle="false">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2" />
+                    <Building id="building_settlement_barracks" level="1" />
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+
+    <!-- Jaculan [town_V6]: Major Vlandian olive-producing center with four villages: provide better city walls alongside regional trade and storage facilities. -->
+    <!-- Changes: fortifications 1 -&gt; 2; tax_office 0 -&gt; 1; marketplace 0 -&gt; 2; warehouse 0 -&gt; 2; mason 0 -&gt; 1; waterworks 1 -&gt; 2 -->
     <Settlement id="town_V6">
         <Components>
             <Town id="town_comp_V6" is_castle="false">
                 <Buildings>
+                    <Building id="building_settlement_fortifications" level="2" />
                     <Building id="building_settlement_tax_office" level="1" />
                     <Building id="building_settlement_marketplace" level="2" />
                     <Building id="building_settlement_warehouse" level="2" />
@@ -723,7 +738,7 @@
         </Components>
     </Settlement>
 
-    <!-- Charas [town_V7]: Historic Calradian coastal settlement and trade port: improve commerce, warehouses, waterworks, and connected roads. -->
+    <!-- Charas [town_V7]: Historic Calradian coastal settlement and trade port: improve commerce, warehouses, waterworks, and roads. Native walls level 2 and barracks level 2 already meet or exceed the requested targets; preserve both. -->
     <!-- Changes: marketplace 1 -&gt; 2; warehouse 1 -&gt; 2; waterworks 0 -&gt; 1; courthouse 0 -&gt; 1; roads_and_paths 0 -&gt; 2 -->
     <Settlement id="town_V7">
         <Components>
