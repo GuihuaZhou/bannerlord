@@ -2,6 +2,7 @@ using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -38,18 +39,14 @@ namespace ModifiedArmy.common
 
     public sealed class HearthEconomyConfig
     {
-        public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
         public IReadOnlyDictionary<int, int> ProfessionalRecruitment { get; internal set; }
         public float FeudalTaxReliefWageRatio { get; internal set; }
-
-        public int GetFeudalSupplyCost(CharacterObject troop) =>
-            GetRequiredCost(FeudalSupply, troop, "FeudalSupply");
 
         public int GetProfessionalRecruitmentCost(CharacterObject troop) =>
             GetRequiredCost(ProfessionalRecruitment, troop,
                 "ProfessionalRecruitment");
 
-        private static int GetRequiredCost(
+        internal static int GetRequiredCost(
             IReadOnlyDictionary<int, int> costs,
             CharacterObject troop, string group)
         {
@@ -74,6 +71,7 @@ namespace ModifiedArmy.common
         public int FiefWeight { get; internal set; }
         public int ProfessionalWeight { get; internal set; }
         public int MercenaryWeight { get; internal set; }
+        public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
         public FiefServiceConfig Service { get; internal set; }
         public ProfessionalTrainingConfig TownTraining { get; internal set; }
         public ProfessionalTrainingConfig CastleTraining { get; internal set; }
@@ -84,6 +82,10 @@ namespace ModifiedArmy.common
 
         public float ProfessionalShare =>
             (float)ProfessionalWeight / (FiefWeight + ProfessionalWeight);
+
+        public int GetFeudalSupplyCost(CharacterObject troop) =>
+            HearthEconomyConfig.GetRequiredCost(
+                FeudalSupply, troop, "FeudalSupply");
 
         public ProfessionalTrainingConfig GetTraining(Settlement settlement) =>
             settlement?.IsCastle == true
@@ -462,6 +464,10 @@ namespace ModifiedArmy.common
                 FiefWeight = fief,
                 ProfessionalWeight = professional,
                 MercenaryWeight = mercenary,
+                FeudalSupply = ParseTierCosts(
+                    Required(fiefNode, "FeudalSupply"),
+                    "FeudalSupply for " + culture.StringId,
+                    requireStrictIncrease: true),
                 Service = ParseService(Required(fiefNode, "Service")),
                 TownTraining = ParseTraining(Required(training, "Town")),
                 CastleTraining = ParseTraining(Required(training, "Castle")),
@@ -495,10 +501,9 @@ namespace ModifiedArmy.common
         private static HearthEconomyConfig ParseHearthEconomy(XmlNode node) =>
             new HearthEconomyConfig
             {
-                FeudalSupply = ParseTierCosts(Required(node, "FeudalSupply"),
-                    "FeudalSupply"),
                 ProfessionalRecruitment = ParseTierCosts(Required(node,
-                    "ProfessionalRecruitment"), "ProfessionalRecruitment"),
+                    "ProfessionalRecruitment"), "ProfessionalRecruitment",
+                    expectedValue: 1),
                 FeudalTaxReliefWageRatio = RatioAttribute(Required(node,
                     "FeudalTaxRelief"), "wageRatio", "FeudalTaxRelief")
             };
@@ -517,13 +522,15 @@ namespace ModifiedArmy.common
         }
 
         private static IReadOnlyDictionary<int, int> ParseTierCosts(
-            XmlNode node, string group)
+            XmlNode node, string group, bool requireStrictIncrease = false,
+            int? expectedValue = null)
         {
             var result = new Dictionary<int, int>();
             foreach (XmlNode tier in node.SelectNodes("Tier"))
             {
                 if (!int.TryParse(Attr(tier, "Level"), NumberStyles.Integer,
-                    CultureInfo.InvariantCulture, out int level) || level < 0)
+                    CultureInfo.InvariantCulture, out int level) ||
+                    level < 1 || level > 6)
                     throw new InvalidOperationException(
                         "HearthEconomy " + group +
                         " contains invalid Level.");
@@ -538,9 +545,21 @@ namespace ModifiedArmy.common
                         group, level));
                 result.Add(level, hearth);
             }
-            if (result.Count == 0)
+            if (result.Count != 6 || Enumerable.Range(1, 6)
+                .Any(level => !result.ContainsKey(level)))
                 throw new InvalidOperationException(
-                    "HearthEconomy " + group + " cannot be empty.");
+                    "HearthEconomy " + group +
+                    " must define each Tier from 1 through 6 exactly once.");
+            if (requireStrictIncrease && Enumerable.Range(2, 5)
+                .Any(level => result[level] <= result[level - 1]))
+                throw new InvalidOperationException(
+                    "HearthEconomy " + group +
+                    " must be strictly increasing from Tier 1 through Tier 6.");
+            if (expectedValue.HasValue && result.Values
+                .Any(value => value != expectedValue.Value))
+                throw new InvalidOperationException(
+                    "HearthEconomy " + group + " requires every Tier to equal " +
+                    expectedValue.Value.ToString(CultureInfo.InvariantCulture) + ".");
             return result;
         }
 

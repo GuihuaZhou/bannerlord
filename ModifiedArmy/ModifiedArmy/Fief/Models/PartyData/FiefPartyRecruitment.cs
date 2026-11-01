@@ -1073,12 +1073,12 @@ namespace ModifiedArmy.Models.Fief
 
             // Conversion adds a feudal soldier, so it must fit one village's
             // supply capacity even though it does not permanently deduct Hearth.
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             VillageFiefData target = OrderedVillages(null)
                 .FirstOrDefault(v => !v.RecoveryRequired &&
                     v.GetReadyRoster() != null &&
-                    v.CanIncreaseSupply(_fiefPartyTemplate, economy,
+                    v.CanIncreaseSupply(_fiefPartyTemplate, doctrine,
                         troop, count));
             if (target == null) return false;
             target.GetReadyRoster().AddToCounts(

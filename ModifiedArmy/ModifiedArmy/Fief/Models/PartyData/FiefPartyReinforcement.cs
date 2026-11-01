@@ -133,8 +133,8 @@ namespace ModifiedArmy.Models.Fief
                 .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
                 .ToList();
             if (targets.Count == 0) return produced;
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             int recruited = 0;
             foreach (var kvp in tmpNewTroops.OrderBy(p => p.Key.StringId))
             for (int i = 0; i < kvp.Value; i++)
@@ -144,9 +144,10 @@ namespace ModifiedArmy.Models.Fief
                 {
                     target = targets
                         .Where(village => village.CanIncreaseSupply(
-                            _fiefPartyTemplate, economy, kvp.Key, 1))
+                            _fiefPartyTemplate, doctrine, kvp.Key, 1))
                         .OrderByDescending(village => village
-                            .GetFreeSupplyHearth(_fiefPartyTemplate, economy))
+                            .GetFeudalBudgetRemainingHearth(
+                                _fiefPartyTemplate, doctrine))
                         .ThenBy(village => village.VillageSettlement.StringId)
                         .FirstOrDefault();
                 }
@@ -310,8 +311,8 @@ namespace ModifiedArmy.Models.Fief
             foreach (VillageFiefData village in OrderedVillages(null))
             {
               if (village.RecoveryRequired) continue;
-              HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                  .RequireActiveConfig().HearthEconomy;
+              CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                  .RequireActiveConfig().GetDoctrine(_settlement);
               TroopRoster roster = village.GetReadyRoster();
               if (roster == null) continue;
               foreach (var element in roster.GetTroopRoster())
@@ -349,10 +350,13 @@ namespace ModifiedArmy.Models.Fief
                         int delta;
                         try
                         {
-                            delta = economy.GetFeudalSupplyCost(newTroop) -
-                                economy.GetFeudalSupplyCost(troop);
-                            if (delta > 0 && village.GetFreeSupplyHearth(
-                                _fiefPartyTemplate, economy) < delta)
+                            delta = doctrine.GetFeudalSupplyCost(newTroop) -
+                                doctrine.GetFeudalSupplyCost(troop);
+                            if (delta > 0 &&
+                                (village.GetFreeSupplyHearth(
+                                    _fiefPartyTemplate, doctrine) < delta ||
+                                 village.GetFeudalBudgetRemainingHearth(
+                                    _fiefPartyTemplate, doctrine) < delta))
                                 continue;
                         }
                         catch (Exception exception)

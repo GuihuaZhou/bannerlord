@@ -805,7 +805,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 free = Math.Max(0f, data.GetFreeSupplyHearth(
                     fief.GetFiefPartyTemplate(),
                     MilitaryConfigManager.Instance.RequireActiveConfig()
-                        .HearthEconomy));
+                        .GetDoctrine(village.Settlement.Village.Bound)));
             }
             catch (Exception exception)
             {

@@ -332,7 +332,7 @@ namespace ModifiedArmy.Models.Fief
                 ? fief.GetVillageData(settlement)?.GetOccupiedSupplyHearth(
                     fief.GetFiefPartyTemplate(),
                     MilitaryConfigManager.Instance.RequireActiveConfig()
-                        .HearthEconomy) ?? 0
+                        .GetDoctrine(settlement.Village.Bound)) ?? 0
                 : fief.GetTotalOccupiedSupplyHearth();
         }
 
@@ -345,7 +345,7 @@ namespace ModifiedArmy.Models.Fief
                 ? fief.GetVillageData(settlement)?.GetFreeSupplyHearth(
                     fief.GetFiefPartyTemplate(),
                     MilitaryConfigManager.Instance.RequireActiveConfig()
-                        .HearthEconomy) ?? 0
+                        .GetDoctrine(settlement.Village.Bound)) ?? 0
                 : fief.GetTotalFreeSupplyHearth();
         }
 
@@ -369,7 +369,7 @@ namespace ModifiedArmy.Models.Fief
                 ? fief.GetVillageData(settlement)?.GetSupplyDeficitHearth(
                     fief.GetFiefPartyTemplate(),
                     MilitaryConfigManager.Instance.RequireActiveConfig()
-                        .HearthEconomy) ?? 0
+                        .GetDoctrine(settlement.Village.Bound)) ?? 0
                 : fief.GetTotalSupplyDeficitHearth();
         }
 
@@ -470,7 +470,8 @@ namespace ModifiedArmy.Models.Fief
                         villageData.GetFreeSupplyHearth(
                             fief.GetFiefPartyTemplate(),
                             MilitaryConfigManager.Instance
-                                .RequireActiveConfig().HearthEconomy));
+                                .RequireActiveConfig().GetDoctrine(
+                                    village.Settlement.Village.Bound)));
                     capacities[village] = Math.Min(
                         floorCapacity, supplyCapacity);
                 }
@@ -518,7 +519,8 @@ namespace ModifiedArmy.Models.Fief
                         fief == null || data.GetFreeSupplyHearth(
                             fief.GetFiefPartyTemplate(),
                             MilitaryConfigManager.Instance
-                                .RequireActiveConfig().HearthEconomy) < 0)
+                                .RequireActiveConfig().GetDoctrine(
+                                    village.Village.Bound)) < 0)
                         throw new InvalidOperationException(
                             "ProfessionalHearthPostCommitValidationFailed");
                 }

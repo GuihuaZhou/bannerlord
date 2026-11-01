@@ -144,20 +144,20 @@ namespace ModifiedArmy.Models.Fief
 
         public int GetTotalOccupiedSupplyHearth()
         {
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             return Villages?.Values.Where(village => village != null).Sum(
                 village => village.GetOccupiedSupplyHearth(
-                    _fiefPartyTemplate, economy)) ?? 0;
+                    _fiefPartyTemplate, doctrine)) ?? 0;
         }
 
         public int GetTotalFreeSupplyHearth()
         {
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             return Villages?.Values.Where(village => village != null).Sum(
                 village => village.GetFreeSupplyHearth(
-                    _fiefPartyTemplate, economy)) ?? 0;
+                    _fiefPartyTemplate, doctrine)) ?? 0;
         }
 
         public int GetTotalEffectiveSupplyHearth() => Villages?.Values
@@ -166,18 +166,18 @@ namespace ModifiedArmy.Models.Fief
 
         public int GetTotalSupplyDeficitHearth()
         {
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             return Villages?.Values.Where(village => village != null).Sum(
                 village => village.GetSupplyDeficitHearth(
-                    _fiefPartyTemplate, economy)) ?? 0;
+                    _fiefPartyTemplate, doctrine)) ?? 0;
         }
 
         public bool CanProduceAnyFiefTroop()
         {
             if (_fiefPartyTemplate == null) return false;
-            HearthEconomyConfig economy = MilitaryConfigManager.Instance
-                .RequireActiveConfig().HearthEconomy;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
             int barracksLevel = SettlementManpowerProductionBehavior
                 .GetBarracksLevel(_settlement);
             IEnumerable<CharacterObject> troops = _fiefPartyTemplate
@@ -192,7 +192,7 @@ namespace ModifiedArmy.Models.Fief
                 try
                 {
                     if (village.CanIncreaseSupply(_fiefPartyTemplate,
-                        economy, troop, 1)) return true;
+                        doctrine, troop, 1)) return true;
                 }
                 catch (Exception exception)
                 {

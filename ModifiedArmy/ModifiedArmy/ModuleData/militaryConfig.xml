@@ -162,23 +162,14 @@
     </AiRecruitment>
 
     <HearthEconomy>
-      <!-- Feudal troops continuously occupy supply capacity; no Hearth is deducted here. -->
-      <FeudalSupply>
-        <Tier Level="1" Hearth="2" />
-        <Tier Level="2" Hearth="5" />
-        <Tier Level="3" Hearth="10" />
-        <Tier Level="4" Hearth="15" />
-        <Tier Level="5" Hearth="20" />
-        <Tier Level="6" Hearth="40" />
-      </FeudalSupply>
       <!-- Newly trained professional troops permanently consume Hearth once. -->
       <ProfessionalRecruitment>
-        <Tier Level="1" Hearth="2" />
-        <Tier Level="2" Hearth="4" />
-        <Tier Level="3" Hearth="6" />
-        <Tier Level="4" Hearth="8" />
-        <Tier Level="5" Hearth="10" />
-        <Tier Level="6" Hearth="12" />
+        <Tier Level="1" Hearth="1" />
+        <Tier Level="2" Hearth="1" />
+        <Tier Level="3" Hearth="1" />
+        <Tier Level="4" Hearth="1" />
+        <Tier Level="5" Hearth="1" />
+        <Tier Level="6" Hearth="1" />
       </ProfessionalRecruitment>
       <!-- Share of registered feudal troops' standard daily wages relieved from fief tax. -->
       <FeudalTaxRelief wageRatio="0.50" />
@@ -198,7 +189,9 @@
       - villageBonus：每个附属村庄增加的容量。
       - dailyRate：封邑兵每日基础补员能力，支持小数并通过每日进度累计。
       - prosperityCostPerTroop：征召繁荣度成本基数。
-      Hearth 成本统一由上方全局 HearthEconomy 按兵种 Tier 提供。
+      Fief/FeudalSupply：该文化封建兵按 Tier 持续占用的 Hearth 供养额。
+      MilitaryDoctrine 的 fief/professional 权重也决定长期封建供养配额。
+      职业兵 Hearth 成本由上方全局 HearthEconomy 按兵种 Tier 提供。
       TownPort 为可选覆盖；未配置时港口城镇继承 Town。
     -->
     <Cultures>
@@ -216,6 +209,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="1" />
+            <Tier Level="2" Hearth="3" />
+            <Tier Level="3" Hearth="5" />
+            <Tier Level="4" Hearth="9" />
+            <Tier Level="5" Hearth="14" />
+            <Tier Level="6" Hearth="26" />
+          </FeudalSupply>
           <!-- freeWageDays：帝国封邑兵免薪天数；returnCooldownWeeks：返乡后重新可征召的冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
@@ -241,6 +242,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="1" />
+            <Tier Level="2" Hearth="2" />
+            <Tier Level="3" Hearth="4" />
+            <Tier Level="4" Hearth="7" />
+            <Tier Level="5" Hearth="11" />
+            <Tier Level="6" Hearth="22" />
+          </FeudalSupply>
           <!-- freeWageDays：瓦兰迪亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="42" returnCooldownWeeks="3"/>
           <Production>
@@ -266,6 +275,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="1" />
+            <Tier Level="2" Hearth="3" />
+            <Tier Level="3" Hearth="6" />
+            <Tier Level="4" Hearth="10" />
+            <Tier Level="5" Hearth="16" />
+            <Tier Level="6" Hearth="30" />
+          </FeudalSupply>
           <!-- freeWageDays：阿塞莱封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
@@ -291,6 +308,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="2" />
+            <Tier Level="2" Hearth="4" />
+            <Tier Level="3" Hearth="8" />
+            <Tier Level="4" Hearth="12" />
+            <Tier Level="5" Hearth="18" />
+            <Tier Level="6" Hearth="35" />
+          </FeudalSupply>
           <!-- freeWageDays：斯特吉亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
@@ -316,6 +341,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="2" />
+            <Tier Level="2" Hearth="5" />
+            <Tier Level="3" Hearth="10" />
+            <Tier Level="4" Hearth="15" />
+            <Tier Level="5" Hearth="20" />
+            <Tier Level="6" Hearth="40" />
+          </FeudalSupply>
           <!-- freeWageDays：巴旦尼亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
@@ -343,6 +376,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="2" />
+            <Tier Level="2" Hearth="4" />
+            <Tier Level="3" Hearth="8" />
+            <Tier Level="4" Hearth="12" />
+            <Tier Level="5" Hearth="18" />
+            <Tier Level="6" Hearth="35" />
+          </FeudalSupply>
           <!-- freeWageDays：库赛特封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="1"/>
           <Production>
@@ -368,6 +409,14 @@
           </Training>
         </Professional>
         <Fief>
+          <FeudalSupply>
+            <Tier Level="1" Hearth="2" />
+            <Tier Level="2" Hearth="5" />
+            <Tier Level="3" Hearth="10" />
+            <Tier Level="4" Hearth="15" />
+            <Tier Level="5" Hearth="20" />
+            <Tier Level="6" Hearth="40" />
+          </FeudalSupply>
           <!-- freeWageDays：诺德封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>

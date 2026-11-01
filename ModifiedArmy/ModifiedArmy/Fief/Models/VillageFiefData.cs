@@ -64,50 +64,71 @@ namespace ModifiedArmy.Models.Fief
                 MobilizedHearth));
 
         public int GetOccupiedSupplyHearth(FiefPartyTemplate template,
-            HearthEconomyConfig economy)
+            CulturalMilitaryDoctrine doctrine)
         {
-            if (template == null || economy == null)
+            if (template == null || doctrine == null)
                 throw new InvalidOperationException(
-                    "Fief supply calculation requires template and economy.");
+                    "Fief supply calculation requires template and doctrine.");
             int occupied = 0;
             checked
             {
                 foreach (TroopRosterElement element in FilteredEntries(template))
                     occupied += Math.Max(0, element.Number) *
-                        economy.GetFeudalSupplyCost(element.Character);
+                        doctrine.GetFeudalSupplyCost(element.Character);
                 foreach (FiefServiceBatch batch in ServiceBatches ??
                     Enumerable.Empty<FiefServiceBatch>())
                 foreach (var pair in batch?.Troops ??
                     new Dictionary<CharacterObject, int>())
                     if (pair.Key != null && pair.Value > 0)
                         occupied += pair.Value *
-                            economy.GetFeudalSupplyCost(pair.Key);
+                            doctrine.GetFeudalSupplyCost(pair.Key);
                 foreach (FiefReturnBatch batch in ReturnBatches ??
                     Enumerable.Empty<FiefReturnBatch>())
                 foreach (var pair in batch?.Troops ??
                     new Dictionary<CharacterObject, int>())
                     if (pair.Key != null && pair.Value > 0)
                         occupied += pair.Value *
-                            economy.GetFeudalSupplyCost(pair.Key);
+                            doctrine.GetFeudalSupplyCost(pair.Key);
             }
             return occupied;
         }
 
         public int GetFreeSupplyHearth(FiefPartyTemplate template,
-            HearthEconomyConfig economy) => checked(
+            CulturalMilitaryDoctrine doctrine) => checked(
                 GetEffectiveSupplyHearth() -
-                GetOccupiedSupplyHearth(template, economy));
+                GetOccupiedSupplyHearth(template, doctrine));
 
         public int GetSupplyDeficitHearth(FiefPartyTemplate template,
-            HearthEconomyConfig economy) => Math.Max(0,
-                -GetFreeSupplyHearth(template, economy));
+            CulturalMilitaryDoctrine doctrine) => Math.Max(0,
+                -GetFreeSupplyHearth(template, doctrine));
+
+        public int GetFeudalBudgetHearth(
+            CulturalMilitaryDoctrine doctrine)
+        {
+            if (doctrine == null)
+                throw new InvalidOperationException(
+                    "Fief budget calculation requires a doctrine.");
+            int allocatable = Math.Max(0, GetEffectiveSupplyHearth() - 100);
+            return checked((int)Math.Floor(
+                (double)allocatable * doctrine.FiefWeight /
+                (doctrine.FiefWeight + doctrine.ProfessionalWeight)));
+        }
+
+        public int GetFeudalBudgetRemainingHearth(
+            FiefPartyTemplate template,
+            CulturalMilitaryDoctrine doctrine) => checked(
+                GetFeudalBudgetHearth(doctrine) -
+                GetOccupiedSupplyHearth(template, doctrine));
 
         public bool CanIncreaseSupply(FiefPartyTemplate template,
-            HearthEconomyConfig economy, CharacterObject troop, int count)
+            CulturalMilitaryDoctrine doctrine, CharacterObject troop,
+            int count)
         {
             if (RecoveryRequired || troop == null || count <= 0) return false;
-            int required = checked(economy.GetFeudalSupplyCost(troop) * count);
-            return GetFreeSupplyHearth(template, economy) >= required;
+            int required = checked(
+                doctrine.GetFeudalSupplyCost(troop) * count);
+            return GetFreeSupplyHearth(template, doctrine) >= required &&
+                GetFeudalBudgetRemainingHearth(template, doctrine) >= required;
         }
 
         internal Dictionary<CharacterObject, int>
