@@ -80,7 +80,8 @@ namespace ModifiedArmy.Models.Fief
             MobileParty sourceParty,
             FiefServiceBatch batch,
             int maximumCount,
-            int trackedMobilization)
+            int trackedMobilization,
+            IReadOnlyDictionary<CharacterObject, int> requestedTroops = null)
         {
             FiefReturnResult result = new FiefReturnResult
             {
@@ -103,15 +104,23 @@ namespace ModifiedArmy.Models.Fief
                 Math.Min(batch.GetTotalCount(), trackedMobilization));
             Dictionary<CharacterObject, int> returned = new();
             int remaining = approved;
-            foreach (var pair in batch.Troops
-                .Where(item => item.Key != null && item.Value > 0)
+            IEnumerable<KeyValuePair<CharacterObject, int>> eligible =
+                batch.Troops.Where(item => item.Key != null &&
+                    item.Value > 0 && (requestedTroops == null ||
+                    requestedTroops.TryGetValue(item.Key, out int wanted) &&
+                    wanted > 0));
+            foreach (var pair in eligible
                 .OrderBy(item => item.Key.StringId))
             {
                 int available = sourceParty.MemberRoster
                     .GetElementNumber(pair.Key);
+                int requested = requestedTroops != null &&
+                    requestedTroops.TryGetValue(pair.Key, out int wanted)
+                        ? wanted : remaining;
                 int count = Math.Min(
                     remaining,
-                    Math.Min(pair.Value, Math.Max(0, available)));
+                    Math.Min(requested,
+                        Math.Min(pair.Value, Math.Max(0, available))));
                 if (count <= 0) continue;
                 returned[pair.Key] = count;
                 remaining -= count;

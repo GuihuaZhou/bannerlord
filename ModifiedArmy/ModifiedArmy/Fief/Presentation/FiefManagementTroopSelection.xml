@@ -1,0 +1,96 @@
+<BrushWidget Id="ModifiedArmyFiefTroopPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1500" SuggestedHeight="860" HorizontalAlignment="Center" MarginBottom="105" VerticalAlignment="Center" Brush="Recruitment.Frame" IsVisible="@IsFiefManagement">
+  <Children>
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="161" HorizontalAlignment="Center" PositionYOffset="-3" Sprite="StdAssets\tabbar_popup" IsDisabled="true">
+      <Children>
+        <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="35" VerticalAlignment="Top" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@TitleText" />
+      </Children>
+    </Widget>
+    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="55" SuggestedHeight="55" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="18" MarginTop="18" Brush="Popup.CloseButton" Command.Click="ExecuteCancel" />
+
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="590" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="190" Sprite="SPGeneral\SPRecruitment\right_dent" SaturationFactor="20">
+      <Children>
+        <ListPanel DataSource="{Sources}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="22" MarginLeft="14" MarginRight="14" StackLayout.LayoutMethod="VerticalTopToBottom">
+          <ItemTemplate>
+            <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@IsSelected" Command.Click="ExecuteSelect" UpdateChildrenStates="true" MarginBottom="6">
+              <Children>
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="12" MarginRight="12" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="21" Brush.TextHorizontalAlignment="Left" Text="@Name" DoNotAcceptEvents="true" />
+              </Children>
+            </ButtonWidget>
+          </ItemTemplate>
+        </ListPanel>
+      </Children>
+    </Widget>
+
+    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1080" SuggestedHeight="58" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="65" MarginTop="125" StackLayout.LayoutMethod="HorizontalLeftToRight">
+      <Children>
+        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ServingSelected" Command.Click="ExecuteSelectServing" UpdateChildrenStates="true">
+          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ServingText" DoNotAcceptEvents="true" /></Children>
+        </ButtonWidget>
+        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" MarginLeft="15" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ReadySelected" Command.Click="ExecuteSelectReady" UpdateChildrenStates="true">
+          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ReadyText" DoNotAcceptEvents="true" /></Children>
+        </ButtonWidget>
+        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" MarginLeft="15" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@CoolingSelected" Command.Click="ExecuteSelectCooling" UpdateChildrenStates="true">
+          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@CoolingText" DoNotAcceptEvents="true" /></Children>
+        </ButtonWidget>
+      </Children>
+    </ListPanel>
+
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1160" SuggestedHeight="595" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="30" MarginTop="195" Sprite="SPGeneral\SPRecruitment\left_dent" SaturationFactor="20" DoNotAcceptEvents="true" />
+    <ScrollablePanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1080" SuggestedHeight="515" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="70" MarginTop="225" AutoHideScrollBars="true" ClipRect="FiefClipRect" InnerPanel="FiefClipRect\FiefTroopsGrid" VerticalScrollbar="..\FiefTroopsScrollbar\Scrollbar">
+      <Children>
+        <Widget Id="FiefClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+          <Children>
+            <GridWidget Id="FiefTroopsGrid" DataSource="{Troops}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" ColumnCount="4" DefaultCellHeight="150" DefaultCellWidth="240" LayoutImp="GridLayout" MarginTop="15" MarginLeft="12" StepSize="2">
+              <ItemTemplate>
+                <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="140" HorizontalAlignment="Center" Command.AlternateClick="ExecuteLink" HoveredCursorState="RightClickLink">
+                  <Children>
+                    <GameMenuTroopSelectionItemButtonWidget UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TroopSelection.Card" IsSelected="@IsSelected" Command.Add="ExecuteAdd" Command.Remove="ExecuteRemove" IsTroopHero="@IsTroopHero" MaxAmount="@MaxAmount" CurrentAmount="@CurrentAmount" AddButtonWidget="AddRemoveControls\AddButtonWidget" HeroHealthParent="HeroHealthParent" RemoveButtonWidget="AddRemoveControls\RemoveButtonWidget" CheckmarkVisualWidget="CheckmarkVisualWidget" IsRosterFull="@IsRosterFull" AddRemoveControls="AddRemoveControls" IsLocked="@IsLocked" Command.AlternateClick="ExecuteLink" HoveredCursorState="RightClickLink">
+                      <Children>
+                        <NavigationAutoScrollWidget TrackedWidget="..\." />
+                        <ImageIdentifierWidget DataSource="{Visual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="67" SuggestedWidth="100" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" MarginLeft="20" MarginTop="10" DoNotAcceptEvents="true">
+                          <Children>
+                            <DefaultLayerSpriteChangerBrushWidget DataSource="{..\TierIconData}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="GameMenu.ManageHideoutTroops.TierTypeSelectionBrush" SpriteBrush="GameMenu.ManageHideoutTroops.TierIconsBrush" SpriteBrushLayerName="@Text" />
+                            <DefaultLayerSpriteChangerBrushWidget DataSource="{..\TypeIconData}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Left" VerticalAlignment="Top" Brush="GameMenu.ManageHideoutTroops.TierTypeSelectionBrush" SpriteBrush="GameMenu.ManageHideoutTroops.TypeIconsBrush" SpriteBrushLayerName="@Text" />
+                          </Children>
+                        </ImageIdentifierWidget>
+                        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="135" SuggestedHeight="55" Brush="GameMenu.ManageHideoutTroops.NameText" Text="@Name" MarginLeft="20" MarginTop="80" DoNotAcceptEvents="true" />
+                        <Widget Id="CheckmarkVisualWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="47" SuggestedHeight="38" HorizontalAlignment="Right" MarginTop="20" MarginRight="20" Sprite="SPGeneral\GameMenu\companion_selected_check" Color="#F4E1C4FF" DoNotAcceptEvents="true" />
+                        <Widget Id="HeroHealthParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="65" SuggestedWidth="15" MarginTop="15" MarginLeft="15" Brush="TownManagement.GovernorPopup.GoldFrame" IsEnabled="false" />
+                        <ListPanel Id="AddRemoveControls" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Right" VerticalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+                            <ButtonWidget Id="AddButtonWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" HorizontalAlignment="Center" Brush="GameMenu.ManageHideoutTroops.PlusButton" />
+                            <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="80" MarginRight="15">
+                              <Children>
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="45" Brush="GameMenu.ManageHideoutTroops.CountText" IntText="@CurrentAmount" DoNotAcceptEvents="true" />
+                                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="45" Brush="GameMenu.ManageHideoutTroops.CountText" Text="\" Brush.TextHorizontalAlignment="Center" DoNotAcceptEvents="true" />
+                                <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="45" Brush="GameMenu.ManageHideoutTroops.TotalCountText" Brush.FontSize="20" IntText="@MaxAmount" DoNotAcceptEvents="true" />
+                              </Children>
+                            </ListPanel>
+                            <ButtonWidget Id="RemoveButtonWidget" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="35" HorizontalAlignment="Center" Brush="GameMenu.ManageHideoutTroops.MinusButton" />
+                          </Children>
+                        </ListPanel>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Right" VerticalAlignment="Bottom" PositionXOffset="-10" PositionYOffset="-10" Sprite="StdAssets\lock_closed" IsVisible="@IsLocked" DoNotAcceptEvents="true" />
+                      </Children>
+                    </GameMenuTroopSelectionItemButtonWidget>
+                  </Children>
+                </ButtonWidget>
+              </ItemTemplate>
+            </GridWidget>
+          </Children>
+        </Widget>
+      </Children>
+    </ScrollablePanel>
+    <Standard.VerticalScrollbar Id="FiefTroopsScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="515" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="45" MarginTop="225" />
+    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="42" MarginLeft="260">
+      <Children>
+        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="20" Text="@CurrentSelectedAmountTitle" MarginRight="5" />
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="20" Text="@CurrentSelectedAmountText" MarginLeft="5" />
+          </Children>
+        </ListPanel>
+      </Children>
+    </ListPanel>
+    <Standard.TriplePopupCloseButtons VerticalAlignment="Bottom" PositionYOffset="72" Parameter.CancelButtonText="@CancelText" Parameter.DoneButtonText="@DoneText" Parameter.CancelButtonAction="ExecuteCancel" Parameter.ResetButtonAction="ExecuteClearSelection" Parameter.DoneButtonAction="ExecuteDone" Parameter.IsDoneEnabled="@IsDoneEnabled" Parameter.ResetInputKeyDataSource="{ResetInputKey}" Parameter.DoneInputKeyDataSource="{DoneInputKey}" Parameter.CancelInputKeyDataSource="{CancelInputKey}" Parameter.DoneButtonHintDataSource="{DoneHint}" />
+  </Children>
+</BrushWidget>

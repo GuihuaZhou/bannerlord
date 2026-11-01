@@ -65,7 +65,7 @@
     <string id="Fief_Desc_Battania" text="山高林密的巴丹尼亚孕育了大陆最强的贵族弓箭手, 他们隐匿于雾霭之中, 箭无虚发." />
     <string id="Fief_Desc_Northern" text="峡湾与长船是诺德人的生命线, 他们的战士以战斧与盾墙横扫海岸, 无惧风浪与死亡." />
     <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
-    <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵，已有 {RECRUITED} 名士兵出征，另有 {WAITCYCLE} 名士兵正在返回自己的土地。Hearth供养：实际 {ACTUAL_HEARTH}，有效 {EFFECTIVE_HEARTH}，占用 {OCCUPIED_SUPPLY}，剩余 {FREE_SUPPLY}，缺口 {SUPPLY_DEFICIT}。" />
+    <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE} {DESCRIPTION}" />
     <string id="ModifiedArmy_FiefMenu_Entry" text="查看封邑" />
     <string id="ModifiedArmy_FiefMenu_VillageEntry" text="查看本村封建兵" />
     <string id="ModifiedArmy_FiefMenu_Recruit" text="全部征召" />
@@ -316,5 +316,15 @@
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
     <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 家族{CLAN_ID}、领队{LEADER_ID}、部队{PARTY_ID}与定居点{SETTLEMENT_ID}进入阶段{PHASE}。预计驻军兵源{GARRISON}人，预计封邑兵源{FIEF}人，预计合计{TOTAL}人，首次来源为{SOURCE}。原因：{REASON}。" />
     <string id="ModifiedArmy_ForceStayCandidate" text="[兵力规划] 部队{PARTY_ID}在定居点{SETTLEMENT_ID}拥有{REGULARS}名正规兵；已向本体AI提交评分为{SCORE}的驻留候选。" />
+    <string id="ModifiedArmy_FiefManagement_Title" text="士兵管理" />
+    <string id="ModifiedArmy_FiefManagement_AllVillages" text="全部附属村庄" />
+    <string id="ModifiedArmy_FiefManagement_Source" text="来源范围" />
+    <string id="ModifiedArmy_FiefManagement_SourceHint" text="选择全部附属村庄或一个直属村庄。" />
+    <string id="ModifiedArmy_FiefManagement_VillageTotal" text="总兵数：{COUNT}" />
+    <string id="ModifiedArmy_FiefManagement_StateHint" text="选择待役、在役或返乡冷却状态。" />
+    <string id="ModifiedArmy_FiefManagement_Ready" text="待役" />
+    <string id="ModifiedArmy_FiefManagement_Serving" text="在役" />
+    <string id="ModifiedArmy_FiefManagement_Cooling" text="返乡" />
+    <string id="ModifiedArmy_FiefManagement_RecruitedCount" text="已招募人数" />
   </strings>
 </base>

@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using ModifiedArmy.common;
 using ModifiedArmy.ForceManagement.Contracts;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 
@@ -11,7 +13,8 @@ namespace ModifiedArmy.Models.Fief
     {
         public static FiefReturnResult TryReturn(FiefPartyManager manager,
             MobileParty party, Settlement interaction, Settlement source,
-            string batchId, int maximumCount, PartyExchangePurpose purpose)
+            string batchId, int maximumCount, PartyExchangePurpose purpose,
+            IReadOnlyDictionary<CharacterObject, int> requestedTroops = null)
         {
             FiefReturnResult rejected = new FiefReturnResult
             {
@@ -73,7 +76,7 @@ namespace ModifiedArmy.Models.Fief
                 return rejected;
             }
             FiefReturnResult result = data.TryCommitFiefReturn(manager, village, party,
-                selected.Detachment, maximumCount, tracked);
+                selected.Detachment, maximumCount, tracked, requestedTroops);
             FiefPartyManager.LogFiefReturn(party, result,
                 selected.Detachment.GetTotalCount(),
                 MilitaryConfigManager.Instance.RequireActiveConfig()

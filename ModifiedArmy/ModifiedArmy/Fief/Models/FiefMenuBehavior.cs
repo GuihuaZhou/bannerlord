@@ -2,6 +2,7 @@ using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Models.Fief.Presentation;
 using ModifiedArmy.Tool;
 using SandBox.View.Menu;
 using System;
@@ -35,8 +36,6 @@ namespace ModifiedArmy.Models.Fief
     /// </summary>
     public class FiefMenuBehavior : CampaignBehaviorBase
     {
-        private string _selectionFingerprint;
-        private Settlement _selectionInteraction;
         // Only register in these settlement types
         // Town fief administration belongs in the keep submenu. Castles use
         // their outer menu as the equivalent military-administration panel.
@@ -48,12 +47,8 @@ namespace ModifiedArmy.Models.Fief
         private const string FIEF_MENU_ID = "modified_army_fief_menu";
         private const string FIEF_OPTION_ID = "modified_army_settlement_fief";
 
-        private const string RECRUIT_FIEF_OPTION_ID = "fief_recruit";
-        private const string DISBAND_FIEF_OPTION_ID = "fief_disband";
         private const string MANAGE_FIEF_OPTION_ID = "fief_manage";
         private const string LEAVE_FIEF_OPTION_ID = "fief_return";
-        private const string VIEW_FIEF_TROOPS_OPTION_ID =
-            "fief_view_troops";
         private const string REINFORCEMENT_RATE_OPTION_ID =
             "modified_army_view_reinforcement_rate";
         private const string REINFORCEMENT_RATE_MENU_ID =
@@ -143,34 +138,11 @@ namespace ModifiedArmy.Models.Fief
 
             var text = new TextObject(
                 "{=ModifiedArmy_Fief_Intro}" +
-                "{INTRO_LINE}" +
-                "{DESCRIPTION}" +
-                "You can currently recruit {AVAILABLE} troops, " +
-                "{RECRUITED} are already deployed, and " +
-                "{WAITCYCLE} are on their way back home. " +
-                "Hearth supply: actual {ACTUAL_HEARTH}, effective " +
-                "{EFFECTIVE_HEARTH}, occupied {OCCUPIED_SUPPLY}, " +
-                "free {FREE_SUPPLY}, deficit {SUPPLY_DEFICIT}."
+                "{INTRO_LINE} {DESCRIPTION}"
             );
 
             text.SetTextVariable("INTRO_LINE", introKey.ToString());
             text.SetTextVariable("DESCRIPTION", descKey.ToString());
-
-            text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
-            text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
-            text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
-            text.SetTextVariable("ACTUAL_HEARTH",
-                fiefManager.GetActualVillageHearth(settlement));
-            text.SetTextVariable("EFFECTIVE_HEARTH",
-                fiefManager.GetEffectiveSupplyHearth(settlement));
-            text.SetTextVariable("OCCUPIED_SUPPLY",
-                fiefManager.GetOccupiedSupplyHearth(settlement));
-            text.SetTextVariable("FREE_SUPPLY",
-                fiefManager.GetFreeSupplyHearth(settlement));
-            text.SetTextVariable("SUPPLY_DEFICIT",
-                fiefManager.GetSupplyDeficitHearth(settlement));
-
-
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);
         }
 
@@ -189,47 +161,6 @@ namespace ModifiedArmy.Models.Fief
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             AddGameMenus(starter);
-        }
-
-        // 允许玩家选择任意采邑士兵
-        bool CanSelectTroop(CharacterObject troop)
-        {
-            if (troop == null) return false;
-            Settlement interaction = Settlement.CurrentSettlement;
-            FiefPartyManager manager = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>();
-            Settlement fief = interaction?.IsVillage == true
-                ? interaction.Village.Bound : interaction;
-            FiefPartyData data = manager?.GetFiefData(fief);
-            return data?.GetFiefPartyTemplate()?.IsEnableTroop(troop) == true &&
-                manager.GetFiefTroopRoster(interaction)
-                    .GetElementNumber(troop) > 0;
-        }
-
-        // 回调：处理玩家选择结果
-        void OnRecruitDone(TroopRoster selectedRoster)
-        {
-            if (!CanModifyCurrentFief()
-                || selectedRoster == null
-                || selectedRoster.TotalManCount <= 0)
-                return;
-
-            var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-            if (manager == null) return;
-
-            var playerParty = MobileParty.MainParty;
-
-            if (_selectionInteraction != Settlement.CurrentSettlement ||
-                !string.Equals(_selectionFingerprint,
-                    manager.GetFiefSourceFingerprint(
-                        Settlement.CurrentSettlement, playerParty),
-                    StringComparison.Ordinal))
-            {
-                ModLogger.Warn("[Fief] Selected village source manifest changed before commit.");
-                return;
-            }
-
-            manager.ManualRecruitFromFief(Settlement.CurrentSettlement, selectedRoster, playerParty);
         }
 
         /// <summary>
@@ -342,122 +273,15 @@ namespace ModifiedArmy.Models.Fief
 
             // --- Submenu Options ---
 
-            // Recruit
-            starter.AddGameMenuOption(
-                FIEF_MENU_ID,
-                RECRUIT_FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Recruit}Recruit All",
-                ConfigureFiefModificationOption,
-                (args) =>
-                {
-                    if (!CanModifyCurrentFief())
-                    {
-                        return;
-                    }
-
-                    var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-                    var playerParty = MobileParty.MainParty;
-                    Settlement currentSettlement = Settlement.CurrentSettlement;
-
-                    if (currentSettlement == null || manager == null)
-                    {
-                        ModLogger.Warn("[Fief] Recruit failed: settlement or manager is null.");
-                        return;
-                    }
-
-                    manager.RecruitFiefTroopsFromSettlement(currentSettlement, playerParty);
-                },
-                isLeave: false, index: 0, isRepeatable: false
-            );
-
-            // Disband
-            starter.AddGameMenuOption(
-                FIEF_MENU_ID,
-                DISBAND_FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_Disband}Disband Troops",
-                ConfigureFiefModificationOption,
-                (args) =>
-                {
-                    if (!CanModifyCurrentFief())
-                    {
-                        return;
-                    }
-
-                    var manager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-                    var playerParty = MobileParty.MainParty;
-                    Settlement currentSettlement = Settlement.CurrentSettlement;
-
-                    if (currentSettlement == null || manager == null)
-                    {
-                        ModLogger.Warn("[Fief] Disband failed: settlement or manager is null.");
-                        return;
-                    }
-
-                    manager.ReturnTroopsToSettlement(currentSettlement, playerParty);
-                },
-                isLeave: false, index: 2, isRepeatable: false
-            );
-
-            // Recruit Partial 
+            // Source and lifecycle filters are hosted inside the troop window.
             starter.AddGameMenuOption(
                 FIEF_MENU_ID,
                 MANAGE_FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_RecruitPartial}Recruit Selected",
-                ConfigureFiefModificationOption,
-                (args) =>
-                {
-                    if (!CanModifyCurrentFief())
-                    {
-                        return;
-                    }
-
-                    Settlement currentSettlement = Settlement.CurrentSettlement;
-                    if (currentSettlement == null)
-                    {
-                        ModLogger.Warn("[Fief] Manage failed: settlement is null.");
-                        return;
-                    }
-
-                    var fiefManager = Campaign.Current.GetCampaignBehavior<FiefPartyManager>();
-                    if (fiefManager == null)
-                    {
-                        ModLogger.Error("[Fief] FiefSquadManager not found.");
-                        return;
-                    }
-
-                    var playerParty = MobileParty.MainParty;
-                    TroopRoster fiefRoster = fiefManager.GetFiefTroopRoster(currentSettlement);
-                    TroopRoster selectRoster = TroopRoster.CreateDummyTroopRoster();
-                    _selectionInteraction = currentSettlement;
-                    _selectionFingerprint = fiefManager
-                        .GetFiefSourceFingerprint(currentSettlement, playerParty);
-
-                    // 计算最大可招募数量（受 party size 限制）
-                    int maxSelectable = Math.Max(0,
-                       playerParty.Party.PartySizeLimit - playerParty.Party.NumberOfAllMembers);
-
-                    args.MenuContext.OpenTroopSelection(
-                        fullRoster: fiefRoster,
-                        initialSelections: selectRoster,
-                        canChangeStatusOfTroop: CanSelectTroop,
-                        onDone: OnRecruitDone,
-                        maxSelectableTroopCount: maxSelectable,
-                        minSelectableTroopCount: 0
-                    );
-                    args.MenuContext.SetPanelSound("event:/ui/panels/panel_settlement_enter_recruit");
-                },
-                isLeave: false, index: 1, isRepeatable: false
-            );
-
-            starter.AddGameMenuOption(
-                FIEF_MENU_ID,
-                VIEW_FIEF_TROOPS_OPTION_ID,
-                "{=ModifiedArmy_FiefMenu_ViewTroops}View Troops",
+                "{=ModifiedArmy_FiefManagement_Title}Troop Management",
                 ConfigureFiefPoolViewOption,
-                OpenReadOnlyFiefTroops,
-                isLeave: false,
-                index: 4,
-                isRepeatable: false);
+                OpenFiefManagement,
+                isLeave: false, index: 0, isRepeatable: false
+            );
 
             // Return
             starter.AddGameMenuOption(
@@ -503,45 +327,32 @@ namespace ModifiedArmy.Models.Fief
             MenuCallbackArgs args)
         {
             Settlement settlement = Settlement.CurrentSettlement;
-            Clan ownerClan = settlement?.OwnerClan;
-            Clan playerClan = Clan.PlayerClan;
-            bool isPlayerOwned = ownerClan != null &&
-                ownerClan == playerClan;
-            bool isSameKingdom = ownerClan?.Kingdom != null &&
-                ownerClan.Kingdom == playerClan?.Kingdom;
             bool canView = settlement != null &&
-                (settlement.IsFortification || settlement.IsVillage) &&
-                (isPlayerOwned || isSameKingdom);
+                (settlement.IsFortification || settlement.IsVillage);
             args.IsEnabled = canView;
             args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
-            return canView;
+            return true;
         }
 
-        /// <summary>
-        /// Opens the same troop-selection popup used by partial recruitment,
-        /// but rejects every selection so foreign and owned fief forces can be
-        /// inspected without changing either the roster or detachments.
-        /// </summary>
-        private static void OpenReadOnlyFiefTroops(MenuCallbackArgs args)
+        private void OpenFiefManagement(MenuCallbackArgs args)
         {
-            Settlement settlement = Settlement.CurrentSettlement;
-            FiefPartyManager manager = Campaign.Current
-                ?.GetCampaignBehavior<FiefPartyManager>();
-            if (settlement == null ||
-                (!settlement.IsFortification && !settlement.IsVillage) ||
-                manager == null)
-            {
+            Settlement interaction = Settlement.CurrentSettlement;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            MobileParty playerParty = MobileParty.MainParty;
+            if (interaction == null || manager == null || playerParty == null)
                 return;
-            }
 
-            TroopRoster roster = manager.GetFiefTroopRoster(settlement);
-            TroopRoster selection = TroopRoster.CreateDummyTroopRoster();
+            FiefManagementPresentationContext context =
+                FiefManagementPresentationContext.Begin(
+                    interaction, manager, playerParty,
+                    CanModifyCurrentFief());
             args.MenuContext.OpenTroopSelection(
-                fullRoster: roster,
-                initialSelections: selection,
-                canChangeStatusOfTroop: troop => false,
-                onDone: selected => { },
-                maxSelectableTroopCount: 0,
+                fullRoster: context.GetFullRoster(),
+                initialSelections: TroopRoster.CreateDummyTroopRoster(),
+                canChangeStatusOfTroop: context.CanSelect,
+                onDone: context.Commit,
+                maxSelectableTroopCount: context.GetMaximumSelection(),
                 minSelectableTroopCount: 0);
             args.MenuContext.SetPanelSound(
                 "event:/ui/panels/panel_settlement_enter_recruit");

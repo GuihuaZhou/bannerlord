@@ -747,8 +747,11 @@ namespace ModifiedArmy.Models.Fief
                 CharacterObject troop = element.Character;
                 if (troop == null || element.Number <= 0 ||
                     _fiefPartyTemplate?.IsEnableTroop(troop) != true) continue;
-                int available = GetFiefTroopRoster(villageFilter, true)
-                    .GetElementNumber(troop);
+                TroopRosterElement availableElement = GetFiefTroopRoster(
+                    villageFilter, true).GetTroopRoster()
+                    .FirstOrDefault(item => item.Character == troop);
+                int available = Math.Max(0, availableElement.Number -
+                    availableElement.WoundedNumber);
                 int approved = Math.Min(remainingPartySpace,
                     Math.Min(element.Number, available));
                 if (approved <= 0) continue;
@@ -762,7 +765,7 @@ namespace ModifiedArmy.Models.Fief
             }
 
             if (!TryCommitVillageRecruitment(targetParty, validatedSelection,
-                false, villageFilter, out tmpRecruitTroops)) return 0;
+                true, villageFilter, out tmpRecruitTroops)) return 0;
             hearthCost = tmpRecruitTroops.Values.Sum();
 
             int totalRecruited =

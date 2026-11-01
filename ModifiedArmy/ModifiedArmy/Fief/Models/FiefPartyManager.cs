@@ -122,8 +122,32 @@ namespace ModifiedArmy.Models.Fief
         {
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
+            if (CampaignState.IsNewGame)
+                InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
             ReconcileMobilization();
+        }
+
+        private void InitializeNewGameFiefTroops()
+        {
+            int produced = 0;
+            int initialized = 0;
+            foreach (FiefPartyData data in _fiefDataMap.Values
+                .Where(data => data?.GetSettlement()?.IsFortification == true)
+                .OrderBy(data => data.GetSettlement().StringId))
+            {
+                if (!data.InitialFeifPartyData()) continue;
+                int missing = Math.Max(0,
+                    data.GetFiefTroopLimit() - data.GetTotalTroopCount());
+                if (missing <= 0) continue;
+                int added = data.ProduceDailyFiefTroops(missing);
+                if (added <= 0) continue;
+                produced += added;
+                initialized++;
+            }
+            ModLogger.Info(string.Format(
+                "New-game fief troop initialization: fiefs={0}, troops={1}.",
+                initialized, produced));
         }
 
         /// <summary>
@@ -652,11 +676,12 @@ namespace ModifiedArmy.Models.Fief
             Settlement sourceFief,
             string batchId,
             int maximumCount,
-            PartyExchangePurpose purpose = PartyExchangePurpose.NaturalVisit)
+            PartyExchangePurpose purpose = PartyExchangePurpose.NaturalVisit,
+            IReadOnlyDictionary<CharacterObject, int> requestedTroops = null)
         {
             return FiefReturnService.TryReturn(
                 this, servingParty, interactionSettlement, sourceFief,
-                batchId, maximumCount, purpose);
+                batchId, maximumCount, purpose, requestedTroops);
         }
 
         /// <summary>
@@ -1052,6 +1077,115 @@ namespace ModifiedArmy.Models.Fief
             return TroopRoster.CreateDummyTroopRoster();
         }
 
+        public TroopRoster GetFiefManagementRoster(Settlement interaction,
+            Settlement villageFilter, FiefManagementState state,
+            MobileParty playerParty, bool selectableOnly = false)
+        {
+            TroopRoster result = TroopRoster.CreateDummyTroopRoster();
+            Settlement fief = interaction?.IsVillage == true
+                ? interaction.Village?.Bound : interaction;
+            FiefPartyData data = GetFiefData(fief);
+            if (data == null || interaction == null ||
+                interaction.IsVillage && villageFilter != interaction ||
+                villageFilter != null && !data.IsCurrentVillage(villageFilter))
+                return result;
+            foreach (VillageFiefData village in data.OrderedVillages(
+                villageFilter))
+            {
+                if (state == FiefManagementState.Ready)
+                {
+                    foreach (TroopRosterElement item in village
+                        .GetReadyFiefTroopRoster(data.GetFiefPartyTemplate())
+                        .GetTroopRoster())
+                    {
+                        int count = selectableOnly
+                            ? Math.Max(0, item.Number - item.WoundedNumber)
+                            : item.Number;
+                        if (count > 0)
+                            result.AddToCounts(item.Character, count, false,
+                                selectableOnly ? 0 : item.WoundedNumber);
+                    }
+                    continue;
+                }
+                if (state == FiefManagementState.Serving)
+                {
+                    foreach (FiefServiceBatch batch in village.ServiceBatches
+                        .Where(batch => batch != null && !batch.IsEmpty() &&
+                            (!selectableOnly ||
+                             batch.ServingParty == playerParty)))
+                    foreach (var pair in batch.Troops)
+                        if (pair.Key != null && pair.Value > 0)
+                            result.AddToCounts(pair.Key, pair.Value);
+                    continue;
+                }
+                if (!selectableOnly)
+                    foreach (FiefReturnBatch batch in village.ReturnBatches
+                        .Where(batch => batch != null && !batch.IsEmpty()))
+                    foreach (var pair in batch.Troops)
+                        if (pair.Key != null && pair.Value > 0)
+                            result.AddToCounts(pair.Key, pair.Value);
+            }
+            return result;
+        }
+
+        public string GetFiefManagementFingerprint(Settlement interaction,
+            Settlement villageFilter, FiefManagementState state,
+            MobileParty playerParty)
+        {
+            TroopRoster roster = GetFiefManagementRoster(interaction,
+                villageFilter, state, playerParty, state !=
+                    FiefManagementState.Cooling);
+            return string.Join("|", roster.GetTroopRoster()
+                .Where(item => item.Character != null)
+                .OrderBy(item => item.Character.StringId)
+                .Select(item => string.Format("{0}:{1}:{2}",
+                    item.Character.StringId, item.Number,
+                    item.WoundedNumber)));
+        }
+
+        public int ReturnSelectedFiefTroops(Settlement interaction,
+            Settlement villageFilter, MobileParty party,
+            TroopRoster selectedRoster)
+        {
+            if (!TryResolveOperationScope(interaction, party, true,
+                out FiefOperationScope scope) || selectedRoster == null ||
+                selectedRoster.TotalManCount <= 0 ||
+                villageFilter != null &&
+                !scope.FiefData.IsCurrentVillage(villageFilter))
+                return 0;
+            Dictionary<CharacterObject, int> remaining = selectedRoster
+                .GetTroopRoster().Where(item => item.Character != null &&
+                    item.Number > 0).ToDictionary(item => item.Character,
+                    item => item.Number);
+            int returned = 0;
+            AdvanceServiceDays(party);
+            ReconcilePartyFiefTroops(party);
+            foreach (ServingDetachmentRef item in GetServingDetachments(party)
+                .Where(item => item.SourceFief == scope.SourceFief &&
+                    (villageFilter == null ||
+                     item.SourceVillage == villageFilter))
+                .OrderBy(item => item.SourceVillage?.StringId)
+                .ThenBy(item => item.Detachment?.BatchId).ToList())
+            {
+                Dictionary<CharacterObject, int> request = item.Detachment
+                    .Troops.Where(pair => pair.Key != null && pair.Value > 0 &&
+                        remaining.TryGetValue(pair.Key, out int wanted) &&
+                        wanted > 0).ToDictionary(pair => pair.Key, pair =>
+                        Math.Min(pair.Value, remaining[pair.Key]));
+                int requested = request.Values.Sum();
+                if (requested <= 0) continue;
+                FiefReturnResult result = TryReturnFiefTroops(party,
+                    interaction, scope.SourceFief,
+                    item.Detachment.BatchId, requested,
+                    PartyExchangePurpose.NaturalVisit, request);
+                returned += result.ActualReturnedCount;
+                foreach (var pair in result.ReturnedTroops)
+                    remaining[pair.Key] -= pair.Value;
+                if (remaining.Values.All(value => value <= 0)) break;
+            }
+            return returned;
+        }
+
         /// <summary>
         /// Recruits all available fief squads from a settlement into the target mobile party.
         /// </summary>
@@ -1271,7 +1405,9 @@ namespace ModifiedArmy.Models.Fief
             fiefData.OnSettlementOwnerChanged();
         }
 
-        public void ManualRecruitFromFief(Settlement settlement, TroopRoster selectedRoster, MobileParty targetParty)
+        public void ManualRecruitFromFief(Settlement settlement,
+            TroopRoster selectedRoster, MobileParty targetParty,
+            Settlement villageFilter = null)
         {
             if (settlement == null || selectedRoster == null)
                 return;
@@ -1279,8 +1415,13 @@ namespace ModifiedArmy.Models.Fief
             if (TryResolveOperationScope(settlement, targetParty, true,
                 out FiefOperationScope scope))
             {
+                Settlement effectiveFilter = settlement.IsVillage
+                    ? settlement : villageFilter;
+                if (effectiveFilter != null &&
+                    !scope.FiefData.IsCurrentVillage(effectiveFilter))
+                    return;
                 scope.FiefData.RecruitManualSelection(
-                    selectedRoster, targetParty, scope.VillageFilter);
+                    selectedRoster, targetParty, effectiveFilter);
             }
         }
 
