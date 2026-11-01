@@ -10,17 +10,25 @@ namespace ModifiedArmy.Models.Fief
     internal sealed class FiefServiceLedger
     {
         private readonly Dictionary<MobileParty, List<ServingDetachmentRef>> _index;
+        private readonly HashSet<MobileParty> _blockedParties;
 
-        public FiefServiceLedger(Dictionary<MobileParty, List<ServingDetachmentRef>> index)
+        public FiefServiceLedger(
+            Dictionary<MobileParty, List<ServingDetachmentRef>> index,
+            HashSet<MobileParty> blockedParties)
         {
             _index = index;
+            _blockedParties = blockedParties;
         }
 
         public void Rebuild(IReadOnlyDictionary<Settlement, FiefPartyData> data)
         {
             _index.Clear();
+            _blockedParties.Clear();
             Dictionary<string, VillageFiefData> batchOwners =
                 new Dictionary<string, VillageFiefData>(
+                    System.StringComparer.Ordinal);
+            Dictionary<string, MobileParty> batchParties =
+                new Dictionary<string, MobileParty>(
                     System.StringComparer.Ordinal);
             foreach (var pair in data)
             foreach (VillageFiefData village in pair.Value?.Villages?.Values ??
@@ -28,6 +36,7 @@ namespace ModifiedArmy.Models.Fief
             foreach (FiefServiceBatch batch in village?.ServiceBatches ??
                 Enumerable.Empty<FiefServiceBatch>())
             {
+                batch?.ResolveServingParty();
                 VillageFiefData existingOwner = null;
                 bool duplicate = batch != null &&
                     !string.IsNullOrEmpty(batch.BatchId) &&
@@ -40,6 +49,12 @@ namespace ModifiedArmy.Models.Fief
                 {
                     village?.RequireRecovery();
                     if (duplicate) existingOwner?.RequireRecovery();
+                    if (batch?.ServingParty != null)
+                        _blockedParties.Add(batch.ServingParty);
+                    if (duplicate && batchParties.TryGetValue(
+                        batch.BatchId, out MobileParty existingParty) &&
+                        existingParty != null)
+                        _blockedParties.Add(existingParty);
                     ModLogger.Error(string.Format(
                         "Fief service source mismatch: holderFief={0}, holderVillage={1}, batch={2}, sourceFief={3}, sourceVillage={4}, duplicate={5}.",
                         pair.Key?.StringId ?? "unknown",
@@ -51,10 +66,12 @@ namespace ModifiedArmy.Models.Fief
                     continue;
                 }
                 batchOwners[batch.BatchId] = village;
-                batch?.ResolveServingParty();
+                batchParties[batch.BatchId] = batch.ServingParty;
                 if (batch?.ServingParty == null || batch.IsEmpty()) continue;
                 batch.Repair(batch.ServingParty);
                 Register(batch.SourceFief, batch.SourceVillage, batch);
+                if (village.RecoveryRequired)
+                    _blockedParties.Add(batch.ServingParty);
             }
         }
 

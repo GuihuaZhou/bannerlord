@@ -66,6 +66,20 @@ namespace ModifiedArmy.Garrison.Services
             };
             Settlement settlement = party?.CurrentSettlement;
             if (garrison == null || settlement == null) return true;
+            FiefPartyManager fiefManager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            Dictionary<CharacterObject, int> serving = fiefManager?
+                .GetServingTroopCounts(party);
+            if (serving?.Count > 0 && !fiefManager.CanTransferFiefService(
+                party, serving, out string transferReason))
+            {
+                ModLogger.Warn(string.Format(
+                    "Garrison donation blocked for unsafe fief service identity: party={0}, reason={1}.",
+                    party.StringId, transferReason));
+                requested = 0;
+                state = null;
+                return false;
+            }
             Campaign.Current?.GetCampaignBehavior<
                 GarrisonCaptureSupplyBehavior>()?
                 .TryConsumeTroopDonationPermit(party, settlement);

@@ -311,7 +311,7 @@ namespace ModifiedArmy.Models.Fief
             List<RecruitmentCandidate> candidates = new();
             int remaining = Math.Max(0, maximumCount);
             foreach (TroopRosterElement element in GetFiefTroopRoster(
-                villageFilter).GetTroopRoster())
+                villageFilter, true).GetTroopRoster())
             {
                 if (remaining <= 0) break;
                 CharacterObject troop = element.Character;
@@ -351,7 +351,7 @@ namespace ModifiedArmy.Models.Fief
 
             var healthyStock = new Dictionary<CharacterObject, int>();
             foreach (TroopRosterElement element in GetFiefTroopRoster(
-                villageFilter).GetTroopRoster())
+                villageFilter, true).GetTroopRoster())
             {
                 CharacterObject troop = element.Character;
                 int healthy = Math.Max(0, element.Number - element.WoundedNumber);
@@ -759,7 +759,7 @@ namespace ModifiedArmy.Models.Fief
                 CharacterObject troop = element.Character;
                 if (troop == null || element.Number <= 0 ||
                     _fiefPartyTemplate?.IsEnableTroop(troop) != true) continue;
-                int available = GetFiefTroopRoster(villageFilter)
+                int available = GetFiefTroopRoster(villageFilter, true)
                     .GetElementNumber(troop);
                 int approved = Math.Min(remainingPartySpace,
                     Math.Min(element.Number, available));
@@ -814,6 +814,9 @@ namespace ModifiedArmy.Models.Fief
             public CharacterObject Troop;
             public int Count;
             public int Wounded;
+            public TroopRoster SourceRoster;
+            public int BeforeCount;
+            public int BeforeWounded;
         }
 
         private bool TryCommitVillageRecruitment(MobileParty targetParty,
@@ -831,6 +834,7 @@ namespace ModifiedArmy.Models.Fief
                 int remaining = approval.Value;
                 foreach (VillageFiefData village in OrderedVillages(villageFilter))
                 {
+                    if (village.RecoveryRequired) continue;
                     TroopRoster roster = village.GetReadyRoster();
                     if (roster == null) continue;
                     TroopRosterElement element = roster.GetTroopRoster()
@@ -845,7 +849,10 @@ namespace ModifiedArmy.Models.Fief
                     plan.Add(new VillageRecruitmentSource
                     {
                         Village = village, Troop = approval.Key,
-                        Count = count, Wounded = wounded
+                        Count = count, Wounded = wounded,
+                        SourceRoster = roster,
+                        BeforeCount = element.Number,
+                        BeforeWounded = element.WoundedNumber
                     });
                     remaining -= count;
                     if (remaining == 0) break;
@@ -860,17 +867,25 @@ namespace ModifiedArmy.Models.Fief
                     group.Key.VillageSettlement.Village.Hearth) - 100) <
                     group.Sum(p => p.Count)) return false;
 
-            List<FiefServiceBatch> created = new();
+            Dictionary<CharacterObject, (int Count, int Wounded)> targetBefore =
+                plan.Select(p => p.Troop).Distinct().ToDictionary(
+                    troop => troop,
+                    troop => GetRosterCounts(targetParty.MemberRoster, troop));
+            Dictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore =
+                plan.Select(p => p.Village).Distinct().ToDictionary(
+                    village => village,
+                    village => (village.VillageSettlement.Village.Hearth,
+                        village.MobilizedHearth));
+            string operationId = Guid.NewGuid().ToString("N");
+
+            List<(VillageFiefData Village, FiefServiceBatch Batch)> created = new();
             List<(VillageFiefData Village, int Count)> mobilized = new();
-            List<VillageRecruitmentSource> removedFromVillages = new();
-            List<VillageRecruitmentSource> addedToTarget = new();
             try
             {
                 foreach (var entry in plan)
                 {
                     entry.Village.GetReadyRoster().AddToCounts(entry.Troop,
                         -entry.Count, false, -entry.Wounded, 0, true, -1);
-                    removedFromVillages.Add(entry);
                 }
                 foreach (var group in plan.GroupBy(p => p.Village))
                 {
@@ -885,55 +900,168 @@ namespace ModifiedArmy.Models.Fief
                         group.Key, targetParty, troops);
                     if (batch == null)
                         throw new InvalidOperationException("BatchCreationFailed");
-                    created.Add(batch);
+                    created.Add((group.Key, batch));
                 }
                 foreach (var entry in plan)
                 {
                     targetParty.MemberRoster.AddToCounts(entry.Troop,
                         entry.Count, false, entry.Wounded, 0, true, -1);
-                    addedToTarget.Add(entry);
                     committed[entry.Troop] = committed.TryGetValue(
                         entry.Troop, out int old) ? old + entry.Count : entry.Count;
                 }
+                if (!ValidateRecruitmentCommit(plan, targetParty,
+                    targetBefore, villageBefore, created))
+                    throw new InvalidOperationException(
+                        "RecruitmentPostCommitValidationFailed");
                 SyncManpowerCounters();
                 return true;
             }
-            catch
+            catch (Exception exception)
             {
                 FiefPartyManager manager = Campaign.Current?
                     .GetCampaignBehavior<FiefPartyManager>();
-                foreach (var entry in addedToTarget)
+                bool restored = true;
+                foreach (CharacterObject troop in targetBefore.Keys)
                 {
-                    targetParty.MemberRoster.AddToCounts(entry.Troop,
-                        -entry.Count, false, -entry.Wounded, 0, true, -1);
-                }
-                foreach (var entry in removedFromVillages)
-                {
-                    TroopRoster rollbackRoster = entry.Village.GetReadyRoster();
-                    if (rollbackRoster == null)
+                    try
                     {
-                        entry.Village.RequireRecovery();
-                        continue;
+                        RestoreRosterEntry(targetParty.MemberRoster, troop,
+                            targetBefore[troop]);
                     }
-                    rollbackRoster.AddToCounts(entry.Troop, entry.Count,
-                        false, entry.Wounded, 0, true, -1);
+                    catch { restored = false; }
                 }
-                foreach (FiefServiceBatch batch in created)
+                foreach (var entry in plan)
                 {
-                    VillageFiefData village = plan.First(p =>
-                        p.Village.ServiceBatches.Contains(batch)).Village;
-                    village.ServiceBatches.Remove(batch);
-                    manager?.UnregisterServingDetachment(_settlement,
-                        village.VillageSettlement, batch);
+                    try
+                    {
+                        if (entry.Village.GetReadyRoster() != entry.SourceRoster)
+                            throw new InvalidOperationException(
+                                "VillageRosterReferenceChanged");
+                        RestoreRosterEntry(entry.SourceRoster, entry.Troop,
+                            (entry.BeforeCount, entry.BeforeWounded));
+                    }
+                    catch { restored = false; }
+                }
+                foreach (var createdBatch in created)
+                {
+                    try
+                    {
+                        createdBatch.Village.ServiceBatches.Remove(
+                            createdBatch.Batch);
+                        manager?.UnregisterServingDetachment(_settlement,
+                            createdBatch.Village.VillageSettlement,
+                            createdBatch.Batch);
+                    }
+                    catch { restored = false; }
                 }
                 foreach (var item in mobilized)
-                    if (!item.Village.RollbackMobilizationReservation(
-                        item.Count))
-                        item.Village.RequireRecovery();
+                {
+                    try
+                    {
+                        if (!item.Village.RollbackMobilizationReservation(
+                            item.Count)) restored = false;
+                    }
+                    catch { restored = false; }
+                }
+                restored = restored && VerifyRecruitmentRollback(plan,
+                    targetParty, targetBefore, villageBefore, created);
+                if (!restored)
+                    foreach (VillageFiefData village in plan
+                        .Select(p => p.Village).Distinct())
+                        village.RequireRecovery(
+                            "RecruitmentRollbackUnverified", operationId);
+                ModLogger.Error(string.Format(
+                    "Fief recruitment transaction failed: operation={0}, fief={1}, party={2}, reason={3}, rollback={4}.",
+                    operationId, _settlement?.StringId ?? "unknown",
+                    targetParty?.StringId ?? "unknown",
+                    exception.GetType().Name,
+                    restored ? "Verified" : "RecoveryRequired"));
                 committed.Clear();
                 SyncManpowerCounters();
                 return false;
             }
+        }
+
+        private static (int Count, int Wounded) GetRosterCounts(
+            TroopRoster roster, CharacterObject troop)
+        {
+            if (roster == null || troop == null) return (0, 0);
+            TroopRosterElement element = roster.GetTroopRoster()
+                .FirstOrDefault(item => item.Character == troop);
+            return (Math.Max(0, element.Number),
+                Math.Max(0, element.WoundedNumber));
+        }
+
+        private static void RestoreRosterEntry(TroopRoster roster,
+            CharacterObject troop, (int Count, int Wounded) expected)
+        {
+            if (roster == null || troop == null)
+                throw new InvalidOperationException("RosterUnavailable");
+            var actual = GetRosterCounts(roster, troop);
+            roster.AddToCounts(troop, expected.Count - actual.Count, false,
+                expected.Wounded - actual.Wounded, 0, true, -1);
+            if (GetRosterCounts(roster, troop) != expected)
+                throw new InvalidOperationException("RosterRestoreMismatch");
+        }
+
+        private static bool ValidateRecruitmentCommit(
+            IReadOnlyList<VillageRecruitmentSource> plan,
+            MobileParty targetParty,
+            IReadOnlyDictionary<CharacterObject, (int Count, int Wounded)> targetBefore,
+            IReadOnlyDictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore,
+            IReadOnlyList<(VillageFiefData Village, FiefServiceBatch Batch)> created)
+        {
+            foreach (VillageRecruitmentSource entry in plan)
+            {
+                var actual = GetRosterCounts(entry.SourceRoster, entry.Troop);
+                if (actual.Count != entry.BeforeCount - entry.Count ||
+                    actual.Wounded != entry.BeforeWounded - entry.Wounded)
+                    return false;
+            }
+            foreach (var pair in targetBefore)
+            {
+                int added = plan.Where(p => p.Troop == pair.Key)
+                    .Sum(p => p.Count);
+                int wounded = plan.Where(p => p.Troop == pair.Key)
+                    .Sum(p => p.Wounded);
+                var actual = GetRosterCounts(targetParty.MemberRoster, pair.Key);
+                if (actual.Count != pair.Value.Count + added ||
+                    actual.Wounded != pair.Value.Wounded + wounded)
+                    return false;
+            }
+            foreach (var pair in villageBefore)
+            {
+                int count = plan.Where(p => p.Village == pair.Key)
+                    .Sum(p => p.Count);
+                if (pair.Key.MobilizedHearth != pair.Value.Mobilized + count ||
+                    Math.Abs(pair.Key.VillageSettlement.Village.Hearth -
+                        (pair.Value.Hearth - count)) > 0.01f)
+                    return false;
+            }
+            return created.All(item =>
+                item.Village.ServiceBatches.Contains(item.Batch) &&
+                item.Batch.GetTotalCount() == plan
+                    .Where(p => p.Village == item.Village).Sum(p => p.Count));
+        }
+
+        private static bool VerifyRecruitmentRollback(
+            IReadOnlyList<VillageRecruitmentSource> plan,
+            MobileParty targetParty,
+            IReadOnlyDictionary<CharacterObject, (int Count, int Wounded)> targetBefore,
+            IReadOnlyDictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore,
+            IReadOnlyList<(VillageFiefData Village, FiefServiceBatch Batch)> created)
+        {
+            return plan.All(entry => GetRosterCounts(
+                    entry.SourceRoster, entry.Troop) ==
+                    (entry.BeforeCount, entry.BeforeWounded)) &&
+                targetBefore.All(pair => GetRosterCounts(
+                    targetParty.MemberRoster, pair.Key) == pair.Value) &&
+                villageBefore.All(pair =>
+                    pair.Key.MobilizedHearth == pair.Value.Mobilized &&
+                    Math.Abs(pair.Key.VillageSettlement.Village.Hearth -
+                        pair.Value.Hearth) <= 0.01f) &&
+                created.All(item =>
+                    !item.Village.ServiceBatches.Contains(item.Batch));
         }
 
         /// <summary>
@@ -962,7 +1090,8 @@ namespace ModifiedArmy.Models.Fief
 
             // Prisoner conversion does not consume or restore rural capacity.
             VillageFiefData target = OrderedVillages(null)
-                .FirstOrDefault(v => v.GetReadyRoster() != null);
+                .FirstOrDefault(v => !v.RecoveryRequired &&
+                    v.GetReadyRoster() != null);
             if (target == null) return false;
             target.GetReadyRoster().AddToCounts(
                 troop, count, false, 0, 0, true, -1);

@@ -28,6 +28,8 @@ namespace ModifiedArmy.Models.Fief
     {
         public int MatchedCount { get; internal set; }
         public int LostCount { get; internal set; }
+        public bool BlockedByRecovery { get; internal set; }
+        public string ReasonCode { get; internal set; }
     }
 
     internal static class FiefServiceReconciler
@@ -38,12 +40,19 @@ namespace ModifiedArmy.Models.Fief
         {
             FiefReconciliationResult result = new();
             if (manager == null || party == null) return result;
-            List<ServingDetachmentRef> refs = manager.GetServingDetachments(party)
-                .Where(r => r.Detachment != null && !r.Detachment.IsEmpty() &&
-                    manager.GetVillageFiefData(r.SourceVillage)?
-                        .RecoveryRequired != true)
-                .ToList();
+            List<ServingDetachmentRef> refs = manager
+                .GetServingDetachments(party).ToList();
             if (refs.Count == 0) return result;
+            string reason = manager.IsServicePartyBlocked(party)
+                ? "LedgerBlockedParty"
+                : null;
+            if (reason != null ||
+                !ValidatePartyRefs(manager, party, refs, out reason))
+            {
+                result.BlockedByRecovery = true;
+                result.ReasonCode = reason ?? "BlockedServiceParty";
+                return result;
+            }
 
             Dictionary<CharacterObject, int> actual = party.MemberRoster
                 .GetTroopRoster()
@@ -116,28 +125,92 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
 
+            Dictionary<FiefServiceBatch, Dictionary<CharacterObject, int>>
+                snapshots = refs.ToDictionary(
+                    item => item.Detachment,
+                    item => item.Detachment.Troops.ToDictionary(
+                        pair => pair.Key, pair => pair.Value));
+            Dictionary<Settlement, int> lossesByVillage = refs
+                .GroupBy(item => item.SourceVillage)
+                .ToDictionary(
+                    group => group.Key,
+                    group => group.Sum(item => Math.Max(0,
+                        item.Detachment.GetTotalCount() -
+                        plans[item.Detachment].Values.Sum())));
+            Dictionary<Settlement, int> mobilizationSnapshots =
+                lossesByVillage.Keys.ToDictionary(
+                    village => village,
+                    village => manager.GetVillageFiefData(village)?
+                        .MobilizedHearth ?? -1);
+            foreach (var loss in lossesByVillage)
+            {
+                VillageFiefData village = manager.GetVillageFiefData(loss.Key);
+                if (village == null || village.RecoveryRequired ||
+                    village.MobilizedHearth < loss.Value)
+                {
+                    village?.RequireRecovery("ReconciliationPrecheckFailed");
+                    result.BlockedByRecovery = true;
+                    result.ReasonCode = "ReconciliationPrecheckFailed";
+                    return result;
+                }
+            }
+
+            Dictionary<Settlement, int> released = new();
+            try
+            {
+                foreach (ServingDetachmentRef item in refs)
+                    item.Detachment.ReplaceTroops(plans[item.Detachment]);
+                foreach (var loss in lossesByVillage.Where(p => p.Value > 0))
+                {
+                    if (manager.ReleaseVillageFiefService(
+                        loss.Key, loss.Value, false) != loss.Value)
+                        throw new InvalidOperationException(
+                            "MobilizationReleaseFailed");
+                    released[loss.Key] = loss.Value;
+                }
+            }
+            catch
+            {
+                bool restored = true;
+                foreach (ServingDetachmentRef item in refs)
+                {
+                    try { item.Detachment.ReplaceTroops(
+                        snapshots[item.Detachment]); }
+                    catch { restored = false; }
+                }
+                foreach (var release in released)
+                {
+                    try
+                    {
+                        manager.GetVillageFiefData(release.Key)?
+                            .RollbackMobilization(release.Value, false);
+                    }
+                    catch { restored = false; }
+                }
+                restored = restored && refs.All(item =>
+                    DictionaryEquals(item.Detachment.Troops,
+                        snapshots[item.Detachment])) &&
+                    mobilizationSnapshots.All(item =>
+                        manager.GetVillageFiefData(item.Key)?
+                            .MobilizedHearth == item.Value);
+                if (!restored)
+                    foreach (ServingDetachmentRef item in refs)
+                        manager.GetVillageFiefData(item.SourceVillage)?
+                            .RequireRecovery(
+                                "ReconciliationRollbackUnverified");
+                result.BlockedByRecovery = !restored;
+                result.ReasonCode = restored
+                    ? "ReconciliationRolledBackVerified"
+                    : "ReconciliationRollbackUnverified";
+                return result;
+            }
+
             foreach (ServingDetachmentRef item in refs)
             {
-                Dictionary<CharacterObject, int> beforeTroops =
-                    item.Detachment.Troops.ToDictionary(
-                        pair => pair.Key, pair => pair.Value);
-                int before = item.Detachment.GetTotalCount();
-                Dictionary<CharacterObject, int> plan = plans[item.Detachment];
-                int after = plan.Values.Sum();
-                item.Detachment.ReplaceTroops(plan);
+                int after = plans[item.Detachment].Values.Sum();
                 result.MatchedCount += after;
-                int lost = Math.Max(0, before - after);
-                result.LostCount += lost;
-                if (lost > 0 && manager.ReleaseVillageFiefService(
-                    item.SourceVillage, lost, false) != lost)
-                {
-                    item.Detachment.ReplaceTroops(beforeTroops);
-                    manager.GetVillageFiefData(item.SourceVillage)?
-                        .RequireRecovery();
-                    result.MatchedCount -= after;
-                    result.LostCount -= lost;
-                    continue;
-                }
+                result.LostCount += Math.Max(0,
+                    snapshots[item.Detachment].Values.Sum() - after);
                 if (item.Detachment.IsEmpty())
                 {
                     manager.GetVillageFiefData(item.SourceVillage)?
@@ -147,8 +220,44 @@ namespace ModifiedArmy.Models.Fief
                 }
                 manager.GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
             }
+            result.ReasonCode = "Completed";
             return result;
         }
+
+        private static bool ValidatePartyRefs(FiefPartyManager manager,
+            MobileParty party, IReadOnlyList<ServingDetachmentRef> refs,
+            out string reason)
+        {
+            reason = null;
+            HashSet<string> ids = new(StringComparer.Ordinal);
+            foreach (ServingDetachmentRef item in refs)
+            {
+                VillageFiefData village = manager.GetVillageFiefData(
+                    item.SourceVillage);
+                FiefServiceBatch batch = item.Detachment;
+                if (village == null || village.RecoveryRequired ||
+                    batch == null || batch.IsEmpty() ||
+                    string.IsNullOrEmpty(batch.BatchId) ||
+                    !ids.Add(batch.BatchId) ||
+                    batch.SourceFief != item.SourceFief ||
+                    batch.SourceVillage != item.SourceVillage ||
+                    batch.ServingParty != party ||
+                    !village.ServiceBatches.Contains(batch))
+                {
+                    village?.RequireRecovery("ServicePartyValidationFailed");
+                    reason = "ServicePartyValidationFailed";
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        private static bool DictionaryEquals(
+            IReadOnlyDictionary<CharacterObject, int> left,
+            IReadOnlyDictionary<CharacterObject, int> right) =>
+            left != null && right != null && left.Count == right.Count &&
+            left.All(pair => right.TryGetValue(pair.Key, out int value) &&
+                value == pair.Value);
 
         private static void Add(Dictionary<CharacterObject, int> map, CharacterObject troop, int count)
         {

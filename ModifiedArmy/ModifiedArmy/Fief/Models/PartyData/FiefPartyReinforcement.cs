@@ -86,10 +86,12 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>新的 TroopRoster，仅包含当前封邑模板认可的士兵</returns>
         public TroopRoster GetFiefTroopRoster() => GetFiefTroopRoster(null);
 
-        internal TroopRoster GetFiefTroopRoster(Settlement villageFilter)
+        internal TroopRoster GetFiefTroopRoster(Settlement villageFilter,
+            bool excludeRecovery = false)
         {
             var fiefRoster = TroopRoster.CreateDummyTroopRoster();
-            foreach (VillageFiefData village in OrderedVillages(villageFilter))
+            foreach (VillageFiefData village in OrderedVillages(villageFilter)
+                .Where(village => !excludeRecovery || !village.RecoveryRequired))
             foreach (var element in village.GetReadyFiefTroopRoster(
                 _fiefPartyTemplate).GetTroopRoster())
             {
@@ -127,7 +129,8 @@ namespace ModifiedArmy.Models.Fief
             var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
             List<VillageFiefData> targets = OrderedVillages(null)
-                .Where(v => v.GetReadyRoster() != null).ToList();
+                .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
+                .ToList();
             if (targets.Count == 0) return;
             int cursor = 0;
             int recruited = 0;
@@ -271,6 +274,7 @@ namespace ModifiedArmy.Models.Fief
 
             foreach (VillageFiefData village in OrderedVillages(null))
             {
+              if (village.RecoveryRequired) continue;
               TroopRoster roster = village.GetReadyRoster();
               if (roster == null) continue;
               foreach (var element in roster.GetTroopRoster())
@@ -335,6 +339,7 @@ namespace ModifiedArmy.Models.Fief
             // Process returned soldiers whose cooldown has completed.
             foreach (VillageFiefData village in OrderedVillages())
             {
+                if (village.RecoveryRequired) continue;
                 TroopRoster roster = village.GetReadyRoster();
                 for (int i = village.ReturnBatches.Count - 1; i >= 0; i--)
                 {

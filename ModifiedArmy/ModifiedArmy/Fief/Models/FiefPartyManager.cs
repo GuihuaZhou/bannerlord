@@ -90,9 +90,12 @@ namespace ModifiedArmy.Models.Fief
 
         private readonly Dictionary<MobileParty, List<ServingDetachmentRef>>
             _servingDetachmentIndex = new Dictionary<MobileParty, List<ServingDetachmentRef>>();
+        private readonly HashSet<MobileParty> _blockedServiceParties =
+            new HashSet<MobileParty>();
 
         private FiefServiceLedger ServiceLedger =>
-            new FiefServiceLedger(_servingDetachmentIndex);
+            new FiefServiceLedger(
+                _servingDetachmentIndex, _blockedServiceParties);
 
         public override void RegisterEvents()
         {
@@ -198,6 +201,97 @@ namespace ModifiedArmy.Models.Fief
                             village.MobilizedHearth, serving));
                 }
             }
+        }
+
+        internal bool ValidateVillageFiefState(Settlement settlement,
+            out string reason)
+        {
+            reason = null;
+            VillageFiefData village = GetVillageFiefData(settlement);
+            Settlement sourceFief = settlement?.Village?.Bound;
+            if (village == null || sourceFief == null ||
+                village.VillageSettlement != settlement ||
+                GetFiefData(sourceFief)?.IsCurrentVillage(settlement) != true)
+            {
+                reason = "InvalidVillageBinding";
+                return false;
+            }
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            foreach (FiefPartyData fief in _fiefDataMap.Values)
+            foreach (VillageFiefData owner in fief?.Villages?.Values ??
+                Enumerable.Empty<VillageFiefData>())
+            foreach (FiefServiceBatch batch in owner?.ServiceBatches ??
+                Enumerable.Empty<FiefServiceBatch>())
+            {
+                if (batch == null || string.IsNullOrEmpty(batch.BatchId) ||
+                    !ids.Add(batch.BatchId))
+                {
+                    reason = "DuplicateOrMissingBatchId";
+                    return false;
+                }
+                if (owner == village && (batch.SourceFief != sourceFief ||
+                    batch.SourceVillage != settlement || batch.IsEmpty()))
+                {
+                    reason = "InvalidBatchSource";
+                    return false;
+                }
+            }
+            foreach (FiefServiceBatch batch in village.ServiceBatches)
+            {
+                batch.ResolveServingParty();
+                if (batch.ServingParty == null ||
+                    batch.GetTotalCount() <= 0)
+                {
+                    reason = "MissingServingParty";
+                    return false;
+                }
+                foreach (ServingDetachmentRef shared in
+                    GetServingDetachments(batch.ServingParty))
+                {
+                    VillageFiefData sharedVillage = GetVillageFiefData(
+                        shared.SourceVillage);
+                    if (sharedVillage != village &&
+                        sharedVillage?.RecoveryRequired == true)
+                    {
+                        reason = "SharedPartyRecoveryRequired";
+                        return false;
+                    }
+                }
+            }
+            if (village.MobilizedHearth !=
+                village.GetServingFiefTroopCount())
+            {
+                reason = "MobilizationMismatch";
+                return false;
+            }
+            return true;
+        }
+
+        internal bool TryCompleteVillageRecovery(Settlement settlement,
+            string expectedOperationId, out string reason)
+        {
+            VillageFiefData village = GetVillageFiefData(settlement);
+            if (village == null || !village.RecoveryRequired)
+            {
+                reason = "RecoveryNotRequired";
+                return false;
+            }
+            if (!string.IsNullOrEmpty(village.RecoveryOperationId) &&
+                !string.Equals(village.RecoveryOperationId,
+                    expectedOperationId, StringComparison.Ordinal))
+            {
+                reason = "RecoveryEvidenceMismatch";
+                return false;
+            }
+            RebuildServingDetachmentIndex();
+            if (!ValidateVillageFiefState(settlement, out reason))
+                return false;
+            village.CompleteRecovery();
+            RebuildServingDetachmentIndex();
+            ModLogger.Info(string.Format(
+                "Fief village recovery completed: village={0}, operation={1}.",
+                settlement.StringId, expectedOperationId ?? "none"));
+            return true;
         }
 
         public int GetMobilizedHearth(Village village)
@@ -344,6 +438,9 @@ namespace ModifiedArmy.Models.Fief
             return ServiceLedger.Get(party);
         }
 
+        internal bool IsServicePartyBlocked(MobileParty party) =>
+            party != null && _blockedServiceParties.Contains(party);
+
         public void AdvanceServiceDays(MobileParty party)
         {
             foreach (ServingDetachmentRef item in GetServingDetachments(party))
@@ -471,52 +568,167 @@ namespace ModifiedArmy.Models.Fief
             return result;
         }
 
-        public void TransferFiefService(
+        public bool CanTransferFiefService(
+            MobileParty sourceParty,
+            IReadOnlyDictionary<CharacterObject, int> transferredTroops,
+            out string reason)
+        {
+            reason = null;
+            if (sourceParty == null || transferredTroops == null)
+            {
+                reason = "InvalidTransferRequest";
+                return false;
+            }
+            if (IsServicePartyBlocked(sourceParty))
+            {
+                reason = "ServicePartyBlocked";
+                return false;
+            }
+            List<ServingDetachmentRef> refs = GetServingDetachments(sourceParty);
+            foreach (ServingDetachmentRef item in refs)
+            {
+                VillageFiefData owner = GetVillageFiefData(item.SourceVillage);
+                if (owner == null || owner.RecoveryRequired ||
+                    item.Detachment == null || item.Detachment.IsEmpty() ||
+                    item.Detachment.ServingParty != sourceParty ||
+                    item.Detachment.SourceFief != item.SourceFief ||
+                    item.Detachment.SourceVillage != item.SourceVillage ||
+                    !owner.ServiceBatches.Contains(item.Detachment))
+                {
+                    owner?.RequireRecovery("ServiceTransferPrecheckFailed");
+                    reason = "InvalidServiceIdentity";
+                    return false;
+                }
+            }
+            Dictionary<CharacterObject, int> available = GetServingTroopCounts(
+                sourceParty);
+            foreach (var pair in transferredTroops.Where(pair =>
+                pair.Key != null && pair.Value > 0))
+            {
+                if (!available.TryGetValue(pair.Key, out int count) ||
+                    count < pair.Value)
+                {
+                    reason = "InsufficientServiceIdentity";
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        public bool TransferFiefService(
             MobileParty sourceParty,
             MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, int> transferredTroops)
         {
-            if (sourceParty == null || targetParty == null || transferredTroops == null) return;
+            string reason = targetParty == null ? "InvalidTarget" : null;
+            if (reason != null || !CanTransferFiefService(sourceParty,
+                transferredTroops, out reason))
+            {
+                ModLogger.Warn(string.Format(
+                    "Fief service transfer rejected: source={0}, target={1}, reason={2}.",
+                    sourceParty?.StringId ?? "unknown",
+                    targetParty?.StringId ?? "unknown",
+                    reason ?? "InvalidTarget"));
+                return false;
+            }
             Dictionary<CharacterObject, int> remaining = transferredTroops
                 .Where(p => p.Key != null && p.Value > 0)
                 .ToDictionary(p => p.Key, p => p.Value);
-            foreach (ServingDetachmentRef item in GetServingDetachments(sourceParty)
-                .OrderBy(p => p.Detachment.BatchId, StringComparer.Ordinal).ToList())
+            List<ServingDetachmentRef> sourceRefs = GetServingDetachments(
+                sourceParty).OrderBy(p => p.Detachment.BatchId,
+                    StringComparer.Ordinal).ToList();
+            Dictionary<FiefServiceBatch, Dictionary<CharacterObject, int>>
+                snapshots = sourceRefs.ToDictionary(
+                    item => item.Detachment,
+                    item => item.Detachment.Troops.ToDictionary(
+                        pair => pair.Key, pair => pair.Value));
+            List<(VillageFiefData Owner, FiefServiceBatch Batch)> added = new();
+            try
             {
-                VillageFiefData owner = GetVillageFiefData(
-                    item.SourceVillage);
-                if (owner == null || owner.RecoveryRequired ||
-                    item.Detachment.SourceFief != item.SourceFief ||
-                    item.Detachment.SourceVillage != item.SourceVillage)
+                foreach (ServingDetachmentRef item in sourceRefs)
                 {
-                    owner?.RequireRecovery();
-                    continue;
+                    VillageFiefData owner = GetVillageFiefData(
+                        item.SourceVillage);
+                    if (owner == null || owner.RecoveryRequired)
+                        throw new InvalidOperationException(
+                            "ServiceIdentityChanged");
+                    Dictionary<CharacterObject, int> moved = new();
+                    foreach (CharacterObject troop in item.Detachment.Troops
+                        .Keys.ToList())
+                    {
+                        if (!remaining.TryGetValue(troop, out int wanted) ||
+                            wanted <= 0) continue;
+                        int count = Math.Min(wanted,
+                            item.Detachment.Troops[troop]);
+                        if (count <= 0) continue;
+                        item.Detachment.Troops[troop] -= count;
+                        if (item.Detachment.Troops[troop] <= 0)
+                            item.Detachment.Troops.Remove(troop);
+                        remaining[troop] -= count;
+                        moved[troop] = count;
+                    }
+                    if (moved.Count > 0)
+                    {
+                        FiefServiceBatch split = item.Detachment.SplitTo(
+                            targetParty, moved);
+                        owner.ServiceBatches.Add(split);
+                        added.Add((owner, split));
+                        RegisterServingDetachment(item.SourceFief,
+                            item.SourceVillage, split);
+                    }
+                    if (item.Detachment.IsEmpty())
+                    {
+                        owner.ServiceBatches.Remove(item.Detachment);
+                        UnregisterServingDetachment(item.SourceFief,
+                            item.SourceVillage, item.Detachment);
+                    }
+                    _fiefDataMap[item.SourceFief]
+                        .RefreshManpowerCounters();
                 }
-                Dictionary<CharacterObject, int> moved = new();
-                foreach (CharacterObject troop in item.Detachment.Troops.Keys.ToList())
+                if (remaining.Any(pair => pair.Value > 0))
+                    throw new InvalidOperationException(
+                        "ServiceTransferCommitMismatch");
+                return true;
+            }
+            catch (Exception exception)
+            {
+                bool restored = true;
+                foreach (var item in added)
                 {
-                    if (!remaining.TryGetValue(troop, out int wanted) || wanted <= 0) continue;
-                    int count = Math.Min(wanted, item.Detachment.Troops[troop]);
-                    if (count <= 0) continue;
-                    item.Detachment.Troops[troop] -= count;
-                    if (item.Detachment.Troops[troop] <= 0) item.Detachment.Troops.Remove(troop);
-                    remaining[troop] -= count;
-                    moved[troop] = count;
+                    try { item.Owner.ServiceBatches.Remove(item.Batch); }
+                    catch { restored = false; }
                 }
-                if (moved.Count > 0)
+                foreach (ServingDetachmentRef item in sourceRefs)
                 {
-                    FiefServiceBatch split = item.Detachment.SplitTo(targetParty, moved);
-                    owner.ServiceBatches.Add(split);
-                    RegisterServingDetachment(item.SourceFief,
-                        item.SourceVillage, split);
+                    try
+                    {
+                        VillageFiefData owner = GetVillageFiefData(
+                            item.SourceVillage);
+                        if (!owner.ServiceBatches.Contains(item.Detachment))
+                            owner.ServiceBatches.Add(item.Detachment);
+                        item.Detachment.ReplaceTroops(
+                            snapshots[item.Detachment]);
+                    }
+                    catch { restored = false; }
                 }
-                if (item.Detachment.IsEmpty())
-                {
-                    owner.ServiceBatches.Remove(item.Detachment);
-                    UnregisterServingDetachment(item.SourceFief,
-                        item.SourceVillage, item.Detachment);
-                }
-                _fiefDataMap[item.SourceFief].RefreshManpowerCounters();
+                RebuildServingDetachmentIndex();
+                restored = restored && sourceRefs.All(item =>
+                    snapshots[item.Detachment].Count ==
+                        item.Detachment.Troops.Count &&
+                    snapshots[item.Detachment].All(pair =>
+                        item.Detachment.Troops.TryGetValue(pair.Key,
+                            out int count) && count == pair.Value));
+                if (!restored)
+                    foreach (ServingDetachmentRef item in sourceRefs)
+                        GetVillageFiefData(item.SourceVillage)?
+                            .RequireRecovery(
+                                "ServiceTransferRollbackUnverified");
+                ModLogger.Error(string.Format(
+                    "Fief service transfer failed: source={0}, target={1}, reason={2}, rollback={3}.",
+                    sourceParty.StringId, targetParty.StringId,
+                    exception.GetType().Name,
+                    restored ? "Verified" : "RecoveryRequired"));
+                return false;
             }
         }
 
@@ -770,7 +982,12 @@ namespace ModifiedArmy.Models.Fief
         public int GetFiefTroopLimit(Settlement settlement)
         {
             if (settlement == null) return 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
+            // Villages share their bound town/castle capacity; this is not an
+            // independent per-village limit.
+            Settlement fief = settlement.IsVillage
+                ? settlement.Village?.Bound : settlement;
+            if (fief != null && _fiefDataMap.TryGetValue(fief, out var data) &&
+                data != null)
             {
                 return data.GetFiefTroopLimit();
             }
@@ -842,6 +1059,15 @@ namespace ModifiedArmy.Models.Fief
         public int GetFiefTroopCount(Settlement settlement)
         {
             if (settlement == null) return 0;
+            if (settlement.IsVillage)
+            {
+                FiefPartyData villageFief = GetFiefData(
+                    settlement.Village?.Bound);
+                VillageFiefData village = villageFief?
+                    .GetVillageData(settlement);
+                return village?.GetTotalFiefTroopCount(
+                    villageFief.GetFiefPartyTemplate()) ?? 0;
+            }
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
                 return data.GetTotalTroopCount();
             return 0;

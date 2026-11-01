@@ -17,6 +17,8 @@ namespace ModifiedArmy.Models.Fief
         [SaveableProperty(3)] public List<FiefReturnBatch> ReturnBatches { get; private set; }
         [SaveableProperty(4)] public int MobilizedHearth { get; private set; }
         [SaveableProperty(5)] public bool RecoveryRequired { get; private set; }
+        [SaveableProperty(6)] public string RecoveryReason { get; private set; }
+        [SaveableProperty(7)] public string RecoveryOperationId { get; private set; }
 
         public VillageFiefData()
         {
@@ -102,7 +104,21 @@ namespace ModifiedArmy.Models.Fief
             return true;
         }
 
-        internal void RequireRecovery() => RecoveryRequired = true;
+        internal void RequireRecovery(string reason = "InvariantMismatch",
+            string operationId = null)
+        {
+            RecoveryRequired = true;
+            RecoveryReason = string.IsNullOrEmpty(reason)
+                ? "InvariantMismatch" : reason;
+            RecoveryOperationId = operationId;
+        }
+
+        internal void CompleteRecovery()
+        {
+            RecoveryRequired = false;
+            RecoveryReason = null;
+            RecoveryOperationId = null;
+        }
 
         private IEnumerable<TroopRosterElement> FilteredEntries(FiefPartyTemplate template)
         {

@@ -55,6 +55,14 @@ namespace ModifiedArmy.Models.Fief
                 FiefPartyManager.LogFiefReturn(party, rejected, 0, 0);
                 return rejected;
             }
+            if (manager.IsServicePartyBlocked(party) ||
+                village.RecoveryRequired)
+            {
+                rejected.ReasonCode = "RecoveryRequired";
+                FiefPartyManager.LogFiefReturn(party, rejected,
+                    selected.Detachment.GetTotalCount(), 0);
+                return rejected;
+            }
             int tracked = manager.GetTrackedMobilizationCount(
                 selected.SourceVillage);
             if (tracked <= 0)

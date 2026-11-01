@@ -92,7 +92,8 @@ namespace ModifiedArmy.Models.Fief
             if (manager == null || sourceParty == null || batch == null ||
                 maximumCount <= 0 || trackedMobilization <= 0 ||
                 batch.ServingParty != sourceParty || batch.IsEmpty() ||
-                village == null || !village.ServiceBatches.Contains(batch))
+                village == null || village.RecoveryRequired ||
+                !village.ServiceBatches.Contains(batch))
             {
                 return result;
             }
@@ -145,6 +146,12 @@ namespace ModifiedArmy.Models.Fief
 
             Dictionary<CharacterObject, int> batchBefore = batch.Troops
                 .ToDictionary(pair => pair.Key, pair => pair.Value);
+            Dictionary<CharacterObject, (int Count, int Wounded)> rosterBefore =
+                returned.Keys.ToDictionary(troop => troop,
+                    troop => GetRosterCounts(sourceParty.MemberRoster, troop));
+            float hearthBefore = village.VillageSettlement.Village.Hearth;
+            int mobilizedBefore = village.MobilizedHearth;
+            string operationId = Guid.NewGuid().ToString("N");
             Dictionary<CharacterObject, int> woundedRemoved = new();
             Dictionary<CharacterObject, int> rosterRemoved = new();
             Dictionary<Settlement, int> releasedByVillage = null;
@@ -233,42 +240,68 @@ namespace ModifiedArmy.Models.Fief
             }
             catch (Exception exception)
             {
-                if (cooling != null)
+                bool restored = true;
+                try
                 {
-                    if (createdCooling)
-                        village.ReturnBatches.Remove(cooling);
-                    else
-                        cooling.ReplaceTroops(coolingBefore);
+                    if (cooling != null)
+                    {
+                        if (createdCooling)
+                            village.ReturnBatches.Remove(cooling);
+                        else
+                            cooling.ReplaceTroops(coolingBefore);
+                    }
                 }
-                if (releasedByVillage != null)
-                    manager.RollbackMobilizationRelease(
-                        village.VillageSettlement,
-                        releasedByVillage);
-                batch.ReplaceTroops(batchBefore);
-                if (batchRemoved && !village.ServiceBatches.Contains(batch))
+                catch { restored = false; }
+                try
                 {
-                    village.ServiceBatches.Add(batch);
-                    manager.RegisterServingDetachment(_settlement,
-                        village.VillageSettlement, batch);
+                    if (releasedByVillage != null)
+                        manager.RollbackMobilizationRelease(
+                            village.VillageSettlement,
+                            releasedByVillage);
                 }
-                foreach (var pair in rosterRemoved)
+                catch { restored = false; }
+                try { batch.ReplaceTroops(batchBefore); }
+                catch { restored = false; }
+                try
                 {
-                    sourceParty.MemberRoster.AddToCounts(
-                        pair.Key,
-                        pair.Value,
-                        false,
-                        woundedRemoved.TryGetValue(
-                            pair.Key,
-                            out int wounded)
-                                ? wounded
-                                : 0,
-                        0,
-                        true,
-                        -1);
+                    if (batchRemoved &&
+                        !village.ServiceBatches.Contains(batch))
+                    {
+                        village.ServiceBatches.Add(batch);
+                        manager.RegisterServingDetachment(_settlement,
+                            village.VillageSettlement, batch);
+                    }
                 }
+                catch { restored = false; }
+                foreach (var pair in rosterBefore)
+                {
+                    try { RestoreRosterEntry(sourceParty.MemberRoster,
+                        pair.Key, pair.Value); }
+                    catch { restored = false; }
+                }
+                restored = restored && batchBefore.Count == batch.Troops.Count &&
+                    batchBefore.All(pair => batch.Troops.TryGetValue(
+                        pair.Key, out int count) && count == pair.Value) &&
+                    rosterBefore.All(pair => GetRosterCounts(
+                        sourceParty.MemberRoster, pair.Key) == pair.Value) &&
+                    village.MobilizedHearth == mobilizedBefore &&
+                    Math.Abs(village.VillageSettlement.Village.Hearth -
+                        hearthBefore) <= 0.01f &&
+                    village.ServiceBatches.Contains(batch) &&
+                    (cooling == null || createdCooling
+                        ? cooling == null ||
+                            !village.ReturnBatches.Contains(cooling)
+                        : coolingBefore.Count == cooling.Troops.Count &&
+                            coolingBefore.All(pair => cooling.Troops
+                                .TryGetValue(pair.Key, out int count) &&
+                                count == pair.Value));
+                if (!restored)
+                    village.RequireRecovery(
+                        "ReturnRollbackUnverified", operationId);
                 SyncManpowerCounters();
-                result.ReasonCode = "RolledBack:" +
-                    exception.GetType().Name;
+                result.ReasonCode = restored
+                    ? "RolledBackVerified:" + exception.GetType().Name
+                    : "RecoveryRequired:" + exception.GetType().Name;
                 return result;
             }
         }

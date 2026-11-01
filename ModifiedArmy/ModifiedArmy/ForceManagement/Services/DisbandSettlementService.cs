@@ -3,6 +3,7 @@ using ModifiedArmy.Models.Fief;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -100,19 +101,40 @@ namespace ModifiedArmy.ForceManagement.Services
                     .GetServingTroopCounts(party);
                 if (disbandDestination.OwnerClan == party.ActualClan)
                 {
-                    Dictionary<CharacterObject, int> serviceMoved =
-                        TransferRoster(
-                            party,
-                            disbandDestination,
-                            garrison,
-                            protectedCounts);
-                    AddCounts(accepted, serviceMoved);
-                    result.FiefTransferredWithService = serviceMoved
-                        .Values.Sum();
-                    manager.TransferFiefService(
-                        party,
-                        garrison,
-                        serviceMoved);
+                    if (manager.CanTransferFiefService(party,
+                        protectedCounts, out string transferReason))
+                    {
+                        Dictionary<CharacterObject, (int Count, int Wounded)>
+                            sourceBefore = SnapshotRoster(
+                                party.MemberRoster, protectedCounts.Keys);
+                        Dictionary<CharacterObject, (int Count, int Wounded)>
+                            targetBefore = SnapshotRoster(
+                                garrison.MemberRoster, protectedCounts.Keys);
+                        Dictionary<CharacterObject, int> serviceMoved =
+                            TransferRoster(
+                                party,
+                                disbandDestination,
+                                garrison,
+                                protectedCounts);
+                        if (manager.TransferFiefService(
+                            party, garrison, serviceMoved))
+                        {
+                            AddCounts(accepted, serviceMoved);
+                            result.FiefTransferredWithService = serviceMoved
+                                .Values.Sum();
+                        }
+                        else
+                        {
+                            RestoreRoster(party.MemberRoster, sourceBefore);
+                            RestoreRoster(garrison.MemberRoster, targetBefore);
+                        }
+                    }
+                    else
+                    {
+                        ModLogger.Warn(string.Format(
+                            "Disband service transfer blocked: party={0}, reason={1}.",
+                            party.StringId, transferReason));
+                    }
                 }
 
                 protectedCounts = manager.GetServingTroopCounts(party);
@@ -243,6 +265,34 @@ namespace ModifiedArmy.ForceManagement.Services
                 moved[troop] = count;
             }
             return moved;
+        }
+
+        private static Dictionary<CharacterObject, (int Count, int Wounded)>
+            SnapshotRoster(TroopRoster roster,
+                IEnumerable<CharacterObject> troops) => troops
+                .Where(troop => troop != null).Distinct().ToDictionary(
+                    troop => troop,
+                    troop =>
+                    {
+                        TroopRosterElement element = roster.GetTroopRoster()
+                            .FirstOrDefault(item => item.Character == troop);
+                        return (Math.Max(0, element.Number),
+                            Math.Max(0, element.WoundedNumber));
+                    });
+
+        private static void RestoreRoster(TroopRoster roster,
+            IReadOnlyDictionary<CharacterObject, (int Count, int Wounded)>
+                snapshot)
+        {
+            foreach (var pair in snapshot)
+            {
+                TroopRosterElement element = roster.GetTroopRoster()
+                    .FirstOrDefault(item => item.Character == pair.Key);
+                roster.AddToCounts(pair.Key,
+                    pair.Value.Count - element.Number, false,
+                    pair.Value.Wounded - element.WoundedNumber,
+                    0, true, -1);
+            }
         }
 
         /// <summary>Adds positive troop counts into an aggregate ledger.</summary>
