@@ -268,7 +268,7 @@ namespace ModifiedArmy.Models.Fief
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("RECRUITED", recruited);
-            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TROOP_COUNT", GetTotalTroopCount());
             msg.SetTextVariable("OCCUPIED_HEARTH",
                 GetTotalOccupiedSupplyHearth());
             msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",

@@ -57,11 +57,6 @@ namespace ModifiedArmy.Models.Fief
         private FiefPartyTemplate _fiefPartyTemplate;
 
         /// <summary>
-        /// 封邑士兵总人数
-        /// <summary>
-        public int _totalTroopCount { get; private set; }
-
-        /// <summary>
         /// 获取当前定居点使用的部队模板。
         /// </summary>
         public FiefPartyTemplate GetFiefPartyTemplate() => _fiefPartyTemplate;
@@ -124,7 +119,8 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
-        public int GetTotalTroopCount() => _totalTroopCount;
+        public int GetTotalTroopCount() => Villages?.Values.Sum(village =>
+            village?.GetTotalFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
 
         public int GetTotalOccupiedSupplyHearth()
         {
@@ -306,10 +302,9 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private void SyncManpowerCounters()
         {
-            // 在役和冷却批次是历史身份记录，不能因当前模板变化而丢失。
-            // 只有共享就绪名册需要按当前模板过滤，避免把原生民兵算入封邑编制。
-            _totalTroopCount = Villages?.Values.Sum(v =>
-                v?.GetTotalFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
+            // Counts are derived live from the native militia rosters plus
+            // persistent service/return batches. Retained as a compatibility
+            // call site so mutations do not maintain a second count ledger.
         }
 
 

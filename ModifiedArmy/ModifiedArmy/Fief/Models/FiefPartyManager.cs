@@ -3,6 +3,7 @@ using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.PartyManagement.Bindings;
@@ -108,6 +109,8 @@ namespace ModifiedArmy.Models.Fief
             CampaignEvents.OnPartyRemovedEvent.AddNonSerializedListener(this, OnPartyRemoved);
             CampaignEvents.MobilePartyCreated.AddNonSerializedListener(
                 this, OnMobilePartyCreated);
+            CampaignEvents.MapEventEnded.AddNonSerializedListener(
+                this, OnMapEventEnded);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -1035,6 +1038,62 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Debug(string.Format(
                     "Village militia party recreated: village={0}; feudal troops will resume through daily replenishment.",
                     village.StringId));
+        }
+
+        private void OnMapEventEnded(MapEvent mapEvent)
+        {
+            if (mapEvent == null ||
+                mapEvent.BattleState != BattleState.AttackerVictory &&
+                mapEvent.BattleState != BattleState.DefenderVictory)
+                return;
+
+            // MapEventEnded is raised after battle casualties have been
+            // committed, but before native end-of-event processing removes
+            // parties. Snapshot participants because reconciliation can empty
+            // batches and party removal may follow in the same finalization.
+            List<MobileParty> parties = mapEvent.AttackerSide.Parties
+                .Concat(mapEvent.DefenderSide.Parties)
+                .Where(item => item?.Party?.IsMobile == true)
+                .Select(item => item.Party.MobileParty)
+                .Where(item => item != null &&
+                    GetServingDetachments(item).Count > 0)
+                .Distinct()
+                .ToList();
+
+            foreach (MobileParty party in parties)
+            {
+                List<ServingDetachmentRef> tracked =
+                    GetServingDetachments(party).ToList();
+                try
+                {
+                    FiefReconciliationResult result =
+                        ReconcilePartyFiefTroops(party);
+                    if (result.LostCount > 0 &&
+                        RecruitmentLogFilter.ShouldLog(party))
+                        ModLogger.Info(string.Format(
+                            "Post-battle fief service reconciled: party={0}, matched={1}, lost={2}, reason={3}.",
+                            party.StringId, result.MatchedCount,
+                            result.LostCount,
+                            result.ReasonCode ?? "unknown"));
+                    else if (result.BlockedByRecovery &&
+                        RecruitmentLogFilter.ShouldLog(party))
+                        ModLogger.Warn(string.Format(
+                            "Post-battle fief service reconciliation blocked: party={0}, reason={1}.",
+                            party.StringId,
+                            result.ReasonCode ?? "unknown"));
+                }
+                catch (Exception exception)
+                {
+                    foreach (ServingDetachmentRef item in tracked)
+                        GetVillageFiefData(item.SourceVillage)?
+                            .RequireRecovery(
+                                "BattleReconciliationException");
+                    ModLogger.Error(string.Format(
+                        "Post-battle fief service reconciliation failed: party={0}, reason={1}, exception={2}.",
+                        party.StringId, "BattleReconciliationException",
+                        exception));
+                }
+            }
         }
 
         /// <summary>

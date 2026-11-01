@@ -60,7 +60,7 @@ namespace ModifiedArmy.Models.Fief
             message.SetTextVariable("PROSPERITY_COST", 0);
             message.SetTextVariable("HEARTH_COST", restoredHearth);
             SyncManpowerCounters();
-            message.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            message.SetTextVariable("TROOP_COUNT", GetTotalTroopCount());
             message.SetTextVariable("OCCUPIED_HEARTH",
                 GetTotalOccupiedSupplyHearth());
             message.SetTextVariable("FEUDAL_BUDGET_HEARTH",

@@ -184,7 +184,7 @@ namespace ModifiedArmy.Models.Fief
                 _settlement.Name.ToString());
 
             msg.SetTextVariable("RECRUITED", totalRecruited);
-            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TROOP_COUNT", GetTotalTroopCount());
             msg.SetTextVariable("OCCUPIED_HEARTH",
                 GetTotalOccupiedSupplyHearth());
             msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
@@ -784,7 +784,7 @@ namespace ModifiedArmy.Models.Fief
                 PartyLogFormatter.GetDisplayName(targetParty));
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("RECRUITED", totalRecruited);
-            msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
+            msg.SetTextVariable("TROOP_COUNT", GetTotalTroopCount());
             msg.SetTextVariable("OCCUPIED_HEARTH",
                 GetTotalOccupiedSupplyHearth());
             msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
