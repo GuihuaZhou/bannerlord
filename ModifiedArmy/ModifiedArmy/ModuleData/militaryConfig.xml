@@ -185,8 +185,6 @@
       Professional/Training：职业兵每日训练能力 = base + barracksStep × 有效兵营等级。
       Fief/Service：新征召批次的免薪天数，以及归还后重新可用前的冷却周数。
       Fief/Production：
-      - baseLimit：定居点本身提供的封邑兵容量。
-      - villageBonus：每个附属村庄增加的容量。
       - dailyRate：封邑兵每日基础补员能力，支持小数并通过每日进度累计。
       - prosperityCostPerTroop：征召繁荣度成本基数。
       Fief/FeudalSupply：该文化封建兵按 Tier 持续占用的 Hearth 供养额。
@@ -220,10 +218,10 @@
           <!-- freeWageDays：帝国封邑兵免薪天数；returnCooldownWeeks：返乡后重新可征召的冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：帝国城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="5"/>
-            <!-- Castle：帝国城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="40" villageBonus="10" dailyRate="1.25" prosperityCostPerTroop="2"/>
+            <!-- Town：帝国城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="1.25" prosperityCostPerTroop="5"/>
+            <!-- Castle：帝国城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="1.25" prosperityCostPerTroop="2"/>
           </Production>
         </Fief>
       </Culture>
@@ -253,10 +251,10 @@
           <!-- freeWageDays：瓦兰迪亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="42" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：瓦兰迪亚城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="120" villageBonus="30" dailyRate="4.00" prosperityCostPerTroop="10"/>
-            <!-- Castle：瓦兰迪亚城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="80" villageBonus="25" dailyRate="4.00" prosperityCostPerTroop="4"/>
+            <!-- Town：瓦兰迪亚城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="4.00" prosperityCostPerTroop="10"/>
+            <!-- Castle：瓦兰迪亚城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="4.00" prosperityCostPerTroop="4"/>
           </Production>
         </Fief>
       </Culture>
@@ -286,10 +284,10 @@
           <!-- freeWageDays：阿塞莱封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：阿塞莱城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="50" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="5"/>
-            <!-- Castle：阿塞莱城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="40" villageBonus="10" dailyRate="1.40" prosperityCostPerTroop="2"/>
+            <!-- Town：阿塞莱城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="1.40" prosperityCostPerTroop="5"/>
+            <!-- Castle：阿塞莱城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="1.40" prosperityCostPerTroop="2"/>
           </Production>
         </Fief>
       </Culture>
@@ -319,15 +317,15 @@
           <!-- freeWageDays：斯特吉亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：斯特吉亚城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8"/>
-            <!-- Castle：斯特吉亚城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="90" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="3"/>
+            <!-- Town：斯特吉亚城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="1.90" prosperityCostPerTroop="8"/>
+            <!-- Castle：斯特吉亚城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="1.90" prosperityCostPerTroop="3"/>
           </Production>
         </Fief>
       </Culture>
 
-      <!-- 巴旦尼亚：依赖乡村封邑兵；港口城镇容量高于普通城镇，因此单独覆盖 TownPort。 -->
+      <!-- 巴旦尼亚：依赖乡村封邑兵；港口城镇单独覆盖 TownPort 生产参数。 -->
       <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.battania">
         <!-- fief/professional/mercenary：巴旦尼亚选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
@@ -352,17 +350,17 @@
           <!-- freeWageDays：巴旦尼亚封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：巴旦尼亚普通城镇封邑兵基础容量、每村容量、每日补员率及每兵资源成本。 -->
-            <Town baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7"/>
-            <!-- TownPort：巴旦尼亚港口城镇对Town的容量、补员率和每兵资源成本覆盖。 -->
-            <TownPort baseLimit="80" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="7"/>
-            <!-- Castle：巴旦尼亚城堡封邑兵基础容量、每村容量、每日补员率及每兵资源成本。 -->
-            <Castle baseLimit="70" villageBonus="30" dailyRate="2.00" prosperityCostPerTroop="3"/>
+            <!-- Town：巴旦尼亚普通城镇封邑兵每日补员率及每兵繁荣度成本。 -->
+            <Town dailyRate="2.00" prosperityCostPerTroop="7"/>
+            <!-- TownPort：巴旦尼亚港口城镇对Town的补员率和每兵繁荣度成本覆盖。 -->
+            <TownPort dailyRate="2.00" prosperityCostPerTroop="7"/>
+            <!-- Castle：巴旦尼亚城堡封邑兵每日补员率及每兵繁荣度成本。 -->
+            <Castle dailyRate="2.00" prosperityCostPerTroop="3"/>
           </Production>
         </Fief>
       </Culture>
 
-      <!-- 库赛特：封邑兵周转快，归还冷却仅一周；城堡的村庄容量加成更高。 -->
+      <!-- 库赛特：封邑兵周转快，归还冷却仅一周。 -->
       <!-- id：本组配置对应的游戏文化对象ID。 -->
       <Culture id="Culture.khuzait">
         <!-- fief/professional/mercenary：库赛特选择封邑兵、职业驻军兵、雇佣兵的相对权重。 -->
@@ -387,10 +385,10 @@
           <!-- freeWageDays：库赛特封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="1"/>
           <Production>
-            <!-- Town：库赛特城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="70" villageBonus="20" dailyRate="1.90" prosperityCostPerTroop="8"/>
-            <!-- Castle：库赛特城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="70" villageBonus="40" dailyRate="1.90" prosperityCostPerTroop="3"/>
+            <!-- Town：库赛特城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="1.90" prosperityCostPerTroop="8"/>
+            <!-- Castle：库赛特城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="1.90" prosperityCostPerTroop="3"/>
           </Production>
         </Fief>
       </Culture>
@@ -420,10 +418,10 @@
           <!-- freeWageDays：诺德封邑兵免薪天数；returnCooldownWeeks：返乡冷却周数。 -->
           <Service freeWageDays="28" returnCooldownWeeks="3"/>
           <Production>
-            <!-- Town：诺德城镇封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Town baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="8"/>
-            <!-- Castle：诺德城堡封邑兵基础容量、每村容量、每日补员率、每兵繁荣度与户数成本。 -->
-            <Castle baseLimit="70" villageBonus="20" dailyRate="1.65" prosperityCostPerTroop="3"/>
+            <!-- Town：诺德城镇封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Town dailyRate="1.65" prosperityCostPerTroop="8"/>
+            <!-- Castle：诺德城堡封邑兵每日补员率与每兵繁荣度成本。 -->
+            <Castle dailyRate="1.65" prosperityCostPerTroop="3"/>
           </Production>
         </Fief>
       </Culture>

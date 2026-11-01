@@ -560,7 +560,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             FiefProductionConfig fiefProduction =
                 doctrine.GetProduction(settlement);
             int current = fiefData.GetTotalTroopCount();
-            int capacity = fiefData.GetFiefTroopLimit();
             float fiefDemand = fiefData.CanProduceAnyFiefTroop()
                 ? fiefProduction.DailyRate
                 : 0f;
@@ -617,7 +616,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 FiefDemand = fiefDemand,
                 FiefAllocation = fiefAllocation,
                 FiefCurrent = current,
-                FiefCapacity = capacity,
+                FeudalBudgetHearth = fiefData.GetTotalFeudalBudgetHearth(),
+                FeudalOccupiedHearth =
+                    fiefData.GetTotalOccupiedSupplyHearth(),
+                FeudalBudgetRemainingHearth =
+                    fiefData.GetTotalFeudalBudgetRemainingHearth(),
                 FiefBaseDailyRate = fiefProduction.DailyRate,
                 ProfessionalRecruitmentEnabled = professionalEnabled
             };

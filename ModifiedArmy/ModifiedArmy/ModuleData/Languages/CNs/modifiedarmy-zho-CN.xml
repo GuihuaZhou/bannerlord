@@ -6,7 +6,12 @@
   <strings>
     <string id="ModConfig_Loaded" text="[配置] 已加载“{CONFIG_ID}”军事配置，其中包含{DOCTRINE_COUNT}套文化军事规则。" />
     <string id="ModifiedArmy_FiefWeeklyUpdate" text="[封邑补员] 本周已经检查了{COUNT}座定居点。" />
-    <string id="ModifiedArmy_FiefTroopLimit" text="[封邑编制] {SETTLEMENT_NAME}的封邑兵编制上限为{LIMIT}人。" />
+    <string id="ModifiedArmy_FiefNewGameInitialized" text="[封邑初始化] 已按村庄封建供养预算为{FIEF_COUNT}个封邑初始化{TROOP_COUNT}名封建兵。" />
+    <string id="ModifiedArmy_FiefRecruitmentTransactionFailed" text="[封邑征召事务异常] 事务ID={OPERATION_ID}；封邑={FIEF_ID}；来源村庄={VILLAGE_IDS}；目标部队={PARTY_ID}；失败阶段={STAGE}；申请人数={REQUESTED}；回滚状态={ROLLBACK}；回滚详情={ROLLBACK_DETAIL}；异常详情={EXCEPTION}" />
+    <string id="ModifiedArmy_FiefRecruitmentRejected" text="[封邑征召] 征召请求未执行。事务ID={OPERATION_ID}；封邑={FIEF_ID}；目标部队={PARTY_ID}；申请人数={REQUESTED}；原因代码={REASON_CODE}。" />
+    <string id="FiefPartyData_ReturnTroopsToSettlement_1" text="[封邑兵役] {PARTY_NAME}向{SETTLEMENT_NAME}归还了{RETURNED_COUNT}名士兵，恢复动员Hearth {HEARTH_COST}点。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
+    <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑补员] {SETTLEMENT_NAME}补充了{RECRUITED}名士兵。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
+    <string id="FiefPartyData_RecruitTroopsToParty_0" text="[封邑征召] {PARTY_NAME}从{SETTLEMENT_NAME}征召了{RECRUITED}名士兵，动员Hearth {HEARTH_COST}点。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
     <string id="ModifiedArmy_ExchangeNoFieldSurplus" text="[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但部队当前没有超过编制目标的安全余量，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="ModifiedArmy_ExchangeNoGarrisonCapacity" text="[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但驻军当前没有接收空间，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="ModifiedArmy_ExchangeNoGarrisonSurplus" text="[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，但扣除当地最低防守兵力后，驻军已经没有可以安全调出的士兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />

@@ -61,7 +61,10 @@ namespace ModifiedArmy.Models.Fief
             message.SetTextVariable("HEARTH_COST", restoredHearth);
             SyncManpowerCounters();
             message.SetTextVariable("TROOP_COUNT", _totalTroopCount);
-            message.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            message.SetTextVariable("OCCUPIED_HEARTH",
+                GetTotalOccupiedSupplyHearth());
+            message.SetTextVariable("FEUDAL_BUDGET_HEARTH",
+                GetTotalFeudalBudgetHearth());
             if (sourceParty.ActualClan == Clan.PlayerClan) ModLogger.Notice(message.ToString());
             else ModLogger.Debug(message.ToString());
             return returnedCount;

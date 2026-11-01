@@ -28,6 +28,97 @@ namespace ModifiedArmy.Models.Fief
 {
     public partial class FiefPartyData
     {
+        private sealed class InitialFiefTroopQuota
+        {
+            public TroopProductionEntry Entry;
+            public int Count;
+            public long Remainder;
+        }
+
+        /// <summary>
+        /// Builds a new-game composition from the complete template. Locked
+        /// entries retain their proportional share as intentionally unused
+        /// capacity instead of donating it to the currently eligible entries.
+        /// </summary>
+        internal int InitializeFiefTroopsByTemplateWeights()
+        {
+            if (!InitialFeifPartyData() || _fiefPartyTemplate == null)
+                return 0;
+
+            List<TroopProductionEntry> templateEntries = _fiefPartyTemplate
+                .TroopEntries
+                .Where(entry => entry?.Troop != null && entry.Weight > 0)
+                .OrderBy(entry => entry.Troop.StringId,
+                    StringComparer.Ordinal)
+                .ToList();
+            if (templateEntries.Count == 0) return 0;
+
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            long totalWeight = templateEntries.Sum(entry =>
+                (long)entry.Weight);
+            long weightedSupplyCost = templateEntries.Sum(entry =>
+                (long)entry.Weight *
+                doctrine.GetFeudalSupplyCost(entry.Troop));
+            if (totalWeight <= 0 || weightedSupplyCost <= 0) return 0;
+
+            int barracksLevel = SettlementManpowerProductionBehavior
+                .GetBarracksLevel(_settlement);
+            int produced = 0;
+            foreach (VillageFiefData village in OrderedVillages(null)
+                .Where(village => !village.RecoveryRequired &&
+                    village.GetReadyRoster() != null))
+            {
+                int budget = Math.Max(0,
+                    village.GetFeudalBudgetRemainingHearth(
+                        _fiefPartyTemplate, doctrine));
+                int targetCount = (int)Math.Min(int.MaxValue,
+                    (long)budget * totalWeight / weightedSupplyCost);
+                if (targetCount <= 0) continue;
+
+                List<InitialFiefTroopQuota> quotas = templateEntries
+                    .Select(entry =>
+                    {
+                        long weighted = (long)targetCount * entry.Weight;
+                        return new InitialFiefTroopQuota
+                        {
+                            Entry = entry,
+                            Count = (int)(weighted / totalWeight),
+                            Remainder = weighted % totalWeight
+                        };
+                    })
+                    .ToList();
+                int undistributed = targetCount - quotas.Sum(item =>
+                    item.Count);
+                foreach (InitialFiefTroopQuota quota in quotas
+                    .OrderByDescending(item => item.Remainder)
+                    .ThenBy(item => item.Entry.Troop.StringId,
+                        StringComparer.Ordinal)
+                    .Take(undistributed))
+                    quota.Count++;
+
+                TroopRoster roster = village.GetReadyRoster();
+                foreach (InitialFiefTroopQuota quota in quotas
+                    .Where(item => item.Count > 0 &&
+                        item.Entry.RequiredBarracksLevel <= barracksLevel)
+                    .OrderBy(item => item.Entry.Troop.StringId,
+                        StringComparer.Ordinal))
+                {
+                    for (int i = 0; i < quota.Count; i++)
+                    {
+                        if (!village.CanIncreaseSupply(_fiefPartyTemplate,
+                            doctrine, quota.Entry.Troop, 1))
+                            break;
+                        roster.AddToCounts(quota.Entry.Troop, 1, false,
+                            0, 0, true, -1);
+                        produced++;
+                    }
+                }
+            }
+            SyncManpowerCounters();
+            return produced;
+        }
+
         /// <summary>
         /// Selects concrete XML troops for an already approved manpower amount.
         /// No saved troop inventory is consulted or consumed.
@@ -120,7 +211,7 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 执行封邑部队的补员操作：根据可补充人数，按兵种权重分配、生成新兵、更新计数并记录日志。
         /// </summary>
-        /// <param name="maxReinforcements">最多可补充的总人数（已扣除总容量限制）</param>
+        /// <param name="maxReinforcements">本次每日产能批准的最大补员人数</param>
         private List<FiefTroopProductionResult> PerformReinforcement(
             int maxReinforcements)
         {
@@ -178,7 +269,10 @@ namespace ModifiedArmy.Models.Fief
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("RECRUITED", recruited);
             msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
-            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            msg.SetTextVariable("OCCUPIED_HEARTH",
+                GetTotalOccupiedSupplyHearth());
+            msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
+                GetTotalFeudalBudgetHearth());
 
 
             if (_settlement.OwnerClan == Clan.PlayerClan)

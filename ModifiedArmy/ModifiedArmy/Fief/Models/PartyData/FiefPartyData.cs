@@ -62,16 +62,6 @@ namespace ModifiedArmy.Models.Fief
         public int _totalTroopCount { get; private set; }
 
         /// <summary>
-        /// 封邑军队最大人数限制
-        /// </summary>
-        public int _totalLimit { get; private set; }
-
-        // This diagnostic-only cache is intentionally not saveable. It suppresses
-        // repeated output while the calculated limit is unchanged and has no
-        // influence on the authoritative limit or any recruitment calculation.
-        private int? _lastLoggedTotalLimit;
-
-        /// <summary>
         /// 获取当前定居点使用的部队模板。
         /// </summary>
         public FiefPartyTemplate GetFiefPartyTemplate() => _fiefPartyTemplate;
@@ -132,12 +122,6 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 获取采邑部队的最大数量。
-        /// </summary>
-        /// 
-        public int GetFiefTroopLimit() => _totalLimit;
-
-        /// <summary>
         /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
         public int GetTotalTroopCount() => _totalTroopCount;
@@ -163,6 +147,24 @@ namespace ModifiedArmy.Models.Fief
         public int GetTotalEffectiveSupplyHearth() => Villages?.Values
             .Where(village => village != null)
             .Sum(village => village.GetEffectiveSupplyHearth()) ?? 0;
+
+        public int GetTotalFeudalBudgetHearth()
+        {
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            return Villages?.Values.Where(village => village != null).Sum(
+                village => village.GetFeudalBudgetHearth(doctrine)) ?? 0;
+        }
+
+        public int GetTotalFeudalBudgetRemainingHearth()
+        {
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            return Villages?.Values.Where(village => village != null).Sum(
+                village => Math.Max(0,
+                    village.GetFeudalBudgetRemainingHearth(
+                        _fiefPartyTemplate, doctrine))) ?? 0;
+        }
 
         public int GetTotalSupplyDeficitHearth()
         {
@@ -312,24 +314,6 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
-        /// 计算指定定居点的采邑部队最大兵力上限（Total Limit）。
-        /// 上限基于定居点类型、附属村庄数量、繁荣度等因素综合确定。
-        /// </summary>
-        /// <returns>该定居点可维持的采邑部队最大人数；若输入无效则返回 0。</returns>
-        public int CalculateSizeLimit()
-        {
-            if (_settlement == null || _fiefPartyTemplate == null)
-                return 0;
-
-            int boundVillageCount = _settlement.BoundVillages?.Count ?? 0;
-            FiefProductionConfig production = MilitaryConfigManager.Instance
-                .RequireActiveConfig().GetDoctrine(_settlement)
-                .GetProduction(_settlement);
-            return production.BaseLimit +
-                (boundVillageCount * production.VillageBonus);
-        }
-
-        /// <summary>
         /// 围攻结束后调用，用于同步当前兵力并处理定居点陷落逻辑。
         /// </summary>
         /// <param name="settlementWasCaptured">是否被攻击方攻占成功（即原领主失去控制权）</param>
@@ -362,23 +346,6 @@ namespace ModifiedArmy.Models.Fief
         }
 
         
-        private void CalculateLimit()
-        {
-            if (_totalLimit == 0)
-                _totalLimit = CalculateSizeLimit();
-
-            if (_lastLoggedTotalLimit != _totalLimit)
-            {
-                TextObject message = GameTexts.FindText(
-                    "str_modifiedarmy_fief_troop_limit");
-                message.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
-                message.SetTextVariable("LIMIT", _totalLimit);
-                ModLogger.Debug(message.ToString());
-                _lastLoggedTotalLimit = _totalLimit;
-            }
-        }
-
-
         /// <summary>
         /// 根据定居点解析对应的 FiefPartyTemplate ID 并获取模板。
         /// 命名规则：{culture}_{town|castle}{_port?}
@@ -414,7 +381,6 @@ namespace ModifiedArmy.Models.Fief
             if (_settlement == null)
             {
                 ModLogger.Error("[InitialFeifPartyData] _settlement is NULL! Skipping initialization.");
-                _totalLimit = 0;
                 return false;
             }
 
@@ -466,8 +432,6 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
-            CalculateLimit();
-
             foreach (Village village in (_settlement.BoundVillages ?? new List<Village>())
                 .Where(v => v?.Settlement != null)
                 .OrderBy(v => v.Settlement.StringId))
@@ -484,6 +448,18 @@ namespace ModifiedArmy.Models.Fief
         internal VillageFiefData GetVillageData(Settlement village) => village != null &&
             Villages != null && Villages.TryGetValue(village, out VillageFiefData data)
                 ? data : null;
+
+        internal bool RepairVillageMilitiaBinding(Settlement village)
+        {
+            if (!IsCurrentVillage(village)) return false;
+            Villages ??= new Dictionary<Settlement, VillageFiefData>();
+            if (!Villages.TryGetValue(village, out VillageFiefData data) ||
+                data == null)
+                Villages[village] = data = new VillageFiefData(village);
+            data.Repair(village);
+            SyncManpowerCounters();
+            return true;
+        }
 
         internal IEnumerable<VillageFiefData> OrderedVillages() =>
             (Villages?.Values ?? Enumerable.Empty<VillageFiefData>())

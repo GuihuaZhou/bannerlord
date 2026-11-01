@@ -185,7 +185,10 @@ namespace ModifiedArmy.Models.Fief
 
             msg.SetTextVariable("RECRUITED", totalRecruited);
             msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
-            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            msg.SetTextVariable("OCCUPIED_HEARTH",
+                GetTotalOccupiedSupplyHearth());
+            msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
+                GetTotalFeudalBudgetHearth());
 
             // 玩家显示实际成本；AI 显示 0
             msg.SetTextVariable(
@@ -782,7 +785,10 @@ namespace ModifiedArmy.Models.Fief
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("RECRUITED", totalRecruited);
             msg.SetTextVariable("TROOP_COUNT", _totalTroopCount);
-            msg.SetTextVariable("TOTAL_LIMIT", _totalLimit);
+            msg.SetTextVariable("OCCUPIED_HEARTH",
+                GetTotalOccupiedSupplyHearth());
+            msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
+                GetTotalFeudalBudgetHearth());
             msg.SetTextVariable("PROSPERITY_COST", prosperityCost);
             msg.SetTextVariable("HEARTH_COST", hearthCost);
 
@@ -810,6 +816,22 @@ namespace ModifiedArmy.Models.Fief
             public int BeforeWounded;
         }
 
+        private enum FiefRecruitmentStage
+        {
+            Prepare,
+            ValidateSource,
+            Snapshot,
+            RemoveReadyTroops,
+            MobilizeHearth,
+            CreateServiceBatch,
+            RegisterServiceBatch,
+            AddPartyTroops,
+            ValidateCommit,
+            SyncCounters,
+            CommitCompleted,
+            Rollback
+        }
+
         private bool TryCommitVillageRecruitment(MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, int> approvals,
             bool healthyOnly,
@@ -817,69 +839,123 @@ namespace ModifiedArmy.Models.Fief
             out Dictionary<CharacterObject, int> committed)
         {
             committed = new Dictionary<CharacterObject, int>();
-            if (targetParty == null || approvals == null) return false;
-            List<VillageRecruitmentSource> plan = new();
-            foreach (var approval in approvals.Where(p => p.Key != null && p.Value > 0)
-                .OrderBy(p => p.Key.StringId))
-            {
-                int remaining = approval.Value;
-                foreach (VillageFiefData village in OrderedVillages(villageFilter))
-                {
-                    if (village.RecoveryRequired) continue;
-                    TroopRoster roster = village.GetReadyRoster();
-                    if (roster == null) continue;
-                    TroopRosterElement element = roster.GetTroopRoster()
-                        .FirstOrDefault(e => e.Character == approval.Key);
-                    int available = healthyOnly
-                        ? Math.Max(0, element.Number - element.WoundedNumber)
-                        : Math.Max(0, element.Number);
-                    int count = Math.Min(remaining, available);
-                    if (count <= 0) continue;
-                    int wounded = healthyOnly ? 0 : Math.Max(0,
-                        count - Math.Max(0, element.Number - element.WoundedNumber));
-                    plan.Add(new VillageRecruitmentSource
-                    {
-                        Village = village, Troop = approval.Key,
-                        Count = count, Wounded = wounded,
-                        SourceRoster = roster,
-                        BeforeCount = element.Number,
-                        BeforeWounded = element.WoundedNumber
-                    });
-                    remaining -= count;
-                    if (remaining == 0) break;
-                }
-                if (remaining != 0) return false;
-            }
-            int total = plan.Sum(p => p.Count);
-            if (total <= 0 || targetParty.Party.PartySizeLimit -
-                targetParty.Party.NumberOfAllMembers < total) return false;
-            foreach (var group in plan.GroupBy(p => p.Village))
-                if (Math.Max(0, (int)Math.Floor(
-                    group.Key.VillageSettlement.Village.Hearth) - 100) <
-                    group.Sum(p => p.Count)) return false;
-
-            Dictionary<CharacterObject, (int Count, int Wounded)> targetBefore =
-                plan.Select(p => p.Troop).Distinct().ToDictionary(
-                    troop => troop,
-                    troop => GetRosterCounts(targetParty.MemberRoster, troop));
-            Dictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore =
-                plan.Select(p => p.Village).Distinct().ToDictionary(
-                    village => village,
-                    village => (village.VillageSettlement.Village.Hearth,
-                        village.MobilizedHearth));
             string operationId = Guid.NewGuid().ToString("N");
-
+            FiefRecruitmentStage stage = FiefRecruitmentStage.Prepare;
+            List<VillageRecruitmentSource> plan = new();
+            Dictionary<CharacterObject, (int Count, int Wounded)> targetBefore =
+                new();
+            Dictionary<VillageFiefData, (float Hearth, int Mobilized)>
+                villageBefore = new();
+            Dictionary<VillageFiefData, HashSet<FiefServiceBatch>>
+                serviceBefore = new();
             List<(VillageFiefData Village, FiefServiceBatch Batch)> created = new();
             List<(VillageFiefData Village, int Count)> mobilized = new();
+            FiefPartyManager manager = null;
             try
             {
+                if (targetParty?.Party == null ||
+                    targetParty.MemberRoster == null || approvals == null ||
+                    approvals.Count == 0 || _settlement?.OwnerClan == null ||
+                    targetParty.LeaderHero?.Clan != _settlement.OwnerClan)
+                    return RejectRecruitmentTransaction(operationId,
+                        targetParty, approvals, "InvalidRequest");
+                manager = Campaign.Current?
+                    .GetCampaignBehavior<FiefPartyManager>();
+                if (manager == null || manager.IsServicePartyBlocked(targetParty))
+                    return RejectRecruitmentTransaction(operationId,
+                        targetParty, approvals, manager == null
+                            ? "ManagerUnavailable"
+                            : "ServicePartyBlocked");
+                MilitaryConfigManager.Instance.RequireActiveConfig()
+                    .GetDoctrine(_settlement);
+
+                stage = FiefRecruitmentStage.ValidateSource;
+                foreach (var approval in approvals
+                    .Where(p => p.Key != null && p.Value > 0)
+                    .OrderBy(p => p.Key.StringId))
+                {
+                    int remaining = approval.Value;
+                    foreach (VillageFiefData village in
+                        OrderedVillages(villageFilter))
+                    {
+                        if (village.RecoveryRequired ||
+                            !IsCurrentVillage(village.VillageSettlement))
+                            continue;
+                        TroopRoster roster = village.GetReadyRoster();
+                        if (roster == null) continue;
+                        TroopRosterElement element = roster.GetTroopRoster()
+                            .FirstOrDefault(e => e.Character == approval.Key);
+                        int available = healthyOnly
+                            ? Math.Max(0,
+                                element.Number - element.WoundedNumber)
+                            : Math.Max(0, element.Number);
+                        int count = Math.Min(remaining, available);
+                        if (count <= 0) continue;
+                        int wounded = healthyOnly ? 0 : Math.Max(0,
+                            count - Math.Max(0,
+                                element.Number - element.WoundedNumber));
+                        plan.Add(new VillageRecruitmentSource
+                        {
+                            Village = village,
+                            Troop = approval.Key,
+                            Count = count,
+                            Wounded = wounded,
+                            SourceRoster = roster,
+                            BeforeCount = element.Number,
+                            BeforeWounded = element.WoundedNumber
+                        });
+                        remaining -= count;
+                        if (remaining == 0) break;
+                    }
+                    if (remaining != 0)
+                        return RejectRecruitmentTransaction(operationId,
+                            targetParty, approvals,
+                            "InsufficientReadySource");
+                }
+                int total = plan.Sum(p => p.Count);
+                if (total <= 0 || targetParty.Party.PartySizeLimit -
+                    targetParty.Party.NumberOfAllMembers < total)
+                    return RejectRecruitmentTransaction(operationId,
+                        targetParty, approvals,
+                        total <= 0 ? "EmptyPlan" :
+                            "PartyCapacityInsufficient");
+                foreach (var group in plan.GroupBy(p => p.Village))
+                {
+                    Village village = group.Key.VillageSettlement?.Village;
+                    if (village == null || Math.Max(0,
+                        (int)Math.Floor(village.Hearth) - 100) <
+                        group.Sum(p => p.Count))
+                        return RejectRecruitmentTransaction(operationId,
+                            targetParty, approvals,
+                            "VillageHearthInsufficient");
+                }
+
+                stage = FiefRecruitmentStage.Snapshot;
+                targetBefore = plan.Select(p => p.Troop).Distinct()
+                    .ToDictionary(troop => troop, troop =>
+                        GetRosterCounts(targetParty.MemberRoster, troop));
+                villageBefore = plan.Select(p => p.Village).Distinct()
+                    .ToDictionary(village => village, village =>
+                        (village.VillageSettlement.Village.Hearth,
+                            village.MobilizedHearth));
+                serviceBefore = plan.Select(p => p.Village).Distinct()
+                    .ToDictionary(village => village, village =>
+                        new HashSet<FiefServiceBatch>(
+                            village.ServiceBatches ??
+                            Enumerable.Empty<FiefServiceBatch>()));
+
+                stage = FiefRecruitmentStage.RemoveReadyTroops;
                 foreach (var entry in plan)
                 {
-                    entry.Village.GetReadyRoster().AddToCounts(entry.Troop,
+                    if (entry.Village.GetReadyRoster() != entry.SourceRoster)
+                        throw new InvalidOperationException(
+                            "VillageRosterReferenceChanged");
+                    entry.SourceRoster.AddToCounts(entry.Troop,
                         -entry.Count, false, -entry.Wounded, 0, true, -1);
                 }
                 foreach (var group in plan.GroupBy(p => p.Village))
                 {
+                    stage = FiefRecruitmentStage.MobilizeHearth;
                     int count = group.Sum(p => p.Count);
                     if (!group.Key.TryMobilize(count))
                         throw new InvalidOperationException("VillageHearthChanged");
@@ -887,12 +963,19 @@ namespace ModifiedArmy.Models.Fief
                     Dictionary<CharacterObject, int> troops = group
                         .GroupBy(p => p.Troop)
                         .ToDictionary(g => g.Key, g => g.Sum(p => p.Count));
+                    stage = FiefRecruitmentStage.CreateServiceBatch;
                     FiefServiceBatch batch = CreateServingDetachment(
                         group.Key, targetParty, troops);
                     if (batch == null)
                         throw new InvalidOperationException("BatchCreationFailed");
                     created.Add((group.Key, batch));
+                    stage = FiefRecruitmentStage.RegisterServiceBatch;
+                    if (!manager.IsServingDetachmentRegistered(
+                        _settlement, group.Key.VillageSettlement, batch))
+                        throw new InvalidOperationException(
+                            "BatchRegistrationFailed");
                 }
+                stage = FiefRecruitmentStage.AddPartyTroops;
                 foreach (var entry in plan)
                 {
                     targetParty.MemberRoster.AddToCounts(entry.Troop,
@@ -900,18 +983,23 @@ namespace ModifiedArmy.Models.Fief
                     committed[entry.Troop] = committed.TryGetValue(
                         entry.Troop, out int old) ? old + entry.Count : entry.Count;
                 }
+                stage = FiefRecruitmentStage.ValidateCommit;
                 if (!ValidateRecruitmentCommit(plan, targetParty,
-                    targetBefore, villageBefore, created))
+                    targetBefore, villageBefore, created, manager,
+                    _settlement))
                     throw new InvalidOperationException(
                         "RecruitmentPostCommitValidationFailed");
+                stage = FiefRecruitmentStage.SyncCounters;
                 SyncManpowerCounters();
+                stage = FiefRecruitmentStage.CommitCompleted;
                 return true;
             }
             catch (Exception exception)
             {
-                FiefPartyManager manager = Campaign.Current?
-                    .GetCampaignBehavior<FiefPartyManager>();
+                FiefRecruitmentStage failedStage = stage;
+                stage = FiefRecruitmentStage.Rollback;
                 bool restored = true;
+                var rollbackFailures = new List<string>();
                 foreach (CharacterObject troop in targetBefore.Keys)
                 {
                     try
@@ -919,7 +1007,12 @@ namespace ModifiedArmy.Models.Fief
                         RestoreRosterEntry(targetParty.MemberRoster, troop,
                             targetBefore[troop]);
                     }
-                    catch { restored = false; }
+                    catch (Exception rollbackException)
+                    {
+                        restored = false;
+                        rollbackFailures.Add("TargetRoster:" +
+                            rollbackException);
+                    }
                 }
                 foreach (var entry in plan)
                 {
@@ -931,19 +1024,35 @@ namespace ModifiedArmy.Models.Fief
                         RestoreRosterEntry(entry.SourceRoster, entry.Troop,
                             (entry.BeforeCount, entry.BeforeWounded));
                     }
-                    catch { restored = false; }
-                }
-                foreach (var createdBatch in created)
-                {
-                    try
+                    catch (Exception rollbackException)
                     {
-                        createdBatch.Village.ServiceBatches.Remove(
-                            createdBatch.Batch);
-                        manager?.UnregisterServingDetachment(_settlement,
-                            createdBatch.Village.VillageSettlement,
-                            createdBatch.Batch);
+                        restored = false;
+                        rollbackFailures.Add("SourceRoster:" +
+                            (entry.Village?.VillageSettlement?.StringId ??
+                                "unknown") + ":" + rollbackException);
                     }
-                    catch { restored = false; }
+                }
+                foreach (var pair in serviceBefore)
+                {
+                    foreach (FiefServiceBatch batch in
+                        (pair.Key.ServiceBatches ??
+                            new List<FiefServiceBatch>()).Where(batch =>
+                                !pair.Value.Contains(batch)).ToList())
+                    {
+                        try
+                        {
+                            pair.Key.ServiceBatches.Remove(batch);
+                            manager?.UnregisterServingDetachment(_settlement,
+                                pair.Key.VillageSettlement, batch);
+                        }
+                        catch (Exception rollbackException)
+                        {
+                            restored = false;
+                            rollbackFailures.Add("ServiceBatch:" +
+                                (pair.Key.VillageSettlement?.StringId ??
+                                    "unknown") + ":" + rollbackException);
+                        }
+                    }
                 }
                 foreach (var item in mobilized)
                 {
@@ -952,23 +1061,43 @@ namespace ModifiedArmy.Models.Fief
                         if (!item.Village.RollbackMobilizationReservation(
                             item.Count)) restored = false;
                     }
-                    catch { restored = false; }
+                    catch (Exception rollbackException)
+                    {
+                        restored = false;
+                        rollbackFailures.Add("Mobilization:" +
+                            (item.Village?.VillageSettlement?.StringId ??
+                                "unknown") + ":" + rollbackException);
+                    }
+                }
+                try
+                {
+                    manager?.RebuildServingDetachmentIndex();
+                }
+                catch (Exception rollbackException)
+                {
+                    restored = false;
+                    rollbackFailures.Add("LedgerRebuild:" +
+                        rollbackException);
                 }
                 restored = restored && VerifyRecruitmentRollback(plan,
-                    targetParty, targetBefore, villageBefore, created);
+                    targetParty, targetBefore, villageBefore, serviceBefore,
+                    manager, _settlement);
                 if (!restored)
                     foreach (VillageFiefData village in plan
                         .Select(p => p.Village).Distinct())
                         village.RequireRecovery(
                             "RecruitmentRollbackUnverified", operationId);
-                ModLogger.Error(string.Format(
-                    "Fief recruitment transaction failed: operation={0}, fief={1}, party={2}, reason={3}, rollback={4}.",
-                    operationId, _settlement?.StringId ?? "unknown",
-                    targetParty?.StringId ?? "unknown",
-                    exception.GetType().Name,
-                    restored ? "Verified" : "RecoveryRequired"));
+                LogRecruitmentTransactionFailure(operationId, failedStage,
+                    targetParty, plan, exception, restored,
+                    rollbackFailures);
                 committed.Clear();
-                SyncManpowerCounters();
+                try { SyncManpowerCounters(); }
+                catch (Exception counterException)
+                {
+                    ModLogger.Error(string.Format(
+                        "Fief recruitment counter recovery failed: operation={0}, exception={1}",
+                        operationId, counterException));
+                }
                 return false;
             }
         }
@@ -1000,7 +1129,9 @@ namespace ModifiedArmy.Models.Fief
             MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, (int Count, int Wounded)> targetBefore,
             IReadOnlyDictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore,
-            IReadOnlyList<(VillageFiefData Village, FiefServiceBatch Batch)> created)
+            IReadOnlyList<(VillageFiefData Village, FiefServiceBatch Batch)> created,
+            FiefPartyManager manager,
+            Settlement sourceFief)
         {
             foreach (VillageRecruitmentSource entry in plan)
             {
@@ -1032,7 +1163,9 @@ namespace ModifiedArmy.Models.Fief
             return created.All(item =>
                 item.Village.ServiceBatches.Contains(item.Batch) &&
                 item.Batch.GetTotalCount() == plan
-                    .Where(p => p.Village == item.Village).Sum(p => p.Count));
+                    .Where(p => p.Village == item.Village).Sum(p => p.Count) &&
+                manager?.IsServingDetachmentRegistered(sourceFief,
+                    item.Village.VillageSettlement, item.Batch) == true);
         }
 
         private static bool VerifyRecruitmentRollback(
@@ -1040,7 +1173,10 @@ namespace ModifiedArmy.Models.Fief
             MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, (int Count, int Wounded)> targetBefore,
             IReadOnlyDictionary<VillageFiefData, (float Hearth, int Mobilized)> villageBefore,
-            IReadOnlyList<(VillageFiefData Village, FiefServiceBatch Batch)> created)
+            IReadOnlyDictionary<VillageFiefData, HashSet<FiefServiceBatch>>
+                serviceBefore,
+            FiefPartyManager manager,
+            Settlement sourceFief)
         {
             return plan.All(entry => GetRosterCounts(
                     entry.SourceRoster, entry.Troop) ==
@@ -1051,8 +1187,98 @@ namespace ModifiedArmy.Models.Fief
                     pair.Key.MobilizedHearth == pair.Value.Mobilized &&
                     Math.Abs(pair.Key.VillageSettlement.Village.Hearth -
                         pair.Value.Hearth) <= 0.01f) &&
-                created.All(item =>
-                    !item.Village.ServiceBatches.Contains(item.Batch));
+                serviceBefore.All(pair =>
+                    pair.Key.ServiceBatches.Count == pair.Value.Count &&
+                    pair.Value.All(batch =>
+                        pair.Key.ServiceBatches.Contains(batch)) &&
+                    pair.Key.ServiceBatches.All(batch =>
+                        manager?.IsServingDetachmentRegistered(sourceFief,
+                            pair.Key.VillageSettlement, batch) == true));
+        }
+
+        private void LogRecruitmentTransactionFailure(
+            string operationId,
+            FiefRecruitmentStage failedStage,
+            MobileParty targetParty,
+            IReadOnlyCollection<VillageRecruitmentSource> plan,
+            Exception exception,
+            bool restored,
+            IReadOnlyCollection<string> rollbackFailures)
+        {
+            string villages = string.Join(",", (plan ??
+                Array.Empty<VillageRecruitmentSource>())
+                .Select(item => item.Village?.VillageSettlement?.StringId)
+                .Where(id => !string.IsNullOrEmpty(id))
+                .Distinct()
+                .OrderBy(id => id));
+            string rollbackDetail = rollbackFailures == null ||
+                rollbackFailures.Count == 0
+                    ? "none"
+                    : string.Join(" | ", rollbackFailures);
+            try
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_fief_recruitment_transaction_failed");
+                message.SetTextVariable("OPERATION_ID", operationId);
+                message.SetTextVariable("FIEF_ID",
+                    _settlement?.StringId ?? "unknown");
+                message.SetTextVariable("VILLAGE_IDS",
+                    string.IsNullOrEmpty(villages) ? "unknown" : villages);
+                message.SetTextVariable("PARTY_ID",
+                    targetParty?.StringId ?? "unknown");
+                message.SetTextVariable("STAGE", failedStage.ToString());
+                message.SetTextVariable("REQUESTED",
+                    plan?.Sum(item => item.Count) ?? 0);
+                message.SetTextVariable("ROLLBACK",
+                    restored ? "Verified" : "RecoveryRequired");
+                message.SetTextVariable("ROLLBACK_DETAIL", rollbackDetail);
+                message.SetTextVariable("EXCEPTION", exception?.ToString() ??
+                    "unknown");
+                ModLogger.Error(message.ToString());
+            }
+            catch (Exception loggingException)
+            {
+                ModLogger.Error(string.Format(
+                    "Fief recruitment transaction failed: operation={0}, fief={1}, villages={2}, party={3}, stage={4}, rollback={5}, rollbackDetail={6}, exception={7}, loggingException={8}",
+                    operationId, _settlement?.StringId ?? "unknown",
+                    villages, targetParty?.StringId ?? "unknown",
+                    failedStage, restored ? "Verified" : "RecoveryRequired",
+                    rollbackDetail, exception, loggingException));
+            }
+        }
+
+        private bool RejectRecruitmentTransaction(
+            string operationId,
+            MobileParty targetParty,
+            IReadOnlyDictionary<CharacterObject, int> approvals,
+            string reasonCode)
+        {
+            if (targetParty?.LeaderHero?.Clan != Clan.PlayerClan &&
+                !RecruitmentLogFilter.ShouldLog(targetParty))
+                return false;
+            try
+            {
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_fief_recruitment_rejected");
+                message.SetTextVariable("OPERATION_ID", operationId);
+                message.SetTextVariable("FIEF_ID",
+                    _settlement?.StringId ?? "unknown");
+                message.SetTextVariable("PARTY_ID",
+                    targetParty?.StringId ?? "unknown");
+                message.SetTextVariable("REQUESTED", approvals?.Values
+                    .Where(value => value > 0).Sum() ?? 0);
+                message.SetTextVariable("REASON_CODE", reasonCode);
+                ModLogger.Debug(message.ToString());
+            }
+            catch (Exception exception)
+            {
+                ModLogger.Debug(string.Format(
+                    "Fief recruitment rejected: operation={0}, fief={1}, party={2}, reason={3}, loggingException={4}",
+                    operationId, _settlement?.StringId ?? "unknown",
+                    targetParty?.StringId ?? "unknown", reasonCode,
+                    exception.GetType().Name));
+            }
+            return false;
         }
 
         /// <summary>

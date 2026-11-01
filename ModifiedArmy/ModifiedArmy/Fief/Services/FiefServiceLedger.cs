@@ -103,5 +103,15 @@ namespace ModifiedArmy.Models.Fief
         public List<ServingDetachmentRef> Get(MobileParty party) =>
             party != null && _index.TryGetValue(party, out var list)
                 ? list.ToList() : new List<ServingDetachmentRef>();
+
+        public bool Contains(Settlement source, Settlement sourceVillage,
+            FiefServiceBatch batch)
+        {
+            MobileParty party = batch?.ServingParty;
+            return party != null && _index.TryGetValue(party, out var list) &&
+                list.Any(item => item.SourceFief == source &&
+                    item.SourceVillage == sourceVillage &&
+                    item.Detachment == batch);
+        }
     }
 }

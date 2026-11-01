@@ -106,6 +106,8 @@ namespace ModifiedArmy.Models.Fief
             CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, new Action<Settlement, bool, Hero, Hero, Hero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail>(this.OnSettlementOwnerChanged));
             CampaignEvents.OnTroopRecruitedEvent.AddNonSerializedListener(this, new Action<Hero, Settlement, Hero, CharacterObject, int>(this.OnTroopRecruited));
             CampaignEvents.OnPartyRemovedEvent.AddNonSerializedListener(this, OnPartyRemoved);
+            CampaignEvents.MobilePartyCreated.AddNonSerializedListener(
+                this, OnMobilePartyCreated);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -137,17 +139,16 @@ namespace ModifiedArmy.Models.Fief
                 .OrderBy(data => data.GetSettlement().StringId))
             {
                 if (!data.InitialFeifPartyData()) continue;
-                int missing = Math.Max(0,
-                    data.GetFiefTroopLimit() - data.GetTotalTroopCount());
-                if (missing <= 0) continue;
-                int added = data.ProduceDailyFiefTroops(missing);
+                int added = data.InitializeFiefTroopsByTemplateWeights();
                 if (added <= 0) continue;
                 produced += added;
                 initialized++;
             }
-            ModLogger.Info(string.Format(
-                "New-game fief troop initialization: fiefs={0}, troops={1}.",
-                initialized, produced));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_fief_new_game_initialized");
+            message.SetTextVariable("FIEF_COUNT", initialized);
+            message.SetTextVariable("TROOP_COUNT", produced);
+            ModLogger.Info(message.ToString());
         }
 
         /// <summary>
@@ -630,6 +631,12 @@ namespace ModifiedArmy.Models.Fief
             ServiceLedger.Unregister(source, sourceVillage, batch);
         }
 
+        internal bool IsServingDetachmentRegistered(
+            Settlement source,
+            Settlement sourceVillage,
+            FiefServiceBatch batch) =>
+            ServiceLedger.Contains(source, sourceVillage, batch);
+
         internal List<ServingDetachmentRef> GetServingDetachments(MobileParty party)
         {
             return ServiceLedger.Get(party);
@@ -985,6 +992,49 @@ namespace ModifiedArmy.Models.Fief
                 UnregisterServingDetachment(item.SourceFief,
                     item.SourceVillage, item.Detachment);
             }
+
+            CleanupRemovedVillageMilitiaParty(party);
+        }
+
+        private void CleanupRemovedVillageMilitiaParty(MobileParty party)
+        {
+            MilitiaPartyComponent component = party?.PartyComponent as
+                MilitiaPartyComponent;
+            Settlement village = component?.Settlement;
+            if (village?.IsVillage != true) return;
+
+            FiefPartyData data = GetFiefData(village.Village?.Bound);
+            if (data == null) return;
+            int lostReadyTroops = data.GetVillageData(village)?
+                .GetReadyFiefTroopCount(data.GetFiefPartyTemplate()) ?? 0;
+
+            // The ready roster belongs to the native militia party and is
+            // destroyed with it. Service, return and mobilized-hearth state
+            // belong to VillageFiefData and must survive this lifecycle.
+            data.RefreshManpowerCounters();
+            if (village.OwnerClan == Clan.PlayerClan)
+                ModLogger.Debug(string.Format(
+                    "Village militia party removed: village={0}, lostReadyFiefTroops={1}; persistent service and return state preserved.",
+                    village.StringId, lostReadyTroops));
+        }
+
+        private void OnMobilePartyCreated(MobileParty party)
+        {
+            MilitiaPartyComponent component = party?.PartyComponent as
+                MilitiaPartyComponent;
+            Settlement village = component?.Settlement;
+            if (village?.IsVillage != true) return;
+
+            FiefPartyData data = GetFiefData(village.Village?.Bound);
+            if (data?.RepairVillageMilitiaBinding(village) != true) return;
+
+            // Recreated militia parties resume through the ordinary daily
+            // production path. New-game bulk initialization is intentionally
+            // not invoked here.
+            if (village.OwnerClan == Clan.PlayerClan)
+                ModLogger.Debug(string.Format(
+                    "Village militia party recreated: village={0}; feudal troops will resume through daily replenishment.",
+                    village.StringId));
         }
 
         /// <summary>
@@ -1279,26 +1329,6 @@ namespace ModifiedArmy.Models.Fief
 
             return scope.FiefData.ReturnTroopsToSettlement(
                 mobileParty, settlement, scope.VillageFilter);
-        }
-
-        /// <summary>
-        /// 获取指定封邑的部队最大人数。
-        /// </summary>
-        /// <param name="settlement">目标封邑</param>
-        /// <returns>
-        public int GetFiefTroopLimit(Settlement settlement)
-        {
-            if (settlement == null) return 0;
-            // Villages share their bound town/castle capacity; this is not an
-            // independent per-village limit.
-            Settlement fief = settlement.IsVillage
-                ? settlement.Village?.Bound : settlement;
-            if (fief != null && _fiefDataMap.TryGetValue(fief, out var data) &&
-                data != null)
-            {
-                return data.GetFiefTroopLimit();
-            }
-            return 0;
         }
 
         /// <summary>

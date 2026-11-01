@@ -31,8 +31,6 @@ namespace ModifiedArmy.common
 
     public sealed class FiefProductionConfig
     {
-        public int BaseLimit { get; internal set; }
-        public int VillageBonus { get; internal set; }
         public float DailyRate { get; internal set; }
         public int ProsperityCostPerTroop { get; internal set; }
     }
@@ -492,8 +490,6 @@ namespace ModifiedArmy.common
 
         private static FiefProductionConfig ParseProduction(XmlNode node) => new FiefProductionConfig
         {
-            BaseLimit = NonNegativeInt(node, "baseLimit"),
-            VillageBonus = NonNegativeInt(node, "villageBonus"),
             DailyRate = NonNegativeFloat(node, "dailyRate"),
             ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop")
         };

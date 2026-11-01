@@ -23,11 +23,14 @@
     <!-- FiefPartyManager: 初始化完成 -->
     <string id="str_modifiedarmy_fief_init_complete"
         text="{=FiefPartyManager_InitializeFiefData_0}[ModifiedArmy] 初始化{COUNT}个封邑" />
+    <string id="str_modifiedarmy_fief_new_game_initialized"
+        text="{=ModifiedArmy_FiefNewGameInitialized}[Fief initialization] Initialized {TROOP_COUNT} feudal troops across {FIEF_COUNT} fiefs using village supply budgets." />
+    <string id="str_modifiedarmy_fief_recruitment_transaction_failed"
+        text="{=ModifiedArmy_FiefRecruitmentTransactionFailed}[Fief recruitment transaction] Operation {OPERATION_ID} failed. Fief={FIEF_ID}; villages={VILLAGE_IDS}; party={PARTY_ID}; stage={STAGE}; requested={REQUESTED}; rollback={ROLLBACK}; rollbackDetail={ROLLBACK_DETAIL}; exception={EXCEPTION}" />
+    <string id="str_modifiedarmy_fief_recruitment_rejected"
+        text="{=ModifiedArmy_FiefRecruitmentRejected}[Fief recruitment] Operation {OPERATION_ID} was rejected. Fief={FIEF_ID}; party={PARTY_ID}; requested={REQUESTED}; reasonCode={REASON_CODE}." />
     <string id="str_modifiedarmy_fief_weekly_update"
         text="{=ModifiedArmy_FiefWeeklyUpdate}[封邑补员] 本周已经检查了{COUNT}座定居点。" />
-    <string id="str_modifiedarmy_fief_troop_limit"
-        text="{=ModifiedArmy_FiefTroopLimit}[封邑编制] {SETTLEMENT_NAME}的封邑兵编制上限为{LIMIT}人。" />
-
     <!-- FiefPartyManager: 手动招募成功 -->
     <string id="str_modifiedarmy_fief_manual_recruit"
         text="{=FiefPartyManager_ManualRecruitFromFief_0}[ModifiedArmy] 从{SETTLEMENT_NAME}招募了{COUNT}名封邑士兵" />
@@ -46,18 +49,15 @@
     <string id="str_modifiedarmy_wage_exemption_consumed"
         text="{=FiefWageExemptionManager_ConsumeExemption_0}[ModifiedArmy] {PARTY_NAME}移除了{CONSUMED}/{REQUESTED}名士兵的工资豁免" />
 
-    <string id="str_modifiedarmy_fief_troops_removed_due_to_limit"
-        text="{=FiefPartyData_EnforceTroopLimits_0}[ModifiedArmy] 因兵力超限, 从{SETTLEMENT_NAME}移除了{RETINUE}名扈从, {SERGEANT}名军士, {MILITIA}名民兵" />
-
     <string id="str_modifiedarmy_fief_return_result"
-        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[封邑] {PARTY_NAME}在{SETTLEMENT_NAME}解散了{RETURNED_COUNT}名士兵，归还附属村庄{HEARTH_COST}点户数。当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
+        text="{=FiefPartyData_ReturnTroopsToSettlement_1}[Fief service] {PARTY_NAME} returned {RETURNED_COUNT} troops to {SETTLEMENT_NAME}, restoring {HEARTH_COST} mobilized Hearth. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
 
     <string id="str_modifiedarmy_fief_weekly_reinforcement"
-        text="{=FiefPartyData_WeeklyUpdate_0}[封邑补员] {SETTLEMENT_NAME}补充了{RECRUITED}名士兵，当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
+        text="{=FiefPartyData_WeeklyUpdate_0}[Fief reinforcement] {SETTLEMENT_NAME} produced {RECRUITED} troops. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
 
     <!-- FiefPartyData.cs: 招募封邑部队 -->
     <string id="str_modifiedarmy_fief_recruit_to_party"
-        text="{=FiefPartyData_RecruitTroopsToParty_0}[封邑征召] {PARTY_NAME}从{SETTLEMENT_NAME}征召了{RECRUITED}名士兵，动员附属村庄{HEARTH_COST}点户数。当前封邑兵力共{TROOP_COUNT}人，上限{TOTAL_LIMIT}人。" />
+        text="{=FiefPartyData_RecruitTroopsToParty_0}[Fief recruitment] {PARTY_NAME} recruited {RECRUITED} troops from {SETTLEMENT_NAME}, mobilizing {HEARTH_COST} Hearth. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
 
     <!-- Consistent party ownership names used by log messages. -->
     <string id="str_modifiedarmy_party_log_name_with_kingdom"

@@ -26,7 +26,9 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         public float FiefDemand { get; internal set; }
         public float FiefAllocation { get; internal set; }
         public int FiefCurrent { get; internal set; }
-        public int FiefCapacity { get; internal set; }
+        public int FeudalBudgetHearth { get; internal set; }
+        public int FeudalOccupiedHearth { get; internal set; }
+        public int FeudalBudgetRemainingHearth { get; internal set; }
         public float FiefBaseDailyRate { get; internal set; }
         public bool ProfessionalRecruitmentEnabled { get; internal set; }
     }
