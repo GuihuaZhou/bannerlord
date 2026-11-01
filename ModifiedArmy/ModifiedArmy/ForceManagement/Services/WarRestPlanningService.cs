@@ -178,6 +178,7 @@ namespace ModifiedArmy.ForceManagement.Services
             return new WarRestFiefBatchCandidate
             {
                 SourceFief = item.SourceFief,
+                SourceVillage = item.SourceVillage,
                 BatchId = item.Detachment.BatchId,
                 AvailableCount = item.Detachment.GetTotalCount(),
                 ServiceDays = item.Detachment.ServiceDays,

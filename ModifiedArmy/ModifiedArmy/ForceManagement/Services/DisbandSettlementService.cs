@@ -1,5 +1,6 @@
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Models;
 using System;
@@ -81,9 +82,11 @@ namespace ModifiedArmy.ForceManagement.Services
                 }
                 FiefReturnResult returned = manager.TryReturnFiefTroops(
                     party,
+                    disbandDestination,
                     item.SourceFief,
                     item.Detachment.BatchId,
-                    item.Detachment.GetTotalCount());
+                    item.Detachment.GetTotalCount(),
+                    PartyExchangePurpose.PartyDisbandment);
                 result.FiefReturned += returned.ActualReturnedCount;
             }
 

@@ -84,10 +84,12 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         /// <param name="roster">源 TroopRoster（例如来自 MemberRoster.GetTroopRoster()）</param>
         /// <returns>新的 TroopRoster，仅包含当前封邑模板认可的士兵</returns>
-        public TroopRoster GetFiefTroopRoster()
+        public TroopRoster GetFiefTroopRoster() => GetFiefTroopRoster(null);
+
+        internal TroopRoster GetFiefTroopRoster(Settlement villageFilter)
         {
             var fiefRoster = TroopRoster.CreateDummyTroopRoster();
-            foreach (VillageFiefData village in OrderedVillages())
+            foreach (VillageFiefData village in OrderedVillages(villageFilter))
             foreach (var element in village.GetReadyFiefTroopRoster(
                 _fiefPartyTemplate).GetTroopRoster())
             {
@@ -124,7 +126,7 @@ namespace ModifiedArmy.Models.Fief
             if (allowed <= 0) return;
             var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
-            List<VillageFiefData> targets = OrderedVillages()
+            List<VillageFiefData> targets = OrderedVillages(null)
                 .Where(v => v.GetReadyRoster() != null).ToList();
             if (targets.Count == 0) return;
             int cursor = 0;
@@ -267,7 +269,7 @@ namespace ModifiedArmy.Models.Fief
             // 对每个士兵独立判定是否升级
             int upgradedCount = 0;
 
-            foreach (VillageFiefData village in OrderedVillages())
+            foreach (VillageFiefData village in OrderedVillages(null))
             {
               TroopRoster roster = village.GetReadyRoster();
               if (roster == null) continue;

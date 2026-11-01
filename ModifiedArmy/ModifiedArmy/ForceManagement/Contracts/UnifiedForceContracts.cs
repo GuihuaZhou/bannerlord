@@ -213,6 +213,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public sealed class WarRestFiefBatchCandidate
     {
         public Settlement SourceFief { get; set; }
+        public Settlement SourceVillage { get; set; }
         public string BatchId { get; set; }
         public int AvailableCount { get; set; }
         public int ServiceDays { get; set; }
@@ -288,6 +289,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public sealed class FiefBatchTransferApproval
     {
         public Settlement SourceFief { get; set; }
+        public Settlement SourceVillage { get; set; }
         public string BatchId { get; set; }
         public int ApprovedCount { get; set; }
         public TroopExchangeManifest Troops { get; } =
@@ -318,6 +320,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
             new TroopExchangeManifest();
         public IReadOnlyList<FiefBatchTransferApproval> FiefBatches { get; set; } =
             Array.Empty<FiefBatchTransferApproval>();
+        public string FiefSourceFingerprint { get; set; }
         public PartyRosterSnapshot ExpectedSource { get; set; }
         public PartyRosterSnapshot ExpectedDestination { get; set; }
         public int ExpectedSourceFinalCount { get; set; }

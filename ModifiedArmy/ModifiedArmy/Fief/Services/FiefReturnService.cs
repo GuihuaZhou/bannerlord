@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using ModifiedArmy.common;
+using ModifiedArmy.ForceManagement.Contracts;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 
@@ -9,7 +10,8 @@ namespace ModifiedArmy.Models.Fief
     internal static class FiefReturnService
     {
         public static FiefReturnResult TryReturn(FiefPartyManager manager,
-            MobileParty party, Settlement source, string batchId, int maximumCount)
+            MobileParty party, Settlement interaction, Settlement source,
+            string batchId, int maximumCount, PartyExchangePurpose purpose)
         {
             FiefReturnResult rejected = new FiefReturnResult
             {
@@ -29,6 +31,21 @@ namespace ModifiedArmy.Models.Fief
             ServingDetachmentRef selected = manager.GetServingDetachments(party)
                 .FirstOrDefault(item => item.SourceFief == source &&
                     item.Detachment?.BatchId == batchId && !item.Detachment.IsEmpty());
+            bool forcedDisband = purpose == PartyExchangePurpose.PartyDisbandment;
+            bool currentSource = manager.GetFiefData(source)?
+                .IsCurrentVillage(selected.SourceVillage) == true;
+            bool locationAllowed = forcedDisband || interaction != null &&
+                currentSource &&
+                party.CurrentSettlement == interaction &&
+                (interaction == source || interaction.IsVillage &&
+                    interaction == selected.SourceVillage &&
+                    interaction.Village?.Bound == source);
+            if (!locationAllowed)
+            {
+                rejected.ReasonCode = "InvalidReturnLocation";
+                FiefPartyManager.LogFiefReturn(party, rejected, 0, 0);
+                return rejected;
+            }
             FiefPartyData data = manager.GetFiefData(source);
             VillageFiefData village = manager.GetVillageFiefData(
                 selected.SourceVillage);

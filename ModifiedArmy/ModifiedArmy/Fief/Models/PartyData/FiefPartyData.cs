@@ -94,16 +94,31 @@ namespace ModifiedArmy.Models.Fief
                 return null;
 
             CultureObject culture = _fiefPartyTemplate?.Culture ?? _settlement?.Culture;
+            if (_settlement?.IsFortification != true ||
+                village?.VillageSettlement?.IsVillage != true ||
+                !IsCurrentVillage(village.VillageSettlement))
+                return null;
             int freeWageDays = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(culture).Service.FreeWageDays;
             FiefServiceBatch batch = FiefServiceBatch.Create(
+                _settlement,
+                village.VillageSettlement,
                 servingParty,
                 freeWageDays,
                 actualTroops);
             if (village == null) return null;
             village.ServiceBatches.Add(batch);
-            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .RegisterServingDetachment(_settlement, village.VillageSettlement, batch);
+            try
+            {
+                Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                    .RegisterServingDetachment(
+                        _settlement, village.VillageSettlement, batch);
+            }
+            catch
+            {
+                village.ServiceBatches.Remove(batch);
+                throw;
+            }
             SyncManpowerCounters();
             return batch;
         }
@@ -386,5 +401,16 @@ namespace ModifiedArmy.Models.Fief
             (Villages?.Values ?? Enumerable.Empty<VillageFiefData>())
                 .Where(v => v?.VillageSettlement != null)
                 .OrderBy(v => v.VillageSettlement.StringId);
+
+        internal IEnumerable<VillageFiefData> OrderedVillages(
+            Settlement villageFilter) => OrderedVillages()
+                .Where(v => villageFilter == null ||
+                    v.VillageSettlement == villageFilter)
+                .Where(v => IsCurrentVillage(v.VillageSettlement));
+
+        internal bool IsCurrentVillage(Settlement village) =>
+            village?.IsVillage == true &&
+            village.Village.Bound == _settlement &&
+            _settlement.BoundVillages?.Any(v => v?.Settlement == village) == true;
     }
 }

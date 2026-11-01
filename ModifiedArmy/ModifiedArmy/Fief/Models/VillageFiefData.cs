@@ -93,8 +93,16 @@ namespace ModifiedArmy.Models.Fief
                 VillageSettlement.Village.Hearth -= count;
         }
 
+        internal bool RollbackMobilizationReservation(int count)
+        {
+            if (count <= 0 || MobilizedHearth < count ||
+                VillageSettlement?.Village == null) return false;
+            MobilizedHearth -= count;
+            VillageSettlement.Village.Hearth += count;
+            return true;
+        }
+
         internal void RequireRecovery() => RecoveryRequired = true;
-        internal void CompleteRecovery() => RecoveryRequired = false;
 
         private IEnumerable<TroopRosterElement> FilteredEntries(FiefPartyTemplate template)
         {

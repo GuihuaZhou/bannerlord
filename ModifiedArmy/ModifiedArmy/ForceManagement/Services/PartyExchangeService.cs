@@ -319,11 +319,13 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty destination = plan.Destination?.Party;
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
-            if (source == null || destination == null || manager == null ||
-                source.OwnerClan != destination.ActualClan ||
-                destination.CurrentSettlement != source ||
-                destination.MapEvent != null || source.IsUnderSiege)
+            if (manager == null || !manager.TryResolveOperationScope(
+                source, destination, true, out FiefOperationScope scope))
                 return Result(false, "UnsafeAtExecution", 0);
+            if (!string.Equals(plan.FiefSourceFingerprint,
+                manager.GetFiefSourceFingerprint(source, destination),
+                StringComparison.Ordinal))
+                return Result(false, "SourceVillageManifestChanged", 0);
             IReadOnlyDictionary<CharacterObject, int> liveApprovals = manager
                 .PreviewFiefRecruitmentApprovals(
                     source,
@@ -376,14 +378,19 @@ namespace ModifiedArmy.ForceManagement.Services
                 .GetCampaignBehavior<FiefPartyManager>();
             if (approval == null || source == null || manager == null)
                 return Result(false, "InvalidFiefReturnPlan", 0);
+            Settlement interaction = plan.Destination?.Settlement;
             if (plan.Purpose != PartyExchangePurpose.PartyDisbandment &&
-                source.CurrentSettlement != approval.SourceFief)
-                return Result(false, "NotAtSourceFief", 0);
+                (source.CurrentSettlement != interaction ||
+                 interaction != approval.SourceFief &&
+                 interaction != approval.SourceVillage))
+                return Result(false, "InvalidReturnLocation", 0);
             FiefReturnResult returned = manager.TryReturnFiefTroops(
                 source,
+                interaction,
                 approval.SourceFief,
                 approval.BatchId,
-                approval.ApprovedCount);
+                approval.ApprovedCount,
+                plan.Purpose);
             if (returned.ActualReturnedCount > 0 &&
                 plan.Purpose == PartyExchangePurpose.WarRest)
                 ForceManagementFacade.Current.WarRestPlanning.RecordCompleted(

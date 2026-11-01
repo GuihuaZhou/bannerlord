@@ -151,6 +151,7 @@ namespace ModifiedArmy.ForceManagement.Models
             var result = new FiefBatchTransferApproval
             {
                 SourceFief = batch.SourceFief,
+                SourceVillage = batch.SourceVillage,
                 BatchId = batch.BatchId
             };
             int remaining = Math.Max(0, maximumCount);

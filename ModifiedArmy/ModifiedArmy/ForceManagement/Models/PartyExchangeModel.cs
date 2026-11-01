@@ -482,26 +482,26 @@ namespace ModifiedArmy.ForceManagement.Models
         private static PartyExchangePlan BuildFiefMobilizationPlan(
             PartyExchangeContext context)
         {
-            Settlement sourceFief = context.Source?.Settlement;
+            Settlement interaction = context.Source?.Settlement;
             MobileParty destination = context.Destination?.Party;
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
-            if (sourceFief == null || destination == null || manager == null ||
-                sourceFief.OwnerClan != destination.ActualClan ||
-                destination.CurrentSettlement != sourceFief ||
-                destination.MapEvent != null || sourceFief.IsUnderSiege)
+            if (manager == null || !manager.TryResolveOperationScope(
+                interaction, destination, true, out FiefOperationScope scope))
             {
                 return Reject(context, "InvalidFiefMobilization");
             }
-            TroopRoster roster = manager.GetFiefTroopRoster(sourceFief);
+            TroopRoster roster = manager.GetFiefTroopRoster(interaction);
             IReadOnlyDictionary<CharacterObject, int> approvals = manager
                 .PreviewFiefRecruitmentApprovals(
-                    sourceFief,
+                    interaction,
                     destination,
                     context.RequestedCount);
             PartyExchangePlan result = CreatePlan(
                 context,
                 PartyExchangeExecutorKind.FiefMobilization);
+            result.FiefSourceFingerprint = manager
+                .GetFiefSourceFingerprint(interaction, destination);
             foreach (var approval in approvals)
                 AddAmount(
                     result.SourceToDestination,
@@ -516,20 +516,24 @@ namespace ModifiedArmy.ForceManagement.Models
             PartyExchangeContext context)
         {
             MobileParty source = context.Source?.Party;
-            Settlement fief = context.Destination?.Settlement;
+            Settlement interaction = context.Destination?.Settlement;
             string batchId = context.Source?.BatchId;
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
-            if (source == null || fief == null || manager == null ||
-                source.ActualClan != fief.OwnerClan || string.IsNullOrEmpty(batchId))
+            if (source == null || interaction == null || manager == null ||
+                string.IsNullOrEmpty(batchId))
             {
                 return Reject(context, "InvalidFiefReturn");
             }
-            if (context.Purpose != PartyExchangePurpose.PartyDisbandment &&
-                source.CurrentSettlement != fief)
-                return Reject(context, "NotAtSourceFief");
+            bool forced = context.Purpose == PartyExchangePurpose.PartyDisbandment;
+            FiefOperationScope scope = null;
+            if (!forced && !manager.TryResolveOperationScope(
+                interaction, source, true, out scope))
+                return Reject(context, "InvalidFiefReturnScope");
             ServingDetachmentRef selected = manager.GetServingDetachments(source)
-                .FirstOrDefault(item => item.SourceFief == fief &&
+                .FirstOrDefault(item => (forced || item.SourceFief == scope.SourceFief) &&
+                    (forced || scope.VillageFilter == null ||
+                        item.SourceVillage == scope.VillageFilter) &&
                     item.Detachment?.BatchId == batchId);
             if (selected.Detachment == null)
             {
@@ -537,7 +541,8 @@ namespace ModifiedArmy.ForceManagement.Models
             }
             FiefBatchTransferApproval approval = new FiefBatchTransferApproval
             {
-                SourceFief = fief,
+                SourceFief = selected.SourceFief,
+                SourceVillage = selected.SourceVillage,
                 BatchId = batchId
             };
             int remaining = context.RequestedCount;

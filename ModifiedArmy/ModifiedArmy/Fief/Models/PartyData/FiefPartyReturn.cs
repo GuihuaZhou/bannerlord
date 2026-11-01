@@ -15,7 +15,9 @@ namespace ModifiedArmy.Models.Fief
 {
     public partial class FiefPartyData
     {
-        public int ReturnTroopsToSettlement(MobileParty sourceParty)
+        public int ReturnTroopsToSettlement(MobileParty sourceParty,
+            Settlement interactionSettlement = null,
+            Settlement villageFilter = null)
         {
             if (sourceParty == null ||
                 sourceParty.ActualClan == null ||
@@ -31,6 +33,8 @@ namespace ModifiedArmy.Models.Fief
             List<FiefServiceBatch> batches = OrderedVillages()
                 .SelectMany(v => v.ServiceBatches)
                 .Where(d => d?.ServingParty == sourceParty && !d.IsEmpty())
+                .Where(d => villageFilter == null ||
+                    d.SourceVillage == villageFilter)
                 .OrderBy(d => d.BatchId, StringComparer.Ordinal)
                 .ToList();
             if (batches.Count == 0) return 0;
@@ -40,6 +44,7 @@ namespace ModifiedArmy.Models.Fief
             {
                 FiefReturnResult result = manager.TryReturnFiefTroops(
                     sourceParty,
+                    interactionSettlement ?? _settlement,
                     _settlement,
                     batch.BatchId,
                     batch.GetTotalCount());

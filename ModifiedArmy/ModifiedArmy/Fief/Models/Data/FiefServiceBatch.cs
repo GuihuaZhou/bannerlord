@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.SaveSystem;
 
@@ -34,6 +35,12 @@ namespace ModifiedArmy.Models.Fief
         [SaveableProperty(6)]
         public string BatchId { get; private set; }
 
+        [SaveableProperty(7)]
+        public Settlement SourceFief { get; private set; }
+
+        [SaveableProperty(8)]
+        public Settlement SourceVillage { get; private set; }
+
         public MobileParty ServingParty { get; private set; }
 
         public FiefServiceBatch()
@@ -43,12 +50,16 @@ namespace ModifiedArmy.Models.Fief
         }
 
         public static FiefServiceBatch Create(
+            Settlement sourceFief,
+            Settlement sourceVillage,
             MobileParty party,
             int freeWageDays,
             IReadOnlyDictionary<CharacterObject, int> troops)
         {
             FiefServiceBatch batch = new FiefServiceBatch
             {
+                SourceFief = sourceFief,
+                SourceVillage = sourceVillage,
                 ServingParty = party,
                 ServingPartyId = party?.StringId,
                 FreeWageDays = Math.Max(0, freeWageDays),
@@ -62,7 +73,8 @@ namespace ModifiedArmy.Models.Fief
             MobileParty party,
             IReadOnlyDictionary<CharacterObject, int> troops)
         {
-            FiefServiceBatch split = Create(party, FreeWageDays, troops);
+            FiefServiceBatch split = Create(
+                SourceFief, SourceVillage, party, FreeWageDays, troops);
             split.ServiceDays = ServiceDays;
             split.LastServiceUpdateDay = LastServiceUpdateDay;
             return split;

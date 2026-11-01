@@ -22,9 +22,7 @@ namespace ModifiedArmy.Models.Fief
 {
     /// <summary>
     /// Campaign behavior responsible for dynamically injecting a "Fief"
-    /// submenu into town and castle settlement menus.
-    /// 
-    /// Note: This behavior intentionally EXCLUDES villages — the "Fief" button will NOT appear in village menus.
+    /// submenu into town, castle, and village settlement menus.
     /// 
     /// The submenu provides options to:
     /// - Recruit fief squads into the player's party
@@ -37,11 +35,14 @@ namespace ModifiedArmy.Models.Fief
     /// </summary>
     public class FiefMenuBehavior : CampaignBehaviorBase
     {
+        private string _selectionFingerprint;
+        private Settlement _selectionInteraction;
         // Only register in these settlement types
         // Town fief administration belongs in the keep submenu. Castles use
         // their outer menu as the equivalent military-administration panel.
         private const string TOWN_MENU_ID = "town_keep";
         private const string CASTLE_MENU_ID = "castle";
+        private const string VILLAGE_MENU_ID = "village";
 
         // Custom fief menu identifiers
         private const string FIEF_MENU_ID = "modified_army_fief_menu";
@@ -181,11 +182,15 @@ namespace ModifiedArmy.Models.Fief
         bool CanSelectTroop(CharacterObject troop)
         {
             if (troop == null) return false;
-            FiefPartyData data = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .GetFiefData(Settlement.CurrentSettlement);
+            Settlement interaction = Settlement.CurrentSettlement;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            Settlement fief = interaction?.IsVillage == true
+                ? interaction.Village.Bound : interaction;
+            FiefPartyData data = manager?.GetFiefData(fief);
             return data?.GetFiefPartyTemplate()?.IsEnableTroop(troop) == true &&
-                data.GetFiefTroopRoster().GetElementNumber(troop) > 0;
+                manager.GetFiefTroopRoster(interaction)
+                    .GetElementNumber(troop) > 0;
         }
 
         // 回调：处理玩家选择结果
@@ -201,13 +206,22 @@ namespace ModifiedArmy.Models.Fief
 
             var playerParty = MobileParty.MainParty;
 
+            if (_selectionInteraction != Settlement.CurrentSettlement ||
+                !string.Equals(_selectionFingerprint,
+                    manager.GetFiefSourceFingerprint(
+                        Settlement.CurrentSettlement, playerParty),
+                    StringComparison.Ordinal))
+            {
+                ModLogger.Warn("[Fief] Selected village source manifest changed before commit.");
+                return;
+            }
+
             manager.ManualRecruitFromFief(Settlement.CurrentSettlement, selectedRoster, playerParty);
         }
 
         /// <summary>
-        /// Registers the "Fief" entry point in town and castle menus only,
-        /// and defines the full "Your Fief" submenu.
-        /// Villages are explicitly excluded by design.
+        /// Registers one shared Fief entry point in town, castle, and village
+        /// menus and defines the common submenu.
         /// </summary>
         private void AddGameMenus(CampaignGameStarter starter)
         {
@@ -216,7 +230,9 @@ namespace ModifiedArmy.Models.Fief
             GameMenuOption.OnConditionDelegate fiefCondition = (args) =>
             {
                 Settlement currentSettlement = Settlement.CurrentSettlement;
-                bool canView = currentSettlement?.IsFortification == true;
+                bool canView = currentSettlement != null &&
+                    (currentSettlement.IsFortification ||
+                     currentSettlement.IsVillage);
 
                 args.IsEnabled = canView;
                 args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
@@ -251,6 +267,16 @@ namespace ModifiedArmy.Models.Fief
                 index: -1,
                 isRepeatable: false
             );
+
+            starter.AddGameMenuOption(
+                VILLAGE_MENU_ID,
+                FIEF_OPTION_ID,
+                "{=ModifiedArmy_FiefMenu_VillageEntry}View village fief troops",
+                fiefCondition,
+                fiefConsequence,
+                isLeave: false,
+                index: -1,
+                isRepeatable: false);
 
             // Keep the rate report directly accessible from both settlement
             // screens; it is informational and never changes campaign state.
@@ -389,6 +415,9 @@ namespace ModifiedArmy.Models.Fief
                     var playerParty = MobileParty.MainParty;
                     TroopRoster fiefRoster = fiefManager.GetFiefTroopRoster(currentSettlement);
                     TroopRoster selectRoster = TroopRoster.CreateDummyTroopRoster();
+                    _selectionInteraction = currentSettlement;
+                    _selectionFingerprint = fiefManager
+                        .GetFiefSourceFingerprint(currentSettlement, playerParty);
 
                     // 计算最大可招募数量（受 party size 限制）
                     int maxSelectable = Math.Max(0,
@@ -440,7 +469,9 @@ namespace ModifiedArmy.Models.Fief
             GameMenu.SwitchToMenu(
                 settlement?.IsTown == true
                     ? TOWN_MENU_ID
-                    : CASTLE_MENU_ID);
+                    : settlement?.IsVillage == true
+                        ? VILLAGE_MENU_ID
+                        : CASTLE_MENU_ID);
         }
 
         /// <summary>
@@ -465,7 +496,8 @@ namespace ModifiedArmy.Models.Fief
                 ownerClan == playerClan;
             bool isSameKingdom = ownerClan?.Kingdom != null &&
                 ownerClan.Kingdom == playerClan?.Kingdom;
-            bool canView = settlement?.IsFortification == true &&
+            bool canView = settlement != null &&
+                (settlement.IsFortification || settlement.IsVillage) &&
                 (isPlayerOwned || isSameKingdom);
             args.IsEnabled = canView;
             args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
@@ -482,7 +514,9 @@ namespace ModifiedArmy.Models.Fief
             Settlement settlement = Settlement.CurrentSettlement;
             FiefPartyManager manager = Campaign.Current
                 ?.GetCampaignBehavior<FiefPartyManager>();
-            if (settlement?.IsFortification != true || manager == null)
+            if (settlement == null ||
+                (!settlement.IsFortification && !settlement.IsVillage) ||
+                manager == null)
             {
                 return;
             }
@@ -618,8 +652,10 @@ namespace ModifiedArmy.Models.Fief
         {
             Settlement settlement = Settlement.CurrentSettlement;
 
-            return settlement?.IsFortification == true
-                && settlement.OwnerClan == Clan.PlayerClan;
+            return settlement != null &&
+                (settlement.IsFortification || settlement.IsVillage) &&
+                settlement.OwnerClan == Clan.PlayerClan &&
+                MobileParty.MainParty?.CurrentSettlement == settlement;
         }
     }
 }

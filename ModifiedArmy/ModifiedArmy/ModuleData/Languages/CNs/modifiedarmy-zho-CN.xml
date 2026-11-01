@@ -67,6 +67,7 @@
     <string id="Fief_Desc_Default" text="此地风貌独特, 民风彪悍, 是封邑军队的重要来源." />
     <string id="ModifiedArmy_Fief_Intro" text="{INTRO_LINE}{DESCRIPTION}此地当前可招募 {AVAILABLE} 名士兵，已有 {RECRUITED} 名士兵出征，另有 {WAITCYCLE} 名士兵正在返回自己的土地。" />
     <string id="ModifiedArmy_FiefMenu_Entry" text="查看封邑" />
+    <string id="ModifiedArmy_FiefMenu_VillageEntry" text="查看本村封建兵" />
     <string id="ModifiedArmy_FiefMenu_Recruit" text="全部征召" />
     <string id="ModifiedArmy_FiefMenu_Disband" text="解散部队" />
     <string id="ModifiedArmy_FiefMenu_RecruitPartial" text="部分征召" />

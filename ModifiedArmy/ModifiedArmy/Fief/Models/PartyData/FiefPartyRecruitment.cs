@@ -58,7 +58,8 @@ namespace ModifiedArmy.Models.Fief
         public int RecruitTroopsToParty(
             MobileParty targetParty,
             int maximumCount = int.MaxValue,
-            IReadOnlyDictionary<CharacterObject, int> expectedApprovals = null)
+            IReadOnlyDictionary<CharacterObject, int> expectedApprovals = null,
+            Settlement villageFilter = null)
         {
             if (targetParty == null || _fiefParty == null)
                 return 0;
@@ -101,7 +102,8 @@ namespace ModifiedArmy.Models.Fief
             List<RecruitmentCandidate> candidates =
                 BuildAvailableRecruitmentCandidates(
                     remainSize,
-                    useTemplateWeights);
+                    useTemplateWeights,
+                    villageFilter);
             LogWeightedCandidateManifest(targetParty, remainSize, candidates);
 
             RecruitmentPlan aiPlan = null;
@@ -145,7 +147,7 @@ namespace ModifiedArmy.Models.Fief
             }
 
             if (!TryCommitVillageRecruitment(targetParty, approvedTroops,
-                useTemplateWeights, out tmpRecruitTroops))
+                useTemplateWeights, villageFilter, out tmpRecruitTroops))
                 return 0;
             hearthCost = tmpRecruitTroops.Values.Sum();
 
@@ -263,7 +265,8 @@ namespace ModifiedArmy.Models.Fief
         internal IReadOnlyList<RecruitmentCandidate>
             PreviewFiefRecruitmentCandidates(
                 MobileParty targetParty,
-                int maximumCount)
+                int maximumCount,
+                Settlement villageFilter = null)
         {
             var candidates = new List<RecruitmentCandidate>();
             if (targetParty == null || _fiefParty == null)
@@ -278,7 +281,8 @@ namespace ModifiedArmy.Models.Fief
                 targetParty.LeaderHero.Clan != Clan.PlayerClan;
             return BuildAvailableRecruitmentCandidates(
                 remainSize,
-                useTemplateWeights);
+                useTemplateWeights,
+                villageFilter);
         }
 
         /// <summary>
@@ -287,22 +291,27 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private List<RecruitmentCandidate> BuildAvailableRecruitmentCandidates(
             int maximumCount,
-            bool useTemplateWeights)
+            bool useTemplateWeights,
+            Settlement villageFilter)
         {
             return useTemplateWeights
-                ? BuildTemplateWeightedRecruitmentCandidates(maximumCount)
-                : BuildLegacyRecruitmentCandidates(maximumCount);
+                ? BuildTemplateWeightedRecruitmentCandidates(
+                    maximumCount, villageFilter)
+                : BuildLegacyRecruitmentCandidates(
+                    maximumCount, villageFilter);
         }
 
         /// <summary>
         /// Preserves the existing automatic player ordering and limits.
         /// </summary>
         private List<RecruitmentCandidate> BuildLegacyRecruitmentCandidates(
-            int maximumCount)
+            int maximumCount,
+            Settlement villageFilter)
         {
             List<RecruitmentCandidate> candidates = new();
             int remaining = Math.Max(0, maximumCount);
-            foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
+            foreach (TroopRosterElement element in GetFiefTroopRoster(
+                villageFilter).GetTroopRoster())
             {
                 if (remaining <= 0) break;
                 CharacterObject troop = element.Character;
@@ -329,7 +338,8 @@ namespace ModifiedArmy.Models.Fief
         /// root and scarce quota is redistributed without mutating game state.
         /// </summary>
         private List<RecruitmentCandidate>
-            BuildTemplateWeightedRecruitmentCandidates(int maximumCount)
+            BuildTemplateWeightedRecruitmentCandidates(int maximumCount,
+                Settlement villageFilter)
         {
             var candidates = new List<RecruitmentCandidate>();
             if (_fiefParty == null || _fiefPartyTemplate == null ||
@@ -340,7 +350,8 @@ namespace ModifiedArmy.Models.Fief
             if (roots.Count == 0) return candidates;
 
             var healthyStock = new Dictionary<CharacterObject, int>();
-            foreach (TroopRosterElement element in _fiefParty.GetTroopRoster())
+            foreach (TroopRosterElement element in GetFiefTroopRoster(
+                villageFilter).GetTroopRoster())
             {
                 CharacterObject troop = element.Character;
                 int healthy = Math.Max(0, element.Number - element.WoundedNumber);
@@ -533,10 +544,12 @@ namespace ModifiedArmy.Models.Fief
         internal IReadOnlyDictionary<CharacterObject, int>
             PreviewFiefRecruitmentApprovals(
                 MobileParty targetParty,
-                int maximumCount)
+                int maximumCount,
+                Settlement villageFilter = null)
         {
             IReadOnlyList<RecruitmentCandidate> candidates =
-                PreviewFiefRecruitmentCandidates(targetParty, maximumCount);
+                PreviewFiefRecruitmentCandidates(
+                    targetParty, maximumCount, villageFilter);
             if (targetParty?.LeaderHero?.Clan == null || candidates.Count == 0)
                 return new Dictionary<CharacterObject, int>();
             RecruitmentPlan ignored;
@@ -717,7 +730,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         /// <param name="selectedRoster">玩家从 _fiefParty 中选择的士兵</param>
         /// <returns>实际招募的总人数（用于工资豁免）</returns>
-        public int RecruitManualSelection(TroopRoster selectedRoster, MobileParty targetParty)
+        public int RecruitManualSelection(TroopRoster selectedRoster,
+            MobileParty targetParty, Settlement villageFilter = null)
         {
             if (selectedRoster == null || selectedRoster.TotalManCount <= 0 ||
                 _fiefParty == null || targetParty == null)
@@ -745,7 +759,8 @@ namespace ModifiedArmy.Models.Fief
                 CharacterObject troop = element.Character;
                 if (troop == null || element.Number <= 0 ||
                     _fiefPartyTemplate?.IsEnableTroop(troop) != true) continue;
-                int available = _fiefParty.GetElementNumber(troop);
+                int available = GetFiefTroopRoster(villageFilter)
+                    .GetElementNumber(troop);
                 int approved = Math.Min(remainingPartySpace,
                     Math.Min(element.Number, available));
                 if (approved <= 0) continue;
@@ -759,7 +774,7 @@ namespace ModifiedArmy.Models.Fief
             }
 
             if (!TryCommitVillageRecruitment(targetParty, validatedSelection,
-                false, out tmpRecruitTroops)) return 0;
+                false, villageFilter, out tmpRecruitTroops)) return 0;
             hearthCost = tmpRecruitTroops.Values.Sum();
 
             int totalRecruited =
@@ -804,6 +819,7 @@ namespace ModifiedArmy.Models.Fief
         private bool TryCommitVillageRecruitment(MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, int> approvals,
             bool healthyOnly,
+            Settlement villageFilter,
             out Dictionary<CharacterObject, int> committed)
         {
             committed = new Dictionary<CharacterObject, int>();
@@ -813,7 +829,7 @@ namespace ModifiedArmy.Models.Fief
                 .OrderBy(p => p.Key.StringId))
             {
                 int remaining = approval.Value;
-                foreach (VillageFiefData village in OrderedVillages())
+                foreach (VillageFiefData village in OrderedVillages(villageFilter))
                 {
                     TroopRoster roster = village.GetReadyRoster();
                     if (roster == null) continue;
@@ -893,8 +909,14 @@ namespace ModifiedArmy.Models.Fief
                 }
                 foreach (var entry in removedFromVillages)
                 {
-                    entry.Village.GetReadyRoster()?.AddToCounts(entry.Troop,
-                        entry.Count, false, entry.Wounded, 0, true, -1);
+                    TroopRoster rollbackRoster = entry.Village.GetReadyRoster();
+                    if (rollbackRoster == null)
+                    {
+                        entry.Village.RequireRecovery();
+                        continue;
+                    }
+                    rollbackRoster.AddToCounts(entry.Troop, entry.Count,
+                        false, entry.Wounded, 0, true, -1);
                 }
                 foreach (FiefServiceBatch batch in created)
                 {
@@ -905,7 +927,9 @@ namespace ModifiedArmy.Models.Fief
                         village.VillageSettlement, batch);
                 }
                 foreach (var item in mobilized)
-                    item.Village.TryReleaseMobilization(item.Count, true);
+                    if (!item.Village.RollbackMobilizationReservation(
+                        item.Count))
+                        item.Village.RequireRecovery();
                 committed.Clear();
                 SyncManpowerCounters();
                 return false;
@@ -937,7 +961,7 @@ namespace ModifiedArmy.Models.Fief
 
 
             // Prisoner conversion does not consume or restore rural capacity.
-            VillageFiefData target = OrderedVillages()
+            VillageFiefData target = OrderedVillages(null)
                 .FirstOrDefault(v => v.GetReadyRoster() != null);
             if (target == null) return false;
             target.GetReadyRoster().AddToCounts(

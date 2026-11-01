@@ -39,7 +39,9 @@ namespace ModifiedArmy.Models.Fief
             FiefReconciliationResult result = new();
             if (manager == null || party == null) return result;
             List<ServingDetachmentRef> refs = manager.GetServingDetachments(party)
-                .Where(r => r.Detachment != null && !r.Detachment.IsEmpty())
+                .Where(r => r.Detachment != null && !r.Detachment.IsEmpty() &&
+                    manager.GetVillageFiefData(r.SourceVillage)?
+                        .RecoveryRequired != true)
                 .ToList();
             if (refs.Count == 0) return result;
 
@@ -116,6 +118,9 @@ namespace ModifiedArmy.Models.Fief
 
             foreach (ServingDetachmentRef item in refs)
             {
+                Dictionary<CharacterObject, int> beforeTroops =
+                    item.Detachment.Troops.ToDictionary(
+                        pair => pair.Key, pair => pair.Value);
                 int before = item.Detachment.GetTotalCount();
                 Dictionary<CharacterObject, int> plan = plans[item.Detachment];
                 int after = plan.Values.Sum();
@@ -123,8 +128,16 @@ namespace ModifiedArmy.Models.Fief
                 result.MatchedCount += after;
                 int lost = Math.Max(0, before - after);
                 result.LostCount += lost;
-                if (lost > 0) manager.ReleaseVillageFiefService(
-                    item.SourceVillage, lost, false);
+                if (lost > 0 && manager.ReleaseVillageFiefService(
+                    item.SourceVillage, lost, false) != lost)
+                {
+                    item.Detachment.ReplaceTroops(beforeTroops);
+                    manager.GetVillageFiefData(item.SourceVillage)?
+                        .RequireRecovery();
+                    result.MatchedCount -= after;
+                    result.LostCount -= lost;
+                    continue;
+                }
                 if (item.Detachment.IsEmpty())
                 {
                     manager.GetVillageFiefData(item.SourceVillage)?
