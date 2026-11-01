@@ -205,6 +205,30 @@ namespace ModifiedArmy.Models.Fief
             return false;
         }
 
+        internal float CalculateFeudalTaxReliefAmount(float wageRatio)
+        {
+            var wageModel = Campaign.Current?.Models?.PartyWageModel;
+            if (wageModel == null || _fiefPartyTemplate == null ||
+                wageRatio <= 0f) return 0f;
+
+            long dailyWages = 0;
+            checked
+            {
+                foreach (VillageFiefData village in OrderedVillages())
+                foreach (var pair in village.GetRegisteredFeudalTroopCounts(
+                    _fiefPartyTemplate))
+                {
+                    int unitWage = Math.Max(0,
+                        wageModel.GetCharacterWage(pair.Key));
+                    dailyWages += (long)unitWage * pair.Value;
+                }
+            }
+            double relief = dailyWages * (double)wageRatio;
+            return relief >= float.MaxValue
+                ? float.MaxValue
+                : (float)Math.Max(0d, relief);
+        }
+
 
         /// <summary>
         /// 从给定的部队名单中统计采邑士兵的实际数量（含健康兵与伤员）。

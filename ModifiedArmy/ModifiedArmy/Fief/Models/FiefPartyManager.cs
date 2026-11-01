@@ -361,6 +361,18 @@ namespace ModifiedArmy.Models.Fief
                     (int)Math.Floor(village.Hearth)));
         }
 
+        public float GetFeudalTaxReliefAmount(Settlement fief)
+        {
+            float wageRatio = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy
+                .FeudalTaxReliefWageRatio;
+            if (fief?.IsFortification != true || wageRatio == 0f)
+                return 0f;
+            FiefPartyData data = GetFiefData(fief);
+            return Math.Max(0f,
+                data?.CalculateFeudalTaxReliefAmount(wageRatio) ?? 0f);
+        }
+
         /// <summary>
         /// Reserves rural production capacity before any troop roster is changed.
         /// The deduction is distributed evenly while preserving the recruitment floor.

@@ -180,6 +180,8 @@
         <Tier Level="5" Hearth="10" />
         <Tier Level="6" Hearth="12" />
       </ProfessionalRecruitment>
+      <!-- Share of registered feudal troops' standard daily wages relieved from fief tax. -->
+      <FeudalTaxRelief wageRatio="0.50" />
     </HearthEconomy>
 
     <!--

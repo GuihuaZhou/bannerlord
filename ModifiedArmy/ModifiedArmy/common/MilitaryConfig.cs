@@ -40,6 +40,7 @@ namespace ModifiedArmy.common
     {
         public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
         public IReadOnlyDictionary<int, int> ProfessionalRecruitment { get; internal set; }
+        public float FeudalTaxReliefWageRatio { get; internal set; }
 
         public int GetFeudalSupplyCost(CharacterObject troop) =>
             GetRequiredCost(FeudalSupply, troop, "FeudalSupply");
@@ -497,8 +498,23 @@ namespace ModifiedArmy.common
                 FeudalSupply = ParseTierCosts(Required(node, "FeudalSupply"),
                     "FeudalSupply"),
                 ProfessionalRecruitment = ParseTierCosts(Required(node,
-                    "ProfessionalRecruitment"), "ProfessionalRecruitment")
+                    "ProfessionalRecruitment"), "ProfessionalRecruitment"),
+                FeudalTaxReliefWageRatio = RatioAttribute(Required(node,
+                    "FeudalTaxRelief"), "wageRatio", "FeudalTaxRelief")
             };
+
+        private static float RatioAttribute(XmlNode node, string attribute,
+            string setting)
+        {
+            if (!float.TryParse(Attr(node, attribute), NumberStyles.Float,
+                    CultureInfo.InvariantCulture, out float value) ||
+                float.IsNaN(value) || float.IsInfinity(value) ||
+                value < 0f || value > 1f)
+                throw new InvalidOperationException(
+                    "MilitaryConfig " + setting + " requires " +
+                    attribute + " between 0 and 1.");
+            return value;
+        }
 
         private static IReadOnlyDictionary<int, int> ParseTierCosts(
             XmlNode node, string group)

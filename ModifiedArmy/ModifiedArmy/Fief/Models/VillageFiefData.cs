@@ -110,6 +110,33 @@ namespace ModifiedArmy.Models.Fief
             return GetFreeSupplyHearth(template, economy) >= required;
         }
 
+        internal Dictionary<CharacterObject, int>
+            GetRegisteredFeudalTroopCounts(FiefPartyTemplate template)
+        {
+            var counts = new Dictionary<CharacterObject, int>();
+            void Add(CharacterObject troop, int count)
+            {
+                if (troop == null || count <= 0) return;
+                counts[troop] = counts.TryGetValue(troop, out int existing)
+                    ? checked(existing + count)
+                    : count;
+            }
+
+            foreach (TroopRosterElement entry in FilteredEntries(template))
+                Add(entry.Character, entry.Number);
+            foreach (FiefServiceBatch batch in ServiceBatches ??
+                Enumerable.Empty<FiefServiceBatch>())
+                if (batch != null)
+                    foreach (var pair in batch.Troops)
+                        Add(pair.Key, pair.Value);
+            foreach (FiefReturnBatch batch in ReturnBatches ??
+                Enumerable.Empty<FiefReturnBatch>())
+                if (batch != null)
+                    foreach (var pair in batch.Troops)
+                        Add(pair.Key, pair.Value);
+            return counts;
+        }
+
         public TroopRoster GetReadyFiefTroopRoster(FiefPartyTemplate template)
         {
             TroopRoster result = TroopRoster.CreateDummyTroopRoster();

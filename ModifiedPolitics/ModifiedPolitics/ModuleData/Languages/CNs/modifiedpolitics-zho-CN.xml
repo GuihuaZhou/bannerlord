@@ -532,5 +532,6 @@
     <string id="MP_GovernorNoticeAppointed" text="你的家族成员{HERO}已被任命为{NEW_SETTLEMENT}总督。" />
     <string id="MP_GovernorNoticeMoved" text="你的家族成员{HERO}已从{OLD_SETTLEMENT}调任至{NEW_SETTLEMENT}。" />
     <string id="MP_GovernorManualChangeFailed" text="无法执行总督变更：该操作会使地方官职失效，或当前战役状态已经变化。" />
+    <string id="MP_FeudalTaxRelief" text="封建兵税赋减免" />
 </strings>
 </base>
