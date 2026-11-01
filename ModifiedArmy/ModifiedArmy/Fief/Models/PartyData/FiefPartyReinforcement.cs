@@ -121,16 +121,18 @@ namespace ModifiedArmy.Models.Fief
         /// 执行封邑部队的补员操作：根据可补充人数，按兵种权重分配、生成新兵、更新计数并记录日志。
         /// </summary>
         /// <param name="maxReinforcements">最多可补充的总人数（已扣除总容量限制）</param>
-        private void PerformReinforcement(int maxReinforcements)
+        private List<FiefTroopProductionResult> PerformReinforcement(
+            int maxReinforcements)
         {
+            var produced = new List<FiefTroopProductionResult>();
             int allowed = Math.Max(0, maxReinforcements);
-            if (allowed <= 0) return;
+            if (allowed <= 0) return produced;
             var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
             List<VillageFiefData> targets = OrderedVillages(null)
                 .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
                 .ToList();
-            if (targets.Count == 0) return;
+            if (targets.Count == 0) return produced;
             HearthEconomyConfig economy = MilitaryConfigManager.Instance
                 .RequireActiveConfig().HearthEconomy;
             int recruited = 0;
@@ -160,6 +162,13 @@ namespace ModifiedArmy.Models.Fief
                 if (target == null) break;
                 target.GetReadyRoster().AddToCounts(
                     kvp.Key, 1, false, 0, 0, true, -1);
+                FiefTroopProductionResult entry = produced.FirstOrDefault(
+                    item => item.Village == target.VillageSettlement &&
+                        item.Troop == kvp.Key);
+                if (entry == null)
+                    produced.Add(new FiefTroopProductionResult(
+                        target.VillageSettlement, kvp.Key, 1));
+                else entry.Add(1);
                 recruited++;
             }
             SyncManpowerCounters();
@@ -179,15 +188,23 @@ namespace ModifiedArmy.Models.Fief
             {
                 ModLogger.Debug(msg.ToString());
             }
+            return produced;
         }
 
         public int ProduceDailyFiefTroops(int approvedCount)
         {
             if (!InitialFeifPartyData() || approvedCount <= 0)
                 return 0;
-            int before = _totalTroopCount;
-            PerformReinforcement(approvedCount);
-            return Math.Max(0, _totalTroopCount - before);
+            return ProduceDailyFiefTroopsDetailed(approvedCount)
+                .Sum(item => item.Count);
+        }
+
+        internal IReadOnlyList<FiefTroopProductionResult>
+            ProduceDailyFiefTroopsDetailed(int approvedCount)
+        {
+            if (!InitialFeifPartyData() || approvedCount <= 0)
+                return Array.Empty<FiefTroopProductionResult>();
+            return PerformReinforcement(approvedCount);
         }
 
         /// <summary>

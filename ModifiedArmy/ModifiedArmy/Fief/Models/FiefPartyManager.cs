@@ -373,6 +373,13 @@ namespace ModifiedArmy.Models.Fief
                 data?.CalculateFeudalTaxReliefAmount(wageRatio) ?? 0f);
         }
 
+        public bool TryConvertFiefTroops(Settlement fief,
+            Settlement sourceVillage, CharacterObject sourceTroop, int count,
+            FiefConversionDirection direction, out int converted,
+            out string reason) => FiefTroopConversionService.TryConvert(
+                this, fief, sourceVillage, sourceTroop, count, direction,
+                out converted, out reason);
+
         /// <summary>
         /// Reserves rural production capacity before any troop roster is changed.
         /// The deduction is distributed evenly while preserving the recruitment floor.

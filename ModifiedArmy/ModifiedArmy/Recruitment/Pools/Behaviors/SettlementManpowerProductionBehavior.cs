@@ -177,6 +177,24 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 false);
         }
 
+        internal IReadOnlyDictionary<CharacterObject, int>
+            AllocateProfessionalConversionTroops(Settlement settlement,
+                int count, bool commitLedger)
+        {
+            ProfessionalRecruitmentEligibilitySnapshot eligibility =
+                ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
+            if (eligibility?.Template == null || count <= 0)
+                return new Dictionary<CharacterObject, int>();
+            return BuildDailyProfessionalOffers(
+                eligibility.Template,
+                settlement,
+                eligibility.AllowedRecruitmentLevel,
+                GetEffectiveWeights(settlement),
+                count,
+                GetOrCreateProductionData(settlement),
+                commitLedger);
+        }
+
         /// <summary>
         /// Consumes an exact quantity from today's offers and charges the
         /// corresponding village hearth manpower.
