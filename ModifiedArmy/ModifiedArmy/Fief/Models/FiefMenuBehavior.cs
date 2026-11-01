@@ -147,7 +147,10 @@ namespace ModifiedArmy.Models.Fief
                 "{DESCRIPTION}" +
                 "You can currently recruit {AVAILABLE} troops, " +
                 "{RECRUITED} are already deployed, and " +
-                "{WAITCYCLE} are on their way back home."
+                "{WAITCYCLE} are on their way back home. " +
+                "Hearth supply: actual {ACTUAL_HEARTH}, effective " +
+                "{EFFECTIVE_HEARTH}, occupied {OCCUPIED_SUPPLY}, " +
+                "free {FREE_SUPPLY}, deficit {SUPPLY_DEFICIT}."
             );
 
             text.SetTextVariable("INTRO_LINE", introKey.ToString());
@@ -156,6 +159,16 @@ namespace ModifiedArmy.Models.Fief
             text.SetTextVariable("AVAILABLE", fiefManager.GetAvailableTroopCount(settlement).ToString());
             text.SetTextVariable("RECRUITED", fiefManager.GetRecruitedTroopCount(settlement).ToString());
             text.SetTextVariable("WAITCYCLE", fiefManager.GetWaitCycleTroopCount(settlement).ToString());
+            text.SetTextVariable("ACTUAL_HEARTH",
+                fiefManager.GetActualVillageHearth(settlement));
+            text.SetTextVariable("EFFECTIVE_HEARTH",
+                fiefManager.GetEffectiveSupplyHearth(settlement));
+            text.SetTextVariable("OCCUPIED_SUPPLY",
+                fiefManager.GetOccupiedSupplyHearth(settlement));
+            text.SetTextVariable("FREE_SUPPLY",
+                fiefManager.GetFreeSupplyHearth(settlement));
+            text.SetTextVariable("SUPPLY_DEFICIT",
+                fiefManager.GetSupplyDeficitHearth(settlement));
 
 
             MBTextManager.SetTextVariable("FIEF_INTRODUCTION_TEXT", text, false);

@@ -3,6 +3,7 @@ using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
+using ModifiedArmy.Recruitment.Pools.Behaviors;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -140,6 +141,69 @@ namespace ModifiedArmy.Models.Fief
         /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
         public int GetTotalTroopCount() => _totalTroopCount;
+
+        public int GetTotalOccupiedSupplyHearth()
+        {
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
+            return Villages?.Values.Where(village => village != null).Sum(
+                village => village.GetOccupiedSupplyHearth(
+                    _fiefPartyTemplate, economy)) ?? 0;
+        }
+
+        public int GetTotalFreeSupplyHearth()
+        {
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
+            return Villages?.Values.Where(village => village != null).Sum(
+                village => village.GetFreeSupplyHearth(
+                    _fiefPartyTemplate, economy)) ?? 0;
+        }
+
+        public int GetTotalEffectiveSupplyHearth() => Villages?.Values
+            .Where(village => village != null)
+            .Sum(village => village.GetEffectiveSupplyHearth()) ?? 0;
+
+        public int GetTotalSupplyDeficitHearth()
+        {
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
+            return Villages?.Values.Where(village => village != null).Sum(
+                village => village.GetSupplyDeficitHearth(
+                    _fiefPartyTemplate, economy)) ?? 0;
+        }
+
+        public bool CanProduceAnyFiefTroop()
+        {
+            if (_fiefPartyTemplate == null) return false;
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
+            int barracksLevel = SettlementManpowerProductionBehavior
+                .GetBarracksLevel(_settlement);
+            IEnumerable<CharacterObject> troops = _fiefPartyTemplate
+                .TroopEntries.Where(entry => entry?.Troop != null &&
+                    entry.Weight > 0 &&
+                    entry.RequiredBarracksLevel <= barracksLevel)
+                .Select(entry => entry.Troop);
+            foreach (VillageFiefData village in OrderedVillages(null)
+                .Where(village => !village.RecoveryRequired))
+            foreach (CharacterObject troop in troops)
+            {
+                try
+                {
+                    if (village.CanIncreaseSupply(_fiefPartyTemplate,
+                        economy, troop, 1)) return true;
+                }
+                catch (Exception exception)
+                {
+                    ModLogger.Error(string.Format(
+                        "Fief production capacity rejected: village={0}, troop={1}, tier={2}, reason={3}.",
+                        village.VillageSettlement?.StringId ?? "unknown",
+                        troop.StringId, troop.Tier, exception.Message));
+                }
+            }
+            return false;
+        }
 
 
         /// <summary>

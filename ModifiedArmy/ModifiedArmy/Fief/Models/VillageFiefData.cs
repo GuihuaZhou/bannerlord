@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using ModifiedArmy.common;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
@@ -56,6 +58,57 @@ namespace ModifiedArmy.Models.Fief
         public int GetTotalFiefTroopCount(FiefPartyTemplate template) =>
             GetReadyFiefTroopCount(template) + GetServingFiefTroopCount() +
             GetCoolingFiefTroopCount();
+
+        public int GetEffectiveSupplyHearth() => Math.Max(0,
+            (int)Math.Floor((VillageSettlement?.Village?.Hearth ?? 0f) +
+                MobilizedHearth));
+
+        public int GetOccupiedSupplyHearth(FiefPartyTemplate template,
+            HearthEconomyConfig economy)
+        {
+            if (template == null || economy == null)
+                throw new InvalidOperationException(
+                    "Fief supply calculation requires template and economy.");
+            int occupied = 0;
+            checked
+            {
+                foreach (TroopRosterElement element in FilteredEntries(template))
+                    occupied += Math.Max(0, element.Number) *
+                        economy.GetFeudalSupplyCost(element.Character);
+                foreach (FiefServiceBatch batch in ServiceBatches ??
+                    Enumerable.Empty<FiefServiceBatch>())
+                foreach (var pair in batch?.Troops ??
+                    new Dictionary<CharacterObject, int>())
+                    if (pair.Key != null && pair.Value > 0)
+                        occupied += pair.Value *
+                            economy.GetFeudalSupplyCost(pair.Key);
+                foreach (FiefReturnBatch batch in ReturnBatches ??
+                    Enumerable.Empty<FiefReturnBatch>())
+                foreach (var pair in batch?.Troops ??
+                    new Dictionary<CharacterObject, int>())
+                    if (pair.Key != null && pair.Value > 0)
+                        occupied += pair.Value *
+                            economy.GetFeudalSupplyCost(pair.Key);
+            }
+            return occupied;
+        }
+
+        public int GetFreeSupplyHearth(FiefPartyTemplate template,
+            HearthEconomyConfig economy) => checked(
+                GetEffectiveSupplyHearth() -
+                GetOccupiedSupplyHearth(template, economy));
+
+        public int GetSupplyDeficitHearth(FiefPartyTemplate template,
+            HearthEconomyConfig economy) => Math.Max(0,
+                -GetFreeSupplyHearth(template, economy));
+
+        public bool CanIncreaseSupply(FiefPartyTemplate template,
+            HearthEconomyConfig economy, CharacterObject troop, int count)
+        {
+            if (RecoveryRequired || troop == null || count <= 0) return false;
+            int required = checked(economy.GetFeudalSupplyCost(troop) * count);
+            return GetFreeSupplyHearth(template, economy) >= required;
+        }
 
         public TroopRoster GetReadyFiefTroopRoster(FiefPartyTemplate template)
         {

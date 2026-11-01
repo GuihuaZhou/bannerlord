@@ -299,6 +299,68 @@ namespace ModifiedArmy.Models.Fief
             return GetVillageFiefData(village?.Settlement)?.MobilizedHearth ?? 0;
         }
 
+        public int GetOccupiedSupplyHearth(Settlement settlement)
+        {
+            FiefPartyData fief = GetFiefData(settlement?.IsVillage == true
+                ? settlement.Village?.Bound : settlement);
+            if (fief == null) return 0;
+            return settlement.IsVillage
+                ? fief.GetVillageData(settlement)?.GetOccupiedSupplyHearth(
+                    fief.GetFiefPartyTemplate(),
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .HearthEconomy) ?? 0
+                : fief.GetTotalOccupiedSupplyHearth();
+        }
+
+        public int GetFreeSupplyHearth(Settlement settlement)
+        {
+            FiefPartyData fief = GetFiefData(settlement?.IsVillage == true
+                ? settlement.Village?.Bound : settlement);
+            if (fief == null) return 0;
+            return settlement.IsVillage
+                ? fief.GetVillageData(settlement)?.GetFreeSupplyHearth(
+                    fief.GetFiefPartyTemplate(),
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .HearthEconomy) ?? 0
+                : fief.GetTotalFreeSupplyHearth();
+        }
+
+        public int GetEffectiveSupplyHearth(Settlement settlement)
+        {
+            FiefPartyData fief = GetFiefData(settlement?.IsVillage == true
+                ? settlement.Village?.Bound : settlement);
+            if (fief == null) return 0;
+            return settlement.IsVillage
+                ? fief.GetVillageData(settlement)?
+                    .GetEffectiveSupplyHearth() ?? 0
+                : fief.GetTotalEffectiveSupplyHearth();
+        }
+
+        public int GetSupplyDeficitHearth(Settlement settlement)
+        {
+            FiefPartyData fief = GetFiefData(settlement?.IsVillage == true
+                ? settlement.Village?.Bound : settlement);
+            if (fief == null) return 0;
+            return settlement.IsVillage
+                ? fief.GetVillageData(settlement)?.GetSupplyDeficitHearth(
+                    fief.GetFiefPartyTemplate(),
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .HearthEconomy) ?? 0
+                : fief.GetTotalSupplyDeficitHearth();
+        }
+
+        public int GetActualVillageHearth(Settlement settlement)
+        {
+            if (settlement == null) return 0;
+            if (settlement.IsVillage)
+                return Math.Max(0, (int)Math.Floor(
+                    settlement.Village?.Hearth ?? 0f));
+            return settlement.BoundVillages.Where(village =>
+                    village?.Settlement != null)
+                .Sum(village => Math.Max(0,
+                    (int)Math.Floor(village.Hearth)));
+        }
+
         /// <summary>
         /// Reserves rural production capacity before any troop roster is changed.
         /// The deduction is distributed evenly while preserving the recruitment floor.
@@ -308,19 +370,38 @@ namespace ModifiedArmy.Models.Fief
             return GetVillageFiefData(village)?.TryMobilize(count) == true;
         }
 
-        public bool TryConsumeProfessionalHearth(Settlement source, int count)
+        public bool TryConsumeProfessionalHearth(Settlement source,
+            CharacterObject troop, int count)
         {
             return TryConsumeProfessionalHearth(
-                source, count, out Dictionary<Settlement, int> _);
+                source, troop, count, out Dictionary<Settlement, int> _);
         }
 
         internal bool TryConsumeProfessionalHearth(
             Settlement source,
+            CharacterObject troop,
             int count,
             out Dictionary<Settlement, int> consumedByVillage)
         {
             consumedByVillage = new Dictionary<Settlement, int>();
-            if (source == null || count <= 0) return false;
+            if (source == null || troop == null || count <= 0) return false;
+            int costPerTroop;
+            int required;
+            try
+            {
+                costPerTroop = MilitaryConfigManager.Instance
+                    .RequireActiveConfig().HearthEconomy
+                    .GetProfessionalRecruitmentCost(troop);
+                required = checked(count * costPerTroop);
+            }
+            catch (Exception exception)
+            {
+                ModLogger.Error(string.Format(
+                    "Professional Hearth cost rejected: source={0}, troop={1}, tier={2}, count={3}, reason={4}.",
+                    source.StringId, troop.StringId, troop.Tier, count,
+                    exception.Message));
+                return false;
+            }
             List<Village> villages = source.IsVillage
                 ? new List<Village> { source.Village }
                 : source.BoundVillages.Where(v => v?.Settlement != null).ToList();
@@ -329,8 +410,37 @@ namespace ModifiedArmy.Models.Fief
                 .OrderBy(v => v.Settlement.StringId)
                 .ToList();
             if (villages.Count == 0) return false;
-            int required = checked(count * 2);
-            if (villages.Sum(v => Math.Max(0, (int)Math.Floor(v.Hearth) - 100)) < required)
+            var capacities = new Dictionary<Village, int>();
+            foreach (Village village in villages)
+            {
+                VillageFiefData villageData = GetVillageFiefData(
+                    village.Settlement);
+                FiefPartyData fief = GetFiefData(village.Settlement
+                    .Village?.Bound);
+                if (villageData == null || fief == null ||
+                    villageData.RecoveryRequired) continue;
+                try
+                {
+                    int floorCapacity = Math.Max(0,
+                        (int)Math.Floor(village.Hearth - 100f));
+                    int supplyCapacity = Math.Max(0,
+                        villageData.GetFreeSupplyHearth(
+                            fief.GetFiefPartyTemplate(),
+                            MilitaryConfigManager.Instance
+                                .RequireActiveConfig().HearthEconomy));
+                    capacities[village] = Math.Min(
+                        floorCapacity, supplyCapacity);
+                }
+                catch (Exception exception)
+                {
+                    ModLogger.Error(string.Format(
+                        "Professional Hearth capacity rejected: village={0}, troop={1}, reason={2}.",
+                        village.Settlement.StringId, troop.StringId,
+                        exception.Message));
+                    return false;
+                }
+            }
+            if (capacities.Values.Sum(value => (long)value) < required)
                 return false;
             int remaining = required;
             while (remaining > 0)
@@ -338,17 +448,59 @@ namespace ModifiedArmy.Models.Fief
                 foreach (Village village in villages)
                 {
                     if (remaining <= 0) break;
-                    if (village.Hearth <= 100f) continue;
-                    village.Hearth -= 1f;
+                    if (!capacities.TryGetValue(village, out int available) ||
+                        available <= 0) continue;
                     consumedByVillage[village.Settlement] =
                         consumedByVillage.TryGetValue(
                             village.Settlement, out int consumed)
                                 ? consumed + 1
                                 : 1;
+                    capacities[village] = available - 1;
                     remaining--;
                 }
             }
-            return true;
+            var applied = new Dictionary<Settlement, int>();
+            try
+            {
+                foreach (var pair in consumedByVillage)
+                {
+                    pair.Key.Village.Hearth -= pair.Value;
+                    applied[pair.Key] = pair.Value;
+                }
+                foreach (Settlement village in consumedByVillage.Keys)
+                {
+                    VillageFiefData data = GetVillageFiefData(village);
+                    FiefPartyData fief = GetFiefData(village.Village?.Bound);
+                    if (village.Village.Hearth < 100f || data == null ||
+                        fief == null || data.GetFreeSupplyHearth(
+                            fief.GetFiefPartyTemplate(),
+                            MilitaryConfigManager.Instance
+                                .RequireActiveConfig().HearthEconomy) < 0)
+                        throw new InvalidOperationException(
+                            "ProfessionalHearthPostCommitValidationFailed");
+                }
+                if (source.OwnerClan == Clan.PlayerClan)
+                    ModLogger.Debug(string.Format(
+                        "Professional Hearth committed: source={0}, troop={1}, tier={2}, count={3}, unitCost={4}, totalCost={5}, villages={6}.",
+                        source.StringId, troop.StringId, troop.Tier, count,
+                        costPerTroop, required,
+                        string.Join(",", consumedByVillage.OrderBy(pair =>
+                            pair.Key.StringId).Select(pair =>
+                            pair.Key.StringId + ":" + pair.Value))));
+                return true;
+            }
+            catch (Exception exception)
+            {
+                foreach (var pair in applied)
+                    if (pair.Key?.Village != null)
+                        pair.Key.Village.Hearth += pair.Value;
+                consumedByVillage.Clear();
+                ModLogger.Error(string.Format(
+                    "Professional Hearth transaction rolled back: source={0}, troop={1}, count={2}, reason={3}.",
+                    source.StringId, troop.StringId, count,
+                    exception.Message));
+                return false;
+            }
         }
 
         internal void RollbackProfessionalHearth(
@@ -1117,7 +1269,7 @@ namespace ModifiedArmy.Models.Fief
         /// 监听招募事件，扣除定居点繁荣度/户数。
         ///
         /// 优先使用对应文化的 FiefPartyTemplate 中的
-        /// ProsperityCostPerTroop / HearthCostPerTroop。
+        /// Professional Hearth cost is resolved globally by troop Tier.
         ///
         /// 若无模板则使用默认 fallback 值。
         /// </summary>
@@ -1137,16 +1289,13 @@ namespace ModifiedArmy.Models.Fief
                 return;
 
             // ============================================================
-            // 从已有的 FiefPartyData 获取 template，
-            // 以读取 ProsperityCostPerTroop / HearthCostPerTroop。
-            //
-            // 若无模板，则不扣除繁荣度/户数。
-            // ============================================================
-            // Professional village recruits permanently consume two hearths.
-            // They do not create a mobilized-hearth liability.
+            // New professional recruits permanently consume tier-based Hearth.
+            // They do not create a mobilized-hearth liability. Prisoner
+            // recruitment emits this event with no settlement and is excluded.
             if (settlement.IsVillage || settlement.IsTown || settlement.IsCastle)
             {
-                bool accepted = TryConsumeProfessionalHearth(settlement, count);
+                bool accepted = TryConsumeProfessionalHearth(
+                    settlement, troop, count);
                 int rejected = accepted ? 0 : count;
 
                 // The native event is raised after recruitment. Roll back only

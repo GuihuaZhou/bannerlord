@@ -34,7 +34,31 @@ namespace ModifiedArmy.common
         public int VillageBonus { get; internal set; }
         public float DailyRate { get; internal set; }
         public int ProsperityCostPerTroop { get; internal set; }
-        public int HearthCostPerTroop { get; internal set; }
+    }
+
+    public sealed class HearthEconomyConfig
+    {
+        public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
+        public IReadOnlyDictionary<int, int> ProfessionalRecruitment { get; internal set; }
+
+        public int GetFeudalSupplyCost(CharacterObject troop) =>
+            GetRequiredCost(FeudalSupply, troop, "FeudalSupply");
+
+        public int GetProfessionalRecruitmentCost(CharacterObject troop) =>
+            GetRequiredCost(ProfessionalRecruitment, troop,
+                "ProfessionalRecruitment");
+
+        private static int GetRequiredCost(
+            IReadOnlyDictionary<int, int> costs,
+            CharacterObject troop, string group)
+        {
+            if (troop == null || costs == null ||
+                !costs.TryGetValue(troop.Tier, out int cost) || cost <= 0)
+                throw new InvalidOperationException(string.Format(
+                    "HearthEconomy {0} has no positive cost for troop={1}, tier={2}.",
+                    group, troop?.StringId ?? "null", troop?.Tier ?? -1));
+            return cost;
+        }
     }
 
     public sealed class FiefServiceConfig
@@ -133,6 +157,7 @@ namespace ModifiedArmy.common
 
         public string ConfigId => StringId;
         public AiRecruitmentConfig AiRecruitment { get; } = new AiRecruitmentConfig();
+        public HearthEconomyConfig HearthEconomy { get; private set; }
 
         // Compatibility-shaped accessors keep decision code focused on behavior.
         public float AiNeedManpowerWeight => AiRecruitment.ManpowerWeight;
@@ -154,6 +179,8 @@ namespace ModifiedArmy.common
         {
             base.Deserialize(objectManager, node);
             ParseAi(node.SelectSingleNode("AiRecruitment"));
+            HearthEconomy = ParseHearthEconomy(Required(node,
+                "HearthEconomy"));
             XmlNode cultures = Required(node, "Cultures");
             foreach (XmlNode cultureNode in cultures.SelectNodes("Culture"))
             {
@@ -461,9 +488,45 @@ namespace ModifiedArmy.common
             BaseLimit = NonNegativeInt(node, "baseLimit"),
             VillageBonus = NonNegativeInt(node, "villageBonus"),
             DailyRate = NonNegativeFloat(node, "dailyRate"),
-            ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop"),
-            HearthCostPerTroop = NonNegativeInt(node, "hearthCostPerTroop")
+            ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop")
         };
+
+        private static HearthEconomyConfig ParseHearthEconomy(XmlNode node) =>
+            new HearthEconomyConfig
+            {
+                FeudalSupply = ParseTierCosts(Required(node, "FeudalSupply"),
+                    "FeudalSupply"),
+                ProfessionalRecruitment = ParseTierCosts(Required(node,
+                    "ProfessionalRecruitment"), "ProfessionalRecruitment")
+            };
+
+        private static IReadOnlyDictionary<int, int> ParseTierCosts(
+            XmlNode node, string group)
+        {
+            var result = new Dictionary<int, int>();
+            foreach (XmlNode tier in node.SelectNodes("Tier"))
+            {
+                if (!int.TryParse(Attr(tier, "Level"), NumberStyles.Integer,
+                    CultureInfo.InvariantCulture, out int level) || level < 0)
+                    throw new InvalidOperationException(
+                        "HearthEconomy " + group +
+                        " contains invalid Level.");
+                if (!int.TryParse(Attr(tier, "Hearth"), NumberStyles.Integer,
+                    CultureInfo.InvariantCulture, out int hearth) || hearth <= 0)
+                    throw new InvalidOperationException(string.Format(
+                        "HearthEconomy {0} Level {1} requires a positive Hearth value.",
+                        group, level));
+                if (result.ContainsKey(level))
+                    throw new InvalidOperationException(string.Format(
+                        "HearthEconomy {0} contains duplicate Level {1}.",
+                        group, level));
+                result.Add(level, hearth);
+            }
+            if (result.Count == 0)
+                throw new InvalidOperationException(
+                    "HearthEconomy " + group + " cannot be empty.");
+            return result;
+        }
 
         private static XmlNode Required(XmlNode node, string name) =>
             node?.SelectSingleNode(name) ?? throw new InvalidOperationException("MilitaryConfig is missing required node: " + name);

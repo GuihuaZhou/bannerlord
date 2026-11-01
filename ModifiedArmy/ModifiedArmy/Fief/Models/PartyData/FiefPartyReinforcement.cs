@@ -123,8 +123,7 @@ namespace ModifiedArmy.Models.Fief
         /// <param name="maxReinforcements">最多可补充的总人数（已扣除总容量限制）</param>
         private void PerformReinforcement(int maxReinforcements)
         {
-            int allowed = Math.Min(maxReinforcements,
-                Math.Max(0, _totalLimit - _totalTroopCount));
+            int allowed = Math.Max(0, maxReinforcements);
             if (allowed <= 0) return;
             var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
@@ -132,12 +131,34 @@ namespace ModifiedArmy.Models.Fief
                 .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
                 .ToList();
             if (targets.Count == 0) return;
-            int cursor = 0;
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
             int recruited = 0;
             foreach (var kvp in tmpNewTroops.OrderBy(p => p.Key.StringId))
             for (int i = 0; i < kvp.Value; i++)
             {
-                targets[cursor++ % targets.Count].GetReadyRoster().AddToCounts(
+                VillageFiefData target;
+                try
+                {
+                    target = targets
+                        .Where(village => village.CanIncreaseSupply(
+                            _fiefPartyTemplate, economy, kvp.Key, 1))
+                        .OrderByDescending(village => village
+                            .GetFreeSupplyHearth(_fiefPartyTemplate, economy))
+                        .ThenBy(village => village.VillageSettlement.StringId)
+                        .FirstOrDefault();
+                }
+                catch (Exception exception)
+                {
+                    ModLogger.Error(string.Format(
+                        "Fief production rejected: fief={0}, troop={1}, tier={2}, reason={3}.",
+                        _settlement?.StringId ?? "unknown",
+                        kvp.Key?.StringId ?? "unknown", kvp.Key?.Tier ?? -1,
+                        exception.Message));
+                    break;
+                }
+                if (target == null) break;
+                target.GetReadyRoster().AddToCounts(
                     kvp.Key, 1, false, 0, 0, true, -1);
                 recruited++;
             }
@@ -165,10 +186,7 @@ namespace ModifiedArmy.Models.Fief
             if (!InitialFeifPartyData() || approvedCount <= 0)
                 return 0;
             int before = _totalTroopCount;
-            int allowed = Math.Min(
-                approvedCount,
-                Math.Max(0, _totalLimit - _totalTroopCount));
-            PerformReinforcement(allowed);
+            PerformReinforcement(approvedCount);
             return Math.Max(0, _totalTroopCount - before);
         }
 
@@ -275,6 +293,8 @@ namespace ModifiedArmy.Models.Fief
             foreach (VillageFiefData village in OrderedVillages(null))
             {
               if (village.RecoveryRequired) continue;
+              HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                  .RequireActiveConfig().HearthEconomy;
               TroopRoster roster = village.GetReadyRoster();
               if (roster == null) continue;
               foreach (var element in roster.GetTroopRoster())
@@ -308,6 +328,25 @@ namespace ModifiedArmy.Models.Fief
 
                         if (newTroop == null)
                             continue;
+
+                        int delta;
+                        try
+                        {
+                            delta = economy.GetFeudalSupplyCost(newTroop) -
+                                economy.GetFeudalSupplyCost(troop);
+                            if (delta > 0 && village.GetFreeSupplyHearth(
+                                _fiefPartyTemplate, economy) < delta)
+                                continue;
+                        }
+                        catch (Exception exception)
+                        {
+                            ModLogger.Error(string.Format(
+                                "Fief upgrade rejected: village={0}, from={1}, to={2}, reason={3}.",
+                                village.VillageSettlement?.StringId ?? "unknown",
+                                troop.StringId, newTroop.StringId,
+                                exception.Message));
+                            continue;
+                        }
 
                         roster.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
                         roster.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
@@ -370,10 +409,7 @@ namespace ModifiedArmy.Models.Fief
             // losses and wage eligibility; weekly processing only advances
             // returned detachments and upgrades ready troops.
 
-            // 检查是否已达总兵力上限
             SyncManpowerCounters();
-            if (_totalTroopCount >= _totalLimit)
-                return;
 
             // Daily manpower production is the only path that adds new fief
             // troops. Weekly updates retain expiry, cooldown and upgrades only.

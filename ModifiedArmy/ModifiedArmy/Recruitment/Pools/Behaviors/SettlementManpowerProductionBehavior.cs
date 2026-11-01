@@ -268,6 +268,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
             if (!manager.TryConsumeProfessionalHearth(
                     settlement,
+                    troop,
                     count,
                     out Dictionary<Settlement, int> consumedHearth))
             {
@@ -542,9 +543,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 doctrine.GetProduction(settlement);
             int current = fiefData.GetTotalTroopCount();
             int capacity = fiefData.GetFiefTroopLimit();
-            float fiefDemand = Math.Min(
-                fiefProduction.DailyRate,
-                Math.Max(0, capacity - current));
+            float fiefDemand = fiefData.CanProduceAnyFiefTroop()
+                ? fiefProduction.DailyRate
+                : 0f;
             float ratio = doctrine.ProfessionalShare;
             ProfessionalRecruitmentEligibilitySnapshot productionRule = eligibility;
             ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
@@ -768,20 +769,37 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return entry.ToString();
         }
 
-        public static float CalculateVillageSupply(Village village, int assignedFiefCount)
+        public static float CalculateVillageSupply(Village village,
+            int ignoredLegacyAssignedFiefCount = 0)
         {
             if (village?.VillageState != Village.VillageStates.Normal)
                 return 0f;
             FiefPartyManager manager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
-            float effective = Math.Max(
-                0f,
-                village.Hearth + (manager?.GetMobilizedHearth(village) ?? 0) -
-                    Math.Max(0, assignedFiefCount));
-            return effective <= 100f
+            VillageFiefData data = manager?.GetVillageFiefData(
+                village.Settlement);
+            FiefPartyData fief = manager?.GetFiefData(
+                village.Settlement.Village?.Bound);
+            if (data == null || fief == null) return 0f;
+            float free;
+            try
+            {
+                free = Math.Max(0f, data.GetFreeSupplyHearth(
+                    fief.GetFiefPartyTemplate(),
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .HearthEconomy));
+            }
+            catch (Exception exception)
+            {
+                ModLogger.Error(string.Format(
+                    "Village supply calculation rejected: village={0}, reason={1}.",
+                    village.Settlement.StringId, exception.Message));
+                return 0f;
+            }
+            return free <= 100f
                 ? 0f
-                : 0.03f * effective * (effective - 100f) /
-                    (effective + 50f);
+                : 0.03f * free * (free - 100f) /
+                    (free + 50f);
         }
 
         private static float CalculateSettlementSupply(
@@ -794,18 +812,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 .OrderBy(v => v.Settlement.StringId)
                 .ToList();
             if (villages.Count == 0) return 0f;
-            int totalFief = fiefData.GetTotalTroopCount();
-            int totalMobilized = villages.Sum(v => manager.GetMobilizedHearth(v));
-            int remaining = Math.Max(0, totalFief - totalMobilized);
-            int quotient = remaining / villages.Count;
-            int remainder = remaining % villages.Count;
             float total = 0f;
             for (int i = 0; i < villages.Count; i++)
-            {
-                int assigned = manager.GetMobilizedHearth(villages[i]) +
-                    quotient + (i < remainder ? 1 : 0);
-                total += CalculateVillageSupply(villages[i], assigned);
-            }
+                total += CalculateVillageSupply(villages[i]);
             return total;
         }
 

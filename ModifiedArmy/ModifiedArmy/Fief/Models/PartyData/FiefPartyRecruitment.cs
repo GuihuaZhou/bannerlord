@@ -93,12 +93,6 @@ namespace ModifiedArmy.Models.Fief
             //
             // 若无模板（无 fallback），则不扣除繁荣度/户数。
             // ============================================================
-            int tmpProsperityCostPerTroop =
-                GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
-
-            int tmpHearthCostPerTroop =
-                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
-
             List<RecruitmentCandidate> candidates =
                 BuildAvailableRecruitmentCandidates(
                     remainSize,
@@ -744,12 +738,6 @@ namespace ModifiedArmy.Models.Fief
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
-            int tmpProsperityCostPerTroop =
-                GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
-
-            int tmpHearthCostPerTroop =
-                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
-
             int remainingPartySpace = Math.Max(0,
                 targetParty.Party.PartySizeLimit - targetParty.Party.NumberOfAllMembers);
             Dictionary<CharacterObject, int> validatedSelection = new();
@@ -1080,37 +1068,27 @@ namespace ModifiedArmy.Models.Fief
             if (_fiefPartyTemplate == null || !_fiefPartyTemplate.IsEnableTroop(troop))
                 return false;
 
-            // 2. 俘虏转入与生产共用封邑总体容量，不再使用类别子上限。
-            SyncManpowerCounters();
-            int availableCapacity = Math.Max(0, _totalLimit - _totalTroopCount);
-
-            if (availableCapacity < count)
-                return false;
-
-
-            // Prisoner conversion does not consume or restore rural capacity.
+            // Conversion adds a feudal soldier, so it must fit one village's
+            // supply capacity even though it does not permanently deduct Hearth.
+            HearthEconomyConfig economy = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
             VillageFiefData target = OrderedVillages(null)
                 .FirstOrDefault(v => !v.RecoveryRequired &&
-                    v.GetReadyRoster() != null);
+                    v.GetReadyRoster() != null &&
+                    v.CanIncreaseSupply(_fiefPartyTemplate, economy,
+                        troop, count));
             if (target == null) return false;
             target.GetReadyRoster().AddToCounts(
                 troop, count, false, 0, 0, true, -1);
 
             // 消耗的繁荣度
             float prosperityCost = 0;
-            // 消耗的户数
-            float hearthCost = 0;
-
             // ============================================================
             // 征召成本：从模板读取（与 RecruitTroopsToParty 一致）
             // ============================================================
             int tmpProsperityCostPerTroop =
                 GetFiefProductionConfig()?.ProsperityCostPerTroop ?? 0;
 
-            int tmpHearthCostPerTroop =
-                GetFiefProductionConfig()?.HearthCostPerTroop ?? 0;
-
-            hearthCost += count * tmpHearthCostPerTroop;
             prosperityCost += count * tmpProsperityCostPerTroop * troop.Tier;
 
             // 4. 更新派生总数
