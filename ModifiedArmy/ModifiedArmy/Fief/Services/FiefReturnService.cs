@@ -30,13 +30,16 @@ namespace ModifiedArmy.Models.Fief
                 .FirstOrDefault(item => item.SourceFief == source &&
                     item.Detachment?.BatchId == batchId && !item.Detachment.IsEmpty());
             FiefPartyData data = manager.GetFiefData(source);
-            if (selected.Detachment == null || data == null)
+            VillageFiefData village = manager.GetVillageFiefData(
+                selected.SourceVillage);
+            if (selected.Detachment == null || data == null || village == null)
             {
                 rejected.ReasonCode = "NoEligibleBatch";
                 FiefPartyManager.LogFiefReturn(party, rejected, 0, 0);
                 return rejected;
             }
-            int tracked = manager.GetTrackedMobilizationCount(source);
+            int tracked = manager.GetTrackedMobilizationCount(
+                selected.SourceVillage);
             if (tracked <= 0)
             {
                 rejected.ReasonCode = "NoTrackedMobilization";
@@ -44,7 +47,7 @@ namespace ModifiedArmy.Models.Fief
                     selected.Detachment.GetTotalCount(), 0);
                 return rejected;
             }
-            FiefReturnResult result = data.TryCommitFiefReturn(manager, party,
+            FiefReturnResult result = data.TryCommitFiefReturn(manager, village, party,
                 selected.Detachment, maximumCount, tracked);
             FiefPartyManager.LogFiefReturn(party, result,
                 selected.Detachment.GetTotalCount(),

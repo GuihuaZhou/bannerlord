@@ -5,7 +5,7 @@ using TaleWorlds.CampaignSystem.Settlements;
 
 namespace ModifiedArmy.Models.Fief
 {
-    /// <summary>Runtime index over the save-owned FiefPartyData.ServiceBatches.</summary>
+    /// <summary>Runtime index over save-owned village service batches.</summary>
     internal sealed class FiefServiceLedger
     {
         private readonly Dictionary<MobileParty, List<ServingDetachmentRef>> _index;
@@ -19,29 +19,36 @@ namespace ModifiedArmy.Models.Fief
         {
             _index.Clear();
             foreach (var pair in data)
-            foreach (FiefServiceBatch batch in pair.Value?.ServiceBatches ?? Enumerable.Empty<FiefServiceBatch>())
+            foreach (VillageFiefData village in pair.Value?.Villages?.Values ??
+                Enumerable.Empty<VillageFiefData>())
+            foreach (FiefServiceBatch batch in village?.ServiceBatches ??
+                Enumerable.Empty<FiefServiceBatch>())
             {
                 batch?.ResolveServingParty();
                 if (batch?.ServingParty == null || batch.IsEmpty()) continue;
                 batch.Repair(batch.ServingParty);
-                Register(pair.Key, batch);
+                Register(pair.Key, village.VillageSettlement, batch);
             }
         }
 
-        public void Register(Settlement source, FiefServiceBatch batch)
+        public void Register(Settlement source, Settlement sourceVillage,
+            FiefServiceBatch batch)
         {
             if (source == null || batch?.ServingParty == null || batch.IsEmpty()) return;
             if (!_index.TryGetValue(batch.ServingParty, out var list))
                 _index[batch.ServingParty] = list = new List<ServingDetachmentRef>();
-            if (!list.Any(item => item.SourceFief == source && item.Detachment == batch))
-                list.Add(new ServingDetachmentRef(source, batch));
+            if (!list.Any(item => item.SourceFief == source &&
+                item.SourceVillage == sourceVillage && item.Detachment == batch))
+                list.Add(new ServingDetachmentRef(source, sourceVillage, batch));
         }
 
-        public void Unregister(Settlement source, FiefServiceBatch batch)
+        public void Unregister(Settlement source, Settlement sourceVillage,
+            FiefServiceBatch batch)
         {
             MobileParty party = batch?.ServingParty;
             if (party == null || !_index.TryGetValue(party, out var list)) return;
-            list.RemoveAll(item => item.SourceFief == source && item.Detachment == batch);
+            list.RemoveAll(item => item.SourceFief == source &&
+                item.SourceVillage == sourceVillage && item.Detachment == batch);
             if (list.Count == 0) _index.Remove(party);
         }
 

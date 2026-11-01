@@ -32,7 +32,8 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 封邑就绪军队容器
         /// </summary>
-        public TroopRoster _fiefParty { get; private set; }
+        // Compatibility-only read snapshot. Mutations must be routed to a village.
+        public TroopRoster _fiefParty => GetFiefTroopRoster();
         /// <summary>
         /// 已被征召的封邑军队
         /// </summary>
@@ -46,11 +47,8 @@ namespace ModifiedArmy.Models.Fief
 
         // Properties 1 and 2 are retained only so old saves can deserialize.
         // Their contents are discarded and never participate in new games.
-        [SaveableProperty(6)]
-        public List<FiefServiceBatch> ServiceBatches { get; private set; }
-
-        [SaveableProperty(7)]
-        public List<FiefReturnBatch> ReturnBatches { get; private set; }
+        [SaveableProperty(8)]
+        public Dictionary<Settlement, VillageFiefData> Villages { get; private set; }
 
         /// <summary>
         /// 当前封邑使用的部队模板
@@ -87,6 +85,7 @@ namespace ModifiedArmy.Models.Fief
         internal void RefreshManpowerCounters() => SyncManpowerCounters();
 
         internal FiefServiceBatch CreateServingDetachment(
+            VillageFiefData village,
             MobileParty servingParty,
             Dictionary<CharacterObject, int> actualTroops)
         {
@@ -101,9 +100,10 @@ namespace ModifiedArmy.Models.Fief
                 servingParty,
                 freeWageDays,
                 actualTroops);
-            ServiceBatches.Add(batch);
+            if (village == null) return null;
+            village.ServiceBatches.Add(batch);
             Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .RegisterServingDetachment(_settlement, batch);
+                .RegisterServingDetachment(_settlement, village.VillageSettlement, batch);
             SyncManpowerCounters();
             return batch;
         }
@@ -184,7 +184,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetReadyFiefTroopCount()
         {
-            return CountCurrentManpower(_fiefParty);
+            return Villages?.Values.Sum(v => v?.GetReadyFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
         }
 
         /// <summary>
@@ -192,7 +192,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetRecruitedFiefTroopCount()
         {
-            return CountDetachments(ServiceBatches);
+            return Villages?.Values.Sum(v => v?.GetServingFiefTroopCount() ?? 0) ?? 0;
         }
 
         /// <summary>
@@ -203,11 +203,8 @@ namespace ModifiedArmy.Models.Fief
         {
             // 在役和冷却批次是历史身份记录，不能因当前模板变化而丢失。
             // 只有共享就绪名册需要按当前模板过滤，避免把原生民兵算入封邑编制。
-            _totalTroopCount = CountCurrentManpower(_fiefParty) +
-                CountDetachments(ServiceBatches) +
-                (ReturnBatches?.Where(batch => batch?.Troops != null)
-                    .Sum(batch => batch.Troops.Where(pair => pair.Key != null)
-                        .Sum(pair => Math.Max(0, pair.Value))) ?? 0);
+            _totalTroopCount = Villages?.Values.Sum(v =>
+                v?.GetTotalFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
         }
 
 
@@ -324,8 +321,7 @@ namespace ModifiedArmy.Models.Fief
             if (RecruitedTroopDetachmentList == null)
                 RecruitedTroopDetachmentList = new List<FiefTroopDetachment>();
 
-            ServiceBatches ??= new List<FiefServiceBatch>();
-            ReturnBatches ??= new List<FiefReturnBatch>();
+            Villages ??= new Dictionary<Settlement, VillageFiefData>();
 
             // Old detachments cannot prove their serving party and are not
             // migrated. Clear them once the new containers are available.
@@ -350,23 +346,45 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
+            CharacterObject[] nativeMilitia =
+            {
+                _settlement.Culture.MeleeMilitiaTroop,
+                _settlement.Culture.MeleeEliteMilitiaTroop,
+                _settlement.Culture.RangedMilitiaTroop,
+                _settlement.Culture.RangedEliteMilitiaTroop
+            };
+            CharacterObject overlap = nativeMilitia.FirstOrDefault(t =>
+                t != null && _fiefPartyTemplate.IsEnableTroop(t));
+            if (overlap != null)
+            {
+                ModLogger.Error(string.Format(
+                    "Fief/native militia identity overlap: fief={0}, troop={1}. Fief operations are disabled because roster identity is ambiguous.",
+                    _settlement.StringId, overlap.StringId));
+                return false;
+            }
+
             CalculateLimit();
 
-            if (_fiefParty == null)
+            foreach (Village village in (_settlement.BoundVillages ?? new List<Village>())
+                .Where(v => v?.Settlement != null)
+                .OrderBy(v => v.Settlement.StringId))
             {
-                if (_settlement.MilitiaPartyComponent != null
-                    && _settlement.MilitiaPartyComponent.MobileParty.IsActive)
-                {
-                    _fiefParty = _settlement.MilitiaPartyComponent.MobileParty.MemberRoster;
-                }
-                else
-                {
-                    return false;
-                }
+                if (!Villages.TryGetValue(village.Settlement, out VillageFiefData data) || data == null)
+                    Villages[village.Settlement] = data = new VillageFiefData(village.Settlement);
+                data.Repair(village.Settlement);
             }
 
             SyncManpowerCounters();
             return true;
         }
+
+        internal VillageFiefData GetVillageData(Settlement village) => village != null &&
+            Villages != null && Villages.TryGetValue(village, out VillageFiefData data)
+                ? data : null;
+
+        internal IEnumerable<VillageFiefData> OrderedVillages() =>
+            (Villages?.Values ?? Enumerable.Empty<VillageFiefData>())
+                .Where(v => v?.VillageSettlement != null)
+                .OrderBy(v => v.VillageSettlement.StringId);
     }
 }

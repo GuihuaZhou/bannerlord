@@ -24,11 +24,14 @@ namespace ModifiedArmy.Fief.Patches
                 return true;
 
             Settlement settlement = militiaParty.CurrentSettlement;
-            FiefPartyData data = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .GetFiefData(settlement);
+            if (settlement?.IsVillage != true) return true;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            VillageFiefData village = manager?.GetVillageFiefData(settlement);
+            FiefPartyData data = manager?.GetFiefData(
+                settlement.Village.Bound);
             FiefPartyTemplate template = data?.GetFiefPartyTemplate();
-            if (template == null)
+            if (template == null || village == null)
                 return true;
 
             var roster = militiaParty.MemberRoster;

@@ -17,7 +17,7 @@ namespace ModifiedArmy.Models.Fief
     {
         public int ReturnTroopsToSettlement(MobileParty sourceParty)
         {
-            if (sourceParty == null || _fiefParty == null ||
+            if (sourceParty == null ||
                 sourceParty.ActualClan == null ||
                 sourceParty.ActualClan != _settlement?.OwnerClan)
                 return 0;
@@ -28,7 +28,8 @@ namespace ModifiedArmy.Models.Fief
             manager.AdvanceServiceDays(sourceParty);
             manager.ReconcilePartyFiefTroops(sourceParty);
 
-            List<FiefServiceBatch> batches = ServiceBatches
+            List<FiefServiceBatch> batches = OrderedVillages()
+                .SelectMany(v => v.ServiceBatches)
                 .Where(d => d?.ServingParty == sourceParty && !d.IsEmpty())
                 .OrderBy(d => d.BatchId, StringComparer.Ordinal)
                 .ToList();
@@ -70,6 +71,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         internal FiefReturnResult TryCommitFiefReturn(
             FiefPartyManager manager,
+            VillageFiefData village,
             MobileParty sourceParty,
             FiefServiceBatch batch,
             int maximumCount,
@@ -85,7 +87,7 @@ namespace ModifiedArmy.Models.Fief
             if (manager == null || sourceParty == null || batch == null ||
                 maximumCount <= 0 || trackedMobilization <= 0 ||
                 batch.ServingParty != sourceParty || batch.IsEmpty() ||
-                !ServiceBatches.Contains(batch))
+                village == null || !village.ServiceBatches.Contains(batch))
             {
                 return result;
             }
@@ -120,8 +122,8 @@ namespace ModifiedArmy.Models.Fief
                 sourceParty.ActualClan != null &&
                 sourceParty.ActualClan == _settlement?.OwnerClan &&
                 batch.ServingParty == sourceParty &&
-                ServiceBatches.Contains(batch) &&
-                manager.GetTrackedMobilizationCount(_settlement) >=
+                village.ServiceBatches.Contains(batch) &&
+                manager.GetTrackedMobilizationCount(village.VillageSettlement) >=
                     returningCount &&
                 returned.All(pair =>
                     batch.Troops.TryGetValue(
@@ -179,13 +181,14 @@ namespace ModifiedArmy.Models.Fief
                 batch.ReplaceTroops(batchAfter);
                 if (batch.IsEmpty())
                 {
-                    ServiceBatches.Remove(batch);
-                    manager.UnregisterServingDetachment(_settlement, batch);
+                    village.ServiceBatches.Remove(batch);
+                    manager.UnregisterServingDetachment(_settlement,
+                        village.VillageSettlement, batch);
                     batchRemoved = true;
                 }
 
                 if (!manager.TryReleaseMobilizationExact(
-                    _settlement,
+                    village.VillageSettlement,
                     returningCount,
                     out releasedByVillage))
                 {
@@ -196,12 +199,12 @@ namespace ModifiedArmy.Models.Fief
                 int cooldown = MilitaryConfigManager.Instance
                     .RequireActiveConfig().GetDoctrine(_settlement)
                     .Service.ReturnCooldownWeeks;
-                cooling = ReturnBatches.FirstOrDefault(item =>
+                cooling = village.ReturnBatches.FirstOrDefault(item =>
                     item != null && item.WaitWeeks == cooldown);
                 if (cooling == null)
                 {
                     cooling = new FiefReturnBatch(cooldown);
-                    ReturnBatches.Add(cooling);
+                    village.ReturnBatches.Add(cooling);
                     createdCooling = true;
                 }
                 else
@@ -228,19 +231,20 @@ namespace ModifiedArmy.Models.Fief
                 if (cooling != null)
                 {
                     if (createdCooling)
-                        ReturnBatches.Remove(cooling);
+                        village.ReturnBatches.Remove(cooling);
                     else
                         cooling.ReplaceTroops(coolingBefore);
                 }
                 if (releasedByVillage != null)
                     manager.RollbackMobilizationRelease(
-                        _settlement,
+                        village.VillageSettlement,
                         releasedByVillage);
                 batch.ReplaceTroops(batchBefore);
-                if (batchRemoved && !ServiceBatches.Contains(batch))
+                if (batchRemoved && !village.ServiceBatches.Contains(batch))
                 {
-                    ServiceBatches.Add(batch);
-                    manager.RegisterServingDetachment(_settlement, batch);
+                    village.ServiceBatches.Add(batch);
+                    manager.RegisterServingDetachment(_settlement,
+                        village.VillageSettlement, batch);
                 }
                 foreach (var pair in rosterRemoved)
                 {

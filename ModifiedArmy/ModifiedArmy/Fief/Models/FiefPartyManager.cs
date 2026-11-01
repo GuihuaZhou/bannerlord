@@ -52,6 +52,7 @@ namespace ModifiedArmy.Models.Fief
             base.AddClassDefinition(typeof(ReinforcementPartyComponent), 9);
             base.AddClassDefinition(typeof(PartySettlementBindingRecord), 10);
             base.AddClassDefinition(typeof(SettlementProfessionalPreferenceRecord), 11);
+            base.AddClassDefinition(typeof(VillageFiefData), 12);
         }
 
         protected override void DefineContainerDefinitions()
@@ -61,6 +62,7 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(typeof(List<FiefServiceBatch>));
             base.ConstructContainerDefinition(typeof(List<FiefReturnBatch>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, FiefPartyData>));
+            base.ConstructContainerDefinition(typeof(Dictionary<Settlement, VillageFiefData>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, int>));
             base.ConstructContainerDefinition(typeof(Dictionary<Settlement, Settlement>));
             base.ConstructContainerDefinition(
@@ -86,23 +88,8 @@ namespace ModifiedArmy.Models.Fief
         [SaveableField(1)]
         private Dictionary<Settlement, FiefPartyData> _fiefDataMap = new Dictionary<Settlement, FiefPartyData>();
 
-        [SaveableField(2)]
-        private Dictionary<Settlement, int> _mobilizedHearth = new Dictionary<Settlement, int>();
-
-        [SaveableField(3)]
-        private Dictionary<Settlement, Settlement> _mobilizationOwners = new Dictionary<Settlement, Settlement>();
-
-        [SaveableField(4)]
-        private bool _mobilizationMigrationComplete;
-
-        [SaveableField(5)]
-        private Dictionary<Settlement, int> _legacyUntrackedMobilization = new Dictionary<Settlement, int>();
-
         private readonly Dictionary<MobileParty, List<ServingDetachmentRef>>
             _servingDetachmentIndex = new Dictionary<MobileParty, List<ServingDetachmentRef>>();
-
-        private FiefManpowerLedger ManpowerLedger => new FiefManpowerLedger(
-            _mobilizedHearth, _mobilizationOwners, _legacyUntrackedMobilization);
 
         private FiefServiceLedger ServiceLedger =>
             new FiefServiceLedger(_servingDetachmentIndex);
@@ -121,18 +108,11 @@ namespace ModifiedArmy.Models.Fief
         public override void SyncData(IDataStore dataStore)
         {
             dataStore.SyncData<Dictionary<Settlement, FiefPartyData>>("_fiefDataMap", ref this._fiefDataMap);
-            dataStore.SyncData("_mobilizedHearth", ref _mobilizedHearth);
-            dataStore.SyncData("_mobilizationOwners", ref _mobilizationOwners);
-            dataStore.SyncData("_mobilizationMigrationComplete", ref _mobilizationMigrationComplete);
-            dataStore.SyncData("_legacyUntrackedMobilization", ref _legacyUntrackedMobilization);
 
             if (_fiefDataMap == null)
             {
                 _fiefDataMap = new Dictionary<Settlement, FiefPartyData>();
             }
-            _mobilizedHearth ??= new Dictionary<Settlement, int>();
-            _mobilizationOwners ??= new Dictionary<Settlement, Settlement>();
-            _legacyUntrackedMobilization ??= new Dictionary<Settlement, int>();
         }
 
         private void OnSessionLaunched(CampaignGameStarter starter)
@@ -140,8 +120,7 @@ namespace ModifiedArmy.Models.Fief
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
             RebuildServingDetachmentIndex();
-            ReconcileMobilization(!_mobilizationMigrationComplete);
-            _mobilizationMigrationComplete = true;
+            ReconcileMobilization();
         }
 
         /// <summary>
@@ -193,7 +172,7 @@ namespace ModifiedArmy.Models.Fief
             {
                 data?.DailyUpdate();
             }
-            ReconcileMobilization(false);
+            ReconcileMobilization();
             foreach (MobileParty party in _servingDetachmentIndex.Keys.ToList())
             {
                 AdvanceServiceDays(party);
@@ -201,78 +180,40 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
-        private void ReconcileMobilization(bool preserveLegacyDeficits)
+        private void ReconcileMobilization()
         {
-            foreach (Settlement fief in _fiefDataMap.Keys.ToList())
+            foreach (FiefPartyData fief in _fiefDataMap.Values)
+            foreach (VillageFiefData village in fief?.Villages?.Values ??
+                Enumerable.Empty<VillageFiefData>())
             {
-                int totalRecords = _fiefDataMap[fief]?.GetRecruitedFiefTroopCount() ?? 0;
-                int tracked = _mobilizationOwners
-                    .Where(p => p.Value == fief)
-                    .Sum(p => _mobilizedHearth.TryGetValue(p.Key, out int n) ? Math.Max(0, n) : 0);
-                if (preserveLegacyDeficits && tracked < totalRecords)
-                    _legacyUntrackedMobilization[fief] = totalRecords - tracked;
-                int legacy = _legacyUntrackedMobilization.TryGetValue(fief, out int oldCount)
-                    ? Math.Min(totalRecords, Math.Max(0, oldCount))
-                    : 0;
-                if (legacy > 0) _legacyUntrackedMobilization[fief] = legacy;
-                else _legacyUntrackedMobilization.Remove(fief);
-                int expected = totalRecords - legacy;
-                if (tracked > expected)
+                int serving = village.GetServingFiefTroopCount();
+                if (village.MobilizedHearth != serving)
                 {
-                    ReleaseMobilization(fief, tracked - expected, false);
+                    village.RequireRecovery();
+                    ModLogger.Error(string.Format(
+                        "Fief mobilization mismatch: village={0}, tracked={1}, serving={2}. Dangerous operations remain rejected.",
+                        village.VillageSettlement?.StringId ?? "unknown",
+                        village.MobilizedHearth, serving));
                 }
-                else if (!preserveLegacyDeficits && tracked < expected)
+                else
                 {
-                    AddMobilizationMarkers(fief, expected - tracked);
+                    village.CompleteRecovery();
                 }
-            }
-
-            foreach (Settlement orphan in _mobilizationOwners.Values
-                .Where(owner => owner == null || !_fiefDataMap.ContainsKey(owner))
-                .Distinct()
-                .ToList())
-            {
-                if (orphan != null)
-                    ReleaseMobilization(orphan, int.MaxValue, false);
-            }
-            foreach (Settlement village in _mobilizationOwners
-                .Where(p => p.Value == null)
-                .Select(p => p.Key)
-                .ToList())
-            {
-                _mobilizationOwners.Remove(village);
-                _mobilizedHearth.Remove(village);
-            }
-        }
-
-        private void AddMobilizationMarkers(Settlement fief, int count)
-        {
-            List<Village> villages = fief?.BoundVillages?
-                .Where(v => v?.Settlement != null)
-                .OrderBy(v => v.Settlement.StringId)
-                .ToList();
-            if (villages == null || villages.Count == 0) return;
-            for (int i = 0; i < count; i++)
-            {
-                Settlement village = villages[i % villages.Count].Settlement;
-                int current = _mobilizedHearth.TryGetValue(village, out int value) ? value : 0;
-                _mobilizedHearth[village] = current + 1;
-                _mobilizationOwners[village] = fief;
             }
         }
 
         public int GetMobilizedHearth(Village village)
         {
-            return ManpowerLedger.GetMobilizedHearth(village);
+            return GetVillageFiefData(village?.Settlement)?.MobilizedHearth ?? 0;
         }
 
         /// <summary>
         /// Reserves rural production capacity before any troop roster is changed.
         /// The deduction is distributed evenly while preserving the recruitment floor.
         /// </summary>
-        public bool TryMobilize(Settlement fief, int count, int hearthPerTroop)
+        internal bool TryMobilizeVillage(Settlement village, int count)
         {
-            return ManpowerLedger.TryMobilize(fief, count, hearthPerTroop);
+            return GetVillageFiefData(village)?.TryMobilize(count) == true;
         }
 
         public bool TryConsumeProfessionalHearth(Settlement source, int count)
@@ -331,14 +272,11 @@ namespace ModifiedArmy.Models.Fief
         /// Releases an exact amount of mobilized capacity. Returning soldiers restore
         /// hearth; expired, captured, or reconciled records only release the marker.
         /// </summary>
-        public int ReleaseMobilization(Settlement fief, int count, bool restoreHearth)
+        internal int ReleaseVillageFiefService(Settlement village, int count,
+            bool restoreHearth)
         {
-            return ManpowerLedger.Release(fief, count, restoreHearth);
-        }
-
-        public int ReleaseFiefService(Settlement fief, int count, bool restoreHearth)
-        {
-            return ManpowerLedger.ReleaseService(fief, count, restoreHearth);
+            return GetVillageFiefData(village)?
+                .TryReleaseMobilization(count, restoreHearth) == true ? count : 0;
         }
 
         /// <summary>
@@ -346,9 +284,9 @@ namespace ModifiedArmy.Models.Fief
         /// Legacy untracked deficits are deliberately excluded because they
         /// cannot safely restore Hearth during a normal return.
         /// </summary>
-        internal int GetTrackedMobilizationCount(Settlement fief)
+        internal int GetTrackedMobilizationCount(Settlement village)
         {
-            return ManpowerLedger.GetTrackedCount(fief);
+            return GetVillageFiefData(village)?.MobilizedHearth ?? 0;
         }
 
         /// <summary>
@@ -358,12 +296,15 @@ namespace ModifiedArmy.Models.Fief
         /// No state changes are made when the tracked balance is insufficient.
         /// </summary>
         internal bool TryReleaseMobilizationExact(
-            Settlement fief,
+            Settlement village,
             int count,
             out Dictionary<Settlement, int> releasedByVillage)
         {
-            return ManpowerLedger.TryReleaseExact(
-                fief, count, out releasedByVillage);
+            releasedByVillage = new Dictionary<Settlement, int>();
+            VillageFiefData data = GetVillageFiefData(village);
+            if (data?.TryReleaseMobilization(count, true) != true) return false;
+            releasedByVillage[village] = count;
+            return true;
         }
 
         /// <summary>
@@ -371,10 +312,12 @@ namespace ModifiedArmy.Models.Fief
         /// in the same return transaction fails.
         /// </summary>
         internal void RollbackMobilizationRelease(
-            Settlement fief,
+            Settlement village,
             IReadOnlyDictionary<Settlement, int> releasedByVillage)
         {
-            ManpowerLedger.RollbackRelease(fief, releasedByVillage);
+            if (releasedByVillage != null &&
+                releasedByVillage.TryGetValue(village, out int count))
+                GetVillageFiefData(village)?.RollbackMobilization(count, true);
         }
 
         public void RebuildServingDetachmentIndex()
@@ -384,16 +327,18 @@ namespace ModifiedArmy.Models.Fief
 
         public void RegisterServingDetachment(
             Settlement source,
+            Settlement sourceVillage,
             FiefServiceBatch batch)
         {
-            ServiceLedger.Register(source, batch);
+            ServiceLedger.Register(source, sourceVillage, batch);
         }
 
         public void UnregisterServingDetachment(
             Settlement source,
+            Settlement sourceVillage,
             FiefServiceBatch batch)
         {
-            ServiceLedger.Unregister(source, batch);
+            ServiceLedger.Unregister(source, sourceVillage, batch);
         }
 
         internal List<ServingDetachmentRef> GetServingDetachments(MobileParty party)
@@ -539,13 +484,16 @@ namespace ModifiedArmy.Models.Fief
                 if (moved.Count > 0)
                 {
                     FiefServiceBatch split = item.Detachment.SplitTo(targetParty, moved);
-                    _fiefDataMap[item.SourceFief].ServiceBatches.Add(split);
-                    RegisterServingDetachment(item.SourceFief, split);
+                    GetVillageFiefData(item.SourceVillage)?.ServiceBatches.Add(split);
+                    RegisterServingDetachment(item.SourceFief,
+                        item.SourceVillage, split);
                 }
                 if (item.Detachment.IsEmpty())
                 {
-                    _fiefDataMap[item.SourceFief].ServiceBatches.Remove(item.Detachment);
-                    UnregisterServingDetachment(item.SourceFief, item.Detachment);
+                    GetVillageFiefData(item.SourceVillage)?.ServiceBatches
+                        .Remove(item.Detachment);
+                    UnregisterServingDetachment(item.SourceFief,
+                        item.SourceVillage, item.Detachment);
                 }
                 _fiefDataMap[item.SourceFief].RefreshManpowerCounters();
             }
@@ -567,13 +515,14 @@ namespace ModifiedArmy.Models.Fief
                 int lost = item.Detachment?.GetTotalCount() ?? 0;
                 if (lost > 0)
                 {
-                    ReleaseFiefService(item.SourceFief, lost, false);
+                    ReleaseVillageFiefService(item.SourceVillage, lost, false);
                     lostTotal += lost;
                 }
-                GetFiefData(item.SourceFief)?.ServiceBatches
+                GetVillageFiefData(item.SourceVillage)?.ServiceBatches
                     .Remove(item.Detachment);
                 GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
-                UnregisterServingDetachment(item.SourceFief, item.Detachment);
+                UnregisterServingDetachment(item.SourceFief,
+                    item.SourceVillage, item.Detachment);
             }
             return lostTotal;
         }
@@ -587,11 +536,13 @@ namespace ModifiedArmy.Models.Fief
             foreach (ServingDetachmentRef item in GetServingDetachments(party))
             {
                 int lost = item.Detachment.GetTotalCount();
-                if (lost > 0) ReleaseFiefService(item.SourceFief, lost, false);
-                GetFiefData(item.SourceFief)?.ServiceBatches
+                if (lost > 0) ReleaseVillageFiefService(
+                    item.SourceVillage, lost, false);
+                GetVillageFiefData(item.SourceVillage)?.ServiceBatches
                     .Remove(item.Detachment);
                 GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
-                UnregisterServingDetachment(item.SourceFief, item.Detachment);
+                UnregisterServingDetachment(item.SourceFief,
+                    item.SourceVillage, item.Detachment);
             }
         }
 
@@ -601,6 +552,17 @@ namespace ModifiedArmy.Models.Fief
         public FiefPartyData GetFiefData(Settlement settlement)
         {
             return _fiefDataMap.TryGetValue(settlement, out var data) ? data : null;
+        }
+
+        internal VillageFiefData GetVillageFiefData(Settlement villageSettlement)
+        {
+            if (villageSettlement?.Village == null) return null;
+            Settlement bound = villageSettlement.Village.Bound;
+            VillageFiefData current = GetFiefData(bound)?
+                .GetVillageData(villageSettlement);
+            return current ?? _fiefDataMap.Values
+                .Select(data => data?.GetVillageData(villageSettlement))
+                .FirstOrDefault(data => data != null);
         }
 
         /// <summary>
@@ -769,9 +731,10 @@ namespace ModifiedArmy.Models.Fief
             if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
             {
                 int total = 0;
-                if (data.ReturnBatches != null)
+                if (data.Villages != null)
                 {
-                    foreach (var detachment in data.ReturnBatches)
+                    foreach (var detachment in data.Villages.Values
+                        .Where(v => v != null).SelectMany(v => v.ReturnBatches))
                     {
                         total += detachment.GetTotalCount();
                     }

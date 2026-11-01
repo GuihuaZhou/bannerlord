@@ -86,12 +86,10 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>新的 TroopRoster，仅包含当前封邑模板认可的士兵</returns>
         public TroopRoster GetFiefTroopRoster()
         {
-            if (_fiefParty == null)
-                return TroopRoster.CreateDummyTroopRoster();
-
             var fiefRoster = TroopRoster.CreateDummyTroopRoster();
-
-            foreach (var element in _fiefParty.GetTroopRoster())
+            foreach (VillageFiefData village in OrderedVillages())
+            foreach (var element in village.GetReadyFiefTroopRoster(
+                _fiefPartyTemplate).GetTroopRoster())
             {
                 var troop = element.Character;
                 if (!_fiefPartyTemplate.IsEnableTroop(troop))
@@ -126,13 +124,18 @@ namespace ModifiedArmy.Models.Fief
             if (allowed <= 0) return;
             var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
 
-            // 批量添加
-            foreach (var kvp in tmpNewTroops)
+            List<VillageFiefData> targets = OrderedVillages()
+                .Where(v => v.GetReadyRoster() != null).ToList();
+            if (targets.Count == 0) return;
+            int cursor = 0;
+            int recruited = 0;
+            foreach (var kvp in tmpNewTroops.OrderBy(p => p.Key.StringId))
+            for (int i = 0; i < kvp.Value; i++)
             {
-                _fiefParty.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
-
+                targets[cursor++ % targets.Count].GetReadyRoster().AddToCounts(
+                    kvp.Key, 1, false, 0, 0, true, -1);
+                recruited++;
             }
-            int recruited = tmpNewTroops.Values.Sum();
             SyncManpowerCounters();
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
@@ -264,10 +267,12 @@ namespace ModifiedArmy.Models.Fief
             // 对每个士兵独立判定是否升级
             int upgradedCount = 0;
 
-            // 遍历所有 troop 
-            var rosterSnapshot = _fiefParty.GetTroopRoster();
-            foreach (var element in rosterSnapshot)
+            foreach (VillageFiefData village in OrderedVillages())
             {
+              TroopRoster roster = village.GetReadyRoster();
+              if (roster == null) continue;
+              foreach (var element in roster.GetTroopRoster())
+              {
                 var troop = element.Character;
                 int count = element.Number - element.WoundedNumber;
 
@@ -298,12 +303,13 @@ namespace ModifiedArmy.Models.Fief
                         if (newTroop == null)
                             continue;
 
-                        _fiefParty.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
-                        _fiefParty.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
+                        roster.RemoveTroop(troop, 1, default(UniqueTroopDescriptor), 0);
+                        roster.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
 
                         upgradedCount++;
                     }
                 }
+              }
             }
 
             if (upgradedCount > 0)
@@ -325,22 +331,23 @@ namespace ModifiedArmy.Models.Fief
             PerformAutoUpgrade();
 
             // Process returned soldiers whose cooldown has completed.
-            if (ReturnBatches != null)
+            foreach (VillageFiefData village in OrderedVillages())
             {
-                for (int i = ReturnBatches.Count - 1; i >= 0; i--)
+                TroopRoster roster = village.GetReadyRoster();
+                for (int i = village.ReturnBatches.Count - 1; i >= 0; i--)
                 {
-                    var detachment = ReturnBatches[i];
+                    var detachment = village.ReturnBatches[i];
                     detachment.Tick();
 
-                    if (detachment.IsReady())
+                    if (detachment.IsReady() && roster != null)
                     {
                         foreach (var kvp in detachment.Troops)
                         {
-                            _fiefParty.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
+                            roster.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
                         }
 
                         // 移除该分遣队
-                        ReturnBatches.RemoveAt(i);
+                        village.ReturnBatches.RemoveAt(i);
 
                         if (_settlement.OwnerClan == Clan.PlayerClan)
                         {

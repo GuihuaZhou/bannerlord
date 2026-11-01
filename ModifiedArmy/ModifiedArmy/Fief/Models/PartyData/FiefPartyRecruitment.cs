@@ -134,10 +134,7 @@ namespace ModifiedArmy.Models.Fief
                     0);
                 return 0;
             }
-            FiefPartyManager manager = Campaign.Current
-                .GetCampaignBehavior<FiefPartyManager>();
-            if (approvedCount <= 0 || manager == null ||
-                !manager.TryMobilize(_settlement, approvedCount, 1))
+            if (approvedCount <= 0)
             {
                 LogAiFiefRecruitment(
                     targetParty,
@@ -147,59 +144,10 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
             }
 
-            // Apply the completed decision only after all candidates have
-            // been evaluated. This prevents earlier roster mutations from
-            // changing the model inputs for later candidates.
-            foreach (var approval in approvedTroops)
-            {
-                CharacterObject troop = approval.Key;
-                int taken = approval.Value;
-
-                if (troop == null || taken <= 0)
-                {
-                    continue;
-                }
-
-                // 审批与实际提交之间名册可能变化，因此提交时再次收紧数量。
-                TroopRosterElement liveElement = _fiefParty.GetTroopRoster()
-                    .FirstOrDefault(item => item.Character == troop);
-                int healthyAvailable = Math.Max(
-                    0,
-                    liveElement.Number - liveElement.WoundedNumber);
-                int liveAvailable = useTemplateWeights
-                    ? healthyAvailable
-                    : liveElement.Number;
-                taken = Math.Min(taken, liveAvailable);
-                if (taken <= 0 || _fiefPartyTemplate?.IsEnableTroop(troop) != true)
-                    continue;
-                RemoveTroopsFromParty(_fiefParty, troop, taken);
-                targetParty.MemberRoster.AddToCounts(
-                    troop,
-                    taken,
-                    false,
-                    0,
-                    0,
-                    true,
-                    -1);
-
-                // Fief troops have no immediate denar purchase price, but
-                // their post-exemption wage still consumes the clan's shared
-                // thirty-day recruitment commitment.
-                if (ClanRecruitmentBudgetManager
-                    .GetSupportingClan(targetParty) != Clan.PlayerClan)
-                {
-                    ClanRecruitmentBudgetManager.CommitRecruitment(
-                        targetParty,
-                        taken,
-                        0f,
-                        AiRecruitmentFinancialModel.EstimateUnitDailyWage(
-                            targetParty,
-                            troop));
-                }
-
-                tmpRecruitTroops[troop] = taken;
-                hearthCost += taken;
-            }
+            if (!TryCommitVillageRecruitment(targetParty, approvedTroops,
+                useTemplateWeights, out tmpRecruitTroops))
+                return 0;
+            hearthCost = tmpRecruitTroops.Values.Sum();
 
             int totalRecruited =
                 tmpRecruitTroops.Values.Sum();
@@ -220,9 +168,12 @@ namespace ModifiedArmy.Models.Fief
                 candidates.Sum(candidate => candidate.AvailableCount),
                 totalRecruited);
 
-            // Rural mobilization has already been reserved atomically.
-
-            CreateServingDetachment(targetParty, tmpRecruitTroops);
+            foreach (var recruited in tmpRecruitTroops)
+                if (ClanRecruitmentBudgetManager.GetSupportingClan(targetParty) != Clan.PlayerClan)
+                    ClanRecruitmentBudgetManager.CommitRecruitment(targetParty,
+                        recruited.Value, 0f,
+                        AiRecruitmentFinancialModel.EstimateUnitDailyWage(
+                            targetParty, recruited.Key));
 
             TextObject msg =
                 GameTexts.FindText(
@@ -802,41 +753,14 @@ namespace ModifiedArmy.Models.Fief
                 remainingPartySpace -= approved;
             }
             int requestedCount = validatedSelection.Values.Sum();
-            FiefPartyManager manager = Campaign.Current
-                .GetCampaignBehavior<FiefPartyManager>();
-            if (requestedCount <= 0 || manager == null ||
-                !manager.TryMobilize(_settlement, requestedCount, 1))
+            if (requestedCount <= 0)
             {
                 return 0;
             }
 
-            foreach (var element in selectedRoster.GetTroopRoster())
-            {
-                var troop = element.Character;
-                int count = troop != null && validatedSelection.TryGetValue(troop, out int approved)
-                    ? approved
-                    : 0;
-                if (troop == null || count <= 0) continue;
-
-                // A selected troop is recruitable only when it belongs to this
-                // exact fief template, not merely to a globally classified
-                // militia/sergeant/retinue category.
-                if (_fiefPartyTemplate?.IsEnableTroop(troop) != true)
-                    continue;
-
-                // 记录招募的士兵
-                tmpRecruitTroops[troop] = count;
-                // 从封邑party移除士兵
-                RemoveTroopsFromParty(_fiefParty, troop, count);
-
-                // ====================================================
-                // Hearth 成本
-                //
-                // 每征召 1 名士兵，消耗 1 Hearth。
-                // Prosperity 不在这里计算，统一在本次征召完成后计算。
-                // ====================================================
-                hearthCost += count;
-            }
+            if (!TryCommitVillageRecruitment(targetParty, validatedSelection,
+                false, out tmpRecruitTroops)) return 0;
+            hearthCost = tmpRecruitTroops.Values.Sum();
 
             int totalRecruited =
                 tmpRecruitTroops.Values.Sum();
@@ -844,9 +768,6 @@ namespace ModifiedArmy.Models.Fief
             if (totalRecruited <= 0)
                 return 0;
 
-            // Rural mobilization has already been reserved atomically.
-
-            CreateServingDetachment(targetParty, tmpRecruitTroops);
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_recruit_to_party");
             msg.SetTextVariable(
@@ -868,14 +789,128 @@ namespace ModifiedArmy.Models.Fief
                 ModLogger.Debug(msg.ToString());
             }
 
-            // Add exactly the roster that was validated and removed from the
-            // fief, never the unchecked UI selection object.
-            foreach (var recruited in tmpRecruitTroops)
-                targetParty.MemberRoster.AddToCounts(recruited.Key, recruited.Value);
-
             return totalRecruited;
         }
 
+
+        private sealed class VillageRecruitmentSource
+        {
+            public VillageFiefData Village;
+            public CharacterObject Troop;
+            public int Count;
+            public int Wounded;
+        }
+
+        private bool TryCommitVillageRecruitment(MobileParty targetParty,
+            IReadOnlyDictionary<CharacterObject, int> approvals,
+            bool healthyOnly,
+            out Dictionary<CharacterObject, int> committed)
+        {
+            committed = new Dictionary<CharacterObject, int>();
+            if (targetParty == null || approvals == null) return false;
+            List<VillageRecruitmentSource> plan = new();
+            foreach (var approval in approvals.Where(p => p.Key != null && p.Value > 0)
+                .OrderBy(p => p.Key.StringId))
+            {
+                int remaining = approval.Value;
+                foreach (VillageFiefData village in OrderedVillages())
+                {
+                    TroopRoster roster = village.GetReadyRoster();
+                    if (roster == null) continue;
+                    TroopRosterElement element = roster.GetTroopRoster()
+                        .FirstOrDefault(e => e.Character == approval.Key);
+                    int available = healthyOnly
+                        ? Math.Max(0, element.Number - element.WoundedNumber)
+                        : Math.Max(0, element.Number);
+                    int count = Math.Min(remaining, available);
+                    if (count <= 0) continue;
+                    int wounded = healthyOnly ? 0 : Math.Max(0,
+                        count - Math.Max(0, element.Number - element.WoundedNumber));
+                    plan.Add(new VillageRecruitmentSource
+                    {
+                        Village = village, Troop = approval.Key,
+                        Count = count, Wounded = wounded
+                    });
+                    remaining -= count;
+                    if (remaining == 0) break;
+                }
+                if (remaining != 0) return false;
+            }
+            int total = plan.Sum(p => p.Count);
+            if (total <= 0 || targetParty.Party.PartySizeLimit -
+                targetParty.Party.NumberOfAllMembers < total) return false;
+            foreach (var group in plan.GroupBy(p => p.Village))
+                if (Math.Max(0, (int)Math.Floor(
+                    group.Key.VillageSettlement.Village.Hearth) - 100) <
+                    group.Sum(p => p.Count)) return false;
+
+            List<FiefServiceBatch> created = new();
+            List<(VillageFiefData Village, int Count)> mobilized = new();
+            List<VillageRecruitmentSource> removedFromVillages = new();
+            List<VillageRecruitmentSource> addedToTarget = new();
+            try
+            {
+                foreach (var entry in plan)
+                {
+                    entry.Village.GetReadyRoster().AddToCounts(entry.Troop,
+                        -entry.Count, false, -entry.Wounded, 0, true, -1);
+                    removedFromVillages.Add(entry);
+                }
+                foreach (var group in plan.GroupBy(p => p.Village))
+                {
+                    int count = group.Sum(p => p.Count);
+                    if (!group.Key.TryMobilize(count))
+                        throw new InvalidOperationException("VillageHearthChanged");
+                    mobilized.Add((group.Key, count));
+                    Dictionary<CharacterObject, int> troops = group
+                        .GroupBy(p => p.Troop)
+                        .ToDictionary(g => g.Key, g => g.Sum(p => p.Count));
+                    FiefServiceBatch batch = CreateServingDetachment(
+                        group.Key, targetParty, troops);
+                    if (batch == null)
+                        throw new InvalidOperationException("BatchCreationFailed");
+                    created.Add(batch);
+                }
+                foreach (var entry in plan)
+                {
+                    targetParty.MemberRoster.AddToCounts(entry.Troop,
+                        entry.Count, false, entry.Wounded, 0, true, -1);
+                    addedToTarget.Add(entry);
+                    committed[entry.Troop] = committed.TryGetValue(
+                        entry.Troop, out int old) ? old + entry.Count : entry.Count;
+                }
+                SyncManpowerCounters();
+                return true;
+            }
+            catch
+            {
+                FiefPartyManager manager = Campaign.Current?
+                    .GetCampaignBehavior<FiefPartyManager>();
+                foreach (var entry in addedToTarget)
+                {
+                    targetParty.MemberRoster.AddToCounts(entry.Troop,
+                        -entry.Count, false, -entry.Wounded, 0, true, -1);
+                }
+                foreach (var entry in removedFromVillages)
+                {
+                    entry.Village.GetReadyRoster()?.AddToCounts(entry.Troop,
+                        entry.Count, false, entry.Wounded, 0, true, -1);
+                }
+                foreach (FiefServiceBatch batch in created)
+                {
+                    VillageFiefData village = plan.First(p =>
+                        p.Village.ServiceBatches.Contains(batch)).Village;
+                    village.ServiceBatches.Remove(batch);
+                    manager?.UnregisterServingDetachment(_settlement,
+                        village.VillageSettlement, batch);
+                }
+                foreach (var item in mobilized)
+                    item.Village.TryReleaseMobilization(item.Count, true);
+                committed.Clear();
+                SyncManpowerCounters();
+                return false;
+            }
+        }
 
         /// <summary>
         /// 从定居点俘虏中直接招募指定数量的士兵到封建部队（无需冷却）。
@@ -887,9 +922,6 @@ namespace ModifiedArmy.Models.Fief
         {
             // 参数校验
             if (troop == null || count <= 0)
-                return false;
-
-            if (_fiefParty == null)
                 return false;
 
             // 1. 检查是否为封建部队允许的兵种
@@ -905,7 +937,11 @@ namespace ModifiedArmy.Models.Fief
 
 
             // Prisoner conversion does not consume or restore rural capacity.
-            _fiefParty.AddToCounts(troop, count, false, 0, 0, true, -1);
+            VillageFiefData target = OrderedVillages()
+                .FirstOrDefault(v => v.GetReadyRoster() != null);
+            if (target == null) return false;
+            target.GetReadyRoster().AddToCounts(
+                troop, count, false, 0, 0, true, -1);
 
             // 消耗的繁荣度
             float prosperityCost = 0;

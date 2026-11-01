@@ -12,11 +12,14 @@ namespace ModifiedArmy.Models.Fief
     internal readonly struct ServingDetachmentRef
     {
         public Settlement SourceFief { get; }
+        public Settlement SourceVillage { get; }
         public FiefServiceBatch Detachment { get; }
 
-        public ServingDetachmentRef(Settlement sourceFief, FiefServiceBatch detachment)
+        public ServingDetachmentRef(Settlement sourceFief,
+            Settlement sourceVillage, FiefServiceBatch detachment)
         {
             SourceFief = sourceFief;
+            SourceVillage = sourceVillage;
             Detachment = detachment;
         }
     }
@@ -120,11 +123,14 @@ namespace ModifiedArmy.Models.Fief
                 result.MatchedCount += after;
                 int lost = Math.Max(0, before - after);
                 result.LostCount += lost;
-                if (lost > 0) manager.ReleaseFiefService(item.SourceFief, lost, false);
+                if (lost > 0) manager.ReleaseVillageFiefService(
+                    item.SourceVillage, lost, false);
                 if (item.Detachment.IsEmpty())
                 {
-                    manager.GetFiefData(item.SourceFief)?.ServiceBatches.Remove(item.Detachment);
-                    manager.UnregisterServingDetachment(item.SourceFief, item.Detachment);
+                    manager.GetVillageFiefData(item.SourceVillage)?
+                        .ServiceBatches.Remove(item.Detachment);
+                    manager.UnregisterServingDetachment(item.SourceFief,
+                        item.SourceVillage, item.Detachment);
                 }
                 manager.GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
             }
