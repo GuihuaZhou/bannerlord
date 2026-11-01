@@ -1,5 +1,9 @@
 # ModifiedArmy：Hearth 劳动力与文化封建兵供养制度优化——Worker 实施方案 V1.1
 
+> **后续决策覆盖（2026-11-01，基准 `535ab368` 之后）：** 本文件中“保留 `BaseLimit + VillageBonus × BoundVillages.Count` 静态封邑兵人数上限”的规定已经废止。封邑兵规模现仅由逐村真实共享供养余额、文化封建预算、兵种 Tier 成本、每日产能及既有业务资格共同约束；不得恢复 `_totalLimit`、`GetFiefTroopLimit()` 或 XML `baseLimit`/`villageBonus`。本文件的七文化成本、职业兵每人 1 Hearth、100 Hearth 保护线及逐村预算公式继续有效。
+>
+> **新游戏初始化补充：** 初始封建兵编成必须按完整 `FiefPartyTemplate` 的全部兵种权重和各兵种真实 Tier 成本计算。受兵营等级限制而尚未解锁的兵种份额保留为空缺，不得重新分配给已解锁的少数低阶兵种，也不得为了耗尽封建 Hearth 预算而持续生成同一种兵。
+
 > 状态：**设计已确认，尚未施工**；V1.1 修订：取消 UI 的 Workforce 改名，全部现有UI文本保持不变。  
 > 基准仓库：`GuihuaZhou/bannerlord`，截至核对时最新提交 `bc01585378c516d2baa8071da538932f057a81cb`（2026-11-01 核对）  
 > 实施模块：`ModifiedArmy`  
