@@ -409,7 +409,11 @@ namespace ModifiedArmy.Models.Fief
                   .RequireActiveConfig().GetDoctrine(_settlement);
               TroopRoster roster = village.GetReadyRoster();
               if (roster == null) continue;
-              foreach (var element in roster.GetTroopRoster())
+              // Upgrades mutate this roster. Enumerate a value snapshot so
+              // RemoveTroop/AddToCounts cannot invalidate the live roster's
+              // List<TroopRosterElement> enumerator. Snapshot counts also
+              // prevent newly upgraded troops from upgrading again this week.
+              foreach (var element in roster.GetTroopRoster().ToList())
               {
                 var troop = element.Character;
                 int count = element.Number - element.WoundedNumber;

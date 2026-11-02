@@ -13,6 +13,8 @@ using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.SettlementEconomy.Config;
 using ModifiedPolitics.SettlementEconomy.Models;
 using ModifiedPolitics.Tool;
+using ModifiedPolitics.WarDisposition.Integration;
+using ModifiedArmy.ForceManagement.Services;
 using System;
 using System.Reflection;
 using TaleWorlds.CampaignSystem;
@@ -119,6 +121,8 @@ namespace ModifiedPolitics
                 campaignStarter.AddBehavior(new MarshalOfficeAiBehavior());
                 campaignStarter.AddBehavior(new MarshalArmyAiBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
+                WarDispositionProviderRegistry.Register(
+                    new ModifiedPoliticsWarDispositionProvider());
                 campaignStarter.AddBehavior(new PartyBattleEventBehavior());
                 campaignStarter.AddBehavior(new HeroWarEventBehavior());
                 campaignStarter.AddBehavior(new SettlementWarEventBehavior());

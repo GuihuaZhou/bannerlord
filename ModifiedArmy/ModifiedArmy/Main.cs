@@ -98,6 +98,11 @@ namespace ModifiedArmy
             {
                 var campaignStarter = (CampaignGameStarter)gameStarterObject;
 
+                // Providers are registered by upstream modules for each game.
+                // Clearing here prevents a previous campaign registration from
+                // leaking into the next campaign lifecycle.
+                WarDispositionProviderRegistry.Clear();
+
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup",
                     "BasicTroopGroups",
