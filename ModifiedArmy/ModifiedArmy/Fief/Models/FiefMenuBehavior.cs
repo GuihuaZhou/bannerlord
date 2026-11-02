@@ -47,7 +47,8 @@ namespace ModifiedArmy.Models.Fief
         private const string FIEF_MENU_ID = "modified_army_fief_menu";
         private const string FIEF_OPTION_ID = "modified_army_settlement_fief";
 
-        private const string MANAGE_FIEF_OPTION_ID = "fief_manage";
+        private const string RECRUIT_FIEF_OPTION_ID = "fief_manage";
+        private const string DISBAND_FIEF_OPTION_ID = "fief_disband";
         private const string LEAVE_FIEF_OPTION_ID = "fief_return";
         private const string REINFORCEMENT_RATE_OPTION_ID =
             "modified_army_view_reinforcement_rate";
@@ -276,11 +277,20 @@ namespace ModifiedArmy.Models.Fief
             // Source and lifecycle filters are hosted inside the troop window.
             starter.AddGameMenuOption(
                 FIEF_MENU_ID,
-                MANAGE_FIEF_OPTION_ID,
-                "{=ModifiedArmy_FiefManagement_Title}Troop Management",
+                RECRUIT_FIEF_OPTION_ID,
+                "{=ModifiedArmy_FiefMenu_Recruit}Recruit soldiers",
                 ConfigureFiefPoolViewOption,
                 OpenFiefManagement,
                 isLeave: false, index: 0, isRepeatable: false
+            );
+
+            starter.AddGameMenuOption(
+                FIEF_MENU_ID,
+                DISBAND_FIEF_OPTION_ID,
+                "{=ModifiedArmy_FiefMenu_Disband}Disband soldiers",
+                ConfigureFiefDisbandOption,
+                DisbandFiefTroops,
+                isLeave: false, index: 1, isRepeatable: false
             );
 
             // Return
@@ -315,11 +325,11 @@ namespace ModifiedArmy.Models.Fief
         /// Keeps modification commands visible for inspection while disabling
         /// them in settlements owned by another clan.
         /// </summary>
-        private static bool ConfigureFiefModificationOption(
+        private static bool ConfigureFiefDisbandOption(
             MenuCallbackArgs args)
         {
             args.IsEnabled = CanModifyCurrentFief();
-            args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
+            args.optionLeaveType = GameMenuOption.LeaveType.Manage;
             return true;
         }
 
@@ -331,7 +341,7 @@ namespace ModifiedArmy.Models.Fief
                 (settlement.IsFortification || settlement.IsVillage);
             args.IsEnabled = canView;
             args.optionLeaveType = GameMenuOption.LeaveType.Submenu;
-            return true;
+            return canView;
         }
 
         private void OpenFiefManagement(MenuCallbackArgs args)
@@ -346,7 +356,7 @@ namespace ModifiedArmy.Models.Fief
             FiefManagementPresentationContext context =
                 FiefManagementPresentationContext.Begin(
                     interaction, manager, playerParty,
-                    CanModifyCurrentFief());
+                    canModify: false);
             args.MenuContext.OpenTroopSelection(
                 fullRoster: context.GetFullRoster(),
                 initialSelections: TroopRoster.CreateDummyTroopRoster(),
@@ -356,6 +366,19 @@ namespace ModifiedArmy.Models.Fief
                 minSelectableTroopCount: 0);
             args.MenuContext.SetPanelSound(
                 "event:/ui/panels/panel_settlement_enter_recruit");
+        }
+
+        private static void DisbandFiefTroops(MenuCallbackArgs args)
+        {
+            Settlement interaction = Settlement.CurrentSettlement;
+            MobileParty playerParty = MobileParty.MainParty;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (interaction == null || playerParty == null || manager == null ||
+                !CanModifyCurrentFief())
+                return;
+
+            manager.ReturnTroopsToSettlement(interaction, playerParty);
         }
 
         /// <summary>
