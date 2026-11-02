@@ -108,7 +108,10 @@ namespace ModifiedArmy.Models.Fief
             if (doctrine == null)
                 throw new InvalidOperationException(
                     "Fief budget calculation requires a doctrine.");
-            int allocatable = Math.Max(0, GetEffectiveSupplyHearth() - 100);
+            // Feudal support allocates the full effective Hearth pool. The
+            // 100-Hearth reserve belongs to professional/shared production,
+            // not to feudal troop capacity.
+            int allocatable = GetEffectiveSupplyHearth();
             return checked((int)Math.Floor(
                 (double)allocatable * doctrine.FiefWeight /
                 (doctrine.FiefWeight + doctrine.ProfessionalWeight)));
@@ -170,8 +173,10 @@ namespace ModifiedArmy.Models.Fief
         internal bool TryMobilize(int count)
         {
             Village village = VillageSettlement?.Village;
+            // Mobilization may consume all current Hearth, but never more
+            // than the village actually has at commit time.
             if (RecoveryRequired || village == null || count <= 0 ||
-                Math.Max(0, (int)Math.Floor(village.Hearth) - 100) < count)
+                Math.Max(0, (int)Math.Floor(village.Hearth)) < count)
                 return false;
             village.Hearth -= count;
             MobilizedHearth += count;

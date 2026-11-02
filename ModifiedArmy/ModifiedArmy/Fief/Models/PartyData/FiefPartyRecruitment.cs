@@ -921,8 +921,10 @@ namespace ModifiedArmy.Models.Fief
                 foreach (var group in plan.GroupBy(p => p.Village))
                 {
                     Village village = group.Key.VillageSettlement?.Village;
+                    // Feudal mobilization has no minimum-Hearth reserve. This
+                    // precheck mirrors VillageFiefData.TryMobilize exactly.
                     if (village == null || Math.Max(0,
-                        (int)Math.Floor(village.Hearth) - 100) <
+                        (int)Math.Floor(village.Hearth)) <
                         group.Sum(p => p.Count))
                         return RejectRecruitmentTransaction(operationId,
                             targetParty, approvals,
