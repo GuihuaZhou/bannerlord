@@ -93,6 +93,10 @@ namespace ModifiedArmy.Models.Fief
             _servingDetachmentIndex = new Dictionary<MobileParty, List<ServingDetachmentRef>>();
         private readonly HashSet<MobileParty> _blockedServiceParties =
             new HashSet<MobileParty>();
+        private readonly HashSet<Settlement> _runtimeReadinessFailuresLogged =
+            new HashSet<Settlement>();
+
+        public bool IsSessionReady { get; private set; }
 
         private FiefServiceLedger ServiceLedger =>
             new FiefServiceLedger(
@@ -125,12 +129,19 @@ namespace ModifiedArmy.Models.Fief
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
+            IsSessionReady = false;
+            _runtimeReadinessFailuresLogged.Clear();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
             if (CampaignState.IsNewGame)
                 InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
             ReconcileMobilization();
+            IsSessionReady = true;
+            ModLogger.Info(string.Format(
+                "Fief runtime session ready: fiefs={0}.",
+                _fiefDataMap.Values.Count(data =>
+                    data?.IsRuntimeReady == true)));
         }
 
         private void InitializeNewGameFiefTroops()
@@ -141,7 +152,7 @@ namespace ModifiedArmy.Models.Fief
                 .Where(data => data?.GetSettlement()?.IsFortification == true)
                 .OrderBy(data => data.GetSettlement().StringId))
             {
-                if (!data.InitialFeifPartyData()) continue;
+                if (!data.IsRuntimeReady) continue;
                 int added = data.InitializeFiefTroopsByTemplateWeights();
                 if (added <= 0) continue;
                 produced += added;
@@ -160,22 +171,63 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public void InitializeFiefData()
         {
+            int expected = 0;
+            int initialized = 0;
+            int failed = 0;
             foreach (var settlement in Settlement.All)
             {
                 //if (settlement.OwnerClan != Clan.PlayerClan) continue;
                 if (!settlement.IsCastle && !settlement.IsTown) continue;
-                if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
+                expected++;
+                FiefPartyData data;
+                if (_fiefDataMap.TryGetValue(settlement, out data) && data != null)
                 {
-                    data.InitialFeifPartyData();
+                    // Reuse the deserialized authoritative data container.
                 }
                 else
                 {
-                    _fiefDataMap[settlement] = new FiefPartyData(settlement);
+                    data = new FiefPartyData(settlement);
+                    _fiefDataMap[settlement] = data;
                 }
+                bool ready;
+                try
+                {
+                    ready = data.InitialFeifPartyData();
+                }
+                catch (Exception exception)
+                {
+                    string reason = "InitializationException:" +
+                        exception.GetType().Name;
+                    data.MarkRuntimeInitializationFailed(reason);
+                    failed++;
+                    ModLogger.Error(string.Format(
+                        "Fief runtime initialization failed: fief={0}, culture={1}, expectedTemplate={2}, reason={3}, exception={4}.",
+                        settlement.StringId,
+                        settlement.Culture?.StringId ?? "unknown",
+                        data.ExpectedTemplateId,
+                        reason,
+                        exception));
+                    continue;
+                }
+                if (ready)
+                {
+                    initialized++;
+                    continue;
+                }
+                failed++;
+                ModLogger.Error(string.Format(
+                    "Fief runtime initialization failed: fief={0}, culture={1}, expectedTemplate={2}, reason={3}.",
+                    settlement.StringId,
+                    settlement.Culture?.StringId ?? "unknown",
+                    data.ExpectedTemplateId,
+                    data.RuntimeInitializationFailureReason ?? "unknown"));
             }
             TextObject msgComplete = GameTexts.FindText("str_modifiedarmy_fief_init_complete");
-            msgComplete.SetTextVariable("COUNT", _fiefDataMap.Count);
+            msgComplete.SetTextVariable("COUNT", initialized);
             ModLogger.Info(msgComplete.ToString());
+            ModLogger.Info(string.Format(
+                "Fief runtime initialization summary: expected={0}, initialized={1}, failed={2}.",
+                expected, initialized, failed));
         }
 
         private void OnWeeklyTick()
@@ -706,19 +758,48 @@ namespace ModifiedArmy.Models.Fief
             int remainingBatch,
             int cooldownWeeks)
         {
-            ModLogger.Notice(string.Format(
-                "Fief return: party={0}, source={1}, batch={2}, " +
-                "requested={3}, returned={4}, remainingBatch={5}, " +
-                "restoredHearth={6}, cooldownWeeks={7}, reason={8}",
-                party?.StringId ?? "unknown",
-                result?.SourceFief?.StringId ?? "unknown",
-                result?.BatchId ?? "unknown",
-                result?.RequestedCount ?? 0,
-                result?.ActualReturnedCount ?? 0,
-                Math.Max(0, remainingBatch),
-                result?.ActualRestoredHearth ?? 0,
-                Math.Max(0, cooldownWeeks),
-                result?.ReasonCode ?? "unknown"));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_fief_return_diagnostic");
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("SOURCE_NAME",
+                result?.SourceFief?.Name ?? new TextObject(
+                    "{=ModifiedArmy_CommonUnknown}Unknown"));
+            message.SetTextVariable("BATCH_ID", result?.BatchId ?? "unknown");
+            message.SetTextVariable("REQUESTED", result?.RequestedCount ?? 0);
+            message.SetTextVariable("RETURNED",
+                result?.ActualReturnedCount ?? 0);
+            message.SetTextVariable("REMAINING", Math.Max(0, remainingBatch));
+            message.SetTextVariable("RESTORED_HEARTH",
+                result?.ActualRestoredHearth ?? 0);
+            message.SetTextVariable("COOLDOWN_WEEKS",
+                Math.Max(0, cooldownWeeks));
+            message.SetTextVariable("RESULT",
+                GetFiefReturnReasonText(result?.ReasonCode));
+            ModLogger.Notice(message.ToString());
+        }
+
+        private static TextObject GetFiefReturnReasonText(string reasonCode)
+        {
+            string id;
+            switch (reasonCode)
+            {
+                case "Completed": id = "ModifiedArmy_FiefReturnCompleted"; break;
+                case "PartiallyCompleted": id = "ModifiedArmy_FiefReturnPartial"; break;
+                case "InvalidRequest": id = "ModifiedArmy_FiefReturnInvalidRequest"; break;
+                case "InvalidReturnLocation": id = "ModifiedArmy_FiefReturnInvalidLocation"; break;
+                case "NoEligibleBatch": id = "ModifiedArmy_FiefReturnNoBatch"; break;
+                case "RecoveryRequired": id = "ModifiedArmy_FiefReturnRecoveryRequired"; break;
+                case "NoTrackedMobilization": id = "ModifiedArmy_FiefReturnNoMobilization"; break;
+                case "StateChangedBeforeCommit": id = "ModifiedArmy_FiefReturnStateChanged"; break;
+                default:
+                    TextObject other = new TextObject(
+                        "{=ModifiedArmy_FiefReturnOther}Other result ({REASON_CODE})");
+                    other.SetTextVariable("REASON_CODE",
+                        reasonCode ?? "unknown");
+                    return other;
+            }
+            return new TextObject("{=" + id + "}" + reasonCode);
         }
 
         public void ReconcileServingPartiesForClan(Clan clan)
@@ -1102,6 +1183,30 @@ namespace ModifiedArmy.Models.Fief
         public FiefPartyData GetFiefData(Settlement settlement)
         {
             return _fiefDataMap.TryGetValue(settlement, out var data) ? data : null;
+        }
+
+        public bool TryGetReadyFiefData(Settlement settlement,
+            out FiefPartyData data)
+        {
+            data = null;
+            if (!IsSessionReady || settlement == null) return false;
+            FiefPartyData candidate = GetFiefData(settlement);
+            if (candidate?.IsRuntimeReady != true)
+            {
+                if (_runtimeReadinessFailuresLogged.Add(settlement))
+                {
+                    ModLogger.Error(string.Format(
+                        "Fief runtime data unavailable: fief={0}, culture={1}, expectedTemplate={2}, reason={3}.",
+                        settlement.StringId,
+                        settlement.Culture?.StringId ?? "unknown",
+                        candidate?.ExpectedTemplateId ?? "unknown",
+                        candidate?.RuntimeInitializationFailureReason ??
+                            (candidate == null ? "DataMissing" : "NotReady")));
+                }
+                return false;
+            }
+            data = candidate;
+            return true;
         }
 
         internal VillageFiefData GetVillageFiefData(Settlement villageSettlement)

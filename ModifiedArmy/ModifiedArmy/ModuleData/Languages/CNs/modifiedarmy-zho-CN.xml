@@ -10,7 +10,20 @@
     <string id="ModifiedArmy_FiefRecruitmentTransactionFailed" text="[封邑征召事务异常] 事务ID={OPERATION_ID}；封邑={FIEF_ID}；来源村庄={VILLAGE_IDS}；目标部队={PARTY_ID}；失败阶段={STAGE}；申请人数={REQUESTED}；回滚状态={ROLLBACK}；回滚详情={ROLLBACK_DETAIL}；异常详情={EXCEPTION}" />
     <string id="ModifiedArmy_FiefRecruitmentRejected" text="[封邑征召] 征召请求未执行。事务ID={OPERATION_ID}；封邑={FIEF_ID}；目标部队={PARTY_ID}；申请人数={REQUESTED}；原因代码={REASON_CODE}。" />
     <string id="FiefPartyData_ReturnTroopsToSettlement_1" text="[封邑兵役] {PARTY_NAME}向{SETTLEMENT_NAME}归还了{RETURNED_COUNT}名士兵，恢复动员Hearth {HEARTH_COST}点。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
-    <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑补员] {SETTLEMENT_NAME}补充了{RECRUITED}名士兵。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
+    <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑补员] {SETTLEMENT_NAME}补充了{MANIFEST}。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
+    <string id="ModifiedArmy_FiefAutoUpgrade" text="[士兵升级] {MANIFEST}。" />
+    <string id="ModifiedArmy_FiefAutoUpgradeEntry" text="{COUNT}名{FROM_NAME}升级为{TO_NAME}" />
+    <string id="ModifiedArmy_LogListSeparator" text="、" />
+    <string id="ModifiedArmy_FiefReturnDiagnostic" text="[封邑返乡] {PARTY_NAME}预期向{SOURCE_NAME}还封建兵{REQUESTED}人，实际返乡{RETURNED}人，批次剩余{REMAINING}人，恢复动员Hearth {RESTORED_HEARTH}点，返乡冷却{COOLDOWN_WEEKS}周，批次{BATCH_ID}，结果为{RESULT}。" />
+    <string id="ModifiedArmy_FiefReturnCompleted" text="已完成" />
+    <string id="ModifiedArmy_FiefReturnPartial" text="部分完成" />
+    <string id="ModifiedArmy_FiefReturnInvalidRequest" text="请求无效" />
+    <string id="ModifiedArmy_FiefReturnInvalidLocation" text="返乡地点无效" />
+    <string id="ModifiedArmy_FiefReturnNoBatch" text="没有符合条件的服役批次" />
+    <string id="ModifiedArmy_FiefReturnRecoveryRequired" text="需要先恢复异常状态" />
+    <string id="ModifiedArmy_FiefReturnNoMobilization" text="没有对应的动员记录" />
+    <string id="ModifiedArmy_FiefReturnStateChanged" text="提交前状态已变化" />
+    <string id="ModifiedArmy_FiefReturnOther" text="其他结果（{REASON_CODE}）" />
     <string id="FiefPartyData_RecruitTroopsToParty_0" text="[封邑征召] {PARTY_NAME}从{SETTLEMENT_NAME}征召了{RECRUITED}名士兵，动员Hearth {HEARTH_COST}点。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
     <string id="ModifiedArmy_ExchangeNoFieldSurplus" text="[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但部队当前没有超过编制目标的安全余量，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
     <string id="ModifiedArmy_ExchangeNoGarrisonCapacity" text="[统一调兵] {PARTY_NAME}原计划向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，但驻军当前没有接收空间，因此没有调兵。部队现有{PARTY_COUNT}人，驻军现有{GARRISON_COUNT}人。" />
@@ -284,14 +297,20 @@
     <string id="ModifiedArmy_DemobilizationAtWar" text="当前仍处于战争状态" />
     <string id="ModifiedArmy_DemobilizationMilitaryTask" text="部队正在执行更重要的军事任务" />
     <string id="ModifiedArmy_DemobilizationUnsafe" text="当前不适合办理复员" />
-    <string id="ModifiedArmy_DisbandGarrisonMerge" text="[整队解散] {PARTY_NAME}在{SETTLEMENT_NAME}完成了人员安置：{FIEF_RETURNED}名封建兵返乡，{FIEF_TRANSFERRED}名封建兵随原服役身份进入驻军，{ORDINARY_ACCEPTED}名普通士兵进入驻军；另有{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
-    <string id="ModifiedArmy_DisbandFinalization" text="[整队解散] {PARTY_NAME}在{DESTINATION_NAME}结束服役：{FIEF_RETURNED}名封建兵正常返乡；{FIEF_LOST}名封建兵和{ORDINARY_LOST}名普通士兵无法安置，按解散离队处理。" />
+    <string id="ModifiedArmy_DisbandGarrisonMerge" text="[整队解散] {PARTY_NAME}在{SETTLEMENT_NAME}完成人员安置：{DETAILS}。" />
+    <string id="ModifiedArmy_DisbandFinalization" text="[整队解散] {PARTY_NAME}在{DESTINATION_NAME}结束服役：{DETAILS}。" />
+    <string id="ModifiedArmy_DisbandFiefReturned" text="{COUNT}名封建兵返乡" />
+    <string id="ModifiedArmy_DisbandFiefTransferred" text="{COUNT}名封建兵随原服役记录进入驻军" />
+    <string id="ModifiedArmy_DisbandOrdinaryAccepted" text="{COUNT}名普通士兵进入驻军" />
+    <string id="ModifiedArmy_DisbandFiefLost" text="{COUNT}名封建兵无法安置并离队" />
+    <string id="ModifiedArmy_DisbandOrdinaryLost" text="{COUNT}名普通士兵无法安置并离队" />
+    <string id="ModifiedArmy_DisbandNoTroops" text="没有士兵需要安置" />
     <string id="ModifiedArmy_NoValidDestination" text="没有合法目的地的地点" />
-    <string id="ModifiedArmy_PartyBindingReservation" text="[部队基地绑定] 本次预留操作为{ACTION}。申请涉及家族{CLAN_ID}的英雄{HERO_ID}以及定居点{SETTLEMENT_ID}。预留令牌为{TOKEN_ID}。记录原因为{REASON}。" />
-    <string id="ModifiedArmy_PartyBindingCommitted" text="[部队基地绑定] 已将{PARTY_NAME}绑定到定居点{SETTLEMENT_ID}。该部队的内部标识为{PARTY_ID}，绑定版本为{VERSION}。" />
-    <string id="ModifiedArmy_PartyBindingReleased" text="[部队基地绑定] 已解除{PARTY_NAME}的基地绑定。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
-    <string id="ModifiedArmy_PartyBindingRejected" text="[部队基地绑定] 已拒绝{PARTY_NAME}在定居点{SETTLEMENT_ID}执行操作{OPERATION}。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
-    <string id="ModifiedArmy_PartyBindingRecovery" text="[部队基地绑定恢复] 本次恢复检查了{RECORDS}条记录，恢复了{BOUND}项定居点绑定，发现{UNBOUND}支部队尚未绑定基地，并检测到{CONFLICTS}项冲突。" />
+    <string id="ModifiedArmy_PartyBindingReservation" text="[绑定定居点] 本次预留操作为{ACTION}。申请涉及家族{CLAN_ID}的英雄{HERO_ID}以及定居点{SETTLEMENT_ID}。预留令牌为{TOKEN_ID}。记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingCommitted" text="[绑定定居点] 已将{PARTY_NAME}绑定到定居点{SETTLEMENT_ID}。该部队的内部标识为{PARTY_ID}，绑定版本为{VERSION}。" />
+    <string id="ModifiedArmy_PartyBindingReleased" text="[绑定定居点] 已解除{PARTY_NAME}的定居点绑定。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRejected" text="[绑定定居点] 已拒绝{PARTY_NAME}在定居点{SETTLEMENT_ID}执行操作{OPERATION}。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingRecovery" text="[绑定定居点] 本次恢复检查了{RECORDS}条记录，恢复了{BOUND}项定居点绑定，发现{UNBOUND}支部队尚未绑定定居点，并检测到{CONFLICTS}项冲突。" />
     <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 创建流程已到达{PHASE}阶段，涉及家族{CLAN_ID}的英雄{HERO_ID}。部队内部标识为{PARTY_ID}，当前拥有{REGULARS}名正规兵。出生定居点为{SPAWN}，当前所在定居点为{CURRENT}，移动目标为{TARGET}。新游戏状态为{NEW_GAME}。" />
     <string id="ModifiedArmy_GarrisonWageLimitBorderLog" text="驻军工资评估将边境据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />
     <string id="ModifiedArmy_GarrisonWageLimitInteriorLog" text="驻军工资评估将内陆据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />

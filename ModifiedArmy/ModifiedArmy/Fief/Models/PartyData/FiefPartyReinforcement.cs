@@ -42,7 +42,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         internal int InitializeFiefTroopsByTemplateWeights()
         {
-            if (!InitialFeifPartyData() || _fiefPartyTemplate == null)
+            if (!IsRuntimeReady || _fiefPartyTemplate == null)
                 return 0;
 
             List<TroopProductionEntry> templateEntries = _fiefPartyTemplate
@@ -267,7 +267,10 @@ namespace ModifiedArmy.Models.Fief
 
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
-            msg.SetTextVariable("RECRUITED", recruited);
+            msg.SetTextVariable("MANIFEST", FormatTroopManifest(produced
+                .GroupBy(item => item.Troop)
+                .ToDictionary(group => group.Key,
+                    group => group.Sum(item => item.Count))));
             msg.SetTextVariable("TROOP_COUNT", GetTotalTroopCount());
             msg.SetTextVariable("OCCUPIED_HEARTH",
                 GetTotalOccupiedSupplyHearth());
@@ -288,7 +291,7 @@ namespace ModifiedArmy.Models.Fief
 
         public int ProduceDailyFiefTroops(int approvedCount)
         {
-            if (!InitialFeifPartyData() || approvedCount <= 0)
+            if (!IsRuntimeReady || approvedCount <= 0)
                 return 0;
             return ProduceDailyFiefTroopsDetailed(approvedCount)
                 .Sum(item => item.Count);
@@ -297,7 +300,7 @@ namespace ModifiedArmy.Models.Fief
         internal IReadOnlyList<FiefTroopProductionResult>
             ProduceDailyFiefTroopsDetailed(int approvedCount)
         {
-            if (!InitialFeifPartyData() || approvedCount <= 0)
+            if (!IsRuntimeReady || approvedCount <= 0)
                 return Array.Empty<FiefTroopProductionResult>();
             return PerformReinforcement(approvedCount);
         }
@@ -401,6 +404,8 @@ namespace ModifiedArmy.Models.Fief
 
             // 对每个士兵独立判定是否升级
             int upgradedCount = 0;
+            var upgraded = new Dictionary<
+                (CharacterObject From, CharacterObject To), int>();
 
             foreach (VillageFiefData village in OrderedVillages(null))
             {
@@ -471,6 +476,11 @@ namespace ModifiedArmy.Models.Fief
                         roster.AddToCounts(newTroop, 1, false, 0, 0, true, -1);
 
                         upgradedCount++;
+                        var route = (troop, newTroop);
+                        upgraded[route] = upgraded.TryGetValue(
+                            route, out int routeCount)
+                                ? routeCount + 1
+                                : 1;
                     }
                 }
               }
@@ -478,8 +488,50 @@ namespace ModifiedArmy.Models.Fief
 
             if (upgradedCount > 0)
             {
-                ModLogger.Debug($"[AutoUpgrade] Upgraded {upgradedCount} troops in {_settlement.Name}.");
+                TextObject message = GameTexts.FindText(
+                    "str_modifiedarmy_fief_auto_upgrade");
+                message.SetTextVariable("MANIFEST",
+                    FormatUpgradeManifest(upgraded));
+                ModLogger.Debug(message.ToString());
             }
+        }
+
+        private static string FormatTroopManifest(
+            IReadOnlyDictionary<CharacterObject, int> troops)
+        {
+            return string.Join(GameTexts.FindText(
+                    "str_modifiedarmy_log_list_separator").ToString(),
+                troops.Where(item => item.Key != null && item.Value > 0)
+                    .OrderBy(item => item.Key.StringId)
+                    .Select(item =>
+                    {
+                        TextObject entry = GameTexts.FindText(
+                            "str_modifiedarmy_manpower_manifest_entry");
+                        entry.SetTextVariable("COUNT", item.Value);
+                        entry.SetTextVariable("TROOP_NAME", item.Key.Name);
+                        return entry.ToString();
+                    }));
+        }
+
+        private static string FormatUpgradeManifest(
+            IReadOnlyDictionary<
+                (CharacterObject From, CharacterObject To), int> upgrades)
+        {
+            return string.Join(GameTexts.FindText(
+                    "str_modifiedarmy_log_list_separator").ToString(),
+                upgrades.Where(item => item.Key.From != null &&
+                        item.Key.To != null && item.Value > 0)
+                    .OrderBy(item => item.Key.From.StringId)
+                    .ThenBy(item => item.Key.To.StringId)
+                    .Select(item =>
+                    {
+                        TextObject entry = GameTexts.FindText(
+                            "str_modifiedarmy_fief_auto_upgrade_entry");
+                        entry.SetTextVariable("COUNT", item.Value);
+                        entry.SetTextVariable("FROM_NAME", item.Key.From.Name);
+                        entry.SetTextVariable("TO_NAME", item.Key.To.Name);
+                        return entry.ToString();
+                    }));
         }
 
 
@@ -488,7 +540,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public void WeeklyUpdate()
         {
-            if (!InitialFeifPartyData())
+            if (!IsRuntimeReady)
                 return;
 
             // 升级封邑士兵

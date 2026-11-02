@@ -65,10 +65,7 @@ namespace ModifiedArmy.ForceManagement.Services
             message.SetTextVariable("DESTINATION_NAME", settlement?.Name ??
                 new TextObject("{=ModifiedArmy_NoValidDestination}" +
                     "no valid destination"));
-            message.SetTextVariable("FIEF_RETURNED", result.FiefReturned);
-            message.SetTextVariable("FIEF_LOST", result.FiefForcedLost);
-            message.SetTextVariable("ORDINARY_LOST",
-                result.OrdinaryForcedLost);
+            message.SetTextVariable("DETAILS", BuildResultDetails(result));
             ModLogger.Notice(message.ToString());
         }
 
@@ -134,15 +131,40 @@ namespace ModifiedArmy.ForceManagement.Services
             message.SetTextVariable("PARTY_NAME",
                 PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable("SETTLEMENT_NAME", settlement.Name);
-            message.SetTextVariable("FIEF_RETURNED", result.FiefReturned);
-            message.SetTextVariable("FIEF_TRANSFERRED",
-                result.FiefTransferredWithService);
-            message.SetTextVariable("ORDINARY_ACCEPTED",
-                result.OrdinaryAccepted);
-            message.SetTextVariable("FIEF_LOST", result.FiefForcedLost);
-            message.SetTextVariable("ORDINARY_LOST",
-                result.OrdinaryForcedLost);
+            message.SetTextVariable("DETAILS", BuildResultDetails(result));
             ModLogger.Notice(message.ToString());
+        }
+
+        private static string BuildResultDetails(
+            DisbandSettlementResult result)
+        {
+            var details = new List<string>();
+            AddResultDetail(details, "str_modifiedarmy_disband_fief_returned",
+                result?.FiefReturned ?? 0);
+            AddResultDetail(details,
+                "str_modifiedarmy_disband_fief_transferred",
+                result?.FiefTransferredWithService ?? 0);
+            AddResultDetail(details,
+                "str_modifiedarmy_disband_ordinary_accepted",
+                result?.OrdinaryAccepted ?? 0);
+            AddResultDetail(details, "str_modifiedarmy_disband_fief_lost",
+                result?.FiefForcedLost ?? 0);
+            AddResultDetail(details, "str_modifiedarmy_disband_ordinary_lost",
+                result?.OrdinaryForcedLost ?? 0);
+            if (details.Count == 0)
+                details.Add(GameTexts.FindText(
+                    "str_modifiedarmy_disband_no_troops").ToString());
+            return string.Join(GameTexts.FindText(
+                "str_modifiedarmy_log_list_separator").ToString(), details);
+        }
+
+        private static void AddResultDetail(List<string> details,
+            string textId, int count)
+        {
+            if (count <= 0) return;
+            TextObject detail = GameTexts.FindText(textId);
+            detail.SetTextVariable("COUNT", count);
+            details.Add(detail.ToString());
         }
 
         private static void LogMergeOverflow(

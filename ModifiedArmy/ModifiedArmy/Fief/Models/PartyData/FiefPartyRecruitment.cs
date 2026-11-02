@@ -744,17 +744,18 @@ namespace ModifiedArmy.Models.Fief
             int remainingPartySpace = Math.Max(0,
                 targetParty.Party.PartySizeLimit - targetParty.Party.NumberOfAllMembers);
             Dictionary<CharacterObject, int> validatedSelection = new();
+            TroopRoster availableRoster = GetFiefTroopRoster(
+                villageFilter, true);
             foreach (var element in selectedRoster.GetTroopRoster())
             {
                 if (remainingPartySpace <= 0) break;
                 CharacterObject troop = element.Character;
                 if (troop == null || element.Number <= 0 ||
                     _fiefPartyTemplate?.IsEnableTroop(troop) != true) continue;
-                TroopRosterElement availableElement = GetFiefTroopRoster(
-                    villageFilter, true).GetTroopRoster()
-                    .FirstOrDefault(item => item.Character == troop);
-                int available = Math.Max(0, availableElement.Number -
-                    availableElement.WoundedNumber);
+                var availableCounts = GetRosterCounts(
+                    availableRoster, troop);
+                int available = Math.Max(0,
+                    availableCounts.Count - availableCounts.Wounded);
                 int approved = Math.Min(remainingPartySpace,
                     Math.Min(element.Number, available));
                 if (approved <= 0) continue;
@@ -883,17 +884,15 @@ namespace ModifiedArmy.Models.Fief
                             continue;
                         TroopRoster roster = village.GetReadyRoster();
                         if (roster == null) continue;
-                        TroopRosterElement element = roster.GetTroopRoster()
-                            .FirstOrDefault(e => e.Character == approval.Key);
+                        var counts = GetRosterCounts(roster, approval.Key);
+                        int healthy = counts.Count - counts.Wounded;
                         int available = healthyOnly
-                            ? Math.Max(0,
-                                element.Number - element.WoundedNumber)
-                            : Math.Max(0, element.Number);
+                            ? healthy
+                            : counts.Count;
                         int count = Math.Min(remaining, available);
                         if (count <= 0) continue;
                         int wounded = healthyOnly ? 0 : Math.Max(0,
-                            count - Math.Max(0,
-                                element.Number - element.WoundedNumber));
+                            count - healthy);
                         plan.Add(new VillageRecruitmentSource
                         {
                             Village = village,
@@ -901,8 +900,8 @@ namespace ModifiedArmy.Models.Fief
                             Count = count,
                             Wounded = wounded,
                             SourceRoster = roster,
-                            BeforeCount = element.Number,
-                            BeforeWounded = element.WoundedNumber
+                            BeforeCount = counts.Count,
+                            BeforeWounded = counts.Wounded
                         });
                         remaining -= count;
                         if (remaining == 0) break;
@@ -1106,10 +1105,12 @@ namespace ModifiedArmy.Models.Fief
             TroopRoster roster, CharacterObject troop)
         {
             if (roster == null || troop == null) return (0, 0);
-            TroopRosterElement element = roster.GetTroopRoster()
-                .FirstOrDefault(item => item.Character == troop);
-            return (Math.Max(0, element.Number),
-                Math.Max(0, element.WoundedNumber));
+            int index = roster.FindIndexOfTroop(troop);
+            if (index < 0) return (0, 0);
+            int count = Math.Max(0, roster.GetElementNumber(index));
+            int wounded = Math.Min(count, Math.Max(0,
+                roster.GetElementWoundedNumber(index)));
+            return (count, wounded);
         }
 
         private static void RestoreRosterEntry(TroopRoster roster,

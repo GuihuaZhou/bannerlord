@@ -56,6 +56,18 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private FiefPartyTemplate _fiefPartyTemplate;
 
+        internal bool IsRuntimeReady { get; private set; }
+        internal string RuntimeInitializationFailureReason { get; private set; }
+        internal string ExpectedTemplateId => GetExpectedTemplateId(_settlement);
+
+        internal void MarkRuntimeInitializationFailed(string reason)
+        {
+            IsRuntimeReady = false;
+            RuntimeInitializationFailureReason = string.IsNullOrEmpty(reason)
+                ? "UnknownFailure"
+                : reason;
+        }
+
         /// <summary>
         /// 获取当前定居点使用的部队模板。
         /// </summary>
@@ -113,7 +125,6 @@ namespace ModifiedArmy.Models.Fief
         public FiefPartyData(Settlement settlement)
         {
             _settlement = settlement;
-            InitialFeifPartyData();
         }
 
         /// <summary>
@@ -371,10 +382,24 @@ namespace ModifiedArmy.Models.Fief
             return template;
         }
 
+        private static string GetExpectedTemplateId(Settlement settlement)
+        {
+            if (settlement?.Culture == null) return "unknown";
+            string type = settlement.IsCastle ? "castle" : "town";
+            string portSuffix = settlement.IsTown && settlement.HasPort
+                ? "_port"
+                : string.Empty;
+            return string.Format("{0}_{1}{2}",
+                settlement.Culture.StringId, type, portSuffix);
+        }
+
         public bool InitialFeifPartyData()
         {
+            IsRuntimeReady = false;
+            RuntimeInitializationFailureReason = null;
             if (_settlement == null)
             {
+                RuntimeInitializationFailureReason = "SettlementMissing";
                 ModLogger.Error("[InitialFeifPartyData] _settlement is NULL! Skipping initialization.");
                 return false;
             }
@@ -395,6 +420,7 @@ namespace ModifiedArmy.Models.Fief
             var group = BasicTroopGroupManager.GetGroupForCulture(_settlement.Culture);
             if (group == null)
             {
+                RuntimeInitializationFailureReason = "BasicTroopGroupMissing";
                 ModLogger.Warn($"No baisc troop for {_settlement.Culture.Name}");
                 return false;
             }
@@ -406,6 +432,7 @@ namespace ModifiedArmy.Models.Fief
 
             if (_fiefPartyTemplate == null)
             {
+                RuntimeInitializationFailureReason = "FiefTemplateMissing";
                 ModLogger.Warn($"[FiefPartyData] No template found for settlement '{_settlement.Name}'. Recruitment disabled.");
                 return false;
             }
@@ -421,6 +448,8 @@ namespace ModifiedArmy.Models.Fief
                 t != null && _fiefPartyTemplate.IsEnableTroop(t));
             if (overlap != null)
             {
+                RuntimeInitializationFailureReason =
+                    "NativeMilitiaIdentityOverlap:" + overlap.StringId;
                 ModLogger.Error(string.Format(
                     "Fief/native militia identity overlap: fief={0}, troop={1}. Fief operations are disabled because roster identity is ambiguous.",
                     _settlement.StringId, overlap.StringId));
@@ -437,6 +466,7 @@ namespace ModifiedArmy.Models.Fief
             }
 
             SyncManpowerCounters();
+            IsRuntimeReady = true;
             return true;
         }
 

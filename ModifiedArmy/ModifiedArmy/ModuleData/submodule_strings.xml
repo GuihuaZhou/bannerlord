@@ -53,7 +53,15 @@
         text="{=FiefPartyData_ReturnTroopsToSettlement_1}[Fief service] {PARTY_NAME} returned {RETURNED_COUNT} troops to {SETTLEMENT_NAME}, restoring {HEARTH_COST} mobilized Hearth. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
 
     <string id="str_modifiedarmy_fief_weekly_reinforcement"
-        text="{=FiefPartyData_WeeklyUpdate_0}[Fief reinforcement] {SETTLEMENT_NAME} produced {RECRUITED} troops. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
+        text="{=FiefPartyData_WeeklyUpdate_0}[Fief reinforcement] {SETTLEMENT_NAME} produced {MANIFEST}. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
+    <string id="str_modifiedarmy_fief_auto_upgrade"
+        text="{=ModifiedArmy_FiefAutoUpgrade}[Soldier upgrade] {MANIFEST}." />
+    <string id="str_modifiedarmy_fief_auto_upgrade_entry"
+        text="{=ModifiedArmy_FiefAutoUpgradeEntry}{COUNT} {FROM_NAME} to {TO_NAME}" />
+    <string id="str_modifiedarmy_log_list_separator"
+        text="{=ModifiedArmy_LogListSeparator}, " />
+    <string id="str_modifiedarmy_fief_return_diagnostic"
+        text="{=ModifiedArmy_FiefReturnDiagnostic}[Fief return] {PARTY_NAME} returned troops to {SOURCE_NAME}: requested {REQUESTED}, returned {RETURNED}, batch remaining {REMAINING}, restored Hearth {RESTORED_HEARTH}, cooldown {COOLDOWN_WEEKS} weeks, batch {BATCH_ID}, result {RESULT}." />
 
     <!-- FiefPartyData.cs: 招募封邑部队 -->
     <string id="str_modifiedarmy_fief_recruit_to_party"
@@ -242,9 +250,21 @@
     <string id="str_modifiedarmy_prisoner_sale"
         text="{=ModifiedArmy_PrisonerSale}[俘虏] {SETTLEMENT_NAME}出售了{COUNT}名俘虏." />
     <string id="str_modifiedarmy_disband_garrison_merge"
-        text="{=ModifiedArmy_DisbandGarrisonMerge}[Disband] {PARTY_NAME} settled at {SETTLEMENT_NAME}: fief returned {FIEF_RETURNED}, fief transferred with service {FIEF_TRANSFERRED}, ordinary accepted {ORDINARY_ACCEPTED}, fief lost {FIEF_LOST}, ordinary lost {ORDINARY_LOST}." />
+        text="{=ModifiedArmy_DisbandGarrisonMerge}[Disband] {PARTY_NAME} settled at {SETTLEMENT_NAME}: {DETAILS}." />
     <string id="str_modifiedarmy_disband_finalization"
-        text="{=ModifiedArmy_DisbandFinalization}[Disband] {PARTY_NAME} settled at {DESTINATION_NAME}: fief returned {FIEF_RETURNED}, fief lost {FIEF_LOST}, ordinary lost {ORDINARY_LOST}." />
+        text="{=ModifiedArmy_DisbandFinalization}[Disband] {PARTY_NAME} ended service at {DESTINATION_NAME}: {DETAILS}." />
+    <string id="str_modifiedarmy_disband_fief_returned"
+        text="{=ModifiedArmy_DisbandFiefReturned}{COUNT} feudal troops returned home" />
+    <string id="str_modifiedarmy_disband_fief_transferred"
+        text="{=ModifiedArmy_DisbandFiefTransferred}{COUNT} feudal troops entered the garrison with their service records" />
+    <string id="str_modifiedarmy_disband_ordinary_accepted"
+        text="{=ModifiedArmy_DisbandOrdinaryAccepted}{COUNT} regular troops entered the garrison" />
+    <string id="str_modifiedarmy_disband_fief_lost"
+        text="{=ModifiedArmy_DisbandFiefLost}{COUNT} feudal troops could not be settled and left service" />
+    <string id="str_modifiedarmy_disband_ordinary_lost"
+        text="{=ModifiedArmy_DisbandOrdinaryLost}{COUNT} regular troops could not be settled and left service" />
+    <string id="str_modifiedarmy_disband_no_troops"
+        text="{=ModifiedArmy_DisbandNoTroops}no troops required settlement" />
     <string id="str_modifiedarmy_garrison_weekly_adjustment"
         text="{=ModifiedArmy_GarrisonWeeklyAdjustment}[Garrison Review] {SETTLEMENT_NAME} removed {DISMISSED} invalid garrison members during its weekly review." />
     <string id="str_modifiedarmy_garrison_withdrawal"
@@ -433,7 +453,7 @@
     <string id="str_modifiedarmy_party_binding_rejected"
         text="{=ModifiedArmy_PartyBindingRejected}[Party binding] Operation {OPERATION} was rejected for {PARTY_NAME}, identified as {PARTY_ID}, at settlement {SETTLEMENT_ID}. The recorded reason was {REASON}." />
     <string id="str_modifiedarmy_party_binding_recovery"
-        text="{=ModifiedArmy_PartyBindingRecovery}[Party binding recovery] Recovery examined {RECORDS} records. It restored {BOUND} settlement bindings and found {UNBOUND} parties without a binding. It detected {CONFLICTS} conflicts." />
+        text="{=ModifiedArmy_PartyBindingRecovery}[Settlement binding] Recovery examined {RECORDS} records. It restored {BOUND} settlement bindings and found {UNBOUND} parties without a settlement binding. It detected {CONFLICTS} conflicts." />
     <string id="str_modifiedarmy_party_creation_probe"
         text="{=ModifiedArmy_PartyCreationProbe}[Party creation probe] The creation sequence reached phase {PHASE} for hero {HERO_ID} of clan {CLAN_ID}. The party identifier was {PARTY_ID}, and the party contained {REGULARS} regular soldiers. The spawn settlement was {SPAWN}, the current settlement was {CURRENT}, and the movement target was {TARGET}. The new game indicator was {NEW_GAME}." />
     <string id="str_modifiedarmy_garrison_wage_limit_border_log"

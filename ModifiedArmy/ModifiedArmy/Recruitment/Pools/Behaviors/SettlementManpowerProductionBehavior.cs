@@ -405,8 +405,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return;
             }
 
-            Campaign.Current?.GetCampaignBehavior<
-                SettlementProfessionalPreferenceBehavior>()?.Reconcile(settlement);
             int day = (int)CampaignTime.Now.ToDays;
             if (_professionalOfferDays.TryGetValue(
                     settlement,
@@ -416,17 +414,29 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return;
             }
 
-            _dailyProfessionalOffers.Remove(settlement);
-            _professionalOfferDays[settlement] = day;
-            SettlementManpowerProductionData data = GetOrCreateProductionData(settlement);
             FiefPartyManager fiefManager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
-            FiefPartyData fiefData = fiefManager?.GetFiefData(settlement);
-            if (data == null || fiefData == null) return;
+            if (fiefManager?.IsSessionReady != true) return;
+            if (!fiefManager.TryGetReadyFiefData(
+                settlement, out FiefPartyData fiefData)) return;
 
+            Campaign.Current?.GetCampaignBehavior<
+                SettlementProfessionalPreferenceBehavior>()?.Reconcile(settlement);
+            RecruitmentProductionForecast forecast =
+                GetProductionForecast(settlement);
+            if (forecast == null) return;
+            SettlementManpowerProductionData data =
+                GetOrCreateProductionData(settlement);
+            if (data == null) return;
+
+            // Commit the once-per-day boundary only after runtime state and
+            // the complete production forecast are valid, but before the
+            // first production mutation so a later exception cannot duplicate
+            // progress or troops on retry.
+            _dailyProfessionalOffers.Remove(settlement);
+            _professionalOfferDays[settlement] = day;
             data.RecordFiefReplenishment(day, 0);
-            RecruitmentProductionForecast forecast = GetProductionForecast(settlement);
-            if (forecast == null || forecast.SharedSupply <= 0f)
+            if (forecast.SharedSupply <= 0f)
             {
                 if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
                 {
@@ -535,8 +545,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             if (settlement?.IsFortification != true) return null;
             FiefPartyManager manager = Campaign.Current
                 ?.GetCampaignBehavior<FiefPartyManager>();
-            FiefPartyData fiefData = manager?.GetFiefData(settlement);
-            if (fiefData == null) return null;
+            if (manager == null || !manager.TryGetReadyFiefData(
+                settlement, out FiefPartyData fiefData)) return null;
 
             ProfessionalRecruitmentEligibilitySnapshot eligibility =
                 ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
@@ -797,11 +807,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 return 0f;
             FiefPartyManager manager = Campaign.Current
                 .GetCampaignBehavior<FiefPartyManager>();
+            Settlement bound = village.Settlement.Village?.Bound;
+            if (manager == null || !manager.TryGetReadyFiefData(
+                bound, out FiefPartyData fief)) return 0f;
             VillageFiefData data = manager?.GetVillageFiefData(
                 village.Settlement);
-            FiefPartyData fief = manager?.GetFiefData(
-                village.Settlement.Village?.Bound);
-            if (data == null || fief == null) return 0f;
+            if (data == null) return 0f;
             float free;
             try
             {
