@@ -538,5 +538,6 @@
     <string id="MP_BuildingRecoveryStillNull" text="[建设] {SETTLEMENT}已选择日常项目{PROJECT}, 但当前建设项目仍然缺失." />
     <string id="MP_BuildingRecovered" text="[建设] {SETTLEMENT}的当前建设项目缺失, 已恢复为日常项目{PROJECT}." />
     <string id="MP_BuildingBoostInvested" text="[建设] {CLAN}向{SETTLEMENT}投入{AMOUNT}第纳尔加速建设, 家族金库由{GOLD_BEFORE}变为{GOLD_AFTER}, 当前建设储备为{RESERVE}." />
+    <string id="MP_BuildingReconciliationSummary" text="[建设] 启动恢复共检查{CHECKED}座定居点, 修复{REPAIRED}座, 失败{FAILED}座." />
 </strings>
 </base>

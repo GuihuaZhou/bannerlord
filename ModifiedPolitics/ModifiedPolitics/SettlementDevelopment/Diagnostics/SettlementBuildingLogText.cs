@@ -57,5 +57,18 @@ namespace ModifiedPolitics.SettlementDevelopment.Diagnostics
             text.SetTextVariable("RESERVE", reserve);
             return text.ToString();
         }
+
+        internal static string ReconciliationSummary(
+            int checkedCount,
+            int repairedCount,
+            int failedCount)
+        {
+            TextObject text = new TextObject(
+                "{=MP_BuildingReconciliationSummary}[Construction] Startup reconciliation checked {CHECKED} settlements, repaired {REPAIRED}, and failed {FAILED}.");
+            text.SetTextVariable("CHECKED", checkedCount);
+            text.SetTextVariable("REPAIRED", repairedCount);
+            text.SetTextVariable("FAILED", failedCount);
+            return text.ToString();
+        }
     }
 }

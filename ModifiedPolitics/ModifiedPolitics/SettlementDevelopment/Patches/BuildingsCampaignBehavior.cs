@@ -53,6 +53,7 @@ namespace ModifiedPolitics.Patch
             {
                 town.BuildingsInProgress.Dequeue();
             }
+
             if (!town.Owner.Settlement.IsUnderSiege && !town.BuildingsInProgress.IsEmpty<Building>())
             {
                 BuildingConstructionModel buildingConstructionModel = Campaign.Current.Models.BuildingConstructionModel;
@@ -69,6 +70,8 @@ namespace ModifiedPolitics.Patch
                 }
                 BuildingHelper.CheckIfBuildingIsComplete(building);
             }
+
+            SettlementBuildingStateService.EnsureCurrentBuilding(town);
         }
 
         private static void DecideDailyProject(Town town)

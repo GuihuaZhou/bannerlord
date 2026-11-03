@@ -12,7 +12,9 @@ namespace ModifiedPolitics.SettlementDevelopment.Services
 {
     internal static class SettlementBuildingStateService
     {
-        internal static bool EnsureCurrentBuilding(Town town)
+        internal static bool EnsureCurrentBuilding(
+            Town town,
+            bool logRecovery = true)
         {
             if (town == null || town.CurrentBuilding != null)
             {
@@ -54,11 +56,52 @@ namespace ModifiedPolitics.SettlementDevelopment.Services
                 return false;
             }
 
-            ModLogger.Warn(
-                SettlementBuildingLogText.Recovered(
-                    town.Settlement?.Name ?? TextObject.GetEmpty(),
-                    dailyProject.BuildingType.Name));
+            if (logRecovery)
+            {
+                ModLogger.Warn(
+                    SettlementBuildingLogText.Recovered(
+                        town.Settlement?.Name ?? TextObject.GetEmpty(),
+                        dailyProject.BuildingType.Name));
+            }
+
             return true;
+        }
+
+        internal static void ReconcileAllSettlements()
+        {
+            int checkedCount = 0;
+            int repairedCount = 0;
+            int failedCount = 0;
+
+            foreach (Settlement settlement in Settlement.All)
+            {
+                Town town = settlement?.Town;
+                if (town == null)
+                {
+                    continue;
+                }
+
+                checkedCount++;
+                if (town.CurrentBuilding != null)
+                {
+                    continue;
+                }
+
+                if (EnsureCurrentBuilding(town, false))
+                {
+                    repairedCount++;
+                }
+                else
+                {
+                    failedCount++;
+                }
+            }
+
+            ModLogger.Info(
+                SettlementBuildingLogText.ReconciliationSummary(
+                    checkedCount,
+                    repairedCount,
+                    failedCount));
         }
 
         internal static bool TryInvestConstructionBoost(

@@ -20,8 +20,16 @@ namespace ModifiedPolitics.Models
 
         public override void RegisterEvents()
         {
+            CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(
+                this,
+                OnSessionLaunched);
             // Evaluate AI construction investment once per week.
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
+        }
+
+        private void OnSessionLaunched(CampaignGameStarter starter)
+        {
+            SettlementBuildingStateService.ReconcileAllSettlements();
         }
 
         private void OnWeeklyTick()
