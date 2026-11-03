@@ -9,53 +9,52 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Library;
 
+using ModifiedPolitics.SettlementDevelopment.Services;
+
 namespace ModifiedPolitics.Models
 {
     public class AIBuildingAutoBoostBehavior : CampaignBehaviorBase
     {
-        private const int BOOST_AMOUNT = 10000;       // 固定投入金额
-        private const int MIN_GOLD_REQUIRED = 50000;  // 需要至少5倍的金额才行动
+        private const int BOOST_AMOUNT = 10000;       // Fixed investment amount.
+        private const int MIN_GOLD_REQUIRED = 50000;  // Require five times the investment before acting.
 
         public override void RegisterEvents()
         {
-            // 监听每周事件
+            // Evaluate AI construction investment once per week.
             CampaignEvents.WeeklyTickEvent.AddNonSerializedListener(this, OnWeeklyTick);
         }
 
         private void OnWeeklyTick()
         {
-            // 遍历所有定居点
+            // Evaluate every settlement owned by the AI.
             foreach (var settlement in Settlement.All)
             {
                 if (settlement?.Town == null)
                     continue;
 
-                // 跳过玩家领地
+                // Player settlements retain player control over construction reserves.
                 if (settlement.OwnerClan == Clan.PlayerClan)
                     continue;
 
                 Town town = settlement.Town;
                 Clan ownerClan = settlement.OwnerClan;
 
-                // 检查是否已经投入了加速金币
+                // Do not replace an existing construction reserve.
                 if (town.BoostBuildingProcess > 0)
                     continue;
 
-                // 判断建筑队列是否为空
+                // A reserve is useful only while a normal building is queued.
                 if (town.BuildingsInProgress.Count == 0)
                     continue;
 
-                // 通过 Clan 获取金币
+                // Preserve a large treasury buffer before investing.
                 if (ownerClan.Gold < MIN_GOLD_REQUIRED)
                     continue;
 
-                var old_gold = ownerClan.Gold;
-
-                // 投入10000金币进行加速
-                GiveGoldAction.ApplyBetweenCharacters(ownerClan.Leader, null, BOOST_AMOUNT, false);
-
-                string logMessage = $"[AI Auto Boost] {settlement.Name} ({ownerClan.Name}) 投入 {BOOST_AMOUNT} 金币加速建设. 投资前金库: {old_gold}, 当前金库: {ownerClan.Gold}";
-                ModLogger.Info(logMessage);
+                SettlementBuildingStateService.TryInvestConstructionBoost(
+                    town,
+                    ownerClan,
+                    BOOST_AMOUNT);
             }
         }
 

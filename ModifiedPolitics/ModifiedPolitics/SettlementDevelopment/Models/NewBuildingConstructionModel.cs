@@ -14,7 +14,7 @@ namespace ModifiedPolitics.Models
     {
         public override Building GetNextBuilding(Town town)
         {
-            // 获取所有符合条件的候选建筑（非日常项目、未满级、不在建造队列中）
+            // Collect unfinished non-daily buildings that are not already queued.
             var candidates = town.Buildings.WhereQ((Building x) =>
                 !x.BuildingType.IsDailyProject &&
                 x.CurrentLevel < 3 && // MaxBuildingLevel is 3
@@ -24,33 +24,33 @@ namespace ModifiedPolitics.Models
             if (candidates.IsEmpty<Building>())
                 return null;
 
-            // 定义优先级列表
+            // Apply the preferred construction order.
             var priorityList = new BuildingType[]
             {
-                // 军营
+                // Barracks.
                 DefaultBuildingTypes.SettlementBarracks,
                 DefaultBuildingTypes.CastleBarracks,
-                // 城墙
+                // Fortifications.
                 DefaultBuildingTypes.SettlementFortifications,
                 DefaultBuildingTypes.CastleFortifications,
-                // 训练场
+                // Training fields.
                 DefaultBuildingTypes.SettlementTrainingFields,
                 DefaultBuildingTypes.CastleTrainingFields,
-                // 粮仓
+                // Granary.
                 DefaultBuildingTypes.SettlementWarehouse,
                 DefaultBuildingTypes.CastleGranary,
-                // 水利
+                // Waterworks or aqueducts.
                 DefaultBuildingTypes.SettlementWaterworks,
                 DefaultBuildingTypes.CastleFortifications,
-                // 市场
+                // Marketplace.
                 DefaultBuildingTypes.SettlementMarketplace,
                 DefaultBuildingTypes.CastleFortifications,
-                // 税务/农田
+                // Tax office or farmlands.
                 DefaultBuildingTypes.SettlementTaxOffice,
                 DefaultBuildingTypes.CastleFarmlands
             };
 
-            // 按优先级顺序查找
+            // Select the first available building in priority order.
             foreach (var buildingType in priorityList)
             {
                 var building = candidates.FirstOrDefault(b => b.BuildingType == buildingType);
@@ -58,23 +58,23 @@ namespace ModifiedPolitics.Models
                     return building;
             }
 
-            // 如果没有高优先级建筑，则随机选择一个
+            // Fall back to a random eligible building.
             return candidates.GetRandomElementInefficiently<Building>();
         }
 
-        // 重写日常项目选择逻辑
+        // Select a daily project only when no normal construction remains.
         public override Building GetNextDailyBuilding(Town town)
         {
-            // --- 关键逻辑：检查是否存在未满级的主建筑 ---
+            // Check whether any normal building can still be upgraded.
             bool hasUnfinishedMainBuilding = town.Buildings.Any(b =>
                 !b.BuildingType.IsDailyProject && b.CurrentLevel < 3
             );
 
-            // 如果有未完成的主建筑，则不进行任何日常项目
+            // Do not select a daily project while normal construction remains.
             if (hasUnfinishedMainBuilding)
                 return null;
 
-            // 否则，沿用默认的随机选择逻辑
+            // Otherwise use the native daily-project selection logic.
             return town.Buildings.GetRandomElementWithPredicate((Building b) => b.BuildingType.IsDailyProject);
         }
     }

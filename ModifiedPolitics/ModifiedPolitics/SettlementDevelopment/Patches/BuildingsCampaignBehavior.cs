@@ -13,8 +13,21 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.CampaignSystem.Settlements.Buildings;
 using TaleWorlds.Core;
 
+using ModifiedPolitics.SettlementDevelopment.Services;
+
+using ModifiedPolitics.SettlementDevelopment.Diagnostics;
+
 namespace ModifiedPolitics.Patch
 {
+    [HarmonyPatch(typeof(Town), "DailyTick")]
+    public static class Town_DailyTick_BuildingState_Patch
+    {
+        public static bool Prefix(Town __instance)
+        {
+            return SettlementBuildingStateService.EnsureCurrentBuilding(__instance);
+        }
+    }
+
     [HarmonyPatch(typeof(BuildingsCampaignBehavior), "DailyTickSettlement")]
     public static class BuildingsCampaignBehavior_DailyTickSettlement_Patch
     {
@@ -26,8 +39,10 @@ namespace ModifiedPolitics.Patch
                 if (nextBuilding != null)
                 {
                     town.BuildingsInProgress.Enqueue(nextBuilding);
-                    string logMessage = $"[AI Build Decision] {town.Settlement.Name} 决定修建: {nextBuilding.BuildingType.Name}";
-                    ModLogger.Info(logMessage);
+                    ModLogger.Info(
+                        SettlementBuildingLogText.BuildDecision(
+                            town.Settlement.Name,
+                            nextBuilding.BuildingType.Name));
                 }
             }
         }
@@ -70,6 +85,11 @@ namespace ModifiedPolitics.Patch
             if (settlement.IsFortification)
             {
                 Town town = settlement.Town;
+                if (!SettlementBuildingStateService.EnsureCurrentBuilding(town))
+                {
+                    return false;
+                }
+
                 foreach (Building building in town.Buildings)
                 {
                     if (town.Owner.Settlement.SiegeEvent == null)
@@ -79,7 +99,7 @@ namespace ModifiedPolitics.Patch
                 }
                 if (town.Owner.Settlement.OwnerClan != Clan.PlayerClan)
                 {
-                    // 每日判定是否要修建新的建筑
+                    // AI settlements immediately refill an empty construction queue.
                     BuildingsCampaignBehavior_DailyTickSettlement_Patch.DecideBuildingQueue(town);
                     if (MBRandom.RandomFloat < 0.01f)
                     {
