@@ -51,12 +51,42 @@ namespace ModifiedFamily.Localization
         internal static string ProposalTimedOut(FamilyProposal p) { var t = T("MF_Log_ProposalTimedOut", "The proposal expired without a response. (Request: {ID})"); Common(t, p); return t.ToString(); }
         internal static string MarriageEvaluation(FamilyProposal p, MarriageScoreBreakdown b, string phase)
         {
-            return $"[MF][MarriageEvaluation] proposal={p?.ProposalId ?? "preview"} chain={p?.ChainId ?? "-"} clan={b?.EvaluatingClan?.StringId ?? "-"} phase={phase} " +
-                   $"own={b?.OwnHero?.StringId ?? "-"} other={b?.OtherHero?.StringId ?? "-"} direction={b?.Direction.ToString() ?? "-"} adultCount={b?.AdultHeroCount ?? 0} " +
-                   $"baseHero={b?.BaseHeroValue ?? 0:0.00} inflow={b?.InflowValue ?? 0:0.00} outflow={b?.OutflowCost ?? 0:0.00} succession={b?.SuccessionPenalty ?? 0:0.00} " +
-                   $"alliance={b?.AllianceBenefit ?? 0:0.00} relationRaw={b?.RelationRaw ?? 0} relation={b?.RelationValue ?? 0:0.00} culture={b?.CultureValue ?? 0:0.00} kingdom={b?.KingdomValue ?? 0:0.00} gift={b?.GiftValue ?? 0:0.00} total={b?.Total ?? 0:0.00}";
+            var t = T("MF_Log_MarriageEvaluation",
+                "[Marriage evaluation] Proposal {PROPOSAL_ID}, chain {CHAIN_ID}, evaluating clan {CLAN}, phase {PHASE}, own hero {OWN_HERO}, other hero {OTHER_HERO}, direction {DIRECTION}, adult members {ADULT_COUNT}, base hero value {BASE_HERO}, incoming value {INFLOW}, outgoing cost {OUTFLOW}, succession effect {SUCCESSION}, alliance value {ALLIANCE}, raw relation {RELATION_RAW}, relation value {RELATION}, culture value {CULTURE}, kingdom value {KINGDOM}, gift value {GIFT}, total {TOTAL}.");
+            var empty = new TextObject("-");
+            t.SetTextVariable("PROPOSAL_ID", p?.ProposalId ?? "preview");
+            t.SetTextVariable("CHAIN_ID", p?.ChainId ?? "-");
+            t.SetTextVariable("CLAN", b?.EvaluatingClan?.Name ?? empty);
+            t.SetTextVariable("PHASE", EvaluationPhase(phase));
+            t.SetTextVariable("OWN_HERO", b?.OwnHero?.Name ?? empty);
+            t.SetTextVariable("OTHER_HERO", b?.OtherHero?.Name ?? empty);
+            t.SetTextVariable("DIRECTION", MarriageDirectionText(b?.Direction));
+            t.SetTextVariable("ADULT_COUNT", b?.AdultHeroCount ?? 0);
+            t.SetTextVariable("BASE_HERO", (b?.BaseHeroValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("INFLOW", (b?.InflowValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("OUTFLOW", (b?.OutflowCost ?? 0f).ToString("0.00"));
+            t.SetTextVariable("SUCCESSION", (b?.SuccessionPenalty ?? 0f).ToString("0.00"));
+            t.SetTextVariable("ALLIANCE", (b?.AllianceBenefit ?? 0f).ToString("0.00"));
+            t.SetTextVariable("RELATION_RAW", b?.RelationRaw ?? 0);
+            t.SetTextVariable("RELATION", (b?.RelationValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("CULTURE", (b?.CultureValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("KINGDOM", (b?.KingdomValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("GIFT", (b?.GiftValue ?? 0f).ToString("0.00"));
+            t.SetTextVariable("TOTAL", (b?.Total ?? 0f).ToString("0.00"));
+            return t.ToString();
         }
-        internal static string MarriageDecision(FamilyProposal p, string decision, FamilyReasonCode reason) => $"[MF][MarriageDecision] proposal={p?.ProposalId ?? "-"} chain={p?.ChainId ?? "-"} decision={decision} reason={reason}";
+        internal static string MarriageDecision(FamilyProposal p, string decision, FamilyReasonCode reason)
+        {
+            var t = T("MF_Log_MarriageDecision",
+                "[Marriage decision] Proposal {PROPOSAL_ID}, chain {CHAIN_ID}, decision {DECISION}, reason {REASON}.");
+            t.SetTextVariable("PROPOSAL_ID", p?.ProposalId ?? "-");
+            t.SetTextVariable("CHAIN_ID", p?.ChainId ?? "-");
+            t.SetTextVariable("DECISION", DecisionText(decision));
+            t.SetTextVariable("REASON", reason == FamilyReasonCode.None
+                ? T("MF_Reason_None", "none")
+                : Reason(reason));
+            return t.ToString();
+        }
         internal static string ReasonText(FamilyReasonCode reason) => Reason(reason).ToString();
         internal static string Withdrawn(FamilyProposal p) { var t = T("MF_Log_ProposalWithdrawn", "{PROPOSER} withdrew the proposal. (Request: {ID})"); Common(t, p); return t.ToString(); }
         internal static string Invalidated(FamilyProposal p) { var t = T("MF_Log_ProposalInvalidated", "The proposal can no longer continue: {REASON}. (Request: {ID})"); Common(t, p); return t.ToString(); }
@@ -71,6 +101,36 @@ namespace ModifiedFamily.Localization
         internal static string AdoptionCompleted(FamilyProposal p) { var t = T("MF_Log_AdoptionCompleted", "{ADOPTEE} was adopted by {ADOPTER} into {DESTINATION}. (Request: {ID})"); Common(t, p); return t.ToString(); }
 
         private static TextObject T(string id, string fallback) => new TextObject("{=" + id + "}" + fallback);
+        private static TextObject MarriageDirectionText(MarriageDirection? direction) =>
+            direction == MarriageDirection.FemaleJoinsMaleClan
+                ? T("MF_Log_DirectionFemaleJoinsMale", "female joins male clan")
+                : direction == MarriageDirection.MaleJoinsFemaleClan
+                    ? T("MF_Log_DirectionMaleJoinsFemale", "male joins female clan")
+                    : T("MF_Log_ValueUnknown", "unknown");
+        private static TextObject EvaluationPhase(string phase)
+        {
+            switch (phase)
+            {
+                case "Proposer": return T("MF_Log_PhaseProposer", "proposer");
+                case "PredictedReceiver": return T("MF_Log_PhasePredictedReceiver", "predicted receiver");
+                case "Receiver": return T("MF_Log_PhaseReceiver", "receiver");
+                case "PoliticalReassessment": return T("MF_Log_PhasePoliticalReassessment", "political reassessment");
+                case "CounterProposer": return T("MF_Log_PhaseCounterProposer", "counterproposal proposer");
+                case "PredictedCounterReceiver": return T("MF_Log_PhasePredictedCounterReceiver", "predicted counterproposal receiver");
+                default: return T("MF_Log_ValueUnknown", "unknown");
+            }
+        }
+        private static TextObject DecisionText(string decision)
+        {
+            switch (decision)
+            {
+                case "Accepted": return T("MF_Log_DecisionAccepted", "accepted");
+                case "Rejected": return T("MF_Log_DecisionRejected", "rejected");
+                case "Invalidated": return T("MF_Log_DecisionInvalidated", "invalidated");
+                case "Countered": return T("MF_Log_DecisionCountered", "countered");
+                default: return T("MF_Log_ValueUnknown", "unknown");
+            }
+        }
         private static void Common(TextObject t, FamilyProposal p, FamilyReasonCode? reason = null)
         {
             Hero moving = p.HeroA?.Clan == p.DestinationClan ? p.HeroB : p.HeroA;

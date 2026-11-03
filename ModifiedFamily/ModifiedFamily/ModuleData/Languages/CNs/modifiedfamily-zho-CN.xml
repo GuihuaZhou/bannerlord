@@ -121,6 +121,22 @@
     <string id="MF_Log_AiCandidate" text="{CLAN}已选择{OTHER}作为{OWN}的联姻候选。候选层级：{TIER}；内部评分：{SCORE}。" />
     <string id="MF_Log_AiResponse" text="{CLAN}已重新评估该联姻提议，当前内部评分为{SCORE}。（请求：{ID}）" />
     <string id="MF_Log_AiPoliticalReassessment" text="政治局势变化后，{CLAN}对已接受联姻的履约评分为{SCORE}。（请求：{ID}）" />
+    <string id="MF_Log_MarriageEvaluation" text="[联姻评分] 提议{PROPOSAL_ID}，谈判链{CHAIN_ID}，评估家族{CLAN}，阶段为{PHASE}，本家人物{OWN_HERO}，对方人物{OTHER_HERO}，婚后归属为{DIRECTION}，成年成员{ADULT_COUNT}人，人物基础价值{BASE_HERO}，成员流入价值{INFLOW}，成员流出成本{OUTFLOW}，继承影响{SUCCESSION}，联盟价值{ALLIANCE}，原始关系{RELATION_RAW}，关系价值{RELATION}，文化价值{CULTURE}，王国价值{KINGDOM}，礼金价值{GIFT}，总分{TOTAL}。" />
+    <string id="MF_Log_MarriageDecision" text="[联姻决定] 提议{PROPOSAL_ID}，谈判链{CHAIN_ID}，决定为{DECISION}，原因为{REASON}。" />
+    <string id="MF_Log_DirectionFemaleJoinsMale" text="女方加入男方家族" />
+    <string id="MF_Log_DirectionMaleJoinsFemale" text="男方加入女方家族" />
+    <string id="MF_Log_PhaseProposer" text="提议方评估" />
+    <string id="MF_Log_PhasePredictedReceiver" text="预测接收方评估" />
+    <string id="MF_Log_PhaseReceiver" text="接收方正式评估" />
+    <string id="MF_Log_PhasePoliticalReassessment" text="政治变化后重新评估" />
+    <string id="MF_Log_PhaseCounterProposer" text="反提议方评估" />
+    <string id="MF_Log_PhasePredictedCounterReceiver" text="预测反提议接收方评估" />
+    <string id="MF_Log_DecisionAccepted" text="接受" />
+    <string id="MF_Log_DecisionRejected" text="拒绝" />
+    <string id="MF_Log_DecisionInvalidated" text="失效" />
+    <string id="MF_Log_DecisionCountered" text="提出反提议" />
+    <string id="MF_Log_ValueUnknown" text="未知" />
+    <string id="MF_Reason_None" text="无" />
     <string id="MF_Log_UiReady" text="家族事务界面已经启用。" />
     <string id="MF_Log_UiFailed" text="家族事务界面未能启用，请检查 UIExtenderEx 是否正常加载。" />
     <string id="MF_UI_ArrangeMarriageShort" text="安排联姻" />
