@@ -10,7 +10,8 @@ namespace ModifiedArmy.Garrison.Supply
         Completed = 2,
         DeliveringAid = 3,
         ReturningFromAid = 4,
-        Recovering = 5
+        Recovering = 5,
+        RestingAtFriendlySettlement = 6
     }
 
     public enum SupplyPartyMissionMode

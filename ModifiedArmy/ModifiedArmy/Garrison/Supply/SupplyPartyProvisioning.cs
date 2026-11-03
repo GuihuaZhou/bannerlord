@@ -1,10 +1,12 @@
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Garrison.Supply.Models;
+using ModifiedArmy.Garrison.Supply.Services;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -376,7 +378,8 @@ namespace ModifiedArmy.Garrison.Supply
         /// </summary>
         private void HandleLocalMissionFoodRisk(
             MobileParty party,
-            SupplyPartyComponent component)
+            SupplyPartyComponent component,
+            bool allowRouteChange)
         {
             Settlement expected = component.MissionState ==
                     SupplyPartyMissionState.TravelingToSource
@@ -385,7 +388,9 @@ namespace ModifiedArmy.Garrison.Supply
                     SupplyPartyMissionState.ReturningHome
                     ? component.HomeSettlement
                     : null;
-            if (expected == null) return;
+            if (expected == null || component.MissionState ==
+                    SupplyPartyMissionState.RestingAtFriendlySettlement)
+                return;
 
             float speed = Math.Max(0.1f, party.Speed);
             float expectedDistance = GetStraightLineDistance(party,
@@ -397,7 +402,18 @@ namespace ModifiedArmy.Garrison.Supply
             // IsStarving can remain true until the native daily food tick even
             // after a source has loaded ample food. Actual food coverage is the
             // authoritative safety check; the flag remains diagnostic only.
-            if (foodDays >= requiredDays) return;
+            if (foodDays >= RoutineProvisionTriggerDays &&
+                foodDays >= requiredDays)
+                return;
+
+            string risk = foodDays < EmergencyProvisionDays
+                ? "EmergencyFoodRisk"
+                : "RoutineFoodRisk";
+            if (!allowRouteChange)
+            {
+                LogFoodRisk(party, component, foodDays, requiredDays, risk);
+                return;
+            }
 
             Settlement replacement = null;
             string action = "ContinueToNearestSafeTarget";
@@ -435,6 +451,175 @@ namespace ModifiedArmy.Garrison.Supply
 
             LogFoodRisk(party, component, foodDays, requiredDays, action);
         }
+
+        private bool HandleLocalEscortHealthRisk(
+            MobileParty party,
+            SupplyPartyComponent component)
+        {
+            if (component.MissionState ==
+                SupplyPartyMissionState.RestingAtFriendlySettlement)
+            {
+                TryProvisionAtFriendlySettlement(party, component,
+                    component.RecoverySettlement);
+                if (party.MemberRoster.TotalHealthyCount >= 10 &&
+                    GetFoodDays(party) >= RoutineProvisionTriggerDays)
+                {
+                    component.BeginReturnJourney();
+                    MoveToSettlement(party, component.HomeSettlement,
+                        "RecoveredEscortReturn");
+                }
+                return true;
+            }
+
+            int total = party.MemberRoster.TotalManCount;
+            int healthy = party.MemberRoster.TotalHealthyCount;
+            float healthyRatio = total <= 0 ? 0f : healthy / (float)total;
+            if (healthy >= 25 && healthyRatio >= 0.5f) return false;
+
+            Settlement recovery = FindNearestFriendlyRecoverySettlement(
+                party, component);
+            if (recovery == null) return false;
+            if (recovery == component.HomeSettlement)
+            {
+                component.BeginReturnJourney();
+                LogEmergencyRecovery(party, component, recovery,
+                    "ReturningHome", healthy, total);
+                MoveToSettlement(party, recovery, "EscortHealthReturn");
+            }
+            else
+            {
+                LogEmergencyRecovery(party, component, recovery,
+                    "SeekingFriendlyRest", healthy, total);
+                MoveToSettlement(party, recovery, "EscortHealthRecovery");
+            }
+            return true;
+        }
+
+        private bool TryHandleFriendlyRecoveryEntry(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement settlement)
+        {
+            if (!IsFriendlyRecoverySettlement(component, settlement))
+                return false;
+
+            TryProvisionAtFriendlySettlement(party, component, settlement);
+            int healthy = party.MemberRoster.TotalHealthyCount;
+            if (settlement == component.HomeSettlement && healthy <= 9)
+            {
+                LogEmergencyRecovery(party, component, settlement,
+                    "CompletingAtHome", healthy,
+                    party.MemberRoster.TotalManCount);
+                CompleteMission(party, component);
+                return true;
+            }
+            if (settlement != component.HomeSettlement && healthy < 25)
+            {
+                component.BeginFriendlyRecovery(settlement);
+                LogEmergencyRecovery(party, component, settlement,
+                    "RestingAtFriendlySettlement", healthy,
+                    party.MemberRoster.TotalManCount);
+                return true;
+            }
+            return false;
+        }
+
+        private void TryProvisionAtFriendlySettlement(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement settlement)
+        {
+            if (!IsFriendlyRecoverySettlement(component, settlement)) return;
+            int needed = Math.Max(0, (int)Math.Ceiling(
+                GetDailyFoodDemand(party) * RoutineProvisionTriggerDays) -
+                party.ItemRoster.TotalFood);
+            if (needed <= 0) return;
+            if (settlement.IsTown)
+            {
+                int beforeFood = party.ItemRoster.TotalFood;
+                SupplyFoodPurchaseResult purchase = Cargo.PurchaseFood(
+                    party, settlement,
+                    component.HomeSettlement.OwnerClan?.Leader, needed,
+                    element => settlement.Town.GetItemPrice(
+                        element.EquipmentElement, party, true));
+                LogFriendlyProvision(party, settlement, "MarketPurchase",
+                    purchase.Food, purchase.Gold, beforeFood,
+                    party.ItemRoster.TotalFood);
+                return;
+            }
+            if (settlement.OwnerClan != component.HomeSettlement.OwnerClan)
+                return;
+            MobileParty garrison = settlement.Town?.GarrisonParty;
+            int available = Math.Max(0,
+                (garrison?.ItemRoster.TotalFood ?? 0) -
+                SourceGranaryFoodReserve);
+            int before = party.ItemRoster.TotalFood;
+            int transferred = TransferFoodWithinCapacity(garrison?.ItemRoster,
+                party.ItemRoster, Math.Min(needed, available), party);
+            LogFriendlyProvision(party, settlement, "ClanGranaryTransfer",
+                transferred, 0, before, party.ItemRoster.TotalFood);
+        }
+
+        private static void LogFriendlyProvision(MobileParty party,
+            Settlement settlement, string source, int acquired, int gold,
+            int beforeFood, int afterFood)
+        {
+            if (acquired <= 0 || !RecruitmentLogFilter.ShouldLog(party))
+                return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_supply_friendly_provision");
+            message.SetTextVariable("PARTY_ID", party.StringId);
+            message.SetTextVariable("SETTLEMENT_ID", settlement.StringId);
+            message.SetTextVariable("SOURCE", source);
+            message.SetTextVariable("ACQUIRED", acquired);
+            message.SetTextVariable("GOLD", gold);
+            message.SetTextVariable("FOOD_BEFORE", beforeFood);
+            message.SetTextVariable("FOOD_AFTER", afterFood);
+            ModLogger.Info(message.ToString());
+        }
+
+        private static void LogEmergencyRecovery(MobileParty party,
+            SupplyPartyComponent component, Settlement settlement,
+            string action, int healthy, int total)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(party) &&
+                !RecruitmentLogFilter.ShouldLog(
+                    component?.HomeSettlement?.OwnerClan))
+                return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_supply_emergency_recovery");
+            message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable("HOME_ID",
+                component?.HomeSettlement?.StringId ?? "none");
+            message.SetTextVariable("SETTLEMENT_ID",
+                settlement?.StringId ?? "none");
+            message.SetTextVariable("ACTION", action);
+            message.SetTextVariable("HEALTHY", healthy);
+            message.SetTextVariable("TOTAL", total);
+            message.SetTextVariable("WOUNDED", Math.Max(0, total - healthy));
+            ModLogger.Warn(message.ToString());
+        }
+
+        private static float GetFoodDays(MobileParty party)
+        {
+            float demand = GetDailyFoodDemand(party);
+            return demand <= 0f ? 0f : party.ItemRoster.TotalFood / demand;
+        }
+
+        private static bool IsFriendlyRecoverySettlement(
+            SupplyPartyComponent component,
+            Settlement settlement) =>
+            component?.HomeSettlement?.MapFaction != null &&
+            settlement?.Town != null && !settlement.IsUnderSiege &&
+            settlement.MapFaction == component.HomeSettlement.MapFaction;
+
+        private static Settlement FindNearestFriendlyRecoverySettlement(
+            MobileParty party,
+            SupplyPartyComponent component) => Settlement.All
+            .Where(settlement =>
+                IsFriendlyRecoverySettlement(component, settlement))
+            .OrderBy(settlement => GetStraightLineDistance(party, settlement))
+            .FirstOrDefault();
 
         private static Settlement FindNearestEmergencyFoodSource(
             MobileParty party,

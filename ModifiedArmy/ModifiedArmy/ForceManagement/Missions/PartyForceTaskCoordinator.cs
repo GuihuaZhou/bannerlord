@@ -47,8 +47,8 @@ namespace ModifiedArmy.ForceManagement.Missions
                         current,
                         false,
                         frozen
-                            ? "调兵恢复域被冻结"
-                            : "任务当前处于暂停状态");
+                            ? "Transfer recovery domain is frozen"
+                            : "Task is currently suspended");
                     ReleaseOwnedMovementOrder(party, current);
                     current.Status = PartyForceTaskStatus.Suspended;
                     current.ReasonCode = frozen
@@ -95,29 +95,65 @@ namespace ModifiedArmy.ForceManagement.Missions
         public bool TryRegisterInitialRecruitTask(MobileParty party,
             Settlement boundSettlement, PartyForceSourceKind preferredSource)
         {
-            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
-                boundSettlement == null ||
-                preferredSource != PartyForceSourceKind.Fief &&
-                preferredSource != PartyForceSourceKind.Professional ||
-                Campaign.Current?.GetCampaignBehavior<
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party))
+            {
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    boundSettlement, preferredSource, null, "Rejected",
+                    "PartyNotManaged");
+                return false;
+            }
+            if (boundSettlement == null)
+            {
+                ForceRecruitmentDiagnostics.LogInitialTask(party, null,
+                    preferredSource, null, "Rejected",
+                    "MissingBoundSettlement");
+                return false;
+            }
+            if (preferredSource != PartyForceSourceKind.Fief &&
+                preferredSource != PartyForceSourceKind.Professional)
+            {
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    boundSettlement, preferredSource, null, "Rejected",
+                    "InvalidPreferredSource");
+                return false;
+            }
+            if (Campaign.Current?.GetCampaignBehavior<
                     PartySettlementBindingBehavior>()?.IsBoundSettlement(
                         party, boundSettlement) != true)
+            {
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    boundSettlement, preferredSource, null, "Rejected",
+                    "RecruitmentSettlementBindingInvalid");
                 return false;
+            }
             PartyForceTask current = FindTask(party);
             if (current != null)
-                return current.Intent == PartyForceIntent.Recruit &&
+            {
+                bool matches = current.Intent == PartyForceIntent.Recruit &&
                     current.TargetSettlement == boundSettlement &&
                     current.SourceKind == preferredSource;
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    boundSettlement, preferredSource, current,
+                    matches ? "Continued" : "Rejected",
+                    matches ? "ExistingTaskMatches" :
+                        "ExistingTaskConflicts");
+                return matches;
+            }
 
             PartyForceSourceKind source = SelectAvailableSource(
                 boundSettlement, preferredSource);
             if (source != PartyForceSourceKind.Fief &&
                 source != PartyForceSourceKind.Professional)
+            {
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    boundSettlement, preferredSource, null, "Rejected",
+                    "NoFeasibleRecruitmentSource");
                 return false;
+            }
             int today = (int)CampaignTime.Now.ToDays;
             int version = _tasks().Where(task => task?.PartyId == party.StringId)
                 .Select(task => task.Version).DefaultIfEmpty(0).Max() + 1;
-            _tasks().Add(new PartyForceTask
+            PartyForceTask created = new PartyForceTask
             {
                 Party = party,
                 PartyId = party.StringId,
@@ -132,8 +168,12 @@ namespace ModifiedArmy.ForceManagement.Missions
                 LastValidatedDay = today,
                 Version = version,
                 OwnsMovementOrder = false
-            });
+            };
+            _tasks().Add(created);
             if (party.Ai != null) party.Ai.RethinkAtNextHourlyTick = true;
+            ForceRecruitmentDiagnostics.LogInitialTask(party,
+                boundSettlement, source, created, "Created",
+                "InitialPartyRecruitment");
             return true;
         }
 
@@ -165,6 +205,9 @@ namespace ModifiedArmy.ForceManagement.Missions
             task.Status = PartyForceTaskStatus.Cancelled;
             task.OwnsMovementOrder = false;
             task.ReasonCode = reason ?? "CancelledByCaller";
+            ForceRecruitmentDiagnostics.LogInitialTask(party,
+                task.TargetSettlement, task.SourceKind, task, "Cancelled",
+                task.ReasonCode);
         }
 
         private void ApplyLivePlan(
@@ -189,6 +232,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                 ReleaseOwnedMovementOrder(party, current);
                 current.Status = PartyForceTaskStatus.Cancelled;
                 current.ReasonCode = "ReplacedByDailyPlan";
+                ForceRecruitmentDiagnostics.LogInitialTask(party,
+                    current.TargetSettlement, current.SourceKind, current,
+                    "Replaced", current.ReasonCode);
             }
             if (next == null ||
                 next.Status == PartyForceTaskStatus.Completed ||
@@ -201,6 +247,9 @@ namespace ModifiedArmy.ForceManagement.Missions
             next.OwnsMovementOrder = false;
             next.Status = PartyForceTaskStatus.Planned;
             _tasks().Add(next);
+            ForceRecruitmentDiagnostics.LogInitialTask(party,
+                next.TargetSettlement, next.SourceKind, next, "Created",
+                plan?.ReasonCode ?? next.ReasonCode);
             if (party?.Ai != null)
                 party.Ai.RethinkAtNextHourlyTick = true;
         }

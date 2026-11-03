@@ -191,6 +191,13 @@ namespace ModifiedArmy.Garrison.Supply
                 (int)SupplyPartyMissionState.Recovering;
         }
 
+        public void BeginFriendlyRecovery(Settlement settlement)
+        {
+            RecoverySettlement = settlement;
+            MissionStateValue =
+                (int)SupplyPartyMissionState.RestingAtFriendlySettlement;
+        }
+
         public void ChangeSource(Settlement sourceSettlement)
         {
             SourceSettlement = sourceSettlement;

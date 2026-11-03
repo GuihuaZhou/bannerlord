@@ -5,6 +5,7 @@ using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.common;
 using System;
 using System.Linq;
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -20,13 +21,18 @@ namespace ModifiedArmy.PartyManagement.Models
         public PartyForceSourceKind PreferredInitialSource { get; set; }
         public string ReasonCode { get; set; }
         public float Distance { get; set; }
+        public bool BindingEligible { get; set; }
+        public int MinimumRequired { get; set; }
+        public int MinimumFiefBatch { get; set; }
+        public string RejectionReason { get; set; }
     }
 
     /// <summary>Read-only preflight for a lord party that does not exist yet.</summary>
     public sealed class PartyCreationSettlementModel
     {
         public PartyCreationSiteResult FindEligibleBase(
-            Hero leader, Clan clan, int minimumRegulars = 50)
+            Hero leader, Clan clan, int minimumRegulars = 50,
+            ICollection<PartyCreationSiteResult> evaluations = null)
         {
             if (leader == null || clan == null || leader.Clan != clan)
                 return null;
@@ -41,12 +47,15 @@ namespace ModifiedArmy.PartyManagement.Models
             Settlement origin = leader.CurrentSettlement ??
                 leader.LastKnownClosestSettlement;
 
-            return clan.Settlements
-                .Where(settlement => bindings.CanReserveForCreation(
-                    leader, clan, settlement))
-                .Select(settlement => Evaluate(
-                    settlement, fiefs, origin, minimumRegulars, minimumFiefBatch))
-                .Where(result => result != null &&
+            List<PartyCreationSiteResult> candidates = clan.Settlements
+                .Select(settlement => Evaluate(settlement, fiefs, bindings,
+                    leader, clan, origin, minimumRegulars, minimumFiefBatch))
+                .ToList();
+            if (evaluations != null)
+                foreach (PartyCreationSiteResult result in candidates)
+                    evaluations.Add(result);
+            return candidates.Where(result => result != null &&
+                    result.BindingEligible &&
                     result.EstimatedCombinedRegulars >= minimumRegulars)
                 .OrderByDescending(result => result.EstimatedCombinedRegulars)
                 .ThenBy(result => result.Distance)
@@ -54,16 +63,22 @@ namespace ModifiedArmy.PartyManagement.Models
                 .FirstOrDefault();
         }
 
-        private static PartyCreationSiteResult Evaluate(Settlement settlement,
-            FiefPartyManager fiefs, Settlement origin, int minimum, int minimumFiefBatch)
+        private static PartyCreationSiteResult Evaluate(
+            Settlement settlement,
+            FiefPartyManager fiefs,
+            PartySettlementBindingBehavior bindings,
+            Hero leader,
+            Clan clan,
+            Settlement origin, int minimum, int minimumFiefBatch)
         {
+            bool bindingEligible = bindings.CanReserveForCreation(
+                leader, clan, settlement);
             int garrison = GarrisonTransferPolicyModel
                 .GetTransferableGarrisonTroopCount(settlement);
             int fief = GetEligibleFiefRegulars(fiefs, settlement);
             bool fiefBatch = fief >= Math.Max(1, minimumFiefBatch);
             int usableFief = fiefBatch ? fief : 0;
             int combined = garrison + usableFief;
-            if (combined < minimum) return null;
             PartyForceSourceKind first = fiefBatch
                 ? PartyForceSourceKind.Fief
                 : PartyForceSourceKind.Professional;
@@ -75,7 +90,15 @@ namespace ModifiedArmy.PartyManagement.Models
                 EstimatedCombinedRegulars = combined,
                 PreferredInitialSource = first,
                 ReasonCode = "EstimatedSupplyThresholdMet",
-                Distance = GetDistance(origin, settlement)
+                Distance = GetDistance(origin, settlement),
+                BindingEligible = bindingEligible,
+                MinimumRequired = minimum,
+                MinimumFiefBatch = minimumFiefBatch,
+                RejectionReason = !bindingEligible
+                    ? "SettlementReservationRejected"
+                    : combined < minimum
+                        ? "InsufficientCombinedTroops"
+                        : "Eligible"
             };
         }
 

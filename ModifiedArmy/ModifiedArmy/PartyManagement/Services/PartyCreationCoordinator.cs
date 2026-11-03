@@ -5,6 +5,7 @@ using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.PartyManagement.Diagnostics;
 using ModifiedArmy.PartyManagement.Models;
 using System;
+using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -20,16 +21,33 @@ namespace ModifiedArmy.PartyManagement.Services
         public MobileParty TryCreateManagedLordParty(Hero leader, bool isNewGame)
         {
             if (!ManagedPartyPolicy.IsModManagedAiLeader(leader)) return null;
+            string attemptId = Guid.NewGuid().ToString("N");
             PartySettlementBindingBehavior bindings = Campaign.Current?
                 .GetCampaignBehavior<PartySettlementBindingBehavior>();
             AiForcePlanningBehavior planning = Campaign.Current?
                 .GetCampaignBehavior<AiForcePlanningBehavior>();
+            var evaluations = new List<PartyCreationSiteResult>();
             PartyCreationSiteResult site = _sites.FindEligibleBase(
-                leader, leader.Clan, 50);
+                leader, leader.Clan, 50, evaluations);
+            foreach (PartyCreationSiteResult candidate in evaluations)
+                PartyCreationDiagnostics.Log(leader, null,
+                    candidate.Settlement?.StringId, "Evaluated",
+                    candidate.RejectionReason,
+                    candidate.EstimatedGarrisonRegulars,
+                    candidate.EstimatedFiefRegulars,
+                    candidate.EstimatedCombinedRegulars,
+                    candidate.PreferredInitialSource.ToString(), attemptId,
+                    candidate.MinimumRequired, candidate.MinimumFiefBatch,
+                    candidate.BindingEligible);
             if (bindings == null || planning == null || site?.Settlement == null)
             {
                 PartyCreationDiagnostics.Log(leader, null, null, "Rejected",
-                    "NoEligibleCreationBase", 0, 0, 0);
+                    bindings == null || planning == null
+                        ? "CreationServicesUnavailable"
+                        : evaluations.Count == 0
+                        ? "NoEligibleClanSettlement"
+                        : "NoEligibleCreationBase", 0, 0, 0,
+                    attemptId: attemptId);
                 return null;
             }
             if (!bindings.TryReserveForCreation(
@@ -40,7 +58,11 @@ namespace ModifiedArmy.PartyManagement.Services
                     "CreationBaseReservationRejected",
                     site.EstimatedGarrisonRegulars,
                     site.EstimatedFiefRegulars,
-                    site.EstimatedCombinedRegulars);
+                    site.EstimatedCombinedRegulars,
+                    attemptId: attemptId,
+                    minimumRequired: site.MinimumRequired,
+                    minimumFiefBatch: site.MinimumFiefBatch,
+                    bindingEligible: site.BindingEligible);
                 return null;
             }
 
@@ -53,18 +75,27 @@ namespace ModifiedArmy.PartyManagement.Services
                 using (PartyCreationScope.Begin(leader))
                     party = MobilePartyHelper.SpawnLordParty(
                         leader, site.Settlement);
-                if (party == null) return null;
+                if (party == null)
+                {
+                    PartyCreationDiagnostics.Log(leader, null,
+                        site.Settlement.StringId, "Failed",
+                        "SpawnReturnedNull", site.EstimatedGarrisonRegulars,
+                        site.EstimatedFiefRegulars,
+                        site.EstimatedCombinedRegulars,
+                        site.PreferredInitialSource.ToString(), attemptId);
+                    return null;
+                }
                 if (party.Party.PartySizeLimit < 51)
                     return FailAfterCreation(bindings, planning, leader, party,
-                        site, "PartyCapacityBelowFiftyRegulars");
+                        site, "PartyCapacityBelowFiftyRegulars", attemptId);
                 if (!bindings.TryCommitCreation(token, party))
                     return FailAfterCreation(bindings, planning, leader, party, site,
-                        "BindingCommitRejected");
+                        "BindingCommitRejected", attemptId);
                 committed = true;
                 if (!planning.TryRegisterInitialRecruitTask(
                         party, site.Settlement, site.PreferredInitialSource))
                     return FailAfterCreation(bindings, planning, leader, party, site,
-                        "InitialTaskRegistrationRejected");
+                        "InitialRecruitTaskRejected", attemptId);
 
                 EnterSettlementAction.ApplyForParty(party, site.Settlement);
                 PartyCreationDiagnostics.Log(leader, party,
@@ -72,7 +103,7 @@ namespace ModifiedArmy.PartyManagement.Services
                     site.EstimatedGarrisonRegulars,
                     site.EstimatedFiefRegulars,
                     site.EstimatedCombinedRegulars,
-                    site.PreferredInitialSource.ToString());
+                    site.PreferredInitialSource.ToString(), attemptId);
                 return party;
             }
             catch (Exception exception)
@@ -89,7 +120,8 @@ namespace ModifiedArmy.PartyManagement.Services
                     "CreationTransactionException:" + exception.GetType().Name,
                     site.EstimatedGarrisonRegulars,
                     site.EstimatedFiefRegulars,
-                    site.EstimatedCombinedRegulars);
+                    site.EstimatedCombinedRegulars,
+                    attemptId: attemptId);
                 return null;
             }
             finally
@@ -101,7 +133,8 @@ namespace ModifiedArmy.PartyManagement.Services
         private static MobileParty FailAfterCreation(
             PartySettlementBindingBehavior bindings,
             AiForcePlanningBehavior planning, Hero leader,
-            MobileParty party, PartyCreationSiteResult site, string reason)
+            MobileParty party, PartyCreationSiteResult site, string reason,
+            string attemptId)
         {
             planning.CancelTask(party, reason);
             bindings.ReleasePartyBindings(party, reason);
@@ -110,7 +143,8 @@ namespace ModifiedArmy.PartyManagement.Services
                 site.Settlement.StringId, "Failed", reason,
                 site.EstimatedGarrisonRegulars,
                 site.EstimatedFiefRegulars,
-                site.EstimatedCombinedRegulars);
+                site.EstimatedCombinedRegulars,
+                attemptId: attemptId);
             return null;
         }
 

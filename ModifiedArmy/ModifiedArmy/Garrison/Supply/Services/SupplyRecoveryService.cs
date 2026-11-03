@@ -35,6 +35,9 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     advanceAid(party, component);
                     continue;
                 }
+                if (component.MissionState ==
+                    SupplyPartyMissionState.RestingAtFriendlySettlement)
+                    continue;
                 Settlement destination = component.MissionState ==
                         SupplyPartyMissionState.TravelingToSource
                     ? component.SourceSettlement

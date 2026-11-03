@@ -293,6 +293,31 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 ModLogger.Debug(message.ToString());
         }
 
+        internal static void LogInitialTask(
+            MobileParty party,
+            Settlement settlement,
+            PartyForceSourceKind source,
+            PartyForceTask task,
+            string status,
+            string reason)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_force_initial_task");
+            SetParty(message, party);
+            message.SetTextVariable("SETTLEMENT_ID",
+                settlement?.StringId ?? "none");
+            message.SetTextVariable("SOURCE", source.ToString());
+            message.SetTextVariable("STATUS", status ?? "Unknown");
+            message.SetTextVariable("REASON", reason ?? "Unknown");
+            message.SetTextVariable("CREATED_DAY", task?.CreatedDay ?? -1);
+            message.SetTextVariable("VERSION", task?.Version ?? 0);
+            if (status == "Rejected" || status == "Suspended")
+                ModLogger.Warn(message.ToString());
+            else
+                ModLogger.Info(message.ToString());
+        }
+
         internal static void LogTaskRouteDecision(
             MobileParty party,
             PartyForceTask task,

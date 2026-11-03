@@ -41,9 +41,13 @@ namespace ModifiedArmy.Garrison.Supply
 
         private const int EmergencySupplyDays = 15;
 
-        private const int OutboundProvisionDays = 5;
+        private const int OutboundProvisionDays = 20;
 
-        private const int ProvisionSafetyDays = 2;
+        private const int ProvisionSafetyDays = 8;
+
+        private const int RoutineProvisionTriggerDays = 10;
+
+        private const int EmergencyProvisionDays = 3;
 
         private const int DestroyedPartyCooldownDays = 10;
 
@@ -211,6 +215,9 @@ namespace ModifiedArmy.Garrison.Supply
 
             LogDailySupplyHealth(party, component);
 
+            if (!component.IsAidMission)
+                HandleLocalMissionFoodRisk(party, component, false);
+
             if (ShouldPauseForThreat(party, component)) return;
 
             if (component.IsAidMission)
@@ -219,10 +226,11 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
-            // Food-risk handling runs only after native threat protection. It
-            // may select a nearer legal source or return home, but never
-            // overwrites an active flee/avoidance order.
-            HandleLocalMissionFoodRisk(party, component);
+            // Route changes occur only after native threat protection. The
+            // read-only risk probe above remains active during avoidance.
+            HandleLocalMissionFoodRisk(party, component, true);
+
+            if (HandleLocalEscortHealthRisk(party, component)) return;
 
             if (component.MissionState
                 == SupplyPartyMissionState.TravelingToSource)
@@ -286,6 +294,9 @@ namespace ModifiedArmy.Garrison.Supply
                 OnAidSettlementEntered(party, component, settlement);
                 return;
             }
+
+            if (TryHandleFriendlyRecoveryEntry(party, component, settlement))
+                return;
 
             if (component.MissionState
                     == SupplyPartyMissionState.TravelingToSource
@@ -607,6 +618,10 @@ namespace ModifiedArmy.Garrison.Supply
                         "Returning from aid");
                 case SupplyPartyMissionState.Recovering:
                     return TransportLogText.Event("Recovering");
+                case SupplyPartyMissionState.RestingAtFriendlySettlement:
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRestingAtFriendly}" +
+                        "Resting at a friendly settlement");
                 case SupplyPartyMissionState.Completed:
                     return TransportLogText.Event("Completed");
                 default:

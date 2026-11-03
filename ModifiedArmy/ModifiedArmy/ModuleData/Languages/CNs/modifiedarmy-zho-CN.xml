@@ -338,7 +338,11 @@
     <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
     <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
-    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 家族{CLAN_ID}、领队{LEADER_ID}、部队{PARTY_ID}与定居点{SETTLEMENT_ID}进入阶段{PHASE}。预计驻军兵源{GARRISON}人，预计封邑兵源{FIEF}人，预计合计{TOTAL}人，首次来源为{SOURCE}。原因：{REASON}。" />
+    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试{ATTEMPT_ID}，类型{PARTY_TYPE}，家族{CLAN_ID}，领队{LEADER_ID}，部队{PARTY_ID}，定居点{SETTLEMENT_ID}，阶段{PHASE}，原因{REASON}。驻军兵源{GARRISON}人，封邑兵源{FIEF}人，合计{TOTAL}人，最低要求{MINIMUM}人，封邑最低批次{MINIMUM_FIEF_BATCH}人，绑定资格{BINDING_ELIGIBLE}，首次来源{SOURCE}。" />
+    <string id="ModifiedArmy_ForceInitialTask" text="[调兵任务] 部队{PARTY_NAME}（{PARTY_ID}），定居点{SETTLEMENT_ID}，来源{SOURCE}，状态{STATUS}，原因{REASON}，创建日{CREATED_DAY}，版本{VERSION}。" />
+    <string id="ModifiedArmy_SupplyFriendlyProvision" text="[途中补给] 部队{PARTY_ID}在{SETTLEMENT_ID}通过{SOURCE}获得{ACQUIRED}份食物，支付{GOLD}第纳尔，食物由{FOOD_BEFORE}变为{FOOD_AFTER}。" />
+    <string id="ModifiedArmy_SupplyEmergencyRecovery" text="[紧急安置] 部队{PARTY_ID}，所属地{HOME_ID}，安置点{SETTLEMENT_ID}，行动{ACTION}，健康{HEALTHY}人，伤兵{WOUNDED}人，总计{TOTAL}人。" />
+    <string id="ModifiedArmy_TransportCreation" text="[部队创建] 尝试{ATTEMPT_ID}，类型{PARTY_TYPE}，部队{PARTY_ID}，家族{CLAN_ID}，来源{SOURCE_ID}，目的地{DESTINATION_ID}，状态{STATUS}，原因{REASON}。" />
     <string id="ModifiedArmy_ForceStayCandidate" text="[兵力规划] 部队{PARTY_ID}在定居点{SETTLEMENT_ID}拥有{REGULARS}名正规兵；已向本体AI提交评分为{SCORE}的驻留候选。" />
     <string id="ModifiedArmy_FiefManagement_Title" text="士兵管理" />
     <string id="ModifiedArmy_FiefManagement_AllVillages" text="全部附属村庄" />
@@ -350,5 +354,6 @@
     <string id="ModifiedArmy_FiefManagement_Serving" text="在役" />
     <string id="ModifiedArmy_FiefManagement_Cooling" text="返乡" />
     <string id="ModifiedArmy_FiefManagement_RecruitedCount" text="已招募人数" />
+    <string id="ModifiedArmy_SupplyRestingAtFriendly" text="在友方定居点休整" />
   </strings>
 </base>

@@ -1,6 +1,8 @@
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +12,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.ForceManagement.Transport
 {
@@ -20,10 +23,21 @@ namespace ModifiedArmy.ForceManagement.Transport
 
         public MobileParty TryCreate(ReinforcementDispatchPlan plan)
         {
-            if (plan?.IsApproved != true) return null;
+            string attemptId = Guid.NewGuid().ToString("N");
+            if (plan?.IsApproved != true)
+            {
+                LogCreation(plan, null, attemptId, "Rejected",
+                    plan?.ReasonCode ?? "PlanRejected");
+                return null;
+            }
             MobileParty garrison = plan.Source.Town?.GarrisonParty;
             if (garrison == null || plan.Source.OwnerClan != plan.Clan ||
-                plan.Destination.OwnerClan != plan.Clan) return null;
+                plan.Destination.OwnerClan != plan.Clan)
+            {
+                LogCreation(plan, null, attemptId, "Rejected",
+                    "InvalidSourceOrOwnership");
+                return null;
+            }
 
             TroopRoster roster = ExtractHealthyOrdinaryTroops(
                 garrison, plan.TroopCount);
@@ -31,6 +45,8 @@ namespace ModifiedArmy.ForceManagement.Transport
             {
                 TransferTroops(roster, garrison.MemberRoster,
                     roster.TotalManCount);
+                LogCreation(plan, null, attemptId, "Rejected",
+                    "InsufficientHealthyEscort");
                 return null;
             }
 
@@ -47,9 +63,10 @@ namespace ModifiedArmy.ForceManagement.Transport
                 if (food < MinimumTravelFood)
                     throw new InvalidOperationException(
                         "InsufficientTravelFood");
+                LogCreation(plan, party, attemptId, "Created", "Ready");
                 return party;
             }
-            catch
+            catch (Exception exception)
             {
                 if (party?.IsActive == true)
                 {
@@ -65,8 +82,31 @@ namespace ModifiedArmy.ForceManagement.Transport
                     TransferTroops(roster, garrison.MemberRoster,
                         roster.TotalManCount);
                 }
+                LogCreation(plan, party, attemptId, "RolledBack",
+                    "CreationException:" + exception.GetType().Name);
                 throw;
             }
+        }
+
+        private static void LogCreation(ReinforcementDispatchPlan plan,
+            MobileParty party, string attemptId, string status, string reason)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(plan?.Clan)) return;
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_transport_creation");
+            message.SetTextVariable("ATTEMPT_ID", attemptId);
+            message.SetTextVariable("PARTY_TYPE", "ReinforcementParty");
+            message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable("CLAN_ID", plan?.Clan?.StringId ?? "none");
+            message.SetTextVariable("SOURCE_ID",
+                plan?.Source?.StringId ?? "none");
+            message.SetTextVariable("DESTINATION_ID",
+                plan?.Destination?.StringId ?? "none");
+            message.SetTextVariable("STATUS", status);
+            message.SetTextVariable("REASON", reason);
+            if (status == "Created") ModLogger.Info(message.ToString());
+            else if (status == "RolledBack") ModLogger.Error(message.ToString());
+            else ModLogger.Warn(message.ToString());
         }
 
         public int DeliverTroops(
