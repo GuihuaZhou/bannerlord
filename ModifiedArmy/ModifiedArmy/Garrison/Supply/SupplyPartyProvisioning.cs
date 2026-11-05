@@ -568,9 +568,12 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_supply_friendly_provision");
-            message.SetTextVariable("PARTY_ID", party.StringId);
-            message.SetTextVariable("SETTLEMENT_ID", settlement.StringId);
-            message.SetTextVariable("SOURCE", source);
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("SETTLEMENT_NAME",
+                settlement.Name);
+            message.SetTextVariable("SOURCE",
+                GetFriendlyProvisionSourceText(source));
             message.SetTextVariable("ACQUIRED", acquired);
             message.SetTextVariable("GOLD", gold);
             message.SetTextVariable("FOOD_BEFORE", beforeFood);
@@ -588,16 +591,56 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_supply_emergency_recovery");
-            message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
-            message.SetTextVariable("HOME_ID",
-                component?.HomeSettlement?.StringId ?? "none");
-            message.SetTextVariable("SETTLEMENT_ID",
-                settlement?.StringId ?? "none");
-            message.SetTextVariable("ACTION", action);
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("HOME_NAME",
+                component?.HomeSettlement?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("SETTLEMENT_NAME",
+                settlement?.Name ?? TextObject.GetEmpty());
+            message.SetTextVariable("ACTION",
+                GetEmergencyRecoveryActionText(action));
             message.SetTextVariable("HEALTHY", healthy);
             message.SetTextVariable("TOTAL", total);
             message.SetTextVariable("WOUNDED", Math.Max(0, total - healthy));
             ModLogger.Warn(message.ToString());
+        }
+
+        private static TextObject GetFriendlyProvisionSourceText(
+            string source)
+        {
+            return source == "MarketPurchase"
+                ? new TextObject(
+                    "{=ModifiedArmy_SupplyProvisionMarket}local market")
+                : new TextObject(
+                    "{=ModifiedArmy_SupplyProvisionGranary}clan granary");
+        }
+
+        private static TextObject GetEmergencyRecoveryActionText(
+            string action)
+        {
+            switch (action)
+            {
+                case "ReturningHome":
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRecoveryReturningHome}" +
+                        "returning home");
+                case "SeekingFriendlyRest":
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRecoverySeekingRest}" +
+                        "heading to a friendly settlement to recover");
+                case "CompletingAtHome":
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRecoveryCompletingAtHome}" +
+                        "completing the mission at home");
+                case "RestingAtFriendlySettlement":
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRecoveryResting}" +
+                        "recovering at a friendly settlement");
+                default:
+                    return new TextObject(
+                        "{=ModifiedArmy_SupplyRecoveryStateChange}" +
+                        "changing recovery state");
+            }
         }
 
         private static float GetFoodDays(MobileParty party)

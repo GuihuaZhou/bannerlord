@@ -175,6 +175,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(
                     new NewSettlementFoodModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
+                campaignStarter.AddModel(new NewMinorFactionsModel());
                 campaignStarter.AddModel(new NewPartyTroopUpgradeModel());
                 campaignStarter.AddModel(new NewPartySizeLimitModel());
                 campaignStarter.AddModel(new NewBanditDensityModel());
