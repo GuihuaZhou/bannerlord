@@ -130,8 +130,18 @@ namespace ModifiedArmy.Models.Fief
         /// <summary>
         /// 获取封邑士兵的总数（包括就绪、征召、冷却）
         /// </summary>
-        public int GetTotalTroopCount() => Villages?.Values.Sum(village =>
-            village?.GetTotalFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
+        public FiefTroopSnapshot QueryFeudalTroops(
+            Settlement villageFilter = null,
+            FiefTroopState states = FiefTroopState.All,
+            bool excludeRecovery = false) => FiefTroopQuery.Merge(
+                OrderedVillages(villageFilter)
+                    .Where(village => !excludeRecovery ||
+                        !village.RecoveryRequired)
+                    .Select(village => village.QueryFeudalTroops(
+                        _fiefPartyTemplate, states)), states);
+
+        public int GetTotalTroopCount() =>
+            QueryFeudalTroops().TotalCount;
 
         public int GetTotalOccupiedSupplyHearth()
         {
@@ -224,12 +234,12 @@ namespace ModifiedArmy.Models.Fief
             checked
             {
                 foreach (VillageFiefData village in OrderedVillages())
-                foreach (var pair in village.GetRegisteredFeudalTroopCounts(
-                    _fiefPartyTemplate))
+                foreach (var pair in village.QueryFeudalTroops(
+                    _fiefPartyTemplate).Troops)
                 {
                     int unitWage = Math.Max(0,
                         wageModel.GetCharacterWage(pair.Key));
-                    dailyWages += (long)unitWage * pair.Value;
+                    dailyWages += (long)unitWage * pair.Value.Total;
                 }
             }
             double relief = dailyWages * (double)wageRatio;
@@ -247,19 +257,9 @@ namespace ModifiedArmy.Models.Fief
             if (roster == null || _fiefPartyTemplate == null) return 0;
             int total = 0;
 
-            foreach (var element in roster.GetTroopRoster())
-            {
-                var troop = element.Character;
-                // Number already includes wounded troops in Bannerlord rosters.
-                var count = element.Number;
-                if (troop == null || count <= 0)
-                    continue;
-
-                if (!_fiefPartyTemplate.IsEnableTroop(troop))
-                    continue;
-
-                total += count;
-            }
+            foreach (TroopRosterElement element in FiefTroopRosterFilter
+                .GetEntries(roster, _fiefPartyTemplate))
+                total += element.Number;
             return total;
         }
 
@@ -296,7 +296,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetReadyFiefTroopCount()
         {
-            return Villages?.Values.Sum(v => v?.GetReadyFiefTroopCount(_fiefPartyTemplate) ?? 0) ?? 0;
+            return QueryFeudalTroops(states: FiefTroopState.Ready)
+                .TotalCount;
         }
 
         /// <summary>
@@ -304,7 +305,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetRecruitedFiefTroopCount()
         {
-            return Villages?.Values.Sum(v => v?.GetServingFiefTroopCount() ?? 0) ?? 0;
+            return QueryFeudalTroops(states: FiefTroopState.Serving)
+                .TotalCount;
         }
 
         /// <summary>

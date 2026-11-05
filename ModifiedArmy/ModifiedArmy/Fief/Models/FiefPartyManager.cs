@@ -133,6 +133,7 @@ namespace ModifiedArmy.Models.Fief
             _runtimeReadinessFailuresLogged.Clear();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
+            RemoveInvalidPersistentFeudalTroops();
             if (CampaignState.IsNewGame)
                 InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
@@ -142,6 +143,117 @@ namespace ModifiedArmy.Models.Fief
                 "Fief runtime session ready: fiefs={0}.",
                 _fiefDataMap.Values.Count(data =>
                     data?.IsRuntimeReady == true)));
+        }
+
+        private void RemoveInvalidPersistentFeudalTroops()
+        {
+            int repairedVillages = 0;
+            int servingRemoved = 0;
+            int coolingRemoved = 0;
+            foreach (FiefPartyData fief in _fiefDataMap.Values
+                .Where(data => data?.IsRuntimeReady == true))
+            {
+                FiefPartyTemplate template = fief.GetFiefPartyTemplate();
+                CulturalMilitaryDoctrine doctrine = MilitaryConfigManager
+                    .Instance.RequireActiveConfig().GetDoctrine(
+                        fief.GetSettlement());
+                foreach (VillageFiefData village in fief.OrderedVillages())
+                {
+                    bool IsValid(CharacterObject troop) => troop != null &&
+                        template?.IsEnableTroop(troop) == true &&
+                        doctrine.TryGetFeudalSupplyCost(troop, out _);
+                    List<(FiefServiceBatch Batch, CharacterObject Troop,
+                        int Count)> invalidServing = village.ServiceBatches
+                        .Where(batch => batch != null)
+                        .SelectMany(batch => batch.Troops.Where(pair =>
+                            pair.Key != null && pair.Value > 0 &&
+                            !IsValid(pair.Key)).Select(pair =>
+                                (batch, pair.Key, pair.Value))).ToList();
+                    List<(FiefReturnBatch Batch, CharacterObject Troop,
+                        int Count)> invalidCooling = village.ReturnBatches
+                        .Where(batch => batch != null)
+                        .SelectMany(batch => batch.Troops.Where(pair =>
+                            pair.Key != null && pair.Value > 0 &&
+                            !IsValid(pair.Key)).Select(pair =>
+                                (batch, pair.Key, pair.Value))).ToList();
+                    bool legacyInvalidRecovery = village.RecoveryRequired &&
+                        (village.RecoveryReason == "InvalidFeudalTroopCost" ||
+                         village.RecoveryReason ==
+                            "InvalidFeudalTroopRepairBlocked" ||
+                         village.RecoveryReason ==
+                            "InvalidFeudalTroopRepairFailed");
+                    if (invalidServing.Count == 0 &&
+                        invalidCooling.Count == 0)
+                    {
+                        if (legacyInvalidRecovery)
+                            village.CompleteRecovery();
+                        continue;
+                    }
+
+                    int servingCount = invalidServing.Sum(item => item.Count);
+                    foreach (var group in invalidServing.GroupBy(
+                        item => item.Batch))
+                    {
+                        Dictionary<CharacterObject, int> after = group.Key
+                            .Troops.ToDictionary(pair => pair.Key,
+                                pair => pair.Value);
+                        foreach (var item in group)
+                        {
+                            ModLogger.Warn(string.Format(
+                                "Invalid feudal troop removed: source=Serving villageId={0} troopId={1} tier={2} count={3} batchId={4} servingPartyId={5} reasonCode=InvalidFeudalTroop.",
+                                village.VillageSettlement?.StringId ??
+                                "unknown", item.Troop.StringId,
+                                item.Troop.Tier, item.Count,
+                                item.Batch.BatchId ?? "none",
+                                item.Batch.ServingParty?.StringId ?? "none"));
+                            after.Remove(item.Troop);
+                        }
+                        group.Key.ReplaceTroops(after);
+                        if (group.Key.IsEmpty())
+                        {
+                            village.ServiceBatches.Remove(group.Key);
+                            UnregisterServingDetachment(group.Key.SourceFief,
+                                village.VillageSettlement, group.Key);
+                        }
+                    }
+                    foreach (var group in invalidCooling.GroupBy(
+                        item => item.Batch))
+                    {
+                        Dictionary<CharacterObject, int> after = group.Key
+                            .Troops.ToDictionary(pair => pair.Key,
+                                pair => pair.Value);
+                        foreach (var item in group)
+                        {
+                            ModLogger.Warn(string.Format(
+                                "Invalid feudal troop removed: source=Cooling villageId={0} troopId={1} tier={2} count={3} waitWeeks={4} reasonCode=InvalidFeudalTroop.",
+                                village.VillageSettlement?.StringId ??
+                                "unknown", item.Troop.StringId,
+                                item.Troop.Tier, item.Count,
+                                item.Batch.WaitWeeks));
+                            after.Remove(item.Troop);
+                        }
+                        group.Key.ReplaceTroops(after);
+                        if (group.Key.GetTotalCount() <= 0)
+                            village.ReturnBatches.Remove(group.Key);
+                    }
+                    int released = village.RemoveInvalidMobilization(
+                        servingCount, true);
+                    if (released != servingCount)
+                        ModLogger.Warn(string.Format(
+                            "Invalid feudal troop mobilization mismatch: villageId={0} requestedRelease={1} actualRelease={2} reasonCode=InvalidFeudalTroopMobilizationShortfall.",
+                            village.VillageSettlement?.StringId ?? "unknown",
+                            servingCount, released));
+                    if (legacyInvalidRecovery)
+                        village.CompleteRecovery();
+                    repairedVillages++;
+                    servingRemoved += servingCount;
+                    coolingRemoved += invalidCooling.Sum(item => item.Count);
+                }
+            }
+            if (repairedVillages > 0)
+                ModLogger.Warn(string.Format(
+                    "Invalid feudal troop cleanup completed: villages={0}, servingRemoved={1}, coolingRemoved={2}.",
+                    repairedVillages, servingRemoved, coolingRemoved));
         }
 
         private void InitializeNewGameFiefTroops()
@@ -269,7 +381,8 @@ namespace ModifiedArmy.Models.Fief
             foreach (VillageFiefData village in fief?.Villages?.Values ??
                 Enumerable.Empty<VillageFiefData>())
             {
-                int serving = village.GetServingFiefTroopCount();
+                int serving = village.GetServingFiefTroopCount(
+                    fief.GetFiefPartyTemplate());
                 if (village.MobilizedHearth != serving)
                 {
                     bool newlyRequired = !village.RecoveryRequired;
@@ -339,7 +452,8 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
             if (village.MobilizedHearth !=
-                village.GetServingFiefTroopCount())
+                village.GetServingFiefTroopCount(
+                    GetFiefData(sourceFief).GetFiefPartyTemplate()))
             {
                 reason = "MobilizationMismatch";
                 return false;
@@ -459,6 +573,21 @@ namespace ModifiedArmy.Models.Fief
             out string reason) => FiefTroopConversionService.TryConvert(
                 this, fief, sourceVillage, sourceTroop, count, direction,
                 out converted, out reason);
+
+        public FiefTroopSnapshot QueryFeudalTroops(Settlement settlement,
+            FiefTroopState states = FiefTroopState.All,
+            bool excludeRecovery = false)
+        {
+            Settlement fiefSettlement = settlement?.IsVillage == true
+                ? settlement.Village?.Bound : settlement;
+            FiefPartyData data = GetFiefData(fiefSettlement);
+            return data == null
+                ? new FiefTroopSnapshot(states,
+                    new Dictionary<CharacterObject, FiefTroopCount>())
+                : data.QueryFeudalTroops(
+                    settlement?.IsVillage == true ? settlement : null,
+                    states, excludeRecovery);
+        }
 
         /// <summary>
         /// Reserves rural production capacity before any troop roster is changed.
@@ -1255,12 +1384,9 @@ namespace ModifiedArmy.Models.Fief
                 out FiefOperationScope scope)) return null;
             return string.Join("|", scope.FiefData
                 .OrderedVillages(scope.VillageFilter)
-                .SelectMany(v => (v.GetReadyRoster() == null
-                    ? Enumerable.Empty<TroopRosterElement>()
-                    : v.GetReadyRoster().GetTroopRoster())
-                    .Where(e => e.Character != null &&
-                        scope.FiefData.GetFiefPartyTemplate()
-                            .IsEnableTroop(e.Character))
+                .SelectMany(v => FiefTroopRosterFilter.GetEntries(
+                    v.GetReadyRoster(),
+                    scope.FiefData.GetFiefPartyTemplate())
                     .Select(e => string.Format("{0}:{1}:{2}:{3}",
                         v.VillageSettlement.StringId,
                         e.Character.StringId, e.Number, e.WoundedNumber)))
@@ -1502,13 +1628,8 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>可招募人数，若封邑无效或非玩家所有则返回 0</returns>
         public int GetAvailableTroopCount(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            return settlement.IsVillage
-                ? GetFiefData(settlement.Village.Bound)?
-                    .GetVillageData(settlement)?
-                    .GetReadyFiefTroopCount(GetFiefData(
-                        settlement.Village.Bound).GetFiefPartyTemplate()) ?? 0
-                : GetFiefData(settlement)?.GetReadyFiefTroopCount() ?? 0;
+            return QueryFeudalTroops(settlement,
+                FiefTroopState.Ready).TotalCount;
         }
 
         /// <summary>
@@ -1518,12 +1639,8 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>已被征召人数，若无征召或封邑无效则返回 0</returns>
         public int GetRecruitedTroopCount(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            return settlement.IsVillage
-                ? GetFiefData(settlement.Village.Bound)?
-                    .GetVillageData(settlement)?
-                    .GetServingFiefTroopCount() ?? 0
-                : GetFiefData(settlement)?.GetRecruitedFiefTroopCount() ?? 0;
+            return QueryFeudalTroops(settlement,
+                FiefTroopState.Serving).TotalCount;
         }
 
         /// <summary>
@@ -1533,25 +1650,8 @@ namespace ModifiedArmy.Models.Fief
         /// <returns>解散期士兵总数，若无或封邑无效则返回 0</returns>
         public int GetWaitCycleTroopCount(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            if (settlement.IsVillage)
-                return GetFiefData(settlement.Village.Bound)?
-                    .GetVillageData(settlement)?
-                    .GetCoolingFiefTroopCount() ?? 0;
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-            {
-                int total = 0;
-                if (data.Villages != null)
-                {
-                    foreach (var detachment in data.Villages.Values
-                        .Where(v => v != null).SelectMany(v => v.ReturnBatches))
-                    {
-                        total += detachment.GetTotalCount();
-                    }
-                }
-                return total;
-            }
-            return 0;
+            return QueryFeudalTroops(settlement,
+                FiefTroopState.Cooling).TotalCount;
         }
 
         /// <summary>
@@ -1559,19 +1659,7 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         public int GetFiefTroopCount(Settlement settlement)
         {
-            if (settlement == null) return 0;
-            if (settlement.IsVillage)
-            {
-                FiefPartyData villageFief = GetFiefData(
-                    settlement.Village?.Bound);
-                VillageFiefData village = villageFief?
-                    .GetVillageData(settlement);
-                return village?.GetTotalFiefTroopCount(
-                    villageFief.GetFiefPartyTemplate()) ?? 0;
-            }
-            if (_fiefDataMap.TryGetValue(settlement, out var data) && data != null)
-                return data.GetTotalTroopCount();
-            return 0;
+            return QueryFeudalTroops(settlement).TotalCount;
         }
 
         /// <summary>

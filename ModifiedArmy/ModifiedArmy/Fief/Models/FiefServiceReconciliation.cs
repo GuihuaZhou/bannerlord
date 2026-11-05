@@ -341,6 +341,7 @@ namespace ModifiedArmy.Models.Fief
 
         private static bool CanUpgradeTo(CharacterObject from, CharacterObject to)
         {
+            bool startedFromBasicTroop = from?.IsBasicTroop == true;
             HashSet<CharacterObject> visited = new();
             Stack<CharacterObject> pending = new();
             pending.Push(from);
@@ -351,6 +352,13 @@ namespace ModifiedArmy.Models.Fief
                 foreach (CharacterObject target in current.UpgradeTargets ??
                     Array.Empty<CharacterObject>())
                 {
+                    // A basic troop is the root of one military recruitment
+                    // tree. Civilian predecessors (for example a villager
+                    // upgrading into that basic troop) must not be treated as
+                    // members of the military tree during reconciliation.
+                    if (!startedFromBasicTroop &&
+                        target?.IsBasicTroop == true)
+                        continue;
                     if (target == to) return true;
                     if (target != null) pending.Push(target);
                 }

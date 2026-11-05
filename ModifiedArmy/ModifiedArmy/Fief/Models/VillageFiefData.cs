@@ -46,18 +46,22 @@ namespace ModifiedArmy.Models.Fief
                 : null;
         }
 
+        public FiefTroopSnapshot QueryFeudalTroops(
+            FiefPartyTemplate template,
+            FiefTroopState states = FiefTroopState.All) =>
+            FiefTroopQuery.Query(this, template, states);
+
         public int GetReadyFiefTroopCount(FiefPartyTemplate template) =>
-            FilteredEntries(template).Sum(e => Math.Max(0, e.Number));
+            QueryFeudalTroops(template, FiefTroopState.Ready).TotalCount;
 
-        public int GetServingFiefTroopCount() => ServiceBatches?
-            .Where(b => b != null).Sum(b => b.GetTotalCount()) ?? 0;
+        public int GetServingFiefTroopCount(FiefPartyTemplate template) =>
+            QueryFeudalTroops(template, FiefTroopState.Serving).TotalCount;
 
-        public int GetCoolingFiefTroopCount() => ReturnBatches?
-            .Where(b => b != null).Sum(b => b.GetTotalCount()) ?? 0;
+        public int GetCoolingFiefTroopCount(FiefPartyTemplate template) =>
+            QueryFeudalTroops(template, FiefTroopState.Cooling).TotalCount;
 
         public int GetTotalFiefTroopCount(FiefPartyTemplate template) =>
-            GetReadyFiefTroopCount(template) + GetServingFiefTroopCount() +
-            GetCoolingFiefTroopCount();
+            QueryFeudalTroops(template).TotalCount;
 
         public int GetEffectiveSupplyHearth() => Math.Max(0,
             (int)Math.Floor((VillageSettlement?.Village?.Hearth ?? 0f) +
@@ -72,25 +76,18 @@ namespace ModifiedArmy.Models.Fief
             int occupied = 0;
             checked
             {
-                foreach (TroopRosterElement element in FilteredEntries(template))
-                    occupied += Math.Max(0, element.Number) *
-                        doctrine.GetFeudalSupplyCost(element.Character);
-                foreach (FiefServiceBatch batch in ServiceBatches ??
-                    Enumerable.Empty<FiefServiceBatch>())
-                foreach (var pair in batch?.Troops ??
-                    new Dictionary<CharacterObject, int>())
-                    if (pair.Key != null && pair.Value > 0)
-                        occupied += pair.Value *
-                            doctrine.GetFeudalSupplyCost(pair.Key);
-                foreach (FiefReturnBatch batch in ReturnBatches ??
-                    Enumerable.Empty<FiefReturnBatch>())
-                foreach (var pair in batch?.Troops ??
-                    new Dictionary<CharacterObject, int>())
-                    if (pair.Key != null && pair.Value > 0)
-                        occupied += pair.Value *
-                            doctrine.GetFeudalSupplyCost(pair.Key);
+                foreach (var pair in QueryFeudalTroops(template).Troops)
+                    AddOccupied(pair.Key, pair.Value.Total);
             }
             return occupied;
+
+            void AddOccupied(CharacterObject troop, int count)
+            {
+                if (count <= 0) return;
+                if (template.IsEnableTroop(troop) &&
+                    doctrine.TryGetFeudalSupplyCost(troop, out int cost))
+                    occupied = checked(occupied + checked(count * cost));
+            }
         }
 
         public int GetFreeSupplyHearth(FiefPartyTemplate template,
@@ -134,40 +131,10 @@ namespace ModifiedArmy.Models.Fief
                 GetFeudalBudgetRemainingHearth(template, doctrine) >= required;
         }
 
-        internal Dictionary<CharacterObject, int>
-            GetRegisteredFeudalTroopCounts(FiefPartyTemplate template)
-        {
-            var counts = new Dictionary<CharacterObject, int>();
-            void Add(CharacterObject troop, int count)
-            {
-                if (troop == null || count <= 0) return;
-                counts[troop] = counts.TryGetValue(troop, out int existing)
-                    ? checked(existing + count)
-                    : count;
-            }
-
-            foreach (TroopRosterElement entry in FilteredEntries(template))
-                Add(entry.Character, entry.Number);
-            foreach (FiefServiceBatch batch in ServiceBatches ??
-                Enumerable.Empty<FiefServiceBatch>())
-                if (batch != null)
-                    foreach (var pair in batch.Troops)
-                        Add(pair.Key, pair.Value);
-            foreach (FiefReturnBatch batch in ReturnBatches ??
-                Enumerable.Empty<FiefReturnBatch>())
-                if (batch != null)
-                    foreach (var pair in batch.Troops)
-                        Add(pair.Key, pair.Value);
-            return counts;
-        }
-
         public TroopRoster GetReadyFiefTroopRoster(FiefPartyTemplate template)
         {
-            TroopRoster result = TroopRoster.CreateDummyTroopRoster();
-            foreach (TroopRosterElement element in FilteredEntries(template))
-                result.AddToCounts(element.Character, element.Number, false,
-                    element.WoundedNumber);
-            return result;
+            return QueryFeudalTroops(template,
+                FiefTroopState.Ready).ToTroopRoster();
         }
 
         internal bool TryMobilize(int count)
@@ -191,6 +158,17 @@ namespace ModifiedArmy.Models.Fief
             if (restoreHearth && VillageSettlement?.Village != null)
                 VillageSettlement.Village.Hearth += count;
             return true;
+        }
+
+        internal int RemoveInvalidMobilization(int count,
+            bool restoreHearth)
+        {
+            int released = Math.Min(Math.Max(0, count), MobilizedHearth);
+            MobilizedHearth -= released;
+            if (restoreHearth && released > 0 &&
+                VillageSettlement?.Village != null)
+                VillageSettlement.Village.Hearth += released;
+            return released;
         }
 
         internal void RollbackMobilization(int count, bool hearthWasRestored)
@@ -226,13 +204,5 @@ namespace ModifiedArmy.Models.Fief
             RecoveryOperationId = null;
         }
 
-        private IEnumerable<TroopRosterElement> FilteredEntries(FiefPartyTemplate template)
-        {
-            TroopRoster roster = GetReadyRoster();
-            return roster == null || template == null
-                ? Enumerable.Empty<TroopRosterElement>()
-                : roster.GetTroopRoster().Where(e => e.Character != null &&
-                    e.Number > 0 && template.IsEnableTroop(e.Character));
-        }
     }
 }

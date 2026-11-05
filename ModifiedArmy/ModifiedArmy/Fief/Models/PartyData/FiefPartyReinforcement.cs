@@ -180,31 +180,8 @@ namespace ModifiedArmy.Models.Fief
         internal TroopRoster GetFiefTroopRoster(Settlement villageFilter,
             bool excludeRecovery = false)
         {
-            var fiefRoster = TroopRoster.CreateDummyTroopRoster();
-            foreach (VillageFiefData village in OrderedVillages(villageFilter)
-                .Where(village => !excludeRecovery || !village.RecoveryRequired))
-            foreach (var element in village.GetReadyFiefTroopRoster(
-                _fiefPartyTemplate).GetTroopRoster())
-            {
-                var troop = element.Character;
-                if (!_fiefPartyTemplate.IsEnableTroop(troop))
-                {
-                    continue;
-                }
-
-                // Number already includes wounded troops in Bannerlord rosters.
-                var count = element.Number;
-                if (troop == null || count <= 0)
-                    continue;
-
-                fiefRoster.AddToCounts(
-                    troop,
-                    element.Number,
-                    false,
-                    element.WoundedNumber);
-            }
-
-            return fiefRoster;
+            return QueryFeudalTroops(villageFilter,
+                FiefTroopState.Ready, excludeRecovery).ToTroopRoster();
         }
 
 

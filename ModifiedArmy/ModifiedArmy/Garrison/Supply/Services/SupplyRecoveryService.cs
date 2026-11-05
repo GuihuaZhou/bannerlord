@@ -42,7 +42,8 @@ namespace ModifiedArmy.Garrison.Supply.Services
                         SupplyPartyMissionState.TravelingToSource
                     ? component.SourceSettlement
                     : component.HomeSettlement;
-                if (destination != null)
+                if (destination != null &&
+                    party.CurrentSettlement != destination)
                     restoreRoute(party, destination);
             }
         }

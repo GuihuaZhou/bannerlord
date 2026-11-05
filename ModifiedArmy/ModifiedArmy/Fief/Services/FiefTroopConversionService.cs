@@ -77,12 +77,12 @@ namespace ModifiedArmy.Models.Fief
                 reason = "RecoveryRequired";
                 return false;
             }
-            TroopRosterElement source = Find(garrison.MemberRoster,
+            (int Count, int Wounded) source = GetCounts(garrison.MemberRoster,
                 sourceTroop);
             int protectedCount = manager.GetServingTroopCounts(garrison)
                 .TryGetValue(sourceTroop, out int serving) ? serving : 0;
-            int healthy = Math.Max(0, source.Number -
-                source.WoundedNumber - protectedCount);
+            int healthy = Math.Max(0, source.Count -
+                source.Wounded - protectedCount);
             if (healthy < requested)
             {
                 reason = "InsufficientHealthySource";
@@ -101,17 +101,18 @@ namespace ModifiedArmy.Models.Fief
             {
                 garrison.MemberRoster.AddToCounts(sourceTroop, -actual,
                     false, 0, 0, true, -1);
-                TroopRosterElement after = Find(garrison.MemberRoster,
+                (int Count, int Wounded) after = GetCounts(
+                    garrison.MemberRoster,
                     sourceTroop);
-                if (after.Number != source.Number - actual ||
-                    after.WoundedNumber != source.WoundedNumber)
+                if (after.Count != source.Count - actual ||
+                    after.Wounded != source.Wounded)
                     throw new InvalidOperationException(
                         "ProfessionalSourceCommitMismatch");
             }
             catch
             {
                 bool restoredSource = TryRestore(garrison.MemberRoster,
-                    sourceTroop, source.Number, source.WoundedNumber);
+                    sourceTroop, source.Count, source.Wounded);
                 bool restoredTargets = RollbackProduced(data, produced);
                 reason = restoredSource && restoredTargets
                     ? "RolledBack" : "RecoveryRequired";
@@ -141,8 +142,9 @@ namespace ModifiedArmy.Models.Fief
                 !data.IsCurrentVillage(sourceVillage) ||
                 data.GetFiefPartyTemplate()?.IsEnableTroop(sourceTroop) != true)
                 return false;
-            TroopRosterElement source = Find(sourceRoster, sourceTroop);
-            if (source.Number - source.WoundedNumber < requested)
+            (int Count, int Wounded) source = GetCounts(sourceRoster,
+                sourceTroop);
+            if (source.Count - source.Wounded < requested)
             {
                 reason = "InsufficientHealthySource";
                 return false;
@@ -167,15 +169,15 @@ namespace ModifiedArmy.Models.Fief
 
             var hearthCommits = new List<Dictionary<Settlement, int>>();
             var targetSnapshots = targets.ToDictionary(pair => pair.Key,
-                pair => Find(garrison.MemberRoster, pair.Key));
+                pair => GetCounts(garrison.MemberRoster, pair.Key));
             try
             {
                 sourceRoster.AddToCounts(sourceTroop, -requested,
                     false, 0, 0, true, -1);
-                TroopRosterElement sourceAfter = Find(sourceRoster,
+                (int Count, int Wounded) sourceAfter = GetCounts(sourceRoster,
                     sourceTroop);
-                if (sourceAfter.Number != source.Number - requested ||
-                    sourceAfter.WoundedNumber != source.WoundedNumber)
+                if (sourceAfter.Count != source.Count - requested ||
+                    sourceAfter.Wounded != source.Wounded)
                     throw new InvalidOperationException(
                         "FeudalSourceCommitMismatch");
 
@@ -189,11 +191,13 @@ namespace ModifiedArmy.Models.Fief
                     hearthCommits.Add(hearth);
                     garrison.MemberRoster.AddToCounts(target.Key,
                         target.Value, false, 0, 0, true, -1);
-                    TroopRosterElement after = Find(garrison.MemberRoster,
+                    (int Count, int Wounded) after = GetCounts(
+                        garrison.MemberRoster,
                         target.Key);
-                    TroopRosterElement before = targetSnapshots[target.Key];
-                    if (after.Number != before.Number + target.Value ||
-                        after.WoundedNumber != before.WoundedNumber)
+                    (int Count, int Wounded) before =
+                        targetSnapshots[target.Key];
+                    if (after.Count != before.Count + target.Value ||
+                        after.Wounded != before.Wounded)
                         throw new InvalidOperationException(
                             "ProfessionalTargetCommitMismatch");
                 }
@@ -201,11 +205,12 @@ namespace ModifiedArmy.Models.Fief
             catch (Exception exception)
             {
                 bool restored = TryRestore(sourceRoster, sourceTroop,
-                    source.Number, source.WoundedNumber);
-                foreach (KeyValuePair<CharacterObject, TroopRosterElement>
+                    source.Count, source.Wounded);
+                foreach (KeyValuePair<CharacterObject,
+                    (int Count, int Wounded)>
                     target in targetSnapshots)
                     restored &= TryRestore(garrison.MemberRoster, target.Key,
-                        target.Value.Number, target.Value.WoundedNumber);
+                        target.Value.Count, target.Value.Wounded);
                 foreach (Dictionary<Settlement, int> hearth in hearthCommits)
                     manager.RollbackProfessionalHearth(hearth);
                 if (!restored)
@@ -231,10 +236,11 @@ namespace ModifiedArmy.Models.Fief
             {
                 VillageFiefData village = data.GetVillageData(item.Village);
                 TroopRoster roster = village?.GetReadyRoster();
-                TroopRosterElement current = Find(roster, item.Troop);
-                if (roster == null || current.Number < item.Count ||
+                (int Count, int Wounded) current = GetCounts(roster,
+                    item.Troop);
+                if (roster == null || current.Count < item.Count ||
                     !TryRestore(roster, item.Troop,
-                        current.Number - item.Count, current.WoundedNumber))
+                        current.Count - item.Count, current.Wounded))
                 {
                     village?.RequireRecovery("ConversionRollbackFailed");
                     restored = false;
@@ -244,9 +250,13 @@ namespace ModifiedArmy.Models.Fief
             return restored;
         }
 
-        private static TroopRosterElement Find(TroopRoster roster,
-            CharacterObject troop) => roster?.GetTroopRoster()
-            .FirstOrDefault(item => item.Character == troop) ?? default;
+        private static (int Count, int Wounded) GetCounts(
+            TroopRoster roster, CharacterObject troop)
+        {
+            FiefTroopRosterFilter.TryGetCounts(roster, troop,
+                out int count, out int wounded);
+            return (count, wounded);
+        }
 
         private static bool TryRestore(TroopRoster roster,
             CharacterObject troop, int count, int wounded)
@@ -254,12 +264,12 @@ namespace ModifiedArmy.Models.Fief
             if (roster == null || troop == null) return false;
             try
             {
-                TroopRosterElement current = Find(roster, troop);
-                roster.AddToCounts(troop, count - current.Number, false,
-                    wounded - current.WoundedNumber, 0, true, -1);
-                current = Find(roster, troop);
-                return current.Number == count &&
-                    current.WoundedNumber == wounded;
+                (int Count, int Wounded) current = GetCounts(roster, troop);
+                roster.AddToCounts(troop, count - current.Count, false,
+                    wounded - current.Wounded, 0, true, -1);
+                current = GetCounts(roster, troop);
+                return current.Count == count &&
+                    current.Wounded == wounded;
             }
             catch
             {

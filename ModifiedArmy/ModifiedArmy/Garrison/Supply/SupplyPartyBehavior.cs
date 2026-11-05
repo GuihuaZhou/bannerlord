@@ -213,6 +213,19 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
+            // SettlementEntered is not guaranteed to fire again when a
+            // loaded or rerouted party is already inside its home. Finalize
+            // from authoritative current-settlement state before health and
+            // food recovery can reissue the same return order every hour.
+            if (!component.IsAidMission &&
+                component.MissionState ==
+                    SupplyPartyMissionState.ReturningHome &&
+                party.CurrentSettlement == component.HomeSettlement)
+            {
+                CompleteMission(party, component);
+                return;
+            }
+
             LogDailySupplyHealth(party, component);
 
             if (!component.IsAidMission)

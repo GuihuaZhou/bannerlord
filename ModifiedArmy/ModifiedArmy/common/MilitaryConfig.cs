@@ -81,9 +81,20 @@ namespace ModifiedArmy.common
         public float ProfessionalShare =>
             (float)ProfessionalWeight / (FiefWeight + ProfessionalWeight);
 
-        public int GetFeudalSupplyCost(CharacterObject troop) =>
-            HearthEconomyConfig.GetRequiredCost(
+        public bool TryGetFeudalSupplyCost(CharacterObject troop,
+            out int cost)
+        {
+            cost = 0;
+            return troop != null && FeudalSupply != null &&
+                FeudalSupply.TryGetValue(troop.Tier, out cost) && cost > 0;
+        }
+
+        public int GetFeudalSupplyCost(CharacterObject troop)
+        {
+            if (TryGetFeudalSupplyCost(troop, out int cost)) return cost;
+            return HearthEconomyConfig.GetRequiredCost(
                 FeudalSupply, troop, "FeudalSupply");
+        }
 
         public ProfessionalTrainingConfig GetTraining(Settlement settlement) =>
             settlement?.IsCastle == true
