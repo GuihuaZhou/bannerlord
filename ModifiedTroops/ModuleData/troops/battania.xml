@@ -2473,12 +2473,12 @@
 				id="Throwing"
 				value="30" />
 		</skills>
-		<upgrade_targets>
+		<!-- <upgrade_targets>
 			<upgrade_target
 				id="NPCCharacter.battanian_horseman" />
 			<upgrade_target
 				id="NPCCharacter.battanian_mounted_skirmisher" />
-		</upgrade_targets>
+		</upgrade_targets> -->
 		<Equipments>
 			<EquipmentRoster>
 				<equipment

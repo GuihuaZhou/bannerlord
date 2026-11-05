@@ -20,7 +20,7 @@
   <string id="NRvuCvMN" text="（雇佣）轻装剑士"/>
   <string id="UBHngTIf" text="（雇佣）剑士"/>
   <string id="uPypJHlm" text="（雇佣）资深剑士"/>
-  
+
   <string id="J4k9mg65" text="（雇佣）西方轻装弩兵"/>
   <string id="QfVe3IVw" text="（雇佣）西方弩兵"/>
   <string id="DxtSIxyZ" text="（雇佣）西方资深弩兵"/>
@@ -137,11 +137,14 @@
 
   <string id="TDjXoPkn" text="瓦兰迪亚水兵"/>
   <string id="bjUztSDg" text="瓦兰迪亚资深水兵"/>
-  <string id="UrSjhs4x" text="瓦兰迪亚戟兵"/>
-  <string id="X6CQ9CMZ" text="瓦兰迪亚神射手"/>
+
   <string id="OQPDvtpk" text="瓦兰迪亚侠义骑兵"/>
-  <string id="vlandian_feudal_infantry" text="瓦兰迪亚封建步兵"/>
-  <string id="vlandian_veteran_feudal_infantry" text="瓦兰迪亚资深封建步兵"/>
+  <string id="vlandian_feudal_infantry" text="北方封建步兵"/>
+  <string id="vlandian_veteran_feudal_infantry" text="北方封建军士"/>
+  <string id="pooybAKI" text="南方职业步兵"/>
+  <string id="nPyqHxmf" text="南方职业军士"/>
+  <string id="UrSjhs4x" text="南方勾镰军士"/>
+  <string id="X6CQ9CMZ" text="南方弩手军士"/>
 
 
   <string id="VpTQ5SyS" text="诺德利刃战士"/>

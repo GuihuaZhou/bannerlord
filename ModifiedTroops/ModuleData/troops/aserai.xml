@@ -2585,8 +2585,8 @@
 				value="70" />
 		</skills>
 		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.aserai_faris" />
+			<!-- <upgrade_target
+				id="NPCCharacter.aserai_faris" /> -->
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>

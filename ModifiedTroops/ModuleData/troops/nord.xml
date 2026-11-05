@@ -1380,8 +1380,8 @@
 				value="30" />
 		</skills>
 		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.nord_thegn" />
+			<!-- <upgrade_target
+				id="NPCCharacter.nord_thegn" /> -->
 		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
@@ -1652,8 +1652,8 @@
 				value="20" />
 		</skills>
 		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.nord_axe_warrior" />
+			<!-- <upgrade_target
+				id="NPCCharacter.nord_axe_warrior" /> -->
 			<!-- <upgrade_target
 				id="NPCCharacter.nord_spear_warrior" /> -->
 		</upgrade_targets>
