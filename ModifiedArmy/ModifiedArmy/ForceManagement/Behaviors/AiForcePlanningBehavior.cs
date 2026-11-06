@@ -449,6 +449,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             MobileParty party,
             Settlement settlement)
         {
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party))
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "PartyOutsideManagedLordScope" };
             return _visitExecution.Execute(
                 party, settlement, FindTask(party));
         }
@@ -464,6 +467,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             Settlement settlement,
             GarrisonCaptureSupplyBehavior capture)
         {
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party))
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "PartyOutsideManagedLordScope" };
             return _visitExecution.ExecuteCaptureDonation(
                 party, settlement, capture);
         }

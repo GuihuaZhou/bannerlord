@@ -1,5 +1,6 @@
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
+using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -116,6 +117,12 @@ namespace ModifiedArmy.PartyManagement.Bindings.Diagnostics
         {
             Clan clan = party?.ActualClan ?? hero?.Clan;
             if (!RecruitmentLogFilter.ShouldLog(clan)) return;
+            // A null Postfix result adds no information beyond the creation
+            // transaction's failure record and can fire through nested native
+            // creation wrappers. Suppress that duplicate noise.
+            if (party == null &&
+                phase?.EndsWith(".Postfix", StringComparison.Ordinal) == true)
+                return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_party_creation_probe");
             message.SetTextVariable("PHASE", phase ?? "Unknown");

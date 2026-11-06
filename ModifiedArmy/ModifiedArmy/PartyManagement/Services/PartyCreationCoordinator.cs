@@ -6,6 +6,7 @@ using ModifiedArmy.PartyManagement.Diagnostics;
 using ModifiedArmy.PartyManagement.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
@@ -29,7 +30,15 @@ namespace ModifiedArmy.PartyManagement.Services
             var evaluations = new List<PartyCreationSiteResult>();
             PartyCreationSiteResult site = _sites.FindEligibleBase(
                 leader, leader.Clan, 50, evaluations);
-            foreach (PartyCreationSiteResult candidate in evaluations)
+            // One representative candidate is enough to reconstruct a failed
+            // decision. Logging every town and attached village on every probe
+            // floods the file without adding a distinct transaction outcome.
+            PartyCreationSiteResult candidate = evaluations
+                .OrderByDescending(item => item.BindingEligible)
+                .ThenByDescending(item => item.EstimatedCombinedRegulars)
+                .ThenBy(item => item.Distance)
+                .FirstOrDefault();
+            if (candidate != null)
                 PartyCreationDiagnostics.Log(leader, null,
                     candidate.Settlement?.StringId, "Evaluated",
                     candidate.RejectionReason,

@@ -23,6 +23,9 @@ namespace ModifiedArmy.ForceManagement.Missions
             Settlement settlement,
             PartyForceTask task)
         {
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party))
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "PartyOutsideManagedLordScope" };
             int before = party?.MemberRoster?.TotalRegulars ?? 0;
             ForceRecruitmentDiagnostics.LogVisitTaskMatch(
                 party, settlement, task);
@@ -83,6 +86,9 @@ namespace ModifiedArmy.ForceManagement.Missions
             Settlement settlement,
             GarrisonCaptureSupplyBehavior capture)
         {
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party))
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "PartyOutsideManagedLordScope" };
             if (capture?.TryConsumeTroopDonationPermit(
                     party, settlement) != true)
                 return new PartyExchangeExecutionResult

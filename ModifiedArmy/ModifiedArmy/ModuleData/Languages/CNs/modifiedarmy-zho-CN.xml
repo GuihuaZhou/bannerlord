@@ -61,8 +61,8 @@
     <string id="ModifiedArmy_ForceReasonHigherPriority" text="部队正在执行优先级更高的命令" />
     <string id="ModifiedArmy_ForceReasonInvalidParty" text="部队当前状态无效" />
     <string id="ModifiedArmy_ForceReasonOther" text="当前没有适合执行的新计划" />
-    <string id="ModifiedArmy_PartyLogNameWithKingdom" text="{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
-    <string id="ModifiedArmy_PartyLogNameWithoutKingdom" text="{CLAN_NAME}家族的{PARTY_NAME}" />
+    <string id="ModifiedArmy_PartyLogNameWithKingdom" text="{KINGDOM_NAME}—{CLAN_NAME}—{PARTY_NAME}" />
+    <string id="ModifiedArmy_PartyLogNameWithoutKingdom" text="{CLAN_NAME}—{PARTY_NAME}" />
     <string id="ModifiedArmy_ExchangeWithdrawExecuted" text="[统一调兵] {PARTY_NAME}申请从{SETTLEMENT_NAME}的驻军补充{REQUESTED}名士兵，实际补充{ACTUAL}名，包括{MANIFEST}。驻军人数由{SOURCE_BEFORE}人减少到{SOURCE_AFTER}人，部队人数由{DESTINATION_BEFORE}人增加到{DESTINATION_AFTER}人。" />
     <string id="ModifiedArmy_ExchangeDonateExecuted" text="[统一调兵] {PARTY_NAME}申请向{SETTLEMENT_NAME}的驻军移交{REQUESTED}名士兵，实际移交{ACTUAL}名，包括{MANIFEST}。部队人数由{SOURCE_BEFORE}人减少到{SOURCE_AFTER}人，驻军人数由{DESTINATION_BEFORE}人增加到{DESTINATION_AFTER}人。" />
     <string id="ModifiedArmy_ExchangeExecuted" text="[统一调兵] {PARTY_NAME}在{SETTLEMENT_NAME}完成了一次调兵，申请{REQUESTED}人，批准{APPROVED}人，实际完成{ACTUAL}人。来源兵力由{SOURCE_BEFORE}人变为{SOURCE_AFTER}人，接收方由{DESTINATION_BEFORE}人变为{DESTINATION_AFTER}人。调动士兵：{MANIFEST}。" />
@@ -353,7 +353,7 @@
     <string id="ModifiedArmy_SupplyRecoveryResting" text="在友方定居点休养" />
     <string id="ModifiedArmy_SupplyRecoveryStateChange" text="调整休养状态" />
     <string id="ModifiedArmy_TransportCreation" text="[部队创建] 尝试{ATTEMPT_ID}，类型{PARTY_TYPE}，部队{PARTY_ID}，家族{CLAN_ID}，来源{SOURCE_ID}，目的地{DESTINATION_ID}，状态{STATUS}，原因{REASON}。" />
-    <string id="ModifiedArmy_ForceStayCandidate" text="[兵力规划] 部队{PARTY_ID}在定居点{SETTLEMENT_ID}拥有{REGULARS}名正规兵；已向本体AI提交评分为{SCORE}的驻留候选。" />
+    <string id="ModifiedArmy_ForceStayCandidate" text="[兵力规划] 部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；正规兵={REGULARS}人；本体驻留评分={SCORE}。" />
     <string id="ModifiedArmy_FiefManagement_Title" text="士兵管理" />
     <string id="ModifiedArmy_FiefManagement_AllVillages" text="全部附属村庄" />
     <string id="ModifiedArmy_FiefManagement_Source" text="来源范围" />

@@ -64,6 +64,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             Settlement settlement,
             string eventName)
         {
+            // This workflow and its diagnostics belong only to Mod-managed AI
+            // lord parties. Native villagers, caravans and other parties must
+            // not enter the visit ledger or produce duplicate-day messages.
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party)) return;
+
             AiForcePlanningBehavior planning = Campaign.Current?
                 .GetCampaignBehavior<AiForcePlanningBehavior>();
             PartyForceTask task = planning?.GetTaskForDiagnostics(party);

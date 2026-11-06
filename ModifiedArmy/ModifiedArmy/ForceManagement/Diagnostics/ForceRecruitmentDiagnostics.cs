@@ -56,7 +56,11 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_force_stay_candidate");
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable("SETTLEMENT_NAME",
+                settlement?.Name ?? None());
             message.SetTextVariable(
                 "SETTLEMENT_ID", settlement?.StringId ?? "none");
             message.SetTextVariable("REGULARS", regulars);
@@ -228,11 +232,16 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 else
                     ModLogger.Debug(message.ToString());
 
-                TextObject callPath = GameTexts.FindText(
-                    "str_modifiedarmy_force_diag_route_call_path");
-                callPath.SetTextVariable("EVENT_ID", trace.EventId);
-                callPath.SetTextVariable("CALL_PATH", trace.CallPath);
-                ModLogger.Debug(callPath.ToString());
+                // Full call paths are expensive and noisy. Emit one only when
+                // native behavior actually displaced a route owned by this task.
+                if (lostPlannedRoute)
+                {
+                    TextObject callPath = GameTexts.FindText(
+                        "str_modifiedarmy_force_diag_route_call_path");
+                    callPath.SetTextVariable("EVENT_ID", trace.EventId);
+                    callPath.SetTextVariable("CALL_PATH", trace.CallPath);
+                    ModLogger.Debug(callPath.ToString());
+                }
             }
             catch
             {

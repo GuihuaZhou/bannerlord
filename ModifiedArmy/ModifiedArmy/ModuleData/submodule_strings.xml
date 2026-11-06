@@ -73,13 +73,13 @@
 
     <!-- Consistent party ownership names used by log messages. -->
     <string id="str_modifiedarmy_party_log_name_with_kingdom"
-        text="{=ModifiedArmy_PartyLogNameWithKingdom}{KINGDOM_NAME}{CLAN_NAME}家族的{PARTY_NAME}" />
+        text="{=ModifiedArmy_PartyLogNameWithKingdom}{KINGDOM_NAME} — {CLAN_NAME} — {PARTY_NAME}" />
     <string id="str_modifiedarmy_party_log_name_without_kingdom"
-        text="{=ModifiedArmy_PartyLogNameWithoutKingdom}{CLAN_NAME}家族的{PARTY_NAME}" />
+        text="{=ModifiedArmy_PartyLogNameWithoutKingdom}{CLAN_NAME} — {PARTY_NAME}" />
     <string id="str_modifiedarmy_party_log_clan_with_kingdom"
-        text="{=ModifiedArmy_PartyLogClanWithKingdom}{KINGDOM_NAME}{CLAN_NAME}家族" />
+        text="{=ModifiedArmy_PartyLogClanWithKingdom}{KINGDOM_NAME} — {CLAN_NAME}" />
     <string id="str_modifiedarmy_party_log_clan_without_kingdom"
-        text="{=ModifiedArmy_PartyLogClanWithoutKingdom}{CLAN_NAME}家族" />
+        text="{=ModifiedArmy_PartyLogClanWithoutKingdom}{CLAN_NAME}" />
     <string id="str_modifiedarmy_party_log_owner_unknown"
         text="{=ModifiedArmy_PartyLogOwnerUnknown}无所属家族" />
 
@@ -479,5 +479,5 @@
     <string id="str_modifiedarmy_supply_friendly_provision" text="{=ModifiedArmy_SupplyFriendlyProvision}[Supply provision] {PARTY_NAME} provisioned at {SETTLEMENT_NAME} from {SOURCE}: acquired {ACQUIRED} food for {GOLD} gold, food {FOOD_BEFORE} to {FOOD_AFTER}." />
     <string id="str_modifiedarmy_supply_emergency_recovery" text="{=ModifiedArmy_SupplyEmergencyRecovery}[Supply recovery] {PARTY_NAME}, home {HOME_NAME}, recovery settlement {SETTLEMENT_NAME}, action {ACTION}, healthy {HEALTHY}, wounded {WOUNDED}, total {TOTAL}." />
     <string id="str_modifiedarmy_transport_creation" text="{=ModifiedArmy_TransportCreation}[Party creation] Attempt {ATTEMPT_ID}, type {PARTY_TYPE}, party {PARTY_ID}, clan {CLAN_ID}, source {SOURCE_ID}, destination {DESTINATION_ID}, status {STATUS}, reason {REASON}." />
-    <string id="str_modifiedarmy_force_stay_candidate" text="{=ModifiedArmy_ForceStayCandidate}[Force planning] Party {PARTY_ID} has {REGULARS} regular soldiers at settlement {SETTLEMENT_ID}; a native stay candidate was submitted with score {SCORE}." />
+    <string id="str_modifiedarmy_force_stay_candidate" text="{=ModifiedArmy_ForceStayCandidate}[Force planning] party={PARTY_NAME} ({PARTY_ID}); settlement={SETTLEMENT_NAME} ({SETTLEMENT_ID}); regulars={REGULARS}; nativeStayScore={SCORE}." />
 </strings>
