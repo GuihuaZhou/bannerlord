@@ -140,8 +140,8 @@ namespace ModifiedArmy.common
         public int PeaceMinimumCount { get; internal set; } = 50;
         public float AggressiveWarDispositionThreshold { get; internal set; } = -50f;
         public float OwnFiefDefenseTargetRatio { get; internal set; } = 1f;
-        public float InteriorGarrisonUpperRatio { get; internal set; } = 0.80f;
-        public float BorderGarrisonUpperRatio { get; internal set; } = 0.95f;
+        public float InteriorGarrisonUpperRatio { get; internal set; } = 0.75f;
+        public float BorderGarrisonUpperRatio { get; internal set; } = 0.85f;
         public float InteriorGarrisonLowerRatio { get; internal set; } = 0.50f;
         public float BorderGarrisonLowerRatio { get; internal set; } = 0.75f;
         public int MinimumOwnSurplusDelivery { get; internal set; } = 20;

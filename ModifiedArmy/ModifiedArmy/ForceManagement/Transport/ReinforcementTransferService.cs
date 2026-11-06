@@ -39,6 +39,17 @@ namespace ModifiedArmy.ForceManagement.Transport
                 return null;
             }
 
+            // The source roster may have changed after planning. Re-evaluate
+            // the live resident reserve before the first roster mutation.
+            int safeNow = new ReinforcementDispatchModel()
+                .GetSafeOrdinaryHealthyCount(plan.Source);
+            if (safeNow < plan.TroopCount)
+            {
+                LogCreation(plan, null, attemptId, "Rejected",
+                    "SourceReserveChanged");
+                return null;
+            }
+
             TroopRoster roster = ExtractHealthyOrdinaryTroops(
                 garrison, plan.TroopCount);
             if (roster.TotalManCount < plan.TroopCount)

@@ -20,7 +20,8 @@ namespace ModifiedArmy.Recruitment.Behaviors
                 .GetCampaignBehavior<GarrisonRecruitFromPrisonersBehavior>();
             if (worker == null) return;
             foreach (var town in clan.Fiefs.Where(x => x?.Settlement?.IsFortification == true)
-                .OrderByDescending(x => (x.GarrisonParty?.MemberRoster.TotalManCount ?? 0) < 75)
+                .OrderByDescending(x => (x.GarrisonParty?.MemberRoster.TotalManCount ?? 0) <
+                    GarrisonRecruitmentCapacity.MinimumResidentGarrisonCount)
                 .ThenByDescending(x => GapRatio(x.Settlement))
                 .ThenByDescending(x => GarrisonTransferPolicyModel.IsEnemyBorderFortification(x.Settlement))
                 .ThenBy(x => x.Settlement.StringId, StringComparer.Ordinal))

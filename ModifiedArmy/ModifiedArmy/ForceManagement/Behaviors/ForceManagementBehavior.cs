@@ -1,5 +1,7 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
+using ModifiedArmy.Garrison.Models;
+using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -106,6 +108,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     .Current.GarrisonDefense.Evaluate(settlement);
                 ReinforcementNeedResult need = ForceManagementFacade.Current
                     .ReinforcementNeed.Evaluate(snapshot);
+                int upperTarget = GarrisonRecruitmentCapacity.GetUpperTarget(
+                    settlement, snapshot.HardLimit);
+                bool automaticDispatch = MilitaryConfigManager.Instance
+                    .RequireActiveConfig().AiRecruitment.ForceManagement
+                    .EnableAutomaticReinforcement;
                 string state = string.Join(
                     "|",
                     need.IsRequested,
@@ -114,7 +121,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     snapshot.MinimumCount,
                     snapshot.PredictedSevenDayRecruitment,
                     need.RequestedTroops,
-                    snapshot.IsEnemyBorder);
+                    snapshot.IsEnemyBorder,
+                    upperTarget,
+                    automaticDispatch);
                 string id = settlement.StringId ?? settlement.Name.ToString();
                 if (_garrisonStates.TryGetValue(id, out string previous) &&
                     previous == state)
@@ -123,9 +132,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 }
 
                 _garrisonStates[id] = state;
-                // A reinforcement request is an action, while a satisfied defense
-                // requirement is only a status observation. Separate templates keep
-                // the normal path from reading like a zero-sized request.
+                // This is a read-only external reinforcement assessment. It
+                // must not imply that a transport was dispatched.
                 TextObject message = GameTexts.FindText(
                     need.IsRequested
                         ? "str_modifiedarmy_garrison_reinforcement_requested"
@@ -134,6 +142,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 message.SetTextVariable(
                     "CURRENT",
                     snapshot.EffectiveGarrisonCount);
+                message.SetTextVariable("RESIDENT", snapshot.ResidentCount);
                 message.SetTextVariable(
                     "REQUIRED",
                     snapshot.MinimumCount);
@@ -149,6 +158,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 message.SetTextVariable(
                     "RECOVERY",
                     snapshot.PredictedSevenDayRecruitment);
+                message.SetTextVariable("UPPER", upperTarget);
+                message.SetTextVariable("AUTO_DISPATCH",
+                    automaticDispatch
+                        ? new TextObject("{=ModifiedArmy_Common_Enabled}enabled")
+                        : new TextObject("{=ModifiedArmy_Common_Disabled}disabled"));
                 if (need.IsRequested)
                     message.SetTextVariable("REQUESTED", need.RequestedTroops);
                 message.SetTextVariable(

@@ -241,7 +241,10 @@ namespace ModifiedArmy.ForceManagement.Models
                 return 0;
             }
 
-            int residentFloor = Math.Min(75, Math.Max(0, snapshot.HardLimit));
+            // AI Party withdrawals use an absolute resident floor. This is
+            // deliberately independent from the garrison warning threshold.
+            int residentFloor = GarrisonRecruitmentCapacity
+                .MinimumResidentGarrisonCount;
             int residentSurplus = Math.Max(
                 0,
                 snapshot.ResidentCount - residentFloor);

@@ -1,5 +1,6 @@
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System;
@@ -358,7 +359,9 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 "SETTLEMENT_NAME", settlement?.Name ?? None());
             message.SetTextVariable("EVENT", GetVisitEventText(eventName));
             message.SetTextVariable("OUTCOME", GetVisitOutcomeText(outcome));
-            message.SetTextVariable("LAST_DAY", lastDay);
+            // CampaignTime.ToDays is an absolute engine day index, not a
+            // player-facing calendar day. Label it explicitly in diagnostics.
+            message.SetTextVariable("LAST_DAY_INDEX", lastDay);
             message.SetTextVariable(
                 "HAS_TASK", GetBooleanText(task != null));
             message.SetTextVariable(
@@ -475,6 +478,8 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
             message.SetTextVariable("RESERVED", reserved);
             message.SetTextVariable("EFFECTIVE", effective);
             message.SetTextVariable("MINIMUM", minimum);
+            message.SetTextVariable("HARD_FLOOR",
+                GarrisonRecruitmentCapacity.MinimumResidentGarrisonCount);
             message.SetTextVariable("SAFE", safe);
             message.SetTextVariable("PROTECTED", protectedCount);
             message.SetTextVariable("OFFERED", offered);

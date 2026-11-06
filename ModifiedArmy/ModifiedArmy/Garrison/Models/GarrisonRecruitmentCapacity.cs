@@ -21,8 +21,9 @@ namespace ModifiedArmy.Garrison.Models
         private static readonly HashSet<string> ReportedMultipleParties =
             new HashSet<string>();
 
-        public const int DefaultInteriorUpperPercentage = 80;
-        public const int DefaultBorderUpperPercentage = 95;
+        public const int DefaultInteriorUpperPercentage = 75;
+        public const int DefaultBorderUpperPercentage = 85;
+        public const int MinimumResidentGarrisonCount = 75;
 
         public static void ResetRuntimeDiagnostics()
         {

@@ -53,7 +53,11 @@
         text="{=FiefPartyData_ReturnTroopsToSettlement_1}[Fief service] {PARTY_NAME} returned {RETURNED_COUNT} troops to {SETTLEMENT_NAME}, restoring {HEARTH_COST} mobilized Hearth. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
 
     <string id="str_modifiedarmy_fief_weekly_reinforcement"
-        text="{=FiefPartyData_WeeklyUpdate_0}[Fief reinforcement] {SETTLEMENT_NAME} produced {MANIFEST}. Registered strength is {TROOP_COUNT}; feudal supply occupancy is {OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}." />
+        text="{=FiefPartyData_WeeklyUpdate_0}[Fief production] {SETTLEMENT_NAME} produced {MANIFEST}. Registered strength={TROOP_COUNT}; total occupancy={OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}. Villages: {VILLAGE_DETAILS}." />
+    <string id="str_modifiedarmy_fief_production_village_detail"
+        text="{=ModifiedArmy_FiefProductionVillageDetail}{VILLAGE_NAME} ({VILLAGE_ID}): produced={PRODUCED} [{MANIFEST}], effectiveHearth={EFFECTIVE_HEARTH}, occupiedBefore={OCCUPIED_BEFORE}, occupiedAfter={OCCUPIED_AFTER}, budget={BUDGET}, remaining={REMAINING}, recovery={RECOVERY}" />
+    <string id="str_modifiedarmy_fief_production_no_commit"
+        text="{=ModifiedArmy_FiefProductionNoCommit}[Fief production] fief={SETTLEMENT_ID}, approved={APPROVED}, produced=0, reason={REASON}." />
     <string id="str_modifiedarmy_fief_auto_upgrade"
         text="{=ModifiedArmy_FiefAutoUpgrade}[Soldier upgrade] {MANIFEST}." />
     <string id="str_modifiedarmy_fief_auto_upgrade_entry"
@@ -350,9 +354,9 @@
     <string id="str_modifiedarmy_force_target_above"
         text="{=ModifiedArmy_ForceTargetAbove}[Force Management] {PARTY_NAME} currently has {CURRENT} troops, above its {SCENARIO} target of {TARGET}, so it does not need reinforcements for now. Its party limit is {LIMIT}, and its current war disposition is {DISPOSITION}." />
     <string id="str_modifiedarmy_garrison_reinforcement_requested"
-        text="{=ModifiedArmy_GarrisonReinforcementRequested}[Force Management] {SETTLEMENT_NAME} is a {LOCATION} with {CURRENT} effective defenders and must retain at least {REQUIRED}. It has requested {REQUESTED} reinforcements. The seven-day recruitment forecast is {RECOVERY}; the request was made because {REASON}." />
+        text="{=ModifiedArmy_GarrisonReinforcementRequested}[Garrison external reinforcement assessment] {SETTLEMENT_NAME} is a {LOCATION} with {RESIDENT} resident troops and {CURRENT} effective defenders. Its warning threshold is {REQUIRED}, while its own automatic recruitment target is {UPPER}. It needs {REQUESTED} external reinforcements (assessment only; automatic dispatch is {AUTO_DISPATCH}). The seven-day local recruitment forecast is {RECOVERY}; reason={REASON}." />
     <string id="str_modifiedarmy_garrison_reinforcement_not_needed"
-        text="{=ModifiedArmy_GarrisonReinforcementNotNeeded}[Force Management] {SETTLEMENT_NAME} currently needs no reinforcements. It is a {LOCATION} with {CURRENT} effective defenders and must retain at least {REQUIRED}. The seven-day recruitment forecast is {RECOVERY}; no request was made because {REASON}." />
+        text="{=ModifiedArmy_GarrisonReinforcementNotNeeded}[Garrison external reinforcement assessment] {SETTLEMENT_NAME} is a {LOCATION} with {RESIDENT} resident troops and {CURRENT} effective defenders. Its warning threshold is {REQUIRED}, while its own automatic recruitment target is {UPPER}. No external reinforcement is currently needed; automatic dispatch is {AUTO_DISPATCH}. The seven-day local recruitment forecast is {RECOVERY}; reason={REASON}." />
     <string id="str_modifiedarmy_garrison_wage_dismissal_prevented"
         text="{=ModifiedArmy_GarrisonWageDismissalPrevented}[驻军工资] {OWNER_NAME}所属定居点{SETTLEMENT_NAME}, 工资上限已从{PREVIOUS_LIMIT}提高到{NEW_LIMIT}第纳尔, 避免了驻军解散." />
     <string id="str_modifiedarmy_garrison_wage_still_exceeded"
@@ -390,7 +394,7 @@
     <string id="str_modifiedarmy_force_diag_route_blocked"
         text="{=ModifiedArmy_ForceDiagRouteBlocked}[兵力任务] {PARTY_NAME}已建立前往{SETTLEMENT_NAME}的任务，但本次未下达移动指令。原因：{BLOCKER}。当前默认行为为{DEFAULT_BEHAVIOR}，当前目标为{CURRENT_TARGET}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit"
-        text="{=ModifiedArmy_ForceDiagVisit}Force visit diagnostics recorded that {PARTY_NAME}, identified as {PARTY_ID}, received the {EVENT} event at {SETTLEMENT_NAME}. The evaluation concluded that {OUTCOME}. The most recent evaluation day was {LAST_DAY}. An active force task exists: {HAS_TASK}. Its destination is {TASK_TARGET}. The visited settlement matches that destination: {TARGET_MATCHES}. The trace identifier is {TRACE_ID}." />
+        text="{=ModifiedArmy_ForceDiagVisit}[Force visit] party={PARTY_NAME} ({PARTY_ID}); settlement={SETTLEMENT_NAME}; event={EVENT}; outcome={OUTCOME}; lastEvaluationDayIndex={LAST_DAY_INDEX}; hasTask={HAS_TASK}; taskTarget={TASK_TARGET}; targetMatches={TARGET_MATCHES}; trace={TRACE_ID}. The day index is the absolute CampaignTime engine index, not a calendar day." />
     <string id="str_modifiedarmy_force_diag_visit_no_task"
         text="{=ModifiedArmy_ForceDiagVisitNoTask}[兵力访问诊断] {PARTY_NAME}访问{ACTUAL_SETTLEMENT}时不存在活动补员任务。本次后续事务属于普通定居点访问处理。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_diag_visit_wrong_target"
@@ -443,9 +447,9 @@
     <string id="str_modifiedarmy_force_diag_live_approval"
         text="{=ModifiedArmy_ForceDiagLiveApproval}[统一调兵诊断] {PARTY_NAME}在{SETTLEMENT_NAME}提出实时调兵申请。申请{REQUESTED}人，计划批准{PLAN_APPROVED}人；计划原因：{PLAN_REASON}。执行前来源名册{SOURCE_BEFORE}人，接收方名册{DESTINATION_BEFORE}人；事务状态：{STATUS}，实际转移{TRANSFERRED}人，执行原因：{REASON}。操作标识：{OPERATION_ID}。" />
     <string id="str_modifiedarmy_force_diag_garrison_candidate"
-        text="{=ModifiedArmy_ForceDiagGarrisonCandidate}[驻军调拨诊断] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出护卫预留{RESERVED}人，有效守军{EFFECTIVE}人，最低留守要求{MINIMUM}人。按现有防务规则可安全调出{SAFE}人，在役封邑兵保护{PROTECTED}人，可供审批普通士兵{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募模型审批{APPROVED}人。" />
+        text="{=ModifiedArmy_ForceDiagGarrisonCandidate}[AI Party garrison withdrawal candidate] {SETTLEMENT_NAME} has {RESIDENT} resident troops, {RESERVED} supply escorts reserved, and {EFFECTIVE} effective defenders. Its reinforcement warning threshold is {MINIMUM}; the absolute resident floor for this withdrawal is {HARD_FLOOR}. SAFE={SAFE} is calculated from the resident floor, not directly from the warning threshold. Protected serving feudal troops={PROTECTED}; eligible ordinary troops offered={OFFERED}; {PARTY_NAME} gap={GAP}; recruitment approval={APPROVED}." />
     <string id="str_modifiedarmy_party_binding_reservation"
-        text="{=ModifiedArmy_PartyBindingReservation}[Party binding] The reservation action was {ACTION}. The request concerned hero {HERO_ID} of clan {CLAN_ID} and settlement {SETTLEMENT_ID}. The reservation token was {TOKEN_ID}. The recorded reason was {REASON}." />
+        text="{=ModifiedArmy_PartyBindingReservation}[Party binding] Action={ACTION}; planned lord party led by {PARTY_NAME}; leader={HERO_NAME} ({HERO_ID}); clan={CLAN_NAME} ({CLAN_ID}); settlement={SETTLEMENT_NAME} ({SETTLEMENT_ID}); token={TOKEN_ID}; reason={REASON}. No MobileParty ID exists until creation succeeds." />
     <string id="str_modifiedarmy_party_binding_committed"
         text="{=ModifiedArmy_PartyBindingCommitted}[Party binding] {PARTY_NAME}, identified as {PARTY_ID}, was bound to settlement {SETTLEMENT_ID}. The binding version is {VERSION}." />
     <string id="str_modifiedarmy_party_binding_released"
@@ -455,7 +459,7 @@
     <string id="str_modifiedarmy_party_binding_recovery"
         text="{=ModifiedArmy_PartyBindingRecovery}[Settlement binding] Recovery examined {RECORDS} records. It restored {BOUND} settlement bindings and found {UNBOUND} parties without a settlement binding. It detected {CONFLICTS} conflicts." />
     <string id="str_modifiedarmy_party_creation_probe"
-        text="{=ModifiedArmy_PartyCreationProbe}[Party creation probe] The creation sequence reached phase {PHASE} for hero {HERO_ID} of clan {CLAN_ID}. The party identifier was {PARTY_ID}, and the party contained {REGULARS} regular soldiers. The spawn settlement was {SPAWN}, the current settlement was {CURRENT}, and the movement target was {TARGET}. The new game indicator was {NEW_GAME}." />
+        text="{=ModifiedArmy_PartyCreationProbe}[Lord party creation probe] phase={PHASE}; planned/actual party={PARTY_NAME} ({PARTY_ID}); leader={HERO_NAME} ({HERO_ID}); clan={CLAN_NAME} ({CLAN_ID}); regulars={REGULARS}; spawn={SPAWN_NAME} ({SPAWN}); current={CURRENT_NAME} ({CURRENT}); target={TARGET_NAME} ({TARGET}); newGame={NEW_GAME}. A party ID of none means this probe ran before MobileParty creation." />
     <string id="str_modifiedarmy_garrison_wage_limit_border_log"
         text="{=ModifiedArmy_GarrisonWageLimitBorderLog}The garrison wage assessment revised the wage limit for the border settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
     <string id="str_modifiedarmy_garrison_wage_limit_interior_log"
@@ -470,7 +474,7 @@
     <string id="str_modifiedarmy_professional_weight_range" text="{=ModifiedArmy_ProfessionalWeightRange}Weight must be between 0 and 20." />
     <string id="str_modifiedarmy_professional_preference_reconciled" text="{=ModifiedArmy_ProfessionalPreferenceReconciled}[Professional preference] Settlement {SETTLEMENT_ID} reconciled preferences for reason {REASON}. Entries changed from {BEFORE} to {AFTER}; added {ADDED}, removed {REMOVED}." />
     <string id="str_modifiedarmy_professional_preference_rejected" text="{=ModifiedArmy_ProfessionalPreferenceRejected}[Professional preference] Settlement {SETTLEMENT_ID} rejected a preference write. Reason: {REASON}." />
-    <string id="str_modifiedarmy_party_creation_transaction" text="{=ModifiedArmy_PartyCreationTransaction}[Party creation] Attempt {ATTEMPT_ID}, type {PARTY_TYPE}, clan {CLAN_ID}, leader {LEADER_ID}, party {PARTY_ID}, settlement {SETTLEMENT_ID}, phase {PHASE}, reason {REASON}. Garrison {GARRISON}, fief {FIEF}, total {TOTAL}, minimum {MINIMUM}, minimum fief batch {MINIMUM_FIEF_BATCH}, binding eligible {BINDING_ELIGIBLE}, initial source {SOURCE}." />
+    <string id="str_modifiedarmy_party_creation_transaction" text="{=ModifiedArmy_PartyCreationTransaction}[Party creation] Attempt={ATTEMPT_ID}; type={PARTY_TYPE}; clan={CLAN_NAME} ({CLAN_ID}); leader={LEADER_NAME} ({LEADER_ID}); planned/actual party={PARTY_NAME} ({PARTY_ID}); settlement={SETTLEMENT_NAME} ({SETTLEMENT_ID}); phase={PHASE}; reason={REASON}. Garrison={GARRISON}, fief={FIEF}, total={TOTAL}, minimum={MINIMUM}, minimum fief batch={MINIMUM_FIEF_BATCH}, binding eligible={BINDING_ELIGIBLE}, initial source={SOURCE}. A party ID of none means the candidate was evaluated before the MobileParty was created." />
     <string id="str_modifiedarmy_force_initial_task" text="{=ModifiedArmy_ForceInitialTask}[Force task] Party {PARTY_NAME} ({PARTY_ID}), settlement {SETTLEMENT_ID}, source {SOURCE}, status {STATUS}, reason {REASON}, created day {CREATED_DAY}, version {VERSION}." />
     <string id="str_modifiedarmy_supply_friendly_provision" text="{=ModifiedArmy_SupplyFriendlyProvision}[Supply provision] {PARTY_NAME} provisioned at {SETTLEMENT_NAME} from {SOURCE}: acquired {ACQUIRED} food for {GOLD} gold, food {FOOD_BEFORE} to {FOOD_AFTER}." />
     <string id="str_modifiedarmy_supply_emergency_recovery" text="{=ModifiedArmy_SupplyEmergencyRecovery}[Supply recovery] {PARTY_NAME}, home {HOME_NAME}, recovery settlement {SETTLEMENT_NAME}, action {ACTION}, healthy {HEALTHY}, wounded {WOUNDED}, total {TOTAL}." />

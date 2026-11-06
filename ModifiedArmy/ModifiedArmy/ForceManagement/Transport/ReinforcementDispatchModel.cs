@@ -103,8 +103,11 @@ namespace ModifiedArmy.ForceManagement.Transport
             if (garrison == null) return 0;
             GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
                 .GarrisonDefense.Evaluate(source);
+            int requiredReserve = Math.Max(
+                GarrisonRecruitmentCapacity.MinimumResidentGarrisonCount,
+                defense.MinimumCount);
             int safe = Math.Max(0,
-                defense.ResidentCount - defense.MinimumCount);
+                defense.ResidentCount - requiredReserve);
             Dictionary<CharacterObject, int> protectedCounts =
                 Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
                     .GetServingTroopCounts(garrison) ??

@@ -112,7 +112,8 @@
         AI兵力管理：
         和平时以35%且至少50人为目标；正式战争中只有战争倾向高于20的Clan
         才会主动扩军到60%以上。边境驻军上限95%/下限75%，内陆驻军上限80%/下限50%；
-        上限约束自动补员和正常接收，下限约束从驻军抽调。
+        上限约束驻军自身的自动征兵与普通接收；下限用于跨城驻军
+        外援需求和来源保护。AI Party 从驻军征调时固定至少留守75人。
         跨城运输具备路线与遇敌安全控制；自动派遣仍默认关闭，
         待实机遇敌、读档与长期运行验收后再显式启用。
       -->
@@ -126,12 +127,12 @@
         <!-- OwnFiefDefenseTargetRatio：赶赴防守自有被围封邑时的目标编制比例。 -->
         <OwnFiefDefenseTargetRatio value="1.00"/>
         <!-- InteriorGarrisonUpperRatio：内陆驻军自动接收兵员时允许达到的编制上限比例。 -->
-        <InteriorGarrisonUpperRatio value="0.80"/>
+        <InteriorGarrisonUpperRatio value="0.75"/>
         <!-- BorderGarrisonUpperRatio：边境驻军自动接收兵员时允许达到的编制上限比例。 -->
-        <BorderGarrisonUpperRatio value="0.95"/>
-        <!-- InteriorGarrisonLowerRatio：内陆驻军允许调出兵员后必须保留的最低编制比例。 -->
+        <BorderGarrisonUpperRatio value="0.85"/>
+        <!-- InteriorGarrisonLowerRatio：内陆驻军跨城外援需求与来源保护的警戒比例。 -->
         <InteriorGarrisonLowerRatio value="0.50"/>
-        <!-- BorderGarrisonLowerRatio：边境驻军允许调出兵员后必须保留的最低编制比例。 -->
+        <!-- BorderGarrisonLowerRatio：边境驻军跨城外援需求与来源保护的警戒比例。 -->
         <BorderGarrisonLowerRatio value="0.75"/>
         <!-- MinimumOwnSurplusDelivery：自有兵源至少达到该富余人数后才值得建立运输任务。 -->
         <MinimumOwnSurplusDelivery value="20"/>

@@ -10,7 +10,10 @@
     <string id="ModifiedArmy_FiefRecruitmentTransactionFailed" text="[封邑征召事务异常] 事务ID={OPERATION_ID}；封邑={FIEF_ID}；来源村庄={VILLAGE_IDS}；目标部队={PARTY_ID}；失败阶段={STAGE}；申请人数={REQUESTED}；回滚状态={ROLLBACK}；回滚详情={ROLLBACK_DETAIL}；异常详情={EXCEPTION}" />
     <string id="ModifiedArmy_FiefRecruitmentRejected" text="[封邑征召] 征召请求未执行。事务ID={OPERATION_ID}；封邑={FIEF_ID}；目标部队={PARTY_ID}；申请人数={REQUESTED}；原因代码={REASON_CODE}。" />
     <string id="FiefPartyData_ReturnTroopsToSettlement_1" text="[封邑兵役] {PARTY_NAME}向{SETTLEMENT_NAME}归还了{RETURNED_COUNT}名士兵，恢复动员Hearth {HEARTH_COST}点。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
-    <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑补员] {SETTLEMENT_NAME}补充了{MANIFEST}。当前登记兵力{TROOP_COUNT}人，封建供养占用{OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}点。" />
+    <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑兵生产] {SETTLEMENT_NAME}实际产出{MANIFEST}。登记兵力={TROOP_COUNT}，总供养占用={OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}。村庄明细：{VILLAGE_DETAILS}。" />
+    <string id="ModifiedArmy_FiefProductionVillageDetail" text="{VILLAGE_NAME}（{VILLAGE_ID}）：产出={PRODUCED} [{MANIFEST}]，有效Hearth={EFFECTIVE_HEARTH}，占用前={OCCUPIED_BEFORE}，占用后={OCCUPIED_AFTER}，预算={BUDGET}，剩余={REMAINING}，恢复冻结={RECOVERY}" />
+    <string id="ModifiedArmy_FiefProductionNoCommit" text="[封邑兵生产] 封邑={SETTLEMENT_ID}，批准={APPROVED}，实际产出=0，原因={REASON}。" />
+    <string id="ModifiedArmy_ForceDiagGarrisonCandidate" text="[AI Party驻军征调候选] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出征粮护卫预留{RESERVED}人，有效守军{EFFECTIVE}人。驻军警戒下限为{MINIMUM}人，本次征调的绝对留守底线为{HARD_FLOOR}人；SAFE={SAFE}按绝对底线计算，不直接按警戒线计算。在役封邑兵保护{PROTECTED}人，普通士兵候选{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募审批{APPROVED}人。" />
     <string id="ModifiedArmy_FiefAutoUpgrade" text="[士兵升级] {MANIFEST}。" />
     <string id="ModifiedArmy_FiefAutoUpgradeEntry" text="{COUNT}名{FROM_NAME}升级为{TO_NAME}" />
     <string id="ModifiedArmy_LogListSeparator" text="、" />
@@ -199,8 +202,8 @@
     <string id="ModifiedArmy_ForceTargetBelow" text="[兵力管理] {PARTY_NAME}现在有{CURRENT}人，按{SCENARIO}状态准备补到{TARGET}人，还缺{GAP}人。部队最多容纳{LIMIT}人，当前战争倾向为{DISPOSITION}。" />
     <string id="ModifiedArmy_ForceTargetMet" text="[兵力管理] {PARTY_NAME}现在有{CURRENT}人，已经达到{SCENARIO}状态下的{TARGET}人目标，暂时不用补兵。部队最多容纳{LIMIT}人，当前战争倾向为{DISPOSITION}。" />
     <string id="ModifiedArmy_ForceTargetAbove" text="[兵力管理] {PARTY_NAME}现在有{CURRENT}人，已经超过{SCENARIO}状态下的{TARGET}人目标，暂时不用补兵。部队最多容纳{LIMIT}人，当前战争倾向为{DISPOSITION}。" />
-    <string id="ModifiedArmy_GarrisonReinforcementRequested" text="[驻军增援] {SETTLEMENT_NAME}属于{LOCATION}，现有{CURRENT}名有效守军，至少应保留{REQUIRED}人，因此已经请求{REQUESTED}名援兵。七日补员预测为{RECOVERY}人；发出请求的原因是{REASON}。" />
-    <string id="ModifiedArmy_GarrisonReinforcementNotNeeded" text="[驻军防务] {SETTLEMENT_NAME}目前不需要增援。这里属于{LOCATION}，现有{CURRENT}名有效守军，至少应保留{REQUIRED}人；七日补员预测为{RECOVERY}人。不请求增援的原因是{REASON}。" />
+    <string id="ModifiedArmy_GarrisonReinforcementRequested" text="[驻军外部增援需求评估] {SETTLEMENT_NAME}是{LOCATION}，城内实驻{RESIDENT}人，有效守军{CURRENT}人；警戒下限为{REQUIRED}人，驻军自身自动征兵目标为{UPPER}人。需要外部增援{REQUESTED}人（仅评估，自动派遣为{AUTO_DISPATCH}）。未来七日本地征兵预测为{RECOVERY}人；原因：{REASON}。" />
+    <string id="ModifiedArmy_GarrisonReinforcementNotNeeded" text="[驻军外部增援需求评估] {SETTLEMENT_NAME}是{LOCATION}，城内实驻{RESIDENT}人，有效守军{CURRENT}人；警戒下限为{REQUIRED}人，驻军自身自动征兵目标为{UPPER}人。当前不需要外部增援，自动派遣为{AUTO_DISPATCH}。未来七日本地征兵预测为{RECOVERY}人；原因：{REASON}。" />
     <string id="ModifiedArmy_GarrisonLocationBorder" text="边境定居点" />
     <string id="ModifiedArmy_GarrisonLocationInterior" text="非边境定居点" />
     <string id="ModifiedArmy_ReinforcementDecisionRequest" text="请求增援" />
@@ -306,15 +309,15 @@
     <string id="ModifiedArmy_DisbandOrdinaryLost" text="{COUNT}名普通士兵无法安置并离队" />
     <string id="ModifiedArmy_DisbandNoTroops" text="没有士兵需要安置" />
     <string id="ModifiedArmy_NoValidDestination" text="没有合法目的地的地点" />
-    <string id="ModifiedArmy_PartyBindingReservation" text="[绑定定居点] 本次预留操作为{ACTION}。申请涉及家族{CLAN_ID}的英雄{HERO_ID}以及定居点{SETTLEMENT_ID}。预留令牌为{TOKEN_ID}。记录原因为{REASON}。" />
+    <string id="ModifiedArmy_PartyBindingReservation" text="[绑定定居点] 操作={ACTION}；待创建部队=由{PARTY_NAME}率领的领主部队；领队={HERO_NAME}（{HERO_ID}）；家族={CLAN_NAME}（{CLAN_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；预留令牌={TOKEN_ID}；原因={REASON}。创建成功前尚不存在MobileParty ID。" />
     <string id="ModifiedArmy_PartyBindingCommitted" text="[绑定定居点] 已将{PARTY_NAME}绑定到定居点{SETTLEMENT_ID}。该部队的内部标识为{PARTY_ID}，绑定版本为{VERSION}。" />
     <string id="ModifiedArmy_PartyBindingReleased" text="[绑定定居点] 已解除{PARTY_NAME}的定居点绑定。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
     <string id="ModifiedArmy_PartyBindingRejected" text="[绑定定居点] 已拒绝{PARTY_NAME}在定居点{SETTLEMENT_ID}执行操作{OPERATION}。该部队的内部标识为{PARTY_ID}，记录原因为{REASON}。" />
     <string id="ModifiedArmy_PartyBindingRecovery" text="[绑定定居点] 本次恢复检查了{RECORDS}条记录，恢复了{BOUND}项定居点绑定，发现{UNBOUND}支部队尚未绑定定居点，并检测到{CONFLICTS}项冲突。" />
-    <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 创建流程已到达{PHASE}阶段，涉及家族{CLAN_ID}的英雄{HERO_ID}。部队内部标识为{PARTY_ID}，当前拥有{REGULARS}名正规兵。出生定居点为{SPAWN}，当前所在定居点为{CURRENT}，移动目标为{TARGET}。新游戏状态为{NEW_GAME}。" />
+    <string id="ModifiedArmy_PartyCreationProbe" text="[领主部队创建探针] 阶段={PHASE}；待创建/实际部队={PARTY_NAME}（{PARTY_ID}）；领队={HERO_NAME}（{HERO_ID}）；家族={CLAN_NAME}（{CLAN_ID}）；正规兵={REGULARS}人；出生地={SPAWN_NAME}（{SPAWN}）；当前位置={CURRENT_NAME}（{CURRENT}）；移动目标={TARGET_NAME}（{TARGET}）；新游戏={NEW_GAME}。部队ID为none表示探针发生在MobileParty创建前。" />
     <string id="ModifiedArmy_GarrisonWageLimitBorderLog" text="驻军工资评估将边境据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />
     <string id="ModifiedArmy_GarrisonWageLimitInteriorLog" text="驻军工资评估将内陆据点{SETTLEMENT_NAME}的驻军工资上限由{PREVIOUS_LIMIT}调整为{NEW_LIMIT}。目标驻军规模为{DESIRED_SIZE}人。预计平均工资为{AVERAGE_WAGE}第纳尔，繁荣度修正系数为{WEALTH_FACTOR}，未经取整的工资上限为{RAW_LIMIT}。" />
-    <string id="ModifiedArmy_ForceDiagVisit" text="兵力访问诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，在{SETTLEMENT_NAME}收到{EVENT}。本次评估认定，{OUTCOME}。最近一次评估发生在第{LAST_DAY}日。当前存在兵力任务：{HAS_TASK}。任务目的地为{TASK_TARGET}。本次访问地点与任务目的地一致：{TARGET_MATCHES}。追踪标识为{TRACE_ID}。" />
+    <string id="ModifiedArmy_ForceDiagVisit" text="[兵力访问] 部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}；事件={EVENT}；结果={OUTCOME}；最近评估日索引={LAST_DAY_INDEX}；存在任务={HAS_TASK}；任务目的地={TASK_TARGET}；地点匹配={TARGET_MATCHES}；追踪标识={TRACE_ID}。日索引是CampaignTime的绝对引擎索引，不是玩家日历中的第几日。" />
     <string id="ModifiedArmy_ForceDiagRouteDestinationChanged" text="兵力路线诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，其定居点目标由{BEFORE_TARGET}调整为{AFTER_TARGET}。原版程序集{ASSEMBLY}中的方法{METHOD}在游戏第{CAMPAIGN_HOUR}小时应用了此次调整。当前兵力任务计划前往{PLANNED_TARGET}，任务状态为{TASK_STATUS}。任务持有移动指令：{OWNS_ORDER}。部队属于军团：{IN_ARMY}。部队正在战斗：{IN_BATTLE}。部队处于警戒状态：{ALERTED}。事件标识为{EVENT_ID}。追踪标识为{TRACE_ID}。" />
     <string id="ModifiedArmy_ForceDiagRouteBehaviorChanged" text="兵力路线诊断记录如下。{PARTY_NAME}的内部标识为{PARTY_ID}，其默认行为由{BEFORE_DEFAULT}调整为{AFTER_DEFAULT}，短期行为由{BEFORE_SHORT}调整为{AFTER_SHORT}。目标部队由{BEFORE_PARTY}调整为{AFTER_PARTY}。原版程序集{ASSEMBLY}中的方法{METHOD}在游戏第{CAMPAIGN_HOUR}小时应用了此次调整。当前兵力任务计划前往{PLANNED_TARGET}，任务状态为{TASK_STATUS}。事件标识为{EVENT_ID}。追踪标识为{TRACE_ID}。" />
     <string id="ModifiedArmy_ForceDiagRouteCallPath" text="兵力路线诊断记录了事件{EVENT_ID}的调用路径。{CALL_PATH}。" />
@@ -338,7 +341,7 @@
     <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
     <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
-    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试{ATTEMPT_ID}，类型{PARTY_TYPE}，家族{CLAN_ID}，领队{LEADER_ID}，部队{PARTY_ID}，定居点{SETTLEMENT_ID}，阶段{PHASE}，原因{REASON}。驻军兵源{GARRISON}人，封邑兵源{FIEF}人，合计{TOTAL}人，最低要求{MINIMUM}人，封邑最低批次{MINIMUM_FIEF_BATCH}人，绑定资格{BINDING_ELIGIBLE}，首次来源{SOURCE}。" />
+    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试={ATTEMPT_ID}；类型={PARTY_TYPE}；家族={CLAN_NAME}（{CLAN_ID}）；领队={LEADER_NAME}（{LEADER_ID}）；待创建/实际部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；阶段={PHASE}；原因={REASON}。驻军兵源={GARRISON}人，封邑兵源={FIEF}人，合计={TOTAL}人，最低要求={MINIMUM}人，封邑最低批次={MINIMUM_FIEF_BATCH}人，绑定资格={BINDING_ELIGIBLE}，首次来源={SOURCE}。部队ID为none表示此记录发生在MobileParty创建前的候选评估阶段。" />
     <string id="ModifiedArmy_ForceInitialTask" text="[调兵任务] 部队{PARTY_NAME}（{PARTY_ID}），定居点{SETTLEMENT_ID}，来源{SOURCE}，状态{STATUS}，原因{REASON}，创建日{CREATED_DAY}，版本{VERSION}。" />
     <string id="ModifiedArmy_SupplyFriendlyProvision" text="[途中补给] {PARTY_NAME}在{SETTLEMENT_NAME}通过{SOURCE}获得{ACQUIRED}份食物，支付{GOLD}第纳尔，食物由{FOOD_BEFORE}变为{FOOD_AFTER}。" />
     <string id="ModifiedArmy_SupplyEmergencyRecovery" text="[紧急安置] {PARTY_NAME}，所属地{HOME_NAME}，安置点{SETTLEMENT_NAME}，行动为{ACTION}，健康{HEALTHY}人，伤兵{WOUNDED}人，总计{TOTAL}人。" />

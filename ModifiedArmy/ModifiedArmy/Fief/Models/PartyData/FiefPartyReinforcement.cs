@@ -4,6 +4,7 @@ using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Utils;
 using System;
 using System.Collections.Generic;
@@ -200,9 +201,29 @@ namespace ModifiedArmy.Models.Fief
             List<VillageFiefData> targets = OrderedVillages(null)
                 .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
                 .ToList();
-            if (targets.Count == 0) return produced;
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(_settlement);
+            bool shouldLog = RecruitmentLogFilter.ShouldLog(
+                _settlement?.OwnerClan);
+            Dictionary<VillageFiefData, int> occupiedBefore = null;
+            if (shouldLog)
+            {
+                try
+                {
+                    occupiedBefore = OrderedVillages(null).ToDictionary(
+                        village => village,
+                        village => village.GetOccupiedSupplyHearth(
+                            _fiefPartyTemplate, doctrine));
+                }
+                catch (Exception exception)
+                {
+                    shouldLog = false;
+                    ModLogger.Debug(string.Format(
+                        "Fief production diagnostics unavailable: fief={0}, phase=Before, reason={1}.",
+                        _settlement?.StringId ?? "unknown",
+                        exception.GetType().Name));
+                }
+            }
             int recruited = 0;
             foreach (var kvp in tmpNewTroops.OrderBy(p => p.Key.StringId))
             for (int i = 0; i < kvp.Value; i++)
@@ -242,6 +263,35 @@ namespace ModifiedArmy.Models.Fief
             }
             SyncManpowerCounters();
 
+            if (produced.Sum(item => item.Count) <= 0)
+            {
+                if (shouldLog)
+                {
+                    try
+                    {
+                        TextObject empty = GameTexts.FindText(
+                            "str_modifiedarmy_fief_production_no_commit");
+                        empty.SetTextVariable("SETTLEMENT_ID",
+                            _settlement?.StringId ?? "unknown");
+                        empty.SetTextVariable("APPROVED", allowed);
+                        empty.SetTextVariable("REASON", "NoCommittedTroops");
+                        ModLogger.Debug(empty.ToString());
+                    }
+                    catch (Exception exception)
+                    {
+                        ModLogger.Debug(string.Format(
+                            "Fief production diagnostics unavailable: fief={0}, phase=ZeroCommit, reason={1}.",
+                            _settlement?.StringId ?? "unknown",
+                            exception.GetType().Name));
+                    }
+                }
+                return produced;
+            }
+
+            if (!shouldLog) return produced;
+
+            try
+            {
             TextObject msg = GameTexts.FindText("str_modifiedarmy_fief_weekly_reinforcement");
             msg.SetTextVariable("SETTLEMENT_NAME", _settlement.Name.ToString());
             msg.SetTextVariable("MANIFEST", FormatTroopManifest(produced
@@ -253,6 +303,52 @@ namespace ModifiedArmy.Models.Fief
                 GetTotalOccupiedSupplyHearth());
             msg.SetTextVariable("FEUDAL_BUDGET_HEARTH",
                 GetTotalFeudalBudgetHearth());
+            msg.SetTextVariable("VILLAGE_DETAILS", string.Join(
+                GameTexts.FindText("str_modifiedarmy_log_list_separator")
+                    .ToString(),
+                OrderedVillages(null)
+                    .OrderBy(village => village.VillageSettlement?.StringId,
+                        StringComparer.Ordinal)
+                    .Select(village =>
+                    {
+                        TextObject detail = GameTexts.FindText(
+                            "str_modifiedarmy_fief_production_village_detail");
+                        int before = occupiedBefore != null &&
+                            occupiedBefore.TryGetValue(village, out int value)
+                                ? value
+                                : village.GetOccupiedSupplyHearth(
+                                    _fiefPartyTemplate, doctrine);
+                        int after = village.GetOccupiedSupplyHearth(
+                            _fiefPartyTemplate, doctrine);
+                        detail.SetTextVariable("VILLAGE_ID",
+                            village.VillageSettlement?.StringId ?? "unknown");
+                        detail.SetTextVariable("VILLAGE_NAME",
+                            village.VillageSettlement?.Name ??
+                                new TextObject("unknown"));
+                        detail.SetTextVariable("PRODUCED", produced
+                            .Where(item => item.Village ==
+                                village.VillageSettlement)
+                            .Sum(item => item.Count));
+                        detail.SetTextVariable("MANIFEST",
+                            FormatTroopManifest(produced
+                                .Where(item => item.Village ==
+                                    village.VillageSettlement)
+                                .GroupBy(item => item.Troop)
+                                .ToDictionary(group => group.Key,
+                                    group => group.Sum(item => item.Count))));
+                        detail.SetTextVariable("EFFECTIVE_HEARTH",
+                            village.GetEffectiveSupplyHearth());
+                        detail.SetTextVariable("OCCUPIED_BEFORE", before);
+                        detail.SetTextVariable("OCCUPIED_AFTER", after);
+                        detail.SetTextVariable("BUDGET",
+                            village.GetFeudalBudgetHearth(doctrine));
+                        detail.SetTextVariable("REMAINING",
+                            village.GetFeudalBudgetRemainingHearth(
+                                _fiefPartyTemplate, doctrine));
+                        detail.SetTextVariable("RECOVERY",
+                            village.RecoveryRequired ? "true" : "false");
+                        return detail.ToString();
+                    })));
 
 
             if (_settlement.OwnerClan == Clan.PlayerClan)
@@ -262,6 +358,14 @@ namespace ModifiedArmy.Models.Fief
             else
             {
                 ModLogger.Debug(msg.ToString());
+            }
+            }
+            catch (Exception exception)
+            {
+                ModLogger.Debug(string.Format(
+                    "Fief production diagnostics unavailable: fief={0}, phase=After, reason={1}.",
+                    _settlement?.StringId ?? "unknown",
+                    exception.GetType().Name));
             }
             return produced;
         }

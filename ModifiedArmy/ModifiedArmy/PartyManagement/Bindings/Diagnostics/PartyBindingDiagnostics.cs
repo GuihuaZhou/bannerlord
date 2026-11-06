@@ -23,9 +23,17 @@ namespace ModifiedArmy.PartyManagement.Bindings.Diagnostics
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_party_binding_reservation");
             message.SetTextVariable("ACTION", action ?? "Unknown");
+            message.SetTextVariable("PARTY_NAME",
+                leader?.Name ?? new TextObject("unknown"));
+            message.SetTextVariable("HERO_NAME",
+                leader?.Name ?? new TextObject("unknown"));
             message.SetTextVariable("HERO_ID", leader?.StringId ?? "unknown");
+            message.SetTextVariable("CLAN_NAME",
+                PartyLogFormatter.GetClanDisplayName(leader?.Clan));
             message.SetTextVariable(
                 "CLAN_ID", leader?.Clan?.StringId ?? "unknown");
+            message.SetTextVariable("SETTLEMENT_NAME",
+                primary?.Name ?? new TextObject("unknown"));
             message.SetTextVariable(
                 "SETTLEMENT_ID", primary?.StringId ?? "none");
             message.SetTextVariable("TOKEN_ID", tokenId ?? "none");
@@ -111,17 +119,31 @@ namespace ModifiedArmy.PartyManagement.Bindings.Diagnostics
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_party_creation_probe");
             message.SetTextVariable("PHASE", phase ?? "Unknown");
+            message.SetTextVariable("HERO_NAME",
+                hero?.Name ?? new TextObject("unknown"));
             message.SetTextVariable("HERO_ID", hero?.StringId ?? "unknown");
+            message.SetTextVariable("CLAN_NAME",
+                PartyLogFormatter.GetClanDisplayName(clan));
             message.SetTextVariable("CLAN_ID", clan?.StringId ?? "unknown");
+            message.SetTextVariable("PARTY_NAME",
+                party != null
+                    ? PartyLogFormatter.GetDisplayName(party)
+                    : hero?.Name ?? new TextObject("unknown"));
             message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
             message.SetTextVariable(
                 "REGULARS", party?.MemberRoster?.TotalRegulars ?? 0);
             message.SetTextVariable(
                 "SPAWN", spawnSettlement?.StringId ?? "none");
+            message.SetTextVariable("SPAWN_NAME",
+                spawnSettlement?.Name ?? new TextObject("none"));
             message.SetTextVariable(
                 "CURRENT", party?.CurrentSettlement?.StringId ?? "none");
+            message.SetTextVariable("CURRENT_NAME",
+                party?.CurrentSettlement?.Name ?? new TextObject("none"));
             message.SetTextVariable(
                 "TARGET", party?.TargetSettlement?.StringId ?? "none");
+            message.SetTextVariable("TARGET_NAME",
+                party?.TargetSettlement?.Name ?? new TextObject("none"));
             message.SetTextVariable(
                 "NEW_GAME", isNewGame.HasValue
                     ? isNewGame.Value.ToString()

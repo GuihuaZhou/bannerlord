@@ -1,7 +1,9 @@
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
+using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 
 namespace ModifiedArmy.PartyManagement.Diagnostics
@@ -17,9 +19,23 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             if (!RecruitmentLogFilter.ShouldLog(leader?.Clan)) return;
             var message = GameTexts.FindText(
                 "str_modifiedarmy_party_creation_transaction");
+            Settlement settlement = Settlement.All.FirstOrDefault(item =>
+                item?.StringId == settlementId);
+            message.SetTextVariable("CLAN_NAME",
+                PartyLogFormatter.GetClanDisplayName(leader?.Clan));
             message.SetTextVariable("CLAN_ID", leader?.Clan?.StringId ?? "none");
+            message.SetTextVariable("LEADER_NAME",
+                leader?.Name ?? new TaleWorlds.Localization.TextObject("unknown"));
             message.SetTextVariable("LEADER_ID", leader?.StringId ?? "none");
+            message.SetTextVariable("PARTY_NAME",
+                party != null
+                    ? PartyLogFormatter.GetDisplayName(party)
+                    : leader?.Name ??
+                        new TaleWorlds.Localization.TextObject("unknown"));
             message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable("SETTLEMENT_NAME",
+                settlement?.Name ??
+                    new TaleWorlds.Localization.TextObject("unknown"));
             message.SetTextVariable("SETTLEMENT_ID", settlementId ?? "none");
             message.SetTextVariable("PHASE", phase ?? "Unknown");
             message.SetTextVariable("REASON", reason ?? "Unknown");
