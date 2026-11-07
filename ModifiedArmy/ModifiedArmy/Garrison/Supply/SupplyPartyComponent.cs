@@ -391,6 +391,8 @@ namespace ModifiedArmy.Garrison.Supply
         {
             ConstructContainerDefinition(
                 typeof(Dictionary<Settlement, CampaignTime>));
+            ConstructContainerDefinition(
+                typeof(Dictionary<Settlement, MobileParty>));
             ConstructContainerDefinition(typeof(List<Settlement>));
         }
     }

@@ -105,6 +105,27 @@ namespace ModifiedArmy.ForceManagement.Missions
                     settlement.StringId, (int)CampaignTime.Now.ToDays));
         }
 
+        /// <summary>
+        /// Executes one army member's contribution to a newly captured
+        /// garrison. The capture behavior owns the one-shot army workflow;
+        /// this method owns the transactional roster mutation.
+        /// </summary>
+        public PartyExchangeExecutionResult ExecuteCaptureContribution(
+            MobileParty party,
+            Settlement settlement,
+            int requested)
+        {
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
+                garrison == null || requested <= 0)
+                return new PartyExchangeExecutionResult
+                    { ReasonCode = "NoSafeDonationSurplus" };
+            return ExecuteRosterPlan(party, settlement, garrison, requested,
+                PartyExchangePurpose.NewlyCapturedSettlement,
+                string.Format("capture-army:{0}:{1}:{2}", party.StringId,
+                    settlement.StringId, (int)CampaignTime.Now.ToDays));
+        }
+
         private static PartyExchangeExecutionResult ExecuteRoutineDonation(
             MobileParty party,
             Settlement settlement)

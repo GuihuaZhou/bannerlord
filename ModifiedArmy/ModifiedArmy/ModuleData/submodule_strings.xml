@@ -480,4 +480,5 @@
     <string id="str_modifiedarmy_supply_emergency_recovery" text="{=ModifiedArmy_SupplyEmergencyRecovery}[Supply recovery] {PARTY_NAME}, home {HOME_NAME}, recovery settlement {SETTLEMENT_NAME}, action {ACTION}, healthy {HEALTHY}, wounded {WOUNDED}, total {TOTAL}." />
     <string id="str_modifiedarmy_transport_creation" text="{=ModifiedArmy_TransportCreation}[Party creation] Attempt {ATTEMPT_ID}, type {PARTY_TYPE}, party {PARTY_ID}, clan {CLAN_ID}, source {SOURCE_ID}, destination {DESTINATION_ID}, status {STATUS}, reason {REASON}." />
     <string id="str_modifiedarmy_force_stay_candidate" text="{=ModifiedArmy_ForceStayCandidate}[Force planning] party={PARTY_NAME} ({PARTY_ID}); settlement={SETTLEMENT_NAME} ({SETTLEMENT_ID}); regulars={REGULARS}; nativeStayScore={SCORE}." />
+    <string id="str_modifiedarmy_capture_garrison_contribution" text="{=ModifiedArmy_CaptureGarrisonContribution}[Capture garrison] {PARTY_NAME} of {CLAN_NAME} established the garrison at {SETTLEMENT_NAME}: left {TROOPS} soldiers and {FOOD} food; the garrison now has {GARRISON} soldiers and {GRANARY} food." />
 </strings>

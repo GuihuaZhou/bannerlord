@@ -366,5 +366,6 @@
     <string id="ModifiedArmy_FiefManagement_RecruitedCount" text="已招募人数" />
     <string id="ModifiedArmy_SupplyRestingAtFriendly" text="在友方定居点休整" />
     <string id="ModifiedArmy_SupplyPurchaseRecovery" text="{PARTY}在{SETTLEMENT}采购补给时失败；任务已冻结并等待恢复。原因：{REASON}" />
+    <string id="ModifiedArmy_CaptureGarrisonContribution" text="[攻占驻守] {CLAN_NAME}的{PARTY_NAME}在{SETTLEMENT_NAME}留下{TROOPS}名士兵和{FOOD}单位粮食；当前驻军{GARRISON}人，粮仓{GRANARY}单位。" />
   </strings>
 </base>
