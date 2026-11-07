@@ -1,0 +1,12 @@
+<ListPanel DoNotPassEventsToChildren="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MarginLeft="20" MarginTop="5" IsVisible="@IsFortification">
+  <Children>
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" HorizontalAlignment="Center" Sprite="General\Icons\Prosperity" ExtendLeft="-4" ExtendRight="-4" ExtendTop="-6" GamepadNavigationIndex="9" />
+    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom">
+      <Children>
+        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="SettlementValuesTextBrush" Brush.TextHorizontalAlignment="Center" Text="@PopulationText" MinWidth="50" />
+        <ChangeAmountTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" Brush="Settlement.Property.PositiveChange.Text" Amount="@PopulationChangeAmount" NegativeBrushName="Settlement.Property.NegativeChange.Text" PositiveBrushName="Settlement.Property.PositiveChange.Text" Brush.TextHorizontalAlignment="Center" ShouldBeVisible="@IsFortification" UseParentheses="true" />
+      </Children>
+    </ListPanel>
+    <HintWidget DataSource="{PopulationHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+  </Children>
+</ListPanel>

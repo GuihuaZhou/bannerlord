@@ -541,5 +541,9 @@
     <string id="MP_BuildingReconciliationSummary" text="[建设] 启动恢复共检查{CHECKED}座定居点, 修复{REPAIRED}座, 失败{FAILED}座." />
     <string id="MP_PopulationSupportShortfall" text="人口支持不足" />
     <string id="MP_NaturalPopulationGrowth" text="人口自然增长" />
+    <string id="MP_PopulationHearth" text="户数" />
+    <string id="MP_PopulationNaturalChange" text="每日自然变化" />
+    <string id="MP_PopulationCapacity" text="自然承载上限" />
+    <string id="MP_PopulationSupportedProsperity" text="可支持繁荣度" />
 </strings>
 </base>

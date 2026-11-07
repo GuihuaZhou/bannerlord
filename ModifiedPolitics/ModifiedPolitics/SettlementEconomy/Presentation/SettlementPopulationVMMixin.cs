@@ -1,0 +1,184 @@
+using System;
+using System.Collections.Generic;
+using Bannerlord.UIExtenderEx.Attributes;
+using Bannerlord.UIExtenderEx.ViewModels;
+using HarmonyLib;
+using ModifiedArmy.Population.Contracts;
+using ModifiedPolitics.SettlementEconomy.Config;
+using ModifiedPolitics.SettlementEconomy.Models;
+using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.Overlay;
+using TaleWorlds.Core.ViewModelCollection.Information;
+using TaleWorlds.Library;
+using TaleWorlds.Localization;
+
+namespace ModifiedPolitics.SettlementEconomy.Presentation
+{
+    /// <summary>
+    /// Read-only Town/Castle population presentation. Village presentation
+    /// remains owned by the native overlay and its Village.Hearth binding.
+    /// </summary>
+    [ViewModelMixin("UpdateProperties", true)]
+    public sealed class SettlementPopulationVMMixin :
+        BaseViewModelMixin<SettlementMenuOverlayVM>
+    {
+        private static readonly AccessTools.FieldRef<
+            SettlementMenuOverlayVM,
+            Settlement> SettlementField =
+                AccessTools.FieldRefAccess<
+                    SettlementMenuOverlayVM,
+                    Settlement>("_settlement");
+
+        private readonly SettlementMenuOverlayVM _vm;
+        private string _populationText = string.Empty;
+        private int _populationChangeAmount;
+        private bool _isPopulationVisible;
+        private BasicTooltipViewModel _populationHint;
+
+        public SettlementPopulationVMMixin(SettlementMenuOverlayVM vm)
+            : base(vm)
+        {
+            _vm = vm;
+            _populationHint = new BasicTooltipViewModel(
+                BuildPopulationTooltip);
+            RefreshPopulation();
+        }
+
+        [DataSourceProperty]
+        public string PopulationText
+        {
+            get => _populationText;
+            private set
+            {
+                if (_populationText == value) return;
+                _populationText = value;
+                _vm.OnPropertyChangedWithValue(value, nameof(PopulationText));
+            }
+        }
+
+        [DataSourceProperty]
+        public int PopulationChangeAmount
+        {
+            get => _populationChangeAmount;
+            private set
+            {
+                if (_populationChangeAmount == value) return;
+                _populationChangeAmount = value;
+                _vm.OnPropertyChangedWithValue(
+                    value,
+                    nameof(PopulationChangeAmount));
+            }
+        }
+
+        [DataSourceProperty]
+        public bool IsPopulationVisible
+        {
+            get => _isPopulationVisible;
+            private set
+            {
+                if (_isPopulationVisible == value) return;
+                _isPopulationVisible = value;
+                _vm.OnPropertyChangedWithValue(
+                    value,
+                    nameof(IsPopulationVisible));
+            }
+        }
+
+        [DataSourceProperty]
+        public BasicTooltipViewModel PopulationHint
+        {
+            get => _populationHint;
+            private set
+            {
+                if (_populationHint == value) return;
+                _populationHint = value;
+                _vm.OnPropertyChangedWithValue(value, nameof(PopulationHint));
+            }
+        }
+
+        public override void OnRefresh()
+        {
+            RefreshPopulation();
+        }
+
+        private void RefreshPopulation()
+        {
+            Settlement settlement = GetSettlement();
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            IsPopulationVisible = settlement?.Town != null &&
+                (settlement.IsTown || settlement.IsCastle) &&
+                population != null;
+            if (!IsPopulationVisible)
+            {
+                PopulationText = string.Empty;
+                PopulationChangeAmount = 0;
+                return;
+            }
+
+            float hearth = Math.Max(0f, population.GetHearth(settlement));
+            float capacity = population.GetNaturalCapacity(settlement);
+            float change = PopulationGrowthModel.Calculate(
+                hearth,
+                capacity,
+                SettlementEconomyConfigManager.Instance.RequireActive());
+            change = Math.Max(-hearth, change);
+            PopulationText = ((int)Math.Floor(hearth)).ToString();
+            PopulationChangeAmount = (int)Math.Round(
+                change,
+                MidpointRounding.AwayFromZero);
+        }
+
+        private List<TooltipProperty> BuildPopulationTooltip()
+        {
+            var properties = new List<TooltipProperty>();
+            Settlement settlement = GetSettlement();
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            if (settlement?.Town == null || population == null)
+                return properties;
+
+            SettlementEconomyConfig config =
+                SettlementEconomyConfigManager.Instance.RequireActive();
+            float hearth = Math.Max(0f, population.GetHearth(settlement));
+            float capacity = population.GetNaturalCapacity(settlement);
+            float change = Math.Max(
+                -hearth,
+                PopulationGrowthModel.Calculate(hearth, capacity, config));
+            float prosperityPerHearth = settlement.IsCastle
+                ? config.CastleProsperityPerHearth
+                : config.TownProsperityPerHearth;
+
+            properties.Add(Property(
+                new TextObject("{=MP_PopulationHearth}Hearth"),
+                ((int)Math.Floor(hearth)).ToString()));
+            properties.Add(Property(
+                new TextObject("{=MP_PopulationNaturalChange}Natural daily change"),
+                change.ToString("+0.00;-0.00;0.00")));
+            properties.Add(Property(
+                new TextObject("{=MP_PopulationCapacity}Natural capacity"),
+                ((int)Math.Floor(capacity)).ToString()));
+            properties.Add(Property(
+                new TextObject("{=MP_PopulationSupportedProsperity}Supported prosperity"),
+                ((int)Math.Floor(hearth * prosperityPerHearth)).ToString()));
+            return properties;
+        }
+
+        private Settlement GetSettlement()
+        {
+            return SettlementField(_vm);
+        }
+
+        private static TooltipProperty Property(
+            TextObject label,
+            string value)
+        {
+            return new TooltipProperty(
+                label.ToString(),
+                value,
+                0,
+                false,
+                TooltipProperty.TooltipPropertyFlags.None);
+        }
+    }
+}
