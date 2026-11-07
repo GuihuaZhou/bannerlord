@@ -34,6 +34,8 @@ namespace ModifiedArmy.Garrison.Behaviors
 
         private Dictionary<Settlement, MobileParty> _pendingCaptures =
             new Dictionary<Settlement, MobileParty>();
+        private readonly Dictionary<Settlement, string>
+            _lastCaptureDiagnosticStates = new();
 
         public override void RegisterEvents()
         {
@@ -65,16 +67,18 @@ namespace ModifiedArmy.Garrison.Behaviors
                 (battleType != MapEvent.BattleTypes.Siege &&
                  battleType != MapEvent.BattleTypes.SallyOut) ||
                 settlement?.IsFortification != true ||
-                attackerParty?.Army == null ||
-                attackerParty.IsMainParty)
+                attackerParty?.Army == null)
             {
                 return;
             }
 
             MobileParty leader = attackerParty.Army.LeaderParty;
             _pendingCaptures[settlement] = leader;
+            LogCaptureDiagnostic(leader, settlement, "Registered", 0, 0);
             int food = DonateArmyFood(attackerParty, settlement);
             int troops = TryDonateArmyTroops(leader, settlement);
+            LogCaptureDiagnostic(leader, settlement, "AfterSiegeCompleted",
+                troops, food);
             LogCaptureContribution(leader, settlement, troops, food);
             CompletePendingCaptureIfEstablished(settlement);
         }
@@ -84,11 +88,6 @@ namespace ModifiedArmy.Garrison.Behaviors
             Settlement settlement,
             Hero hero)
         {
-            if (!CanDonateToSettlement(party, settlement))
-            {
-                return;
-            }
-
             if (_pendingCaptures.TryGetValue(
                     settlement,
                     out MobileParty capturingArmyLeader) &&
@@ -96,11 +95,14 @@ namespace ModifiedArmy.Garrison.Behaviors
             {
                 int food = DonateArmyFood(party, settlement);
                 int troops = TryDonateArmyTroops(party, settlement);
+                LogCaptureDiagnostic(party, settlement, "SettlementEntered",
+                    troops, food);
                 LogCaptureContribution(party, settlement, troops, food);
                 CompletePendingCaptureIfEstablished(settlement);
             }
 
-            DonateVisitingPartyFood(party, settlement);
+            if (CanDonateToSettlement(party, settlement))
+                DonateVisitingPartyFood(party, settlement);
         }
 
         private void OnHourlyPartyTick(MobileParty party)
@@ -112,13 +114,24 @@ namespace ModifiedArmy.Garrison.Behaviors
             {
                 if (pending.Value != party) continue;
                 Settlement settlement = pending.Key;
+                if (!IsCaptureStillValid(party, settlement))
+                {
+                    LogCaptureDiagnostic(party, settlement,
+                        "CaptureNoLongerValid", 0, 0);
+                    _pendingCaptures.Remove(settlement);
+                    _lastCaptureDiagnosticStates.Remove(settlement);
+                    continue;
+                }
                 if (!CanRetryCaptureDonation(party, settlement))
                 {
-                    _pendingCaptures.Remove(settlement);
+                    LogCaptureDiagnostic(party, settlement,
+                        "WaitingForSettlementReady", 0, 0);
                     continue;
                 }
                 int troops = TryDonateArmyTroops(party, settlement);
                 int food = DonateArmyFood(party, settlement);
+                LogCaptureDiagnostic(party, settlement, "HourlyRetry",
+                    troops, food);
                 LogCaptureContribution(party, settlement, troops, food);
                 CompletePendingCaptureIfEstablished(settlement);
             }
@@ -141,7 +154,7 @@ namespace ModifiedArmy.Garrison.Behaviors
                 return false;
             }
 
-            if (!party.IsActive || !party.IsLordParty || party.IsMainParty ||
+            if (!party.IsActive || !party.IsLordParty ||
                 !settlement.IsFortification ||
                 !IsSameKingdom(party, settlement) ||
                 !IsCapturingArmyLeader(party, capturingArmyLeader))
@@ -200,7 +213,8 @@ namespace ModifiedArmy.Garrison.Behaviors
             return DonateFood(
                 armyParty.Army.Parties,
                 settlement,
-                remaining);
+                remaining,
+                true);
         }
 
         private static void DonateVisitingPartyFood(
@@ -224,13 +238,14 @@ namespace ModifiedArmy.Garrison.Behaviors
             IEnumerable<MobileParty> donors = party.Army != null
                 ? party.Army.Parties
                 : new[] { party };
-            DonateFood(donors, settlement, status.FoodDeficit);
+            DonateFood(donors, settlement, status.FoodDeficit, false);
         }
 
         private static int DonateFood(
             IEnumerable<MobileParty> donors,
             Settlement settlement,
-            int requestedFood)
+            int requestedFood,
+            bool allowMainParty)
         {
             MobileParty garrison = settlement?.Town?.GarrisonParty;
             if (garrison == null || requestedFood <= 0)
@@ -240,7 +255,8 @@ namespace ModifiedArmy.Garrison.Behaviors
 
             int remaining = requestedFood;
             foreach (MobileParty donor in donors
-                .Where(p => CanDonateToSettlement(p, settlement))
+                .Where(p => CanDonateToSettlement(p, settlement,
+                    allowMainParty))
                 .Distinct()
                 .OrderByDescending(p => p.ItemRoster?.TotalFood ?? 0))
             {
@@ -279,14 +295,16 @@ namespace ModifiedArmy.Garrison.Behaviors
             int transferred = 0;
             foreach (MobileParty donor in leader.Army.Parties
                 .Where(x => x?.IsActive == true && x.IsLordParty &&
+                    !x.IsDisbanding &&
                     x.CurrentSettlement == settlement &&
                     IsSameKingdom(x, settlement))
-                .OrderByDescending(x => ForceManagementFacade.Current
-                    .GetSafeFieldSurplus(x)).ToList())
+                .OrderByDescending(x => GarrisonTransferPolicyModel
+                    .GetAllowedCaptureContributionCount(x, int.MaxValue))
+                .ToList())
             {
                 if (remaining <= 0) break;
-                int surplus = ForceManagementFacade.Current
-                    .GetSafeFieldSurplus(donor);
+                int surplus = GarrisonTransferPolicyModel
+                    .GetAllowedCaptureContributionCount(donor, remaining);
                 if (surplus <= 0) continue;
                 int moved = _captureTransfers.ExecuteCaptureContribution(
                     donor, settlement, Math.Min(remaining, surplus))
@@ -298,11 +316,15 @@ namespace ModifiedArmy.Garrison.Behaviors
         }
 
         private static bool CanRetryCaptureDonation(MobileParty leader,
+            Settlement settlement) => IsCaptureStillValid(leader, settlement) &&
+            settlement.Town?.GarrisonParty != null &&
+            !settlement.IsUnderSiege;
+
+        private static bool IsCaptureStillValid(MobileParty leader,
             Settlement settlement) => leader?.IsActive == true &&
             leader.Army?.LeaderParty == leader &&
             settlement?.IsFortification == true &&
-            settlement.Town?.GarrisonParty != null &&
-            !settlement.IsUnderSiege && IsSameKingdom(leader, settlement);
+            IsSameKingdom(leader, settlement);
 
         private void CompletePendingCaptureIfEstablished(Settlement settlement)
         {
@@ -313,7 +335,85 @@ namespace ModifiedArmy.Garrison.Behaviors
             int targetFood = CalculateInitialTargetFood(settlement, garrison);
             if (garrison.MemberRoster.TotalRegulars >= target &&
                 garrison.ItemRoster.TotalFood >= targetFood)
+            {
                 _pendingCaptures.Remove(settlement);
+                _lastCaptureDiagnosticStates.Remove(settlement);
+            }
+        }
+
+        private void LogCaptureDiagnostic(MobileParty leader,
+            Settlement settlement, string phase, int troops, int food)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(leader)) return;
+            MobileParty garrison = settlement?.Town?.GarrisonParty;
+            List<MobileParty> armyParties = leader?.Army?.Parties?
+                .Where(x => x?.IsActive == true && x.IsLordParty &&
+                    !x.IsDisbanding)
+                .ToList() ?? new List<MobileParty>();
+            int inside = armyParties.Count(x =>
+                x.CurrentSettlement == settlement);
+            int contributors = armyParties.Count(x =>
+                x.CurrentSettlement == settlement &&
+                IsSameKingdom(x, settlement) &&
+                GarrisonTransferPolicyModel
+                    .GetAllowedCaptureContributionCount(x, int.MaxValue) > 0);
+            int available = armyParties
+                .Where(x => x.CurrentSettlement == settlement &&
+                    IsSameKingdom(x, settlement))
+                .Sum(x => GarrisonTransferPolicyModel
+                    .GetAllowedCaptureContributionCount(x, int.MaxValue));
+            int capacity = GarrisonRecruitmentCapacity
+                .GetTransferFreeSlots(garrison);
+            string reason = ResolveCaptureDiagnosticReason(
+                leader, settlement, garrison, inside, available, capacity,
+                troops, food);
+            string state = string.Join("|", phase, reason,
+                garrison?.MemberRoster.TotalRegulars ?? -1,
+                inside, contributors, available, capacity, troops, food);
+            if (_lastCaptureDiagnosticStates.TryGetValue(
+                    settlement, out string previous) && previous == state)
+                return;
+            _lastCaptureDiagnosticStates[settlement] = state;
+
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_capture_garrison_diagnostic");
+            message.SetTextVariable("SETTLEMENT_NAME",
+                settlement?.Name ?? GameTexts.FindText(
+                    "str_modifiedarmy_common_unknown"));
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(leader));
+            message.SetTextVariable("CLAN_NAME",
+                PartyLogFormatter.GetClanDisplayName(leader?.ActualClan));
+            message.SetTextVariable("PHASE", phase);
+            message.SetTextVariable("REASON", reason);
+            message.SetTextVariable("GARRISON",
+                garrison?.MemberRoster.TotalRegulars ?? -1);
+            message.SetTextVariable("ARMY_PARTIES", armyParties.Count);
+            message.SetTextVariable("INSIDE", inside);
+            message.SetTextVariable("CONTRIBUTORS", contributors);
+            message.SetTextVariable("AVAILABLE", available);
+            message.SetTextVariable("CAPACITY", capacity);
+            message.SetTextVariable("TROOPS", Math.Max(0, troops));
+            message.SetTextVariable("FOOD", Math.Max(0, food));
+            ModLogger.Info(message.ToString());
+        }
+
+        private static string ResolveCaptureDiagnosticReason(
+            MobileParty leader, Settlement settlement, MobileParty garrison,
+            int inside, int available, int capacity, int troops, int food)
+        {
+            if (leader?.IsActive != true) return "LeaderInactive";
+            if (leader.Army?.LeaderParty != leader)
+                return "CapturingArmyNoLongerExists";
+            if (!IsSameKingdom(leader, settlement))
+                return "SettlementOwnershipChanged";
+            if (garrison == null) return "GarrisonNotCreatedYet";
+            if (settlement.IsUnderSiege) return "SiegeStateNotClearedYet";
+            if (troops > 0 || food > 0) return "ContributionCommitted";
+            if (inside <= 0) return "ArmyPartiesNotInsideSettlement";
+            if (available <= 0) return "NoTroopsAboveThirtyMemberFloor";
+            if (capacity <= 0) return "GarrisonHasNoTransferCapacity";
+            return "TransferProducedNoCommit";
         }
 
         private static void LogCaptureContribution(MobileParty leader,
@@ -362,10 +462,12 @@ namespace ModifiedArmy.Garrison.Behaviors
 
         private static bool CanDonateToSettlement(
             MobileParty party,
-            Settlement settlement)
+            Settlement settlement,
+            bool allowMainParty = false)
         {
             return party != null && party.IsActive && party.IsLordParty &&
-                !party.IsMainParty && settlement?.IsFortification == true &&
+                (allowMainParty || !party.IsMainParty) &&
+                settlement?.IsFortification == true &&
                 settlement.Town?.GarrisonParty != null &&
                 IsSameKingdom(party, settlement);
         }

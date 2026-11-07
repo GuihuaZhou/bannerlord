@@ -367,5 +367,6 @@
     <string id="ModifiedArmy_SupplyRestingAtFriendly" text="在友方定居点休整" />
     <string id="ModifiedArmy_SupplyPurchaseRecovery" text="{PARTY}在{SETTLEMENT}采购补给时失败；任务已冻结并等待恢复。原因：{REASON}" />
     <string id="ModifiedArmy_CaptureGarrisonContribution" text="[攻占驻守] {CLAN_NAME}的{PARTY_NAME}在{SETTLEMENT_NAME}留下{TROOPS}名士兵和{FOOD}单位粮食；当前驻军{GARRISON}人，粮仓{GRANARY}单位。" />
+    <string id="ModifiedArmy_CaptureGarrisonDiagnostic" text="[攻占驻守诊断] 定居点{SETTLEMENT_NAME}；攻城军团统帅为{CLAN_NAME}的{PARTY_NAME}；阶段={PHASE}；结果={REASON}；当前驻军={GARRISON}人；军团队伍={ARMY_PARTIES}支；已进城={INSIDE}支；可贡献={CONTRIBUTORS}支；可贡献士兵={AVAILABLE}人；驻军剩余容量={CAPACITY}人；本次转移士兵={TROOPS}人；本次转移粮食={FOOD}单位。" />
   </strings>
 </base>

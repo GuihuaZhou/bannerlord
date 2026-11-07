@@ -116,8 +116,13 @@ namespace ModifiedArmy.ForceManagement.Missions
             int requested)
         {
             MobileParty garrison = settlement?.Town?.GarrisonParty;
-            if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
-                garrison == null || requested <= 0)
+            bool eligibleCaptureDonor = party?.IsActive == true &&
+                party.IsLordParty && !party.IsDisbanding &&
+                party.LeaderHero?.IsAlive == true &&
+                party.CurrentSettlement == settlement &&
+                party.ActualClan?.Kingdom != null &&
+                party.ActualClan.Kingdom == settlement?.OwnerClan?.Kingdom;
+            if (!eligibleCaptureDonor || garrison == null || requested <= 0)
                 return new PartyExchangeExecutionResult
                     { ReasonCode = "NoSafeDonationSurplus" };
             return ExecuteRosterPlan(party, settlement, garrison, requested,

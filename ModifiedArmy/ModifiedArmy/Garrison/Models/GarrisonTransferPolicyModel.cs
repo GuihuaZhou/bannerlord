@@ -102,6 +102,28 @@ namespace ModifiedArmy.Garrison.Models
         }
 
         /// <summary>
+        /// Keeps a newly victorious field party operational while still making
+        /// the army establish a real resident garrison. Unlike routine visits,
+        /// capture contributions are not suppressed merely because the party is
+        /// at its normal wartime force target.
+        /// </summary>
+        public static int GetAllowedCaptureContributionCount(
+            MobileParty party,
+            int requestedCount)
+        {
+            if (party == null || requestedCount <= 0)
+            {
+                return 0;
+            }
+
+            const int minimumFieldRegulars = 30;
+            int available = Math.Max(
+                0,
+                party.Party.NumberOfRegularMembers - minimumFieldRegulars);
+            return Math.Min(requestedCount, available);
+        }
+
+        /// <summary>
         /// Transfers only the troop types approved by the unified recruitment
         /// model, including field wage and long-term maintenance constraints.
         /// </summary>

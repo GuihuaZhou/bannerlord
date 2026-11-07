@@ -169,8 +169,14 @@ namespace ModifiedArmy.ForceManagement.Services
             int count = plan.SourceToDestination.TotalCount;
             if (plan.Operation == PartyExchangeOperation.FieldToGarrison)
             {
+                int safeFieldContribution = plan.Purpose ==
+                        PartyExchangePurpose.NewlyCapturedSettlement
+                    ? GarrisonTransferPolicyModel
+                        .GetAllowedCaptureContributionCount(source, count)
+                    : ForceManagementFacade.Current
+                        .GetSafeFieldSurplus(source);
                 if (destination != garrison ||
-                    ForceManagementFacade.Current.GetSafeFieldSurplus(source) < count ||
+                    safeFieldContribution < count ||
                     GarrisonRecruitmentCapacity
                         .GetTransferFreeSlots(destination) < count)
                     return "CapacityChanged";

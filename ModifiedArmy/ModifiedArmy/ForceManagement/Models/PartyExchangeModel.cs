@@ -87,8 +87,12 @@ namespace ModifiedArmy.ForceManagement.Models
             int safeGarrisonTransferOut = 0;
             if (fieldToGarrison)
             {
-                safeFieldSurplus = ForceManagementFacade.Current
-                    .GetSafeFieldSurplus(source);
+                safeFieldSurplus = context.Purpose ==
+                        PartyExchangePurpose.NewlyCapturedSettlement
+                    ? GarrisonTransferPolicyModel
+                        .GetAllowedCaptureContributionCount(
+                            source, context.RequestedCount)
+                    : ForceManagementFacade.Current.GetSafeFieldSurplus(source);
                 garrisonFreeSlots = GarrisonRecruitmentCapacity
                     .GetTransferFreeSlots(destination);
                 allowed = Math.Min(allowed, safeFieldSurplus);
