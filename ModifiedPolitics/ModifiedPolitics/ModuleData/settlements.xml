@@ -1,218 +1,492 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <Settlements>
-    <!-- ModifiedPolitics: new-campaign settlement state overrides; generated from the supplied vanilla settlements.xml and V5. -->
-    <!-- Only settlements with an actual prosperity or building change are included; do not copy vanilla entries unchanged. -->
-    <!-- Prosperity balance: remap all 53 effective V5 town starting values into 1,600-2,900, rounded to steps of 50. -->
-    <!-- This lowers starting food demand while retaining relative wealth differences; it does not change daily food equations. -->
-    <!-- All 67 native castle prosperity values are already below 3,000 and are preserved; V5 castle building upgrades stay. -->
-    <!-- No previously upgraded building is downgraded; this file is intended for NEW campaigns only. -->
-    <!-- Ataconia Castle [castle_EN6]: Prosperous northern imperial castle: balance its established barracks with stronger walls and logistical services. -->
-    <!-- Changes: fortifications 1 -> 2; castallans_office 1 -> 2; granary 1 -> 2; roads_and_paths 1 -> 2 -->
+    <!-- ModifiedPolitics V9: targeted new-campaign settlement overrides; based on V8 and the user-supplied vanilla settlements.xml. -->
+    <!-- Only settlements with an effective building/prosperity modification are listed; unrelated vanilla attributes and village entries are left intact. -->
+    <!-- Empire culture: all 19 towns receive well-developed military, civil and economic infrastructure; all 25 castles receive strong garrison and logistical facilities. -->
+    <!-- No building level is changed or reduced versus V8. All 53 town starting prosperity values are halved from V8 (800-1450, strictly below 1500); vanilla castle prosperity stays unchanged. -->
+    <!-- All V8 culture-specific buildings (Empire, Vlandia, Aserai, Battania, Sturgia and Khuzait) and special city exceptions remain untouched. -->
+    <!-- This file is intended for new campaigns; it does not overwrite existing saved settlement state. -->
+    <!-- Varagos Castle [castle_EN1]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: barracks 1 -> 2; training_fields 1 -> 2; guard_house 0 -> 1; castallans_office 1 -> 2; granary 1 -> 2 -->
+    <Settlement id="castle_EN1">
+        <Components>
+            <Town id="castle_comp_EN1" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Lochana Castle [castle_EN2]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 1 -> 2; siege_workshop 0 -> 1; granary 1 -> 2; craftmans_quarters 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EN2">
+        <Components>
+            <Town id="castle_comp_EN2" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Rhesos Castle [castle_EN3]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2; granary 0 -> 2; craftmans_quarters 0 -> 1; mason 0 -> 1; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_EN3">
+        <Components>
+            <Town id="castle_comp_EN3" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Gaos Castle [castle_EN4]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2 -->
+    <Settlement id="castle_EN4">
+        <Components>
+            <Town id="castle_comp_EN4" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Atrion Castle [castle_EN5]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2 -->
+    <Settlement id="castle_EN5">
+        <Components>
+            <Town id="castle_comp_EN5" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Ataconia Castle [castle_EN6]: Prosperous northern imperial castle: balance its established barracks with stronger walls and logistical services. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; training_fields 1 -> 2; siege_workshop 0 -> 1; castallans_office 1 -> 2; granary 1 -> 2; mason 0 -> 1; roads_and_paths 1 -> 2 -->
     <Settlement id="castle_EN6">
         <Components>
             <Town id="castle_comp_EN6" is_castle="true">
                 <Buildings>
                     <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
                     <Building id="building_castle_castallans_office" level="2"/>
                     <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_mason" level="1"/>
                     <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Syratos Castle [castle_EN8]: Northern frontier fortification: enhance defense and provision its garrison with a proper granary and road links. -->
-    <!-- Changes: fortifications 2 -> 3; barracks 1 -> 2; castallans_office 0 -> 1; granary 1 -> 2; roads_and_paths 0 -> 1 -->
-    <Settlement id="castle_EN8">
+    <!-- Epinosa Castle [castle_EN7]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: granary 1 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EN7">
         <Components>
-            <Town id="castle_comp_EN8" is_castle="true">
+            <Town id="castle_comp_EN7" is_castle="true">
                 <Buildings>
-                    <Building id="building_castle_fortifications" level="3"/>
-                    <Building id="building_castle_barracks" level="2"/>
-                    <Building id="building_castle_castallans_office" level="1"/>
                     <Building id="building_castle_granary" level="2"/>
-                    <Building id="building_castle_roads_and_paths" level="1"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Mecalovea Castle [castle_EN9]: Existing professional garrison stronghold: correct its lack of food storage and transportation. -->
-    <!-- Changes: castallans_office 1 -> 2; granary 0 -> 2; roads_and_paths 0 -> 1 -->
-    <Settlement id="castle_EN9">
-        <Components>
-            <Town id="castle_comp_EN9" is_castle="true">
-                <Buildings>
-                    <Building id="building_castle_castallans_office" level="2"/>
-                    <Building id="building_castle_granary" level="2"/>
-                    <Building id="building_castle_roads_and_paths" level="1"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Epicrotea [town_EN1]: Northern imperial gateway and wealthy market: reinforce trade administration, storage, and local security. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 5100 -> 2750; guard_house 0 -> 1; tax_office 1 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; courthouse 0 -> 1 -->
-    <Settlement id="town_EN1">
-        <Components>
-            <Town id="town_comp_EN1" is_castle="false" prosperity="2750">
-                <Buildings>
-                    <Building id="building_settlement_guard_house" level="1"/>
-                    <Building id="building_settlement_tax_office" level="2"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Diathma [town_EN2]: Northern imperial ruling center: top-tier fortifications, barracks, training fields, and reliable civil administration. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4700 -> 2600; fortifications 1 -> 3; barracks 1 -> 3; training_fields 1 -> 3; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; roads_and_paths 0 -> 2 -->
-    <Settlement id="town_EN2">
-        <Components>
-            <Town id="town_comp_EN2" is_castle="false" prosperity="2600">
-                <Buildings>
-                    <Building id="building_settlement_fortifications" level="3"/>
-                    <Building id="building_settlement_barracks" level="3"/>
-                    <Building id="building_settlement_training_fields" level="3"/>
-                    <Building id="building_settlement_tax_office" level="1"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Saneopa [town_EN3]: An important inland imperial trading center: improve market access, warehousing, taxation, and overland connections. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4600 -> 2550; tax_office 0 -> 1; marketplace 1 -> 2; warehouse 1 -> 2; roads_and_paths 1 -> 2 -->
-    <Settlement id="town_EN3">
-        <Components>
-            <Town id="town_comp_EN3" is_castle="false" prosperity="2550">
-                <Buildings>
-                    <Building id="building_settlement_tax_office" level="1"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Argoron [town_EN4]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 2800 -> 1950 -->
-    <Settlement id="town_EN4"><Components><Town id="town_comp_EN4" is_castle="false" prosperity="1950"/></Components></Settlement>
-    <!-- Myzea [town_EN5]: Productive imperial hill-country with horse and silk villages: reinforce its market, storage, and transport links. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3900 -> 2350; marketplace 0 -> 2; warehouse 0 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 1 -> 2 -->
-    <Settlement id="town_EN5">
-        <Components>
-            <Town id="town_comp_EN5" is_castle="false" prosperity="2350">
-                <Buildings>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_waterworks" level="1"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Amprela [town_EN6]: Northeastern frontier fortress-city already strong in barracks and walls: provide essential supplies, trade, and roads. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 2300 -> 1800; tax_office 0 -> 1; marketplace 0 -> 1; warehouse 0 -> 1; roads_and_paths 0 -> 1 -->
-    <Settlement id="town_EN6">
-        <Components>
-            <Town id="town_comp_EN6" is_castle="false" prosperity="1800">
-                <Buildings>
-                    <Building id="building_settlement_tax_office" level="1"/>
-                    <Building id="building_settlement_marketplace" level="1"/>
-                    <Building id="building_settlement_warehouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="1"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Thorios Castle [castle_EW2]: Agricultural castle with two wheat villages: strengthen grain storage, roads, and basic defense without overmilitarizing. -->
-    <!-- Changes: barracks 0 -> 1; guard_house 0 -> 1; castallans_office 0 -> 1; granary 1 -> 3; roads_and_paths 0 -> 2 -->
-    <Settlement id="castle_EW2">
-        <Components>
-            <Town id="castle_comp_EW2" is_castle="true">
-                <Buildings>
-                    <Building id="building_castle_barracks" level="1"/>
-                    <Building id="building_castle_guard_house" level="1"/>
-                    <Building id="building_castle_castallans_office" level="1"/>
-                    <Building id="building_castle_granary" level="3"/>
-                    <Building id="building_castle_roads_and_paths" level="2"/>
-                </Buildings>
-            </Town>
-        </Components>
-    </Settlement>
-    <!-- Oristocorys Castle [castle_EW7]: Wealthy western imperial wine estates: add local management, agricultural infrastructure, and food storage. -->
-    <!-- Changes: castallans_office 0 -> 1; granary 0 -> 1; farmlands 0 -> 1; roads_and_paths 1 -> 2 -->
-    <Settlement id="castle_EW7">
-        <Components>
-            <Town id="castle_comp_EW7" is_castle="true">
-                <Buildings>
-                    <Building id="building_castle_castallans_office" level="1"/>
-                    <Building id="building_castle_granary" level="1"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
                     <Building id="building_castle_farmlands" level="1"/>
                     <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Gersegos Castle [castle_EW8]: Western imperial border fortress: improve walls, granary, and supply roads. -->
-    <!-- Changes: fortifications 2 -> 3; granary 1 -> 2; roads_and_paths 0 -> 1 -->
-    <Settlement id="castle_EW8">
+    <!-- Syratos Castle [castle_EN8]: Northern frontier fortification: enhance defense and provision its garrison with a proper granary and road links. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 2 -> 3; barracks 1 -> 2; siege_workshop 0 -> 1; castallans_office 0 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EN8">
         <Components>
-            <Town id="castle_comp_EW8" is_castle="true">
+            <Town id="castle_comp_EN8" is_castle="true">
                 <Buildings>
                     <Building id="building_castle_fortifications" level="3"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
                     <Building id="building_castle_granary" level="2"/>
-                    <Building id="building_castle_roads_and_paths" level="1"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Lageta [town_EW1]: Wealthy western imperial city with very sparse starting buildings: restore trade, public works, and a basic garrison. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 5200 -> 2750; fortifications 1 -> 2; barracks 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
-    <Settlement id="town_EW1">
+    <!-- Mecalovea Castle [castle_EN9]: Existing professional garrison stronghold: correct its lack of food storage and transportation. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: castallans_office 1 -> 2; granary 0 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EN9">
         <Components>
-            <Town id="town_comp_EW1" is_castle="false" prosperity="2750">
+            <Town id="castle_comp_EN9" is_castle="true">
                 <Buildings>
-                    <Building id="building_settlement_fortifications" level="2"/>
-                    <Building id="building_settlement_barracks" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Epicrotea [town_EN1]: Northern imperial gateway and wealthy market: reinforce trade administration, storage, and local security. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2750 to 1375 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 5100 -> 1375; training_fields 1 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; waterworks 1 -> 2; courthouse 0 -> 2 -->
+    <Settlement id="town_EN1">
+        <Components>
+            <Town id="town_comp_EN1" is_castle="false" prosperity="1375">
+                <Buildings>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Zeonica [town_EW2]: Western imperial ruling center and established market town: strengthen military institutions and supporting urban infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4500 -> 2550; fortifications 1 -> 3; barracks 2 -> 3; training_fields 0 -> 3; warehouse 1 -> 2; mason 0 -> 1; courthouse 0 -> 1; roads_and_paths 1 -> 2 -->
-    <Settlement id="town_EW2">
+    <!-- Diathma [town_EN2]: Northern imperial ruling center: top-tier fortifications, barracks, training fields, and reliable civil administration. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2600 to 1300 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4700 -> 1300; fortifications 1 -> 3; barracks 1 -> 3; training_fields 1 -> 3; guard_house 1 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 2; roads_and_paths 0 -> 2 -->
+    <Settlement id="town_EN2">
         <Components>
-            <Town id="town_comp_EW2" is_castle="false" prosperity="2550">
+            <Town id="town_comp_EN2" is_castle="false" prosperity="1300">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Jalmarys [town_EW3]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 2700 -> 1950 -->
-    <Settlement id="town_EW3"><Components><Town id="town_comp_EW3" is_castle="false" prosperity="1950"/></Components></Settlement>
-    <!-- Ortysia [town_EW4]: Wealthy historic maritime and commercial hub. Upgrade the city walls and barracks to tier 3, and fully develop all seven economic, civic, and administrative facilities to tier 3. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 5600 -> 2900; fortifications 2 -> 3; barracks 0 -> 3; tax_office 1 -> 3; marketplace 1 -> 3; warehouse 1 -> 3; mason 0 -> 3; waterworks 2 -> 3; courthouse 1 -> 3. Roads are already tier 3 in the vanilla data and need no override. -->
-    <Settlement id="town_EW4">
+    <!-- Saneopa [town_EN3]: An important inland imperial trading center: improve market access, warehousing, taxation, and overland connections. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4600 -> 1275; fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2; guard_house 0 -> 2; tax_office 0 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; mason 1 -> 2; courthouse 1 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="town_EN3">
         <Components>
-            <Town id="town_comp_EW4" is_castle="false" prosperity="2900">
+            <Town id="town_comp_EN3" is_castle="false" prosperity="1275">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Argoron [town_EN4]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1950 to 975 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2800 -> 975; fortifications 1 -> 2; barracks 1 -> 2; tax_office 1 -> 2; marketplace 0 -> 2; warehouse 1 -> 2; mason 0 -> 2; courthouse 0 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="town_EN4">
+        <Components>
+            <Town id="town_comp_EN4" is_castle="false" prosperity="975">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Myzea [town_EN5]: Productive imperial hill-country with horse and silk villages: reinforce its market, storage, and transport links. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3900 -> 1175; fortifications 1 -> 2; barracks 1 -> 2; training_fields 1 -> 2; guard_house 0 -> 2; tax_office 1 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 1 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="town_EN5">
+        <Components>
+            <Town id="town_comp_EN5" is_castle="false" prosperity="1175">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Amprela [town_EN6]: Northeastern frontier fortress-city already strong in barracks and walls: provide essential supplies, trade, and roads. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1800 to 900 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2300 -> 900; guard_house 1 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 2; waterworks 1 -> 2; courthouse 1 -> 2; roads_and_paths 0 -> 2 -->
+    <Settlement id="town_EN6">
+        <Components>
+            <Town id="town_comp_EN6" is_castle="false" prosperity="900">
+                <Buildings>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Garontor Castle [castle_EW1]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: barracks 1 -> 2; castallans_office 1 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EW1">
+        <Components>
+            <Town id="castle_comp_EW1" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Thorios Castle [castle_EW2]: Agricultural castle with two wheat villages: strengthen grain storage, roads, and basic defense without overmilitarizing. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2; granary 1 -> 3; craftmans_quarters 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EW2">
+        <Components>
+            <Town id="castle_comp_EW2" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="3"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Onica Castle [castle_EW3]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2; siege_workshop 0 -> 1; castallans_office 1 -> 2; granary 0 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_EW3">
+        <Components>
+            <Town id="castle_comp_EW3" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Thractorae Castle [castle_EW4]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 1 -> 2; training_fields 1 -> 2; guard_house 0 -> 1; castallans_office 1 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; mason 0 -> 1; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_EW4">
+        <Components>
+            <Town id="castle_comp_EW4" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Veron Castle [castle_EW5]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: training_fields 1 -> 2; siege_workshop 0 -> 1; castallans_office 1 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EW5">
+        <Components>
+            <Town id="castle_comp_EW5" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Hertogea Castle [castle_EW6]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2; mason 0 -> 1 -->
+    <Settlement id="castle_EW6">
+        <Components>
+            <Town id="castle_comp_EW6" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_mason" level="1"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Oristocorys Castle [castle_EW7]: Wealthy western imperial wine estates: add local management, agricultural infrastructure, and food storage. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; castallans_office 0 -> 2; granary 0 -> 2; farmlands 0 -> 1; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_EW7">
+        <Components>
+            <Town id="castle_comp_EW7" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Gersegos Castle [castle_EW8]: Western imperial border fortress: improve walls, granary, and supply roads. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 2 -> 3; training_fields 1 -> 2; granary 1 -> 2; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_EW8">
+        <Components>
+            <Town id="castle_comp_EW8" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="3"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Lageta [town_EW1]: Wealthy western imperial city with very sparse starting buildings: restore trade, public works, and a basic garrison. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2750 to 1375 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 5200 -> 1375; fortifications 1 -> 2; barracks 0 -> 2; training_fields 1 -> 2; guard_house 0 -> 2; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 2 -->
+    <Settlement id="town_EW1">
+        <Components>
+            <Town id="town_comp_EW1" is_castle="false" prosperity="1375">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Zeonica [town_EW2]: Western imperial ruling center and established market town: strengthen military institutions and supporting urban infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4500 -> 1275; fortifications 1 -> 3; barracks 2 -> 3; training_fields 0 -> 3; guard_house 0 -> 2; siege_workshop 0 -> 1; warehouse 1 -> 2; mason 0 -> 2; courthouse 0 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="town_EW2">
+        <Components>
+            <Town id="town_comp_EW2" is_castle="false" prosperity="1275">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
+                    <Building id="building_settlement_training_fields" level="3"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Jalmarys [town_EW3]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1950 to 975 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2700 -> 975; fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 2; courthouse 1 -> 2 -->
+    <Settlement id="town_EW3">
+        <Components>
+            <Town id="town_comp_EW3" is_castle="false" prosperity="975">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Ortysia [town_EW4]: Wealthy historic maritime and commercial hub. Upgrade the city walls and barracks to tier 3, and fully develop all seven economic, civic, and administrative facilities to tier 3. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2900 to 1450 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 5600 -> 1450; fortifications 2 -> 3; barracks 0 -> 3; training_fields 1 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 3; marketplace 1 -> 3; warehouse 1 -> 3; mason 0 -> 3; waterworks 2 -> 3; courthouse 1 -> 3 -->
+    <Settlement id="town_EW4">
+        <Components>
+            <Town id="town_comp_EW4" is_castle="false" prosperity="1450">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="3"/>
+                    <Building id="building_settlement_barracks" level="3"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
                     <Building id="building_settlement_tax_office" level="3"/>
                     <Building id="building_settlement_marketplace" level="3"/>
                     <Building id="building_settlement_warehouse" level="3"/>
@@ -223,158 +497,325 @@
             </Town>
         </Components>
     </Settlement>
-    <!-- Amitatys [town_EW5]: Historic western imperial city: upgrade its defensive walls while retaining its existing level-one barracks. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4400 -> 2500; fortifications 1 -> 2; barracks remains at its native level 1 and requires no override. -->
+    <!-- Amitatys [town_EW5]: Historic western imperial city: upgrade its defensive walls while retaining its existing level-one barracks. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2500 to 1250 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4400 -> 1250; fortifications 1 -> 2; barracks 1 -> 2; training_fields 1 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 2; courthouse 1 -> 2 -->
     <Settlement id="town_EW5">
         <Components>
-            <Town id="town_comp_EW5" is_castle="false" prosperity="2500">
+            <Town id="town_comp_EW5" is_castle="false" prosperity="1250">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Rhotae [town_EW6]: Major grain-supplying imperial city: improve storage, irrigation, grain trade, and connectivity. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4900 -> 2650; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 0 -> 2; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- Rhotae [town_EW6]: Major grain-supplying imperial city: improve storage, irrigation, grain trade, and connectivity. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2650 to 1325 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4900 -> 1325; fortifications 1 -> 2; training_fields 1 -> 2; tax_office 1 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 2 -->
     <Settlement id="town_EW6">
         <Components>
-            <Town id="town_comp_EW6" is_castle="false" prosperity="2650">
+            <Town id="town_comp_EW6" is_castle="false" prosperity="1325">
                 <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                     <Building id="building_settlement_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Melion Castle [castle_ES3]: Resource-rich castle supported by silk and silver villages: strengthen local management and storage. -->
-    <!-- Changes: castallans_office 0 -> 1; granary 0 -> 1 -->
-    <Settlement id="castle_ES3">
+    <!-- Odrysa Castle [castle_ES1]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: castallans_office 1 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_ES1">
         <Components>
-            <Town id="castle_comp_ES3" is_castle="true">
+            <Town id="castle_comp_ES1" is_castle="true">
                 <Buildings>
-                    <Building id="building_castle_castallans_office" level="1"/>
-                    <Building id="building_castle_granary" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Lavenia Castle [castle_ES4]: Southern imperial frontier fortress with high prosperity: reinforce walls, barracks, training, granary, and roads. -->
-    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 1; granary 1 -> 2; roads_and_paths 1 -> 2 -->
+    <!-- Corenia Castle [castle_ES2]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: guard_house 0 -> 1; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_ES2">
+        <Components>
+            <Town id="castle_comp_ES2" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Melion Castle [castle_ES3]: Resource-rich castle supported by silk and silver villages: strengthen local management and storage. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2; granary 0 -> 2 -->
+    <Settlement id="castle_ES3">
+        <Components>
+            <Town id="castle_comp_ES3" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Lavenia Castle [castle_ES4]: Southern imperial frontier fortress with high prosperity: reinforce walls, barracks, training, granary, and roads. Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; castallans_office 1 -> 2; granary 1 -> 2; farmlands 0 -> 1; roads_and_paths 1 -> 2 -->
     <Settlement id="castle_ES4">
         <Components>
             <Town id="castle_comp_ES4" is_castle="true">
                 <Buildings>
                     <Building id="building_castle_fortifications" level="2"/>
                     <Building id="building_castle_barracks" level="2"/>
-                    <Building id="building_castle_training_fields" level="1"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Morenia Castle [castle_ES5]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: barracks 1 -> 2; training_fields 1 -> 2; castallans_office 1 -> 2; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_ES5">
+        <Components>
+            <Town id="castle_comp_ES5" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Sestadaim Castle [castle_ES6]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; farmlands 0 -> 1; mason 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="castle_ES6">
+        <Components>
+            <Town id="castle_comp_ES6" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_farmlands" level="1"/>
+                    <Building id="building_castle_mason" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Jogurys Castle [castle_ES7]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 1 -> 2; granary 1 -> 2; craftmans_quarters 0 -> 1; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_ES7">
+        <Components>
+            <Town id="castle_comp_ES7" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
+                    <Building id="building_castle_granary" level="2"/>
+                    <Building id="building_castle_craftmans_quarters" level="1"/>
+                    <Building id="building_castle_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Chanopsis Castle [castle_ES8]: Empire-wide castle policy: reinforce fortifications, barracks, training capacity, garrison logistics, administration, and local support facilities. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; siege_workshop 0 -> 1; castallans_office 0 -> 2; granary 1 -> 2; roads_and_paths 1 -> 2 -->
+    <Settlement id="castle_ES8">
+        <Components>
+            <Town id="castle_comp_ES8" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                    <Building id="building_castle_guard_house" level="1"/>
+                    <Building id="building_castle_siege_workshop" level="1"/>
+                    <Building id="building_castle_castallans_office" level="2"/>
                     <Building id="building_castle_granary" level="2"/>
                     <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Danustica [town_ES1]: Prosperous southern imperial frontier city: complete its civic economy and make it a fully equipped strategic command center. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4900 -> 2650; fortifications 2 -> 3; barracks 1 -> 3; training_fields 2 -> 3; tax_office 1 -> 2; warehouse 1 -> 2; waterworks 0 -> 2; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- Danustica [town_ES1]: Prosperous southern imperial frontier city: complete its civic economy and make it a fully equipped strategic command center. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2650 to 1325 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4900 -> 1325; fortifications 2 -> 3; barracks 1 -> 3; training_fields 2 -> 3; siege_workshop 1 -> 2; tax_office 1 -> 3; marketplace 2 -> 3; warehouse 1 -> 3; mason 1 -> 2; waterworks 0 -> 2; courthouse 0 -> 3; roads_and_paths 0 -> 3 -->
     <Settlement id="town_ES1">
         <Components>
-            <Town id="town_comp_ES1" is_castle="false" prosperity="2650">
+            <Town id="town_comp_ES1" is_castle="false" prosperity="1325">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
-                    <Building id="building_settlement_tax_office" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="2"/>
+                    <Building id="building_settlement_tax_office" level="3"/>
+                    <Building id="building_settlement_marketplace" level="3"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                    <Building id="building_settlement_courthouse" level="3"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Vostrum [town_ES2]: Prosperous grain-producing city with unusually weak starting infrastructure: develop its markets, storage, waterworks, and public administration. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 5100 -> 2750; tax_office 0 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 0 -> 2; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- Vostrum [town_ES2]: Prosperous grain-producing city with unusually weak starting infrastructure: develop its markets, storage, waterworks, and public administration. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2750 to 1375 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 5100 -> 1375; fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2; guard_house 1 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 1 -> 3; warehouse 1 -> 3; mason 0 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 3 -->
     <Settlement id="town_ES2">
         <Components>
-            <Town id="town_comp_ES2" is_castle="false" prosperity="2750">
+            <Town id="town_comp_ES2" is_castle="false" prosperity="1375">
                 <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_marketplace" level="3"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Poros [town_ES3]: Prosperous southern imperial city with underdeveloped starting buildings: provide basic military and complete economic services. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4500 -> 2550; barracks 0 -> 1; training_fields 0 -> 1; tax_office 1 -> 2; marketplace 0 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 1 -> 2; courthouse 0 -> 1 -->
+    <!-- Poros [town_ES3]: Prosperous southern imperial city with underdeveloped starting buildings: provide basic military and complete economic services. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4500 -> 1275; fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 2; marketplace 0 -> 2; warehouse 1 -> 2; mason 0 -> 2; waterworks 1 -> 2; courthouse 0 -> 2 -->
     <Settlement id="town_ES3">
         <Components>
-            <Town id="town_comp_ES3" is_castle="false" prosperity="2550">
+            <Town id="town_comp_ES3" is_castle="false" prosperity="1275">
                 <Buildings>
-                    <Building id="building_settlement_barracks" level="1"/>
-                    <Building id="building_settlement_training_fields" level="1"/>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Lycaron [town_ES4]: Southern imperial political center and naturally defensible city: establish top-tier defenses and training while improving its urban economy. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3800 -> 2550; barracks 2 -> 3; training_fields 1 -> 3; marketplace 0 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 0 -> 2; roads_and_paths 1 -> 2 -->
+    <!-- Lycaron [town_ES4]: Southern imperial political center and naturally defensible city: establish top-tier defenses and training while improving its urban economy. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3800 -> 1275; barracks 2 -> 3; training_fields 1 -> 3; guard_house 1 -> 2; siege_workshop 1 -> 2; tax_office 2 -> 3; marketplace 0 -> 3; warehouse 1 -> 3; mason 0 -> 2; waterworks 0 -> 2; courthouse 2 -> 3; roads_and_paths 1 -> 3 -->
     <Settlement id="town_ES4">
         <Components>
-            <Town id="town_comp_ES4" is_castle="false" prosperity="2550">
+            <Town id="town_comp_ES4" is_castle="false" prosperity="1275">
                 <Buildings>
                     <Building id="building_settlement_barracks" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="2"/>
+                    <Building id="building_settlement_tax_office" level="3"/>
+                    <Building id="building_settlement_marketplace" level="3"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="3"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Onira [town_ES5]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2150 to 1075 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3400 -> 1075; guard_house 0 -> 2; warehouse 1 -> 2; mason 0 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 2 -->
+    <Settlement id="town_ES5">
+        <Components>
+            <Town id="town_comp_ES5" is_castle="false" prosperity="1075">
+                <Buildings>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                     <Building id="building_settlement_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Onira [town_ES5]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 3400 -> 2150 -->
-    <Settlement id="town_ES5"><Components><Town id="town_comp_ES5" is_castle="false" prosperity="2150"/></Components></Settlement>
-    <!-- Phycaon [town_ES6]: Imperial grain-region town with extensive masonry and waterways but weak commerce: provide a trading and storage base. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 2600 -> 1900; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2 -->
+    <!-- Phycaon [town_ES6]: Imperial grain-region town with extensive masonry and waterways but weak commerce: provide a trading and storage base. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1900 to 950 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2600 -> 950; fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 0 -> 2; marketplace 0 -> 2; warehouse 0 -> 2; courthouse 1 -> 2 -->
     <Settlement id="town_ES6">
         <Components>
-            <Town id="town_comp_ES6" is_castle="false" prosperity="1900">
+            <Town id="town_comp_ES6" is_castle="false" prosperity="950">
                 <Buildings>
-                    <Building id="building_settlement_tax_office" level="1"/>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
-    <!-- Syronea [town_ES7]: Former imperial silk production and eastern trade center: rebuild trade services and basic defensive infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4000 -> 2350; fortifications 1 -> 2; tax_office 1 -> 2; marketplace 1 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- Syronea [town_ES7]: Former imperial silk production and eastern trade center: rebuild trade services and basic defensive infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. Empire-wide city policy: strengthen professional military institutions together with civic administration, markets, water, roads, and storage. -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4000 -> 1175; fortifications 1 -> 2; training_fields 1 -> 2; guard_house 0 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 2; marketplace 1 -> 3; warehouse 2 -> 3; mason 1 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 3 -->
     <Settlement id="town_ES7">
         <Components>
-            <Town id="town_comp_ES7" is_castle="false" prosperity="2350">
+            <Town id="town_comp_ES7" is_castle="false" prosperity="1175">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                    <Building id="building_settlement_guard_house" level="2"/>
+                    <Building id="building_settlement_siege_workshop" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
-                    <Building id="building_settlement_waterworks" level="1"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                    <Building id="building_settlement_marketplace" level="3"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
                 </Buildings>
             </Town>
         </Components>
@@ -435,10 +876,11 @@
         </Components>
     </Settlement>
     <!-- Varcheg [town_S1]: Sturgian ruling center: strengthen the defensive perimeter and add basic commerce, storage, and taxation to its mature road network. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3100 -> 2050; fortifications 1 -> 3; training_fields 1 -> 3; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2050 to 1025 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3100 -> 1025; fortifications 1 -> 3; training_fields 1 -> 3; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
     <Settlement id="town_S1">
         <Components>
-            <Town id="town_comp_S1" is_castle="false" prosperity="2050">
+            <Town id="town_comp_S1" is_castle="false" prosperity="1025">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
@@ -451,10 +893,11 @@
         </Components>
     </Settlement>
     <!-- Balgard [town_S2]: Sturgian ruling-family stronghold: improve the regional market, storage, roads, and administration. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 2300 -> 1800; training_fields 0 -> 1; marketplace 1 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1800 to 900 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2300 -> 900; training_fields 0 -> 1; marketplace 1 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 1 -->
     <Settlement id="town_S2">
         <Components>
-            <Town id="town_comp_S2" is_castle="false" prosperity="1800">
+            <Town id="town_comp_S2" is_castle="false" prosperity="900">
                 <Buildings>
                     <Building id="building_settlement_training_fields" level="1"/>
                     <Building id="building_settlement_marketplace" level="2"/>
@@ -467,10 +910,11 @@
         </Components>
     </Settlement>
     <!-- Omor [town_S3]: Sturgian fur and timber trade center: develop marketplace, warehousing, taxation, and road links. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3200 -> 2100; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; roads_and_paths 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2100 to 1050 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3200 -> 1050; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; roads_and_paths 1 -> 2 -->
     <Settlement id="town_S3">
         <Components>
-            <Town id="town_comp_S3" is_castle="false" prosperity="2100">
+            <Town id="town_comp_S3" is_castle="false" prosperity="1050">
                 <Buildings>
                     <Building id="building_settlement_tax_office" level="1"/>
                     <Building id="building_settlement_marketplace" level="2"/>
@@ -482,10 +926,11 @@
         </Components>
     </Settlement>
     <!-- Varnovapol [town_S4]: Established regional commercial center with good market buildings: complement them with water and transport infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3300 -> 2150; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2150 to 1075 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3300 -> 1075; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
     <Settlement id="town_S4">
         <Components>
-            <Town id="town_comp_S4" is_castle="false" prosperity="2150">
+            <Town id="town_comp_S4" is_castle="false" prosperity="1075">
                 <Buildings>
                     <Building id="building_settlement_waterworks" level="1"/>
                     <Building id="building_settlement_courthouse" level="1"/>
@@ -495,10 +940,11 @@
         </Components>
     </Settlement>
     <!-- Tyal [town_S5]: Powerful Sturgian eastern stronghold with mature military buildings: add only basic taxation and marketplace support. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 1700 -> 1600; tax_office 0 -> 1; marketplace 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1600 to 800 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1700 -> 800; tax_office 0 -> 1; marketplace 0 -> 1 -->
     <Settlement id="town_S5">
         <Components>
-            <Town id="town_comp_S5" is_castle="false" prosperity="1600">
+            <Town id="town_comp_S5" is_castle="false" prosperity="800">
                 <Buildings>
                     <Building id="building_settlement_tax_office" level="1"/>
                     <Building id="building_settlement_marketplace" level="1"/>
@@ -507,17 +953,29 @@
         </Components>
     </Settlement>
     <!-- Sibir [town_S6]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 1900 -> 1650 -->
-    <Settlement id="town_S6"><Components><Town id="town_comp_S6" is_castle="false" prosperity="1650"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1650 to 825 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1900 -> 825 -->
+    <Settlement id="town_S6">
+        <Components>
+            <Town id="town_comp_S6" is_castle="false" prosperity="825"/>
+        </Components>
+    </Settlement>
     <!-- Revyl [town_S7]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 3100 -> 2050 -->
-    <Settlement id="town_S7"><Components><Town id="town_comp_S7" is_castle="false" prosperity="2050"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2050 to 1025 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3100 -> 1025 -->
+    <Settlement id="town_S7">
+        <Components>
+            <Town id="town_comp_S7" is_castle="false" prosperity="1025"/>
+        </Components>
+    </Settlement>
     <!-- Sahel Castle [castle_A2]: Agricultural Aserai stronghold providing wheat and dates: support estate output with granary and roads. -->
-    <!-- Changes: granary 2 -> 3; roads_and_paths 1 -> 2 -->
+    <!-- Changes: barracks 0 -> 1; training_fields 0 -> 1; granary 2 -> 3; roads_and_paths 1 -> 2 -->
     <Settlement id="castle_A2">
         <Components>
             <Town id="castle_comp_A2" is_castle="true">
                 <Buildings>
+                    <Building id="building_castle_barracks" level="1"/>
+                    <Building id="building_castle_training_fields" level="1"/>
                     <Building id="building_castle_granary" level="3"/>
                     <Building id="building_castle_roads_and_paths" level="2"/>
                 </Buildings>
@@ -537,6 +995,17 @@
             </Town>
         </Components>
     </Settlement>
+    <!-- Jamayeh Castle [castle_A5]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: barracks 0 -> 1 -->
+    <Settlement id="castle_A5">
+        <Components>
+            <Town id="castle_comp_A5" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="1"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Shibal Zumr Castle [castle_A6]: Aserai frontier fortress with well-developed training: strengthen walls and garrison supply rather than adding more training. -->
     <!-- Changes: fortifications 2 -> 3; granary 0 -> 2; roads_and_paths 0 -> 1 -->
     <Settlement id="castle_A6">
@@ -550,76 +1019,137 @@
             </Town>
         </Components>
     </Settlement>
+    <!-- Barihal Castle [castle_A9]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: barracks 0 -> 1; training_fields 0 -> 1 -->
+    <Settlement id="castle_A9">
+        <Components>
+            <Town id="castle_comp_A9" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="1"/>
+                    <Building id="building_castle_training_fields" level="1"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Quyaz [town_A1]: Aserai political core and ancient trading metropolis: establish top-tier military institutions and mature commercial infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4000 -> 2550; fortifications 1 -> 3; barracks 2 -> 3; training_fields 1 -> 3; tax_office 1 -> 2; marketplace 1 -> 3; warehouse 1 -> 2; mason 0 -> 1; waterworks 0 -> 2; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4000 -> 1275; fortifications 1 -> 3; barracks 2 -> 3; training_fields 1 -> 3; tax_office 1 -> 3; marketplace 1 -> 3; warehouse 1 -> 3; mason 0 -> 2; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 3 -->
     <Settlement id="town_A1">
         <Components>
-            <Town id="town_comp_A1" is_castle="false" prosperity="2550">
+            <Town id="town_comp_A1" is_castle="false" prosperity="1275">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
-                    <Building id="building_settlement_tax_office" level="2"/>
+                    <Building id="building_settlement_tax_office" level="3"/>
                     <Building id="building_settlement_marketplace" level="3"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
-                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Husn Fulq [town_A2]: Frontier commercial and defensive crossroads: establish the missing market and civic infrastructure supporting trade. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4200 -> 2450; marketplace 0 -> 2; mason 0 -> 1; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2450 to 1225 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4200 -> 1225; tax_office 1 -> 2; marketplace 0 -> 2; mason 0 -> 1; waterworks 0 -> 2; courthouse 0 -> 2; roads_and_paths 0 -> 2 -->
     <Settlement id="town_A2">
         <Components>
-            <Town id="town_comp_A2" is_castle="false" prosperity="2450">
+            <Town id="town_comp_A2" is_castle="false" prosperity="1225">
                 <Buildings>
+                    <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_mason" level="1"/>
-                    <Building id="building_settlement_waterworks" level="1"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                     <Building id="building_settlement_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Iyakis [town_A3]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 1800 -> 1650 -->
-    <Settlement id="town_A3"><Components><Town id="town_comp_A3" is_castle="false" prosperity="1650"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1650 to 825 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1800 -> 825; marketplace 0 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 1 -> 2; courthouse 0 -> 1 -->
+    <Settlement id="town_A3">
+        <Components>
+            <Town id="town_comp_A3" is_castle="false" prosperity="825">
+                <Buildings>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="1"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Razih [town_A4]: Historic Aserai maritime trading city: develop marketplaces, warehouses, tax offices, and its transport network. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4500 -> 2550; tax_office 0 -> 2; marketplace 1 -> 3; warehouse 0 -> 2; waterworks 1 -> 2; roads_and_paths 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4500 -> 1275; barracks 0 -> 1; training_fields 0 -> 1; tax_office 0 -> 2; marketplace 1 -> 3; warehouse 0 -> 3; waterworks 1 -> 2; courthouse 1 -> 2; roads_and_paths 1 -> 3 -->
     <Settlement id="town_A4">
         <Components>
-            <Town id="town_comp_A4" is_castle="false" prosperity="2550">
+            <Town id="town_comp_A4" is_castle="false" prosperity="1275">
                 <Buildings>
+                    <Building id="building_settlement_barracks" level="1"/>
+                    <Building id="building_settlement_training_fields" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="3"/>
-                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Hubyar [town_A5]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 3200 -> 2100 -->
-    <Settlement id="town_A5"><Components><Town id="town_comp_A5" is_castle="false" prosperity="2100"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2100 to 1050 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3200 -> 1050; barracks 0 -> 1; training_fields 0 -> 1; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; waterworks 0 -> 2; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <Settlement id="town_A5">
+        <Components>
+            <Town id="town_comp_A5" is_castle="false" prosperity="1050">
+                <Buildings>
+                    <Building id="building_settlement_barracks" level="1"/>
+                    <Building id="building_settlement_training_fields" level="1"/>
+                    <Building id="building_settlement_tax_office" level="1"/>
+                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_warehouse" level="2"/>
+                    <Building id="building_settlement_mason" level="1"/>
+                    <Building id="building_settlement_waterworks" level="2"/>
+                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_roads_and_paths" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Sanala [town_A6]: Aserai agrarian and commercial center supported by fertile villages; normalize its starting prosperity to limit food pressure without weakening existing buildings. -->
-    <!-- Changes: prosperity 4300 -> 2650 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2650 to 1325 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4300 -> 1325; warehouse 2 -> 3; mason 1 -> 2; waterworks 2 -> 3; courthouse 1 -> 2; roads_and_paths 2 -> 3 -->
     <Settlement id="town_A6">
         <Components>
-            <Town id="town_comp_A6" is_castle="false" prosperity="2650">
+            <Town id="town_comp_A6" is_castle="false" prosperity="1325">
+                <Buildings>
+                    <Building id="building_settlement_warehouse" level="3"/>
+                    <Building id="building_settlement_mason" level="2"/>
+                    <Building id="building_settlement_waterworks" level="3"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
+                    <Building id="building_settlement_roads_and_paths" level="3"/>
+                </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Askar [town_A7]: Aserai agricultural center with grain-producing villages: improve marketplace, warehouses, irrigation, and processing. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 2100 -> 1750; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1750 to 875 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2100 -> 875; barracks 0 -> 1; training_fields 0 -> 1; tax_office 1 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; waterworks 1 -> 2 -->
     <Settlement id="town_A7">
         <Components>
-            <Town id="town_comp_A7" is_castle="false" prosperity="1750">
+            <Town id="town_comp_A7" is_castle="false" prosperity="875">
                 <Buildings>
+                    <Building id="building_settlement_barracks" level="1"/>
+                    <Building id="building_settlement_training_fields" level="1"/>
+                    <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
                     <Building id="building_settlement_mason" level="1"/>
@@ -629,50 +1159,119 @@
         </Components>
     </Settlement>
     <!-- Qasira [town_A8]: Established Aserai regional city: bring trade, water, taxation, and public works up to the standard of a prosperous center. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3500 -> 2550; tax_office 1 -> 2; marketplace 1 -> 2; waterworks 1 -> 2; courthouse 0 -> 1; roads_and_paths 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3500 -> 1275; training_fields 0 -> 1; tax_office 1 -> 2; marketplace 1 -> 3; warehouse 2 -> 3; waterworks 1 -> 2; courthouse 0 -> 2; roads_and_paths 1 -> 2 -->
     <Settlement id="town_A8">
         <Components>
-            <Town id="town_comp_A8" is_castle="false" prosperity="2550">
+            <Town id="town_comp_A8" is_castle="false" prosperity="1275">
                 <Buildings>
+                    <Building id="building_settlement_training_fields" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
-                    <Building id="building_settlement_marketplace" level="2"/>
+                    <Building id="building_settlement_marketplace" level="3"/>
+                    <Building id="building_settlement_warehouse" level="3"/>
                     <Building id="building_settlement_waterworks" level="2"/>
-                    <Building id="building_settlement_courthouse" level="1"/>
+                    <Building id="building_settlement_courthouse" level="2"/>
                     <Building id="building_settlement_roads_and_paths" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
+    <!-- Usanc Castle [castle_V1]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: barracks 2 -> 3 -->
+    <Settlement id="castle_V1">
+        <Components>
+            <Town id="castle_comp_V1" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="3"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Hongard Castle [castle_V2]: Productive Vlandian agricultural estate with wheat and olives: improve management and granary space. -->
-    <!-- Changes: castallans_office 0 -> 1; granary 1 -> 2 -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2; castallans_office 0 -> 1; granary 1 -> 2 -->
     <Settlement id="castle_V2">
         <Components>
             <Town id="castle_comp_V2" is_castle="true">
                 <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
                     <Building id="building_castle_castallans_office" level="1"/>
                     <Building id="building_castle_granary" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
+    <!-- Drapand Castle [castle_V3]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2 -->
+    <Settlement id="castle_V3">
+        <Components>
+            <Town id="castle_comp_V3" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Ormanfard Castle [castle_V4]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: barracks 1 -> 2; training_fields 1 -> 2 -->
+    <Settlement id="castle_V4">
+        <Components>
+            <Town id="castle_comp_V4" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Tirby Castle [castle_V5]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: fortifications 1 -> 2; barracks 1 -> 2; training_fields 1 -> 2 -->
+    <Settlement id="castle_V5">
+        <Components>
+            <Town id="castle_comp_V5" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_fortifications" level="2"/>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
+    <!-- Talivel Castle [castle_V7]: New V7 override for its military culture role. Every changed building is listed below. -->
+    <!-- Changes: barracks 1 -> 2; training_fields 1 -> 2 -->
+    <Settlement id="castle_V7">
+        <Components>
+            <Town id="castle_comp_V7" is_castle="true">
+                <Buildings>
+                    <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Verecsand Castle [castle_V8]: Eastern Vlandian border castle: expand barracks, walls, and food storage. -->
-    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; granary 1 -> 2 -->
+    <!-- Changes: fortifications 1 -> 2; barracks 0 -> 2; training_fields 1 -> 2; granary 1 -> 2 -->
     <Settlement id="castle_V8">
         <Components>
             <Town id="castle_comp_V8" is_castle="true">
                 <Buildings>
                     <Building id="building_castle_fortifications" level="2"/>
                     <Building id="building_castle_barracks" level="2"/>
+                    <Building id="building_castle_training_fields" level="2"/>
                     <Building id="building_castle_granary" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Sargot [town_V1]: Vlandian ruling center: reinforce royal defenses, military training, and the economic services of a major city. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4500 -> 2550; fortifications 2 -> 3; barracks 2 -> 3; training_fields 1 -> 3; marketplace 0 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; roads_and_paths 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2550 to 1275 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4500 -> 1275; fortifications 2 -> 3; barracks 2 -> 3; training_fields 1 -> 3; marketplace 0 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; roads_and_paths 1 -> 2 -->
     <Settlement id="town_V1">
         <Components>
-            <Town id="town_comp_V1" is_castle="false" prosperity="2550">
+            <Town id="town_comp_V1" is_castle="false" prosperity="1275">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
@@ -686,15 +1285,27 @@
         </Components>
     </Settlement>
     <!-- Ocs Hall [town_V2]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 4200 -> 2450 -->
-    <Settlement id="town_V2"><Components><Town id="town_comp_V2" is_castle="false" prosperity="2450"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2450 to 1225 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4200 -> 1225; training_fields 1 -> 2 -->
+    <Settlement id="town_V2">
+        <Components>
+            <Town id="town_comp_V2" is_castle="false" prosperity="1225">
+                <Buildings>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Pravend [town_V3]: Former imperial capital and historic western economic center: restore major city defenses and strengthen administration, storage, and municipal services. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3200 -> 2100; fortifications 1 -> 3; guard_house 0 -> 1; tax_office 1 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2100 to 1050 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3200 -> 1050; fortifications 1 -> 3; barracks 1 -> 2; training_fields 0 -> 2; guard_house 0 -> 1; tax_office 1 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
     <Settlement id="town_V3">
         <Components>
-            <Town id="town_comp_V3" is_castle="false" prosperity="2100">
+            <Town id="town_comp_V3" is_castle="false" prosperity="1050">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
                     <Building id="building_settlement_guard_house" level="1"/>
                     <Building id="building_settlement_tax_office" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
@@ -704,24 +1315,29 @@
         </Components>
     </Settlement>
     <!-- Galend [town_V5]: Western Vlandian regional port and frontier town: improve its weak starting defenses with a second-tier wall and a basic permanent barracks. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 1900 -> 1650; fortifications 1 -> 2; barracks 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1650 to 825 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1900 -> 825; fortifications 1 -> 2; barracks 0 -> 2; training_fields 0 -> 2 -->
     <Settlement id="town_V5">
         <Components>
-            <Town id="town_comp_V5" is_castle="false" prosperity="1650">
+            <Town id="town_comp_V5" is_castle="false" prosperity="825">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="2"/>
-                    <Building id="building_settlement_barracks" level="1"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
                 </Buildings>
             </Town>
         </Components>
     </Settlement>
     <!-- Jaculan [town_V6]: Major Vlandian olive-producing center with four villages: provide better city walls alongside regional trade and storage facilities. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4000 -> 2350; fortifications 1 -> 2; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; waterworks 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4000 -> 1175; fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2; tax_office 0 -> 1; marketplace 0 -> 2; warehouse 0 -> 2; mason 0 -> 1; waterworks 1 -> 2 -->
     <Settlement id="town_V6">
         <Components>
-            <Town id="town_comp_V6" is_castle="false" prosperity="2350">
+            <Town id="town_comp_V6" is_castle="false" prosperity="1175">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
                     <Building id="building_settlement_tax_office" level="1"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
@@ -732,11 +1348,13 @@
         </Components>
     </Settlement>
     <!-- Charas [town_V7]: Historic Calradian coastal settlement and trade port: improve commerce, warehouses, waterworks, and roads. Native walls level 2 and barracks level 2 already meet or exceed the requested targets; preserve both. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3000 -> 2050; marketplace 1 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2050 to 1025 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3000 -> 1025; training_fields 1 -> 2; marketplace 1 -> 2; warehouse 1 -> 2; waterworks 0 -> 1; courthouse 0 -> 1; roads_and_paths 0 -> 2 -->
     <Settlement id="town_V7">
         <Components>
-            <Town id="town_comp_V7" is_castle="false" prosperity="2050">
+            <Town id="town_comp_V7" is_castle="false" prosperity="1025">
                 <Buildings>
+                    <Building id="building_settlement_training_fields" level="2"/>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
                     <Building id="building_settlement_waterworks" level="1"/>
@@ -747,11 +1365,33 @@
         </Components>
     </Settlement>
     <!-- Ostican [town_V8]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 3900 -> 2350 -->
-    <Settlement id="town_V8"><Components><Town id="town_comp_V8" is_castle="false" prosperity="2350"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3900 -> 1175; fortifications 1 -> 2; barracks 0 -> 2; training_fields 1 -> 2 -->
+    <Settlement id="town_V8">
+        <Components>
+            <Town id="town_comp_V8" is_castle="false" prosperity="1175">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Rovalt [town_V9]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 2800 -> 1950 -->
-    <Settlement id="town_V9"><Components><Town id="town_comp_V9" is_castle="false" prosperity="1950"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1950 to 975 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2800 -> 975; fortifications 1 -> 2; barracks 1 -> 2; training_fields 0 -> 2 -->
+    <Settlement id="town_V9">
+        <Components>
+            <Town id="town_comp_V9" is_castle="false" prosperity="975">
+                <Buildings>
+                    <Building id="building_settlement_fortifications" level="2"/>
+                    <Building id="building_settlement_barracks" level="2"/>
+                    <Building id="building_settlement_training_fields" level="2"/>
+                </Buildings>
+            </Town>
+        </Components>
+    </Settlement>
     <!-- Ab Comer Castle [castle_B1]: Battanian frontier castle with minimal support infrastructure: develop barracks and granary. -->
     <!-- Changes: barracks 0 -> 2; granary 0 -> 2 -->
     <Settlement id="castle_B1">
@@ -794,10 +1434,11 @@
         </Components>
     </Settlement>
     <!-- Marunath [town_B1]: Battanian ruling center with four bound villages: complete its military institutions and provide a more substantial civic base. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 5000 -> 2700; barracks 2 -> 3; training_fields 0 -> 3; tax_office 0 -> 1; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; roads_and_paths 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2700 to 1350 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 5000 -> 1350; barracks 2 -> 3; training_fields 0 -> 3; tax_office 0 -> 1; marketplace 1 -> 2; warehouse 1 -> 2; mason 0 -> 1; roads_and_paths 1 -> 2 -->
     <Settlement id="town_B1">
         <Components>
-            <Town id="town_comp_B1" is_castle="false" prosperity="2700">
+            <Town id="town_comp_B1" is_castle="false" prosperity="1350">
                 <Buildings>
                     <Building id="building_settlement_barracks" level="3"/>
                     <Building id="building_settlement_training_fields" level="3"/>
@@ -811,10 +1452,11 @@
         </Components>
     </Settlement>
     <!-- Dunglanys [town_B2]: Traditional Battanian kingship and ceremonial center: strengthen its civic institutions and defensive readiness. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 4000 -> 2350; fortifications 1 -> 2; training_fields 1 -> 2; tax_office 0 -> 1; warehouse 0 -> 1; mason 0 -> 1; waterworks 0 -> 1; courthouse 0 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 4000 -> 1175; fortifications 1 -> 2; training_fields 1 -> 2; tax_office 0 -> 1; warehouse 0 -> 1; mason 0 -> 1; waterworks 0 -> 1; courthouse 0 -> 2 -->
     <Settlement id="town_B2">
         <Components>
-            <Town id="town_comp_B2" is_castle="false" prosperity="2350">
+            <Town id="town_comp_B2" is_castle="false" prosperity="1175">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="2"/>
                     <Building id="building_settlement_training_fields" level="2"/>
@@ -828,13 +1470,19 @@
         </Components>
     </Settlement>
     <!-- Car Banseth [town_B3]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 2200 -> 1750 -->
-    <Settlement id="town_B3"><Components><Town id="town_comp_B3" is_castle="false" prosperity="1750"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1750 to 875 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2200 -> 875 -->
+    <Settlement id="town_B3">
+        <Components>
+            <Town id="town_comp_B3" is_castle="false" prosperity="875"/>
+        </Components>
+    </Settlement>
     <!-- Seonon [town_B4]: Battanian regional center with four bound villages: strengthen its market, warehouses, and local manufacturing base. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 2400 -> 1850; marketplace 0 -> 2; warehouse 0 -> 2; mason 1 -> 2 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1850 to 925 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 2400 -> 925; marketplace 0 -> 2; warehouse 0 -> 2; mason 1 -> 2 -->
     <Settlement id="town_B4">
         <Components>
-            <Town id="town_comp_B4" is_castle="false" prosperity="1850">
+            <Town id="town_comp_B4" is_castle="false" prosperity="925">
                 <Buildings>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
@@ -844,8 +1492,13 @@
         </Components>
     </Settlement>
     <!-- Pen Cannoc [town_B5]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 3800 -> 2300 -->
-    <Settlement id="town_B5"><Components><Town id="town_comp_B5" is_castle="false" prosperity="2300"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2300 to 1150 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3800 -> 1150 -->
+    <Settlement id="town_B5">
+        <Components>
+            <Town id="town_comp_B5" is_castle="false" prosperity="1150"/>
+        </Components>
+    </Settlement>
     <!-- Erzenur Castle [castle_K8]: Khuzait frontier position against the empire: reinforce defenses, garrison administration, and food storage. -->
     <!-- Changes: fortifications 2 -> 3; barracks 1 -> 2; castallans_office 0 -> 1; granary 0 -> 1; roads_and_paths 0 -> 1 -->
     <Settlement id="castle_K8">
@@ -876,16 +1529,27 @@
         </Components>
     </Settlement>
     <!-- Baltakhand [town_K1]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 1800 -> 1650 -->
-    <Settlement id="town_K1"><Components><Town id="town_comp_K1" is_castle="false" prosperity="1650"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1650 to 825 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1800 -> 825 -->
+    <Settlement id="town_K1">
+        <Components>
+            <Town id="town_comp_K1" is_castle="false" prosperity="825"/>
+        </Components>
+    </Settlement>
     <!-- Akkalat [town_K2]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 1700 -> 1600 -->
-    <Settlement id="town_K2"><Components><Town id="town_comp_K2" is_castle="false" prosperity="1600"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1600 to 800 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1700 -> 800 -->
+    <Settlement id="town_K2">
+        <Components>
+            <Town id="town_comp_K2" is_castle="false" prosperity="800"/>
+        </Components>
+    </Settlement>
     <!-- Makeb [town_K3]: Khuzait lake-crossing and toll-collection hub: strengthen the walls and local security, expand siege support, and mature the market, transport, and civic infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3700 -> 2250; fortifications 2 -> 3; guard_house 1 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 2; marketplace 0 -> 3; warehouse 1 -> 3; mason 0 -> 1; waterworks 0 -> 2; roads_and_paths 0 -> 3 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2250 to 1125 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3700 -> 1125; fortifications 2 -> 3; guard_house 1 -> 2; siege_workshop 0 -> 1; tax_office 1 -> 2; marketplace 0 -> 3; warehouse 1 -> 3; mason 0 -> 1; waterworks 0 -> 2; roads_and_paths 0 -> 3 -->
     <Settlement id="town_K3">
         <Components>
-            <Town id="town_comp_K3" is_castle="false" prosperity="2250">
+            <Town id="town_comp_K3" is_castle="false" prosperity="1125">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_guard_house" level="2"/>
@@ -901,10 +1565,11 @@
         </Components>
     </Settlement>
     <!-- Ortongard [town_K4]: Khuzait livestock trading center: strengthen marketplace, storage, and merchant services. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3200 -> 2100; marketplace 1 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2100 to 1050 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3200 -> 1050; marketplace 1 -> 2; warehouse 0 -> 2; mason 0 -> 1 -->
     <Settlement id="town_K4">
         <Components>
-            <Town id="town_comp_K4" is_castle="false" prosperity="2100">
+            <Town id="town_comp_K4" is_castle="false" prosperity="1050">
                 <Buildings>
                     <Building id="building_settlement_marketplace" level="2"/>
                     <Building id="building_settlement_warehouse" level="2"/>
@@ -914,10 +1579,11 @@
         </Components>
     </Settlement>
     <!-- Chaikand [town_K5]: Khuzait ruling-clan capital and major lake-trade gateway: retain its maximum-tier core military buildings, reinforce urban defenses and siege facilities, and establish advanced commercial and civic infrastructure. Starting prosperity is scaled down to reduce early-campaign food demand. -->
-    <!-- Changes: prosperity 3900 -> 2350; fortifications 1 -> 3; barracks 2 -> 3; training_fields 1 -> 3; guard_house 1 -> 2; siege_workshop 0 -> 2; tax_office 2 -> 3; marketplace 1 -> 3; warehouse 1 -> 3; mason 1 -> 2; waterworks 0 -> 2; courthouse 1 -> 2; roads_and_paths 0 -> 3 -->
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 2350 to 1175 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 3900 -> 1175; fortifications 1 -> 3; barracks 2 -> 3; training_fields 1 -> 3; guard_house 1 -> 2; siege_workshop 0 -> 2; tax_office 2 -> 3; marketplace 1 -> 3; warehouse 1 -> 3; mason 1 -> 2; waterworks 0 -> 2; courthouse 1 -> 2; roads_and_paths 0 -> 3 -->
     <Settlement id="town_K5">
         <Components>
-            <Town id="town_comp_K5" is_castle="false" prosperity="2350">
+            <Town id="town_comp_K5" is_castle="false" prosperity="1175">
                 <Buildings>
                     <Building id="building_settlement_fortifications" level="3"/>
                     <Building id="building_settlement_barracks" level="3"/>
@@ -936,6 +1602,11 @@
         </Components>
     </Settlement>
     <!-- Odokh [town_K6]: Reduce high initial urban food demand while preserving this town's position in the regional prosperity hierarchy. -->
-    <!-- Changes: prosperity 1700 -> 1600 -->
-    <Settlement id="town_K6"><Components><Town id="town_comp_K6" is_castle="false" prosperity="1600"/></Components></Settlement>
+    <!-- V9 prosperity adjustment: reduce starting prosperity from V8 1600 to 800 to ease initial food demand and reduce starvation-driven unrest; all building upgrades are retained. -->
+    <!-- Changes: prosperity 1700 -> 800 -->
+    <Settlement id="town_K6">
+        <Components>
+            <Town id="town_comp_K6" is_castle="false" prosperity="800"/>
+        </Components>
+    </Settlement>
 </Settlements>
