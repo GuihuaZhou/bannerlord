@@ -19,6 +19,7 @@ using ModifiedArmy.SettlementInspection.Behaviors;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.ForceManagement.Transport;
+using ModifiedArmy.Population.Contracts;
 using ModifiedArmy.Tool;
 using System.Collections.Generic;
 using System.Reflection;
@@ -102,6 +103,7 @@ namespace ModifiedArmy
                 // Clearing here prevents a previous campaign registration from
                 // leaking into the next campaign lifecycle.
                 WarDispositionProviderRegistry.Clear();
+                SettlementPopulationServiceRegistry.Clear();
 
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup",

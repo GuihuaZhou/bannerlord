@@ -1,6 +1,7 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.common;
+using ModifiedArmy.Population.Contracts;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using System;
@@ -187,6 +188,22 @@ namespace ModifiedArmy.Models.Fief
             if (actualHearthCost <= 0)
                 return 0;
 
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            if (population == null)
+            {
+                ModLogger.FileWarn(string.Format(
+                    "Fief Hearth update rejected: fief={0}, id={1}, " +
+                    "amount={2:F2}, reason=PopulationServiceUnavailable.",
+                    _settlement.Name,
+                    _settlement.StringId,
+                    actualHearthCost));
+                return 0;
+            }
+            var committedOperations =
+                new List<(Settlement Settlement, string OperationId)>();
+            float committedAmount = 0f;
+
             // ============================================================
             // 计算总变化量
             // ============================================================
@@ -243,8 +260,19 @@ namespace ModifiedArmy.Models.Fief
                             newHearth);
                 }
 
-                village.Hearth =
-                    newHearth;
+                float applied = newHearth - village.Hearth;
+                if (!TryApplyPopulationChange(
+                        population,
+                        village.Settlement,
+                        applied,
+                        committedOperations,
+                        ref committedAmount))
+                {
+                    RollbackPopulationChanges(
+                        population,
+                        committedOperations);
+                    return 0f;
+                }
             }
 
             // ============================================================
@@ -283,11 +311,87 @@ namespace ModifiedArmy.Models.Fief
                             newHearth);
                 }
 
-                village.Hearth =
-                    newHearth;
+                float applied = newHearth - village.Hearth;
+                if (!TryApplyPopulationChange(
+                        population,
+                        village.Settlement,
+                        applied,
+                        committedOperations,
+                        ref committedAmount))
+                {
+                    RollbackPopulationChanges(
+                        population,
+                        committedOperations);
+                    return 0f;
+                }
             }
 
-            return actualHearthCost;
+            return committedAmount;
+        }
+
+        private bool TryApplyPopulationChange(
+            ISettlementPopulationService population,
+            Settlement village,
+            float change,
+            ICollection<(Settlement Settlement, string OperationId)> commits,
+            ref float committedAmount)
+        {
+            if (Math.Abs(change) <= 0.0001f) return true;
+            string operationId = "fief-economy:" +
+                Guid.NewGuid().ToString("N");
+            PopulationTransactionResult result = change > 0f
+                ? population.TryRestore(village, change, operationId)
+                : population.TryConsume(village, -change, operationId);
+            if (result?.IsCommitted == true)
+            {
+                commits.Add((village, operationId));
+                committedAmount += Math.Abs(change);
+                return true;
+            }
+
+            ModLogger.FileWarn(string.Format(
+                "Fief Hearth update rejected: fief={0}, village={1}, " +
+                "operation={2}, amount={3:F2}, reason={4}.",
+                _settlement.Name,
+                village?.Name,
+                operationId,
+                Math.Abs(change),
+                result?.ReasonCode ?? "Unknown"));
+            return false;
+        }
+
+        private void RollbackPopulationChanges(
+            ISettlementPopulationService population,
+            IEnumerable<(Settlement Settlement, string OperationId)> commits)
+        {
+            foreach (var commit in commits.Reverse())
+            {
+                PopulationTransactionResult result = population.TryCompensate(
+                    commit.Settlement,
+                    commit.OperationId);
+                if (result?.Status ==
+                    PopulationTransactionStatus.Compensated)
+                {
+                    continue;
+                }
+
+                if (Villages != null &&
+                    Villages.TryGetValue(
+                        commit.Settlement,
+                        out VillageFiefData village))
+                {
+                    village.RequireRecovery(
+                        "PopulationCompensationFailed",
+                        commit.OperationId);
+                }
+                ModLogger.FileError(string.Format(
+                    "Fief Hearth rollback failed: fief={0}, village={1}, " +
+                    "operation={2}, reason={3}.",
+                    _settlement.Name,
+                    commit.Settlement?.Name,
+                    commit.OperationId,
+                    result?.ReasonCode ?? "Unknown"));
+            }
         }
     }
 }

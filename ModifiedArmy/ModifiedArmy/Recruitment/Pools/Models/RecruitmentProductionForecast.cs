@@ -22,6 +22,7 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         }
         public float ExternalTrainingBonusRate { get; internal set; }
         public float ProfessionalTrainingCapacity { get; internal set; }
+        public float ProfessionalPopulationSupply { get; internal set; }
         public float ProfessionalAllocation { get; internal set; }
         public float FiefDemand { get; internal set; }
         public float FiefAllocation { get; internal set; }

@@ -94,6 +94,15 @@ namespace ModifiedArmy.Tool
             Display(LogLevel.Error, message, color ?? ErrorColor);
         }
 
+        public static void FileDebug(string message) =>
+            WriteToFile(LogLevel.Debug, message);
+        public static void FileInfo(string message) =>
+            WriteToFile(LogLevel.Info, message);
+        public static void FileWarn(string message) =>
+            WriteToFile(LogLevel.Warn, message);
+        public static void FileError(string message) =>
+            WriteToFile(LogLevel.Error, message);
+
         private static void Display(
             LogLevel level,
             string message,

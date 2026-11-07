@@ -1,4 +1,5 @@
 using ModifiedArmy.common;
+using ModifiedArmy.Population.Contracts;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
 using ModifiedArmy.Recruitment.Pools.Models;
@@ -109,7 +110,6 @@ namespace ModifiedArmy.Models.Fief
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
             CampaignEvents.AfterSiegeCompletedEvent.AddNonSerializedListener(this, new Action<Settlement, MobileParty, bool, MapEvent.BattleTypes>(this.OnAfterSiegeCompleted));
             CampaignEvents.OnSettlementOwnerChangedEvent.AddNonSerializedListener(this, new Action<Settlement, bool, Hero, Hero, Hero, ChangeOwnerOfSettlementAction.ChangeOwnerOfSettlementDetail>(this.OnSettlementOwnerChanged));
-            CampaignEvents.OnTroopRecruitedEvent.AddNonSerializedListener(this, new Action<Hero, Settlement, Hero, CharacterObject, int>(this.OnTroopRecruited));
             CampaignEvents.OnPartyRemovedEvent.AddNonSerializedListener(this, OnPartyRemoved);
             CampaignEvents.MobilePartyCreated.AddNonSerializedListener(
                 this, OnMobilePartyCreated);
@@ -138,6 +138,13 @@ namespace ModifiedArmy.Models.Fief
                 InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
             ReconcileMobilization();
+            if (SettlementPopulationServiceRegistry.Current == null)
+            {
+                ModLogger.FileError(
+                    "Population integration unavailable at session launch; " +
+                    "population-backed recruitment and mobilization are " +
+                    "disabled. reason=PopulationServiceUnavailable.");
+            }
             IsSessionReady = true;
             ModLogger.Info(string.Format(
                 "Fief runtime session ready: fiefs={0}.",
@@ -251,7 +258,7 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
             if (repairedVillages > 0)
-                ModLogger.Warn(string.Format(
+                ModLogger.FileWarn(string.Format(
                     "Invalid feudal troop cleanup completed: villages={0}, servingRemoved={1}, coolingRemoved={2}.",
                     repairedVillages, servingRemoved, coolingRemoved));
         }
@@ -602,16 +609,16 @@ namespace ModifiedArmy.Models.Fief
             CharacterObject troop, int count)
         {
             return TryConsumeProfessionalHearth(
-                source, troop, count, out Dictionary<Settlement, int> _);
+                source, troop, count, out string _);
         }
 
         internal bool TryConsumeProfessionalHearth(
             Settlement source,
             CharacterObject troop,
             int count,
-            out Dictionary<Settlement, int> consumedByVillage)
+            out string operationId)
         {
-            consumedByVillage = new Dictionary<Settlement, int>();
+            operationId = null;
             if (source == null || troop == null || count <= 0) return false;
             int costPerTroop;
             int required;
@@ -630,116 +637,55 @@ namespace ModifiedArmy.Models.Fief
                     exception.Message));
                 return false;
             }
-            List<Village> villages = source.IsVillage
-                ? new List<Village> { source.Village }
-                : source.BoundVillages.Where(v => v?.Settlement != null).ToList();
-            villages = villages
-                .Where(v => v?.VillageState == Village.VillageStates.Normal)
-                .OrderBy(v => v.Settlement.StringId)
-                .ToList();
-            if (villages.Count == 0) return false;
-            var capacities = new Dictionary<Village, int>();
-            foreach (Village village in villages)
+            ISettlementPopulationService population = SettlementPopulationServiceRegistry.Current;
+            if (population == null)
             {
-                VillageFiefData villageData = GetVillageFiefData(
-                    village.Settlement);
-                FiefPartyData fief = GetFiefData(village.Settlement
-                    .Village?.Bound);
-                if (villageData == null || fief == null ||
-                    villageData.RecoveryRequired) continue;
-                try
-                {
-                    int floorCapacity = Math.Max(0,
-                        (int)Math.Floor(village.Hearth - 100f));
-                    int supplyCapacity = Math.Max(0,
-                        villageData.GetFreeSupplyHearth(
-                            fief.GetFiefPartyTemplate(),
-                            MilitaryConfigManager.Instance
-                                .RequireActiveConfig().GetDoctrine(
-                                    village.Settlement.Village.Bound)));
-                    capacities[village] = Math.Min(
-                        floorCapacity, supplyCapacity);
-                }
-                catch (Exception exception)
-                {
-                    ModLogger.Error(string.Format(
-                        "Professional Hearth capacity rejected: village={0}, troop={1}, reason={2}.",
-                        village.Settlement.StringId, troop.StringId,
-                        exception.Message));
-                    return false;
-                }
-            }
-            if (capacities.Values.Sum(value => (long)value) < required)
+                ModLogger.Warn(string.Format(
+                    "Professional population transaction rejected: " +
+                    "settlement={0}, id={1}, troop={2}, count={3}, " +
+                    "reason=PopulationServiceUnavailable.",
+                    source.Name,
+                    source.StringId,
+                    troop.Name,
+                    count));
                 return false;
-            int remaining = required;
-            while (remaining > 0)
-            {
-                foreach (Village village in villages)
-                {
-                    if (remaining <= 0) break;
-                    if (!capacities.TryGetValue(village, out int available) ||
-                        available <= 0) continue;
-                    consumedByVillage[village.Settlement] =
-                        consumedByVillage.TryGetValue(
-                            village.Settlement, out int consumed)
-                                ? consumed + 1
-                                : 1;
-                    capacities[village] = available - 1;
-                    remaining--;
-                }
             }
-            var applied = new Dictionary<Settlement, int>();
-            try
+            operationId = "professional:" + Guid.NewGuid().ToString("N");
+            PopulationTransactionResult result = population.TryConsume(source, required, operationId);
+            if (result?.IsCommitted != true)
             {
-                foreach (var pair in consumedByVillage)
-                {
-                    pair.Key.Village.Hearth -= pair.Value;
-                    applied[pair.Key] = pair.Value;
-                }
-                foreach (Settlement village in consumedByVillage.Keys)
-                {
-                    VillageFiefData data = GetVillageFiefData(village);
-                    FiefPartyData fief = GetFiefData(village.Village?.Bound);
-                    if (village.Village.Hearth < 100f || data == null ||
-                        fief == null || data.GetFreeSupplyHearth(
-                            fief.GetFiefPartyTemplate(),
-                            MilitaryConfigManager.Instance
-                                .RequireActiveConfig().GetDoctrine(
-                                    village.Village.Bound)) < 0)
-                        throw new InvalidOperationException(
-                            "ProfessionalHearthPostCommitValidationFailed");
-                }
                 if (source.OwnerClan == Clan.PlayerClan)
-                    ModLogger.Debug(string.Format(
-                        "Professional Hearth committed: source={0}, troop={1}, tier={2}, count={3}, unitCost={4}, totalCost={5}, villages={6}.",
-                        source.StringId, troop.StringId, troop.Tier, count,
-                        costPerTroop, required,
-                        string.Join(",", consumedByVillage.OrderBy(pair =>
-                            pair.Key.StringId).Select(pair =>
-                            pair.Key.StringId + ":" + pair.Value))));
-                return true;
-            }
-            catch (Exception exception)
-            {
-                foreach (var pair in applied)
-                    if (pair.Key?.Village != null)
-                        pair.Key.Village.Hearth += pair.Value;
-                consumedByVillage.Clear();
-                ModLogger.Error(string.Format(
-                    "Professional Hearth transaction rolled back: source={0}, troop={1}, count={2}, reason={3}.",
-                    source.StringId, troop.StringId, count,
-                    exception.Message));
+                    ModLogger.FileWarn(string.Format(
+                        "Professional population transaction rejected: " +
+                        "settlement={0}, id={1}, troop={2}, count={3}, " +
+                        "hearth={4:F2}, required={5}, reason={6}.",
+                        source.Name,
+                        source.StringId,
+                        troop.Name,
+                        count,
+                        result?.HearthBefore ?? 0f,
+                        required,
+                        result?.ReasonCode ?? "Unknown"));
+                operationId = null;
                 return false;
             }
+            return true;
         }
 
-        internal void RollbackProfessionalHearth(
-            IReadOnlyDictionary<Settlement, int> consumedByVillage)
+        internal bool RollbackProfessionalHearth(
+            Settlement source, string operationId)
         {
-            if (consumedByVillage == null) return;
-            foreach (var pair in consumedByVillage)
-                if (pair.Key?.Village != null && pair.Value > 0)
-                    pair.Key.Village.Hearth += pair.Value;
+            if (source == null || string.IsNullOrEmpty(operationId)) return false;
+            PopulationTransactionResult result = SettlementPopulationServiceRegistry
+                .Current?.TryCompensate(source, operationId);
+            if (result?.Status == PopulationTransactionStatus.RecoveryRequired)
+            {
+                GetVillageFiefData(source)?.RequireRecovery(
+                    result.ReasonCode ?? "PopulationCompensationFailed",
+                    operationId);
+            }
+            return result?.Status ==
+                PopulationTransactionStatus.Compensated;
         }
 
         /// <summary>
@@ -1732,49 +1678,5 @@ namespace ModifiedArmy.Models.Fief
             }
         }
 
-        /// <summary>
-        /// 监听招募事件，扣除定居点繁荣度/户数。
-        ///
-        /// 优先使用对应文化的 FiefPartyTemplate 中的
-        /// Professional Hearth cost is resolved globally by troop Tier.
-        ///
-        /// 若无模板则使用默认 fallback 值。
-        /// </summary>
-        ///
-        private void OnTroopRecruited(
-            Hero recruiter,
-            Settlement settlement,
-            Hero recruitmentSource,
-            CharacterObject troop,
-            int count)
-        {
-            // 安全检查
-            if (settlement == null || count <= 0)
-                return;
-
-            if (troop.Occupation != Occupation.Soldier)
-                return;
-
-            // ============================================================
-            // New professional recruits permanently consume tier-based Hearth.
-            // They do not create a mobilized-hearth liability. Prisoner
-            // recruitment emits this event with no settlement and is excluded.
-            if (settlement.IsVillage || settlement.IsTown || settlement.IsCastle)
-            {
-                bool accepted = TryConsumeProfessionalHearth(
-                    settlement, troop, count);
-                int rejected = accepted ? 0 : count;
-
-                // The native event is raised after recruitment. Roll back only
-                // unsupported recruitment so the 100-hearth floor remains real.
-                if (rejected > 0 && recruiter?.PartyBelongedTo != null)
-                {
-                    TroopRoster roster = recruiter.PartyBelongedTo.MemberRoster;
-                    int removable = Math.Min(rejected, roster.GetElementNumber(troop));
-                    if (removable > 0)
-                        roster.RemoveTroop(troop, removable, default(UniqueTroopDescriptor), 0);
-                }
-            }
-        }
     }
 }

@@ -167,7 +167,7 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
-            var hearthCommits = new List<Dictionary<Settlement, int>>();
+            var hearthCommits = new List<string>();
             var targetSnapshots = targets.ToDictionary(pair => pair.Key,
                 pair => GetCounts(garrison.MemberRoster, pair.Key));
             try
@@ -185,10 +185,10 @@ namespace ModifiedArmy.Models.Fief
                 {
                     if (!manager.TryConsumeProfessionalHearth(
                         fief, target.Key, target.Value,
-                        out Dictionary<Settlement, int> hearth))
+                        out string hearthOperationId))
                         throw new InvalidOperationException(
                             "InsufficientProfessionalHearth");
-                    hearthCommits.Add(hearth);
+                    hearthCommits.Add(hearthOperationId);
                     garrison.MemberRoster.AddToCounts(target.Key,
                         target.Value, false, 0, 0, true, -1);
                     (int Count, int Wounded) after = GetCounts(
@@ -211,8 +211,10 @@ namespace ModifiedArmy.Models.Fief
                     target in targetSnapshots)
                     restored &= TryRestore(garrison.MemberRoster, target.Key,
                         target.Value.Count, target.Value.Wounded);
-                foreach (Dictionary<Settlement, int> hearth in hearthCommits)
-                    manager.RollbackProfessionalHearth(hearth);
+                foreach (string hearthOperationId in hearthCommits)
+                    restored &= manager.RollbackProfessionalHearth(
+                        fief,
+                        hearthOperationId);
                 if (!restored)
                     village.RequireRecovery("ConversionRollbackFailed");
                 reason = !restored ? "RecoveryRequired" :

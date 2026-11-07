@@ -12,6 +12,7 @@ using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.SettlementEconomy.Config;
 using ModifiedPolitics.SettlementEconomy.Models;
+using ModifiedPolitics.SettlementEconomy.Behaviors;
 using ModifiedPolitics.Tool;
 using ModifiedPolitics.WarDisposition.Integration;
 using ModifiedArmy.ForceManagement.Services;
@@ -63,12 +64,11 @@ namespace ModifiedPolitics
                 }
                 catch (Exception exception)
                 {
-                    // Missing or malformed optional configuration must not
-                    // prevent a campaign from loading; the manager keeps 34.
                     SettlementEconomyConfigManager.Instance.Clear();
                     ModLogger.Warn(
                         "[Settlement Economy] Configuration load failed; " +
-                        "using prosperity divisor 34. " + exception.Message);
+                        "campaign population settlement is disabled. " + exception.Message);
+                    throw;
                 }
                 // Register and load policy objects through Bannerlord's standard XML object pipeline.
                 GovernorPolicyManager.Instance.Clear();
@@ -113,6 +113,7 @@ namespace ModifiedPolitics
                 campaignStarter.AddModel(new OfficeSettlementLoyaltyModel());
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
+                campaignStarter.AddBehavior(new SettlementPopulationBehavior());
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new HeroOfficeBehavior());

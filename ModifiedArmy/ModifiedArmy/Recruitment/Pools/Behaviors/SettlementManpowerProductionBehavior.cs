@@ -12,6 +12,7 @@ using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Preferences.Behaviors;
 using ModifiedArmy.Recruitment.Preferences.Models;
+using ModifiedArmy.Population.Contracts;
 
 namespace ModifiedArmy.Recruitment.Pools.Behaviors
 {
@@ -20,7 +21,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         public Settlement Settlement { get; set; }
         public CharacterObject Troop { get; set; }
         public int Count { get; set; }
-        public Dictionary<Settlement, int> ConsumedHearth { get; set; }
+        public string PopulationOperationId { get; set; }
     }
 
     /// <summary>
@@ -288,7 +289,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     settlement,
                     troop,
                     count,
-                    out Dictionary<Settlement, int> consumedHearth))
+                    out string populationOperationId))
             {
                 LogOfferConsumption(
                     settlement,
@@ -314,7 +315,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 Settlement = settlement,
                 Troop = troop,
                 Count = count,
-                ConsumedHearth = consumedHearth
+                PopulationOperationId = populationOperationId
             };
             return true;
         }
@@ -338,8 +339,14 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 consumption.Troop, out int current)
                     ? current + consumption.Count
                     : consumption.Count;
-            Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
-                .RollbackProfessionalHearth(consumption.ConsumedHearth);
+            bool populationRestored = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .RollbackProfessionalHearth(
+                    consumption.Settlement,
+                    consumption.PopulationOperationId) == true;
+            if (!populationRestored)
+                throw new InvalidOperationException(
+                    "ProfessionalPopulationRollbackFailed");
         }
 
         private static void LogOfferConsumption(
@@ -436,7 +443,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             _dailyProfessionalOffers.Remove(settlement);
             _professionalOfferDays[settlement] = day;
             data.RecordFiefReplenishment(day, 0);
-            if (forecast.SharedSupply <= 0f)
+            if (forecast.SharedSupply <= 0f &&
+                forecast.ProfessionalAllocation <= 0f)
             {
                 if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
                 {
@@ -552,6 +560,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
             ProfessionalTroopTemplate professionalTemplate = eligibility?.Template;
             float supply = CalculateSettlementSupply(settlement, fiefData, manager);
+            int professionalHearth = SettlementPopulationServiceRegistry.Current
+                ?.GetRecruitableHearth(settlement) ?? 0;
+            float professionalPopulationSupply =
+                CalculatePopulationProductionSupply(professionalHearth);
             IReadOnlyDictionary<string, int> effectiveWeights =
                 GetEffectiveWeights(settlement);
             bool professionalEnabled = professionalTemplate != null &&
@@ -590,23 +602,16 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     0f,
                     professionalTrainingCapacity / rawTraining - 1f)
                 : 0f;
+            // Culture doctrine still controls the relative production pace,
+            // but each branch now draws from its own population source.
+            // Unused rural professional share is deliberately not reassigned
+            // to feudal production: doing so would silently amplify fief output.
             float professionalAllocation = Math.Min(
-                supply * ratio,
+                professionalPopulationSupply * ratio,
                 professionalDemand);
             float fiefAllocation = Math.Min(
                 supply * (1f - ratio),
                 fiefDemand);
-            float unused = Math.Max(
-                0f,
-                supply - professionalAllocation - fiefAllocation);
-            float extra = Math.Min(
-                unused,
-                Math.Max(0f, professionalDemand - professionalAllocation));
-            professionalAllocation += extra;
-            unused -= extra;
-            fiefAllocation += Math.Min(
-                unused,
-                Math.Max(0f, fiefDemand - fiefAllocation));
 
             return new RecruitmentProductionForecast
             {
@@ -622,6 +627,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 RawProfessionalTrainingBeforeExternalEffects = rawTraining,
                 ExternalTrainingBonusRate = externalBonusRate,
                 ProfessionalTrainingCapacity = professionalTrainingCapacity,
+                ProfessionalPopulationSupply = professionalPopulationSupply,
                 ProfessionalAllocation = professionalAllocation,
                 FiefDemand = fiefDemand,
                 FiefAllocation = fiefAllocation,
@@ -828,10 +834,16 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     village.Settlement.StringId, exception.Message));
                 return 0f;
             }
-            return free <= 100f
+            return CalculatePopulationProductionSupply(free);
+        }
+
+        private static float CalculatePopulationProductionSupply(float hearth)
+        {
+            float available = Math.Max(0f, hearth);
+            return available <= 100f
                 ? 0f
-                : 0.03f * free * (free - 100f) /
-                    (free + 50f);
+                : 0.03f * available * (available - 100f) /
+                    (available + 50f);
         }
 
         private static float CalculateSettlementSupply(

@@ -7,6 +7,8 @@ using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.SaveSystem;
+using ModifiedArmy.Population.Contracts;
+using ModifiedArmy.Tool;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -21,6 +23,10 @@ namespace ModifiedArmy.Models.Fief
         [SaveableProperty(5)] public bool RecoveryRequired { get; private set; }
         [SaveableProperty(6)] public string RecoveryReason { get; private set; }
         [SaveableProperty(7)] public string RecoveryOperationId { get; private set; }
+        [SaveableProperty(8)] private string LastMobilizationOperationId { get; set; }
+        [SaveableProperty(9)] private int LastMobilizationOperationAmount { get; set; }
+        [SaveableProperty(10)] private string LastReturnOperationId { get; set; }
+        [SaveableProperty(11)] private int LastReturnOperationAmount { get; set; }
 
         public VillageFiefData()
         {
@@ -145,8 +151,14 @@ namespace ModifiedArmy.Models.Fief
             if (RecoveryRequired || village == null || count <= 0 ||
                 Math.Max(0, (int)Math.Floor(village.Hearth)) < count)
                 return false;
-            village.Hearth -= count;
+            string operationId =
+                "feudal-mobilize:" + Guid.NewGuid().ToString("N");
+            var result = SettlementPopulationServiceRegistry.Current?.TryConsume(
+                VillageSettlement, count, operationId);
+            if (result?.IsCommitted != true) return false;
             MobilizedHearth += count;
+            LastMobilizationOperationId = operationId;
+            LastMobilizationOperationAmount = count;
             return true;
         }
 
@@ -154,9 +166,18 @@ namespace ModifiedArmy.Models.Fief
         {
             if (RecoveryRequired || count <= 0 || MobilizedHearth < count)
                 return false;
+            if (restoreHearth)
+            {
+                string operationId =
+                    "feudal-return:" + Guid.NewGuid().ToString("N");
+                PopulationTransactionResult result =
+                    SettlementPopulationServiceRegistry.Current?.TryRestore(
+                        VillageSettlement, count, operationId);
+                if (result?.IsCommitted != true) return false;
+                LastReturnOperationId = operationId;
+                LastReturnOperationAmount = count;
+            }
             MobilizedHearth -= count;
-            if (restoreHearth && VillageSettlement?.Village != null)
-                VillageSettlement.Village.Hearth += count;
             return true;
         }
 
@@ -164,41 +185,99 @@ namespace ModifiedArmy.Models.Fief
             bool restoreHearth)
         {
             int released = Math.Min(Math.Max(0, count), MobilizedHearth);
+            if (restoreHearth && released > 0 && SettlementPopulationServiceRegistry.Current?.TryRestore(
+                VillageSettlement, released,
+                "feudal-reconcile-return:" + Guid.NewGuid().ToString("N"))?.IsCommitted != true)
+                return 0;
             MobilizedHearth -= released;
-            if (restoreHearth && released > 0 &&
-                VillageSettlement?.Village != null)
-                VillageSettlement.Village.Hearth += released;
             return released;
         }
 
         internal void RollbackMobilization(int count, bool hearthWasRestored)
         {
             if (count <= 0) return;
+            if (hearthWasRestored)
+            {
+                PopulationTransactionResult result =
+                    LastReturnOperationAmount == count &&
+                    !string.IsNullOrEmpty(LastReturnOperationId)
+                        ? SettlementPopulationServiceRegistry.Current?
+                            .TryCompensate(
+                                VillageSettlement,
+                                LastReturnOperationId)
+                        : null;
+                if (result?.Status !=
+                    PopulationTransactionStatus.Compensated)
+                {
+                    RequireRecovery(
+                        "PopulationRollbackFailed",
+                        LastReturnOperationId);
+                    return;
+                }
+                LastReturnOperationId = null;
+                LastReturnOperationAmount = 0;
+            }
             MobilizedHearth += count;
-            if (hearthWasRestored && VillageSettlement?.Village != null)
-                VillageSettlement.Village.Hearth -= count;
         }
 
         internal bool RollbackMobilizationReservation(int count)
         {
             if (count <= 0 || MobilizedHearth < count ||
                 VillageSettlement?.Village == null) return false;
+            PopulationTransactionResult result =
+                LastMobilizationOperationAmount == count &&
+                !string.IsNullOrEmpty(LastMobilizationOperationId)
+                    ? SettlementPopulationServiceRegistry.Current?
+                        .TryCompensate(
+                            VillageSettlement,
+                            LastMobilizationOperationId)
+                    : null;
+            if (result?.Status != PopulationTransactionStatus.Compensated)
+            {
+                RequireRecovery(
+                    "PopulationRollbackFailed",
+                    LastMobilizationOperationId);
+                return false;
+            }
             MobilizedHearth -= count;
-            VillageSettlement.Village.Hearth += count;
+            LastMobilizationOperationId = null;
+            LastMobilizationOperationAmount = 0;
             return true;
         }
 
         internal void RequireRecovery(string reason = "InvariantMismatch",
             string operationId = null)
         {
+            bool stateChanged = !RecoveryRequired ||
+                RecoveryReason != reason ||
+                RecoveryOperationId != operationId;
             RecoveryRequired = true;
             RecoveryReason = string.IsNullOrEmpty(reason)
                 ? "InvariantMismatch" : reason;
             RecoveryOperationId = operationId;
+            if (stateChanged)
+                ModLogger.FileError(string.Format(
+                    "Fief population workflow frozen: village={0}, id={1}, " +
+                    "operation={2}, mobilizedHearth={3}, reason={4}.",
+                    VillageSettlement?.Name,
+                    VillageSettlement?.StringId,
+                    operationId ?? "missing",
+                    MobilizedHearth,
+                    RecoveryReason));
         }
 
         internal void CompleteRecovery()
         {
+            if (RecoveryRequired)
+                ModLogger.FileInfo(string.Format(
+                    "Fief population workflow recovery completed: " +
+                    "village={0}, id={1}, operation={2}, " +
+                    "mobilizedHearth={3}, previousReason={4}.",
+                    VillageSettlement?.Name,
+                    VillageSettlement?.StringId,
+                    RecoveryOperationId ?? "missing",
+                    MobilizedHearth,
+                    RecoveryReason ?? "missing"));
             RecoveryRequired = false;
             RecoveryReason = null;
             RecoveryOperationId = null;

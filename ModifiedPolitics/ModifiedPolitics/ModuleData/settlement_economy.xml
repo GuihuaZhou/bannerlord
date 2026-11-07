@@ -5,5 +5,20 @@
       <!-- Civilian prosperity food demand equals Prosperity divided by this value. -->
       <ProsperityConsumptionDivisor value="34" />
     </Food>
+    <Population>
+      <NaturalGrowth rate="0.004" seed="100" lowPopulationMultiplier="2.0" lowPopulationThreshold="0.5" />
+      <Village capacity="1200" />
+      <Town>
+        <Wall level="1" initial="500" capacity="1500" />
+        <Wall level="2" initial="1000" capacity="3000" />
+        <Wall level="3" initial="1500" capacity="4500" />
+      </Town>
+      <Castle>
+        <Wall level="1" initial="200" capacity="600" />
+        <Wall level="2" initial="400" capacity="1200" />
+        <Wall level="3" initial="600" capacity="1800" />
+      </Castle>
+      <ProsperitySupport townPerHearth="5" castlePerHearth="3" excessDecayDays="84" />
+    </Population>
   </SettlementEconomyConfig>
 </SettlementEconomyConfigs>
