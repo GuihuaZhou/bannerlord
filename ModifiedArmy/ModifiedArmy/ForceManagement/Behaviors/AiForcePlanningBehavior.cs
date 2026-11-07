@@ -434,9 +434,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         }
 
         public bool TryRegisterInitialRecruitTask(MobileParty party,
-            Settlement boundSettlement, PartyForceSourceKind preferredSource) =>
+            Settlement boundSettlement, PartyForceSourceKind preferredSource,
+            string creationAttemptId = null, bool requireExactSource = false) =>
             Coordinator.TryRegisterInitialRecruitTask(
-                party, boundSettlement, preferredSource);
+                party, boundSettlement, preferredSource, creationAttemptId,
+                requireExactSource);
 
         public void CancelTask(MobileParty party, string reason) =>
             Coordinator.CancelTask(party, reason);
@@ -480,6 +482,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
 
         internal PartyForceTask GetTaskForDiagnostics(MobileParty party) =>
             FindTask(party);
+
+        internal PartyForceTask GetLatestTaskForCreation(MobileParty party) =>
+            Coordinator.FindLatestTask(party);
 
         /// <summary>Writes an explainable shadow decision using display names.</summary>
         internal static void LogPlan(

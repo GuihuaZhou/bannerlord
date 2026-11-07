@@ -34,7 +34,10 @@ namespace ModifiedArmy.ForceManagement.Missions
                     task.Version.ToString(CultureInfo.InvariantCulture),
                     task.CreatedDay.ToString(CultureInfo.InvariantCulture),
                     ((int)task.Status).ToString(CultureInfo.InvariantCulture),
-                    task.Progress.ToString(CultureInfo.InvariantCulture)
+                    task.Progress.ToString(CultureInfo.InvariantCulture),
+                    task.TaskId ?? string.Empty,
+                    task.CreationAttemptId ?? string.Empty,
+                    task.UsesLegacyOperationId ? "1" : "0"
                 });
                 records[record] = 1;
             }
@@ -52,7 +55,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                         out PartyForceIntent intent,
                         out PartyForceSourceKind sourceKind, out int version,
                         out int createdDay, out PartyForceTaskStatus status,
-                        out int progress))
+                        out int progress, out string taskId,
+                        out string creationAttemptId,
+                        out bool usesLegacyOperationId))
                     continue;
                 MobileParty party = MobileParty.All.FirstOrDefault(item =>
                     item?.StringId == partyId);
@@ -62,6 +67,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                 tasks.Add(new PartyForceTask
                 {
                     Party = party,
+                    TaskId = taskId,
+                    CreationAttemptId = creationAttemptId,
+                    UsesLegacyOperationId = usesLegacyOperationId,
                     PartyId = partyId,
                     ClanId = party.ActualClan?.StringId,
                     OwnerKey = "ModifiedArmy.AiForcePlanning",
@@ -85,7 +93,8 @@ namespace ModifiedArmy.ForceManagement.Missions
             out string batchId, out PartyForceIntent intent,
             out PartyForceSourceKind sourceKind, out int version,
             out int createdDay, out PartyForceTaskStatus status,
-            out int progress)
+            out int progress, out string taskId,
+            out string creationAttemptId, out bool usesLegacyOperationId)
         {
             string[] parts = (record ?? string.Empty).Split('\u001f');
             partyId = parts.Length > 0 ? parts[0] : null;
@@ -95,7 +104,12 @@ namespace ModifiedArmy.ForceManagement.Missions
             sourceKind = PartyForceSourceKind.None;
             status = PartyForceTaskStatus.Suspended;
             version = createdDay = progress = 0;
-            if (parts.Length != 9 || string.IsNullOrEmpty(partyId) ||
+            taskId = null;
+            creationAttemptId = null;
+            usesLegacyOperationId = false;
+            if (parts.Length != 9 && parts.Length != 12)
+                return false;
+            if (string.IsNullOrEmpty(partyId) ||
                 string.IsNullOrEmpty(targetId) ||
                 !int.TryParse(parts[3], out int intentValue) ||
                 !int.TryParse(parts[4], out int sourceValue) ||
@@ -110,6 +124,22 @@ namespace ModifiedArmy.ForceManagement.Missions
             intent = (PartyForceIntent)intentValue;
             sourceKind = (PartyForceSourceKind)sourceValue;
             status = (PartyForceTaskStatus)statusValue;
+            if (parts.Length == 12)
+            {
+                taskId = parts[9];
+                creationAttemptId = parts[10];
+                usesLegacyOperationId = parts[11] == "1";
+                if (string.IsNullOrWhiteSpace(taskId)) return false;
+            }
+            else
+            {
+                // Preserve the exact pre-migration operation key. A pending old
+                // task may already have committed before the save was written.
+                taskId = string.Format(CultureInfo.InvariantCulture,
+                    "legacy:{0}:{1}:{2}:{3}", partyId, createdDay, version,
+                    intent);
+                usesLegacyOperationId = true;
+            }
             return true;
         }
     }

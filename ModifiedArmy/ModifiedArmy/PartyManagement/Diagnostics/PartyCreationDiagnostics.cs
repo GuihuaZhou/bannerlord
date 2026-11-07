@@ -14,7 +14,11 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             string settlementId, string phase, string reason,
             int garrison, int fief, int total, string source = "None",
             string attemptId = null, int minimumRequired = 0,
-            int minimumFiefBatch = 0, bool bindingEligible = false)
+            int minimumFiefBatch = 0, bool bindingEligible = false,
+            string taskId = null, string operationId = null,
+            int actualRecruited = 0, int actualFief = 0,
+            int actualProfessional = 0, int finalRegulars = 0,
+            string finalState = null)
         {
             if (!RecruitmentLogFilter.ShouldLog(leader?.Clan)) return;
             var message = GameTexts.FindText(
@@ -49,7 +53,16 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             message.SetTextVariable("MINIMUM_FIEF_BATCH", minimumFiefBatch);
             message.SetTextVariable("BINDING_ELIGIBLE",
                 bindingEligible ? "true" : "false");
-            if (phase == "Failed" || phase == "Rejected")
+            message.SetTextVariable("TASK_ID", taskId ?? "none");
+            message.SetTextVariable("OPERATION_ID", operationId ?? "none");
+            message.SetTextVariable("ACTUAL_RECRUITED", actualRecruited);
+            message.SetTextVariable("ACTUAL_FIEF", actualFief);
+            message.SetTextVariable("ACTUAL_PROFESSIONAL", actualProfessional);
+            message.SetTextVariable("FINAL_REGULARS", finalRegulars);
+            message.SetTextVariable("FINAL_STATE", finalState ?? phase ?? "Unknown");
+            if (phase == "RecoveryRequired")
+                ModLogger.Error(message.ToString());
+            else if (phase == "Failed" || phase == "Rejected")
                 ModLogger.Warn(message.ToString());
             else if (phase == "Evaluated")
                 ModLogger.Debug(message.ToString());

@@ -148,7 +148,9 @@ namespace ModifiedArmy.ForceManagement.Models
             PartyId = context.Party.StringId,
             ClanId = context.Party.ActualClan?.StringId,
             OwnerKey = "ModifiedArmy.AiForcePlanning",
-            Version = (context.CurrentTask?.Version ?? 0) + 1,
+            // Identity and the monotonic version are assigned by the task
+            // coordinator. The pure planner must not manufacture identities.
+            Version = 0,
             CreatedDay = context.Today,
             LastValidatedDay = context.Today,
             Intent = intent,

@@ -500,7 +500,11 @@ namespace ModifiedArmy.ForceManagement.Models
                 .PreviewFiefRecruitmentApprovals(
                     interaction,
                     destination,
-                    context.RequestedCount);
+                    context.RequestedCount,
+                    out IReadOnlyList<RecruitmentCandidate> candidates,
+                    out RecruitmentPlan admission,
+                    out int approvedBeforeMinimumBatch,
+                    out int minimumBatch);
             PartyExchangePlan result = CreatePlan(
                 context,
                 PartyExchangeExecutorKind.FiefMobilization);
@@ -512,7 +516,91 @@ namespace ModifiedArmy.ForceManagement.Models
                     approval.Key,
                     roster,
                     approval.Value);
+            if (result.SourceToDestination.TotalCount <= 0)
+                LogInitialFiefApprovalFailure(context, roster, candidates,
+                    admission, approvedBeforeMinimumBatch, minimumBatch,
+                    result.FiefSourceFingerprint);
             return Finish(context, result);
+        }
+
+        private static void LogInitialFiefApprovalFailure(
+            PartyExchangeContext context,
+            TroopRoster roster,
+            IReadOnlyList<RecruitmentCandidate> candidates,
+            RecruitmentPlan admission,
+            int approvedBeforeMinimumBatch,
+            int minimumBatch,
+            string sourceFingerprint)
+        {
+            MobileParty party = context?.Destination?.Party;
+            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            int raw = roster?.TotalRegulars ?? 0;
+            int wounded = roster?.GetTroopRoster()
+                .Where(x => x.Character != null && !x.Character.IsHero)
+                .Sum(x => Math.Max(0, x.WoundedNumber)) ?? 0;
+            int healthy = Math.Max(0, raw - wounded);
+            int offered = candidates?.Sum(x =>
+                Math.Max(0, x?.AvailableCount ?? 0)) ?? 0;
+            int approvedAfter = admission?.Evaluations?.Sum(x =>
+                Math.Max(0, x.RecruitableCount)) ?? approvedBeforeMinimumBatch;
+            string stage = offered <= 0 ? "CandidateConstruction" :
+                approvedBeforeMinimumBatch <= 0 ? "RecruitmentAdmission" :
+                approvedBeforeMinimumBatch < minimumBatch
+                    ? "MinimumFiefRecruitBatch" : "ManifestConstruction";
+            string reason = offered <= 0 ? "NoWeightedCandidates" :
+                approvedBeforeMinimumBatch <= 0
+                    ? admission?.Evaluations?.FirstOrDefault(x =>
+                        x.RecruitableCount <= 0)?.PrimaryLimit.ToString() ??
+                        "AdmissionReturnedZero"
+                    : approvedBeforeMinimumBatch < minimumBatch
+                        ? "BelowMinimumFiefRecruitBatch"
+                        : "NoApprovedTroops";
+            string evaluations = admission == null ? "Unavailable" :
+                string.Join(", ", admission.Evaluations.Select(x =>
+                    string.Format("{0} ({1}): requested={2}, approved={3}, " +
+                        "partySize={4}, wage={5}, cost={6}, maintenance={7}, " +
+                        "primary={8}", x.Troop?.Name, x.Troop?.StringId,
+                        x.RequestedCount, x.RecruitableCount,
+                        x.AllowedByPartySize, x.AllowedByWageLimit,
+                        x.AllowedByRecruitmentCost,
+                        x.AllowedByMaintenance, x.PrimaryLimit)));
+            TextObject message = GameTexts.FindText(
+                "str_modifiedarmy_initial_recruit_approval_diagnostic");
+            message.SetTextVariable("ATTEMPT_ID", context.AttemptId ?? "none");
+            message.SetTextVariable("TASK_ID", context.TaskId ?? "none");
+            message.SetTextVariable("OPERATION_ID",
+                context.OperationId ?? "none");
+            message.SetTextVariable("PARTY_NAME",
+                PartyLogFormatter.GetDisplayName(party));
+            message.SetTextVariable("PARTY_ID", party?.StringId ?? "none");
+            message.SetTextVariable("SETTLEMENT_NAME",
+                context.TargetSettlement?.Name ?? GetUnknownText());
+            message.SetTextVariable("SETTLEMENT_ID",
+                context.TargetSettlement?.StringId ?? "none");
+            message.SetTextVariable("REQUESTED", context.RequestedCount);
+            message.SetTextVariable("RAW", raw);
+            message.SetTextVariable("HEALTHY", healthy);
+            message.SetTextVariable("WOUNDED", wounded);
+            message.SetTextVariable("TEMPLATE_ROOTS", "Unavailable");
+            message.SetTextVariable("TEMPLATE_ELIGIBLE", "Unavailable");
+            message.SetTextVariable("MATCHED", offered);
+            message.SetTextVariable("UNMATCHED", "Unavailable");
+            message.SetTextVariable("OFFERED", offered);
+            message.SetTextVariable("EVALUATIONS", evaluations);
+            message.SetTextVariable("APPROVED_BEFORE",
+                approvedBeforeMinimumBatch);
+            message.SetTextVariable("MINIMUM_BATCH", minimumBatch);
+            message.SetTextVariable("APPROVED_AFTER",
+                approvedBeforeMinimumBatch > 0 &&
+                approvedBeforeMinimumBatch < minimumBatch
+                    ? 0 : approvedAfter);
+            message.SetTextVariable("STAGE", stage);
+            message.SetTextVariable("REASON", reason);
+            message.SetTextVariable("SOURCE_FINGERPRINT",
+                sourceFingerprint ?? "Unavailable");
+            message.SetTextVariable("DESTINATION_FINGERPRINT",
+                context.DestinationSnapshot?.Fingerprint ?? "Unavailable");
+            ModLogger.Warn(message.ToString());
         }
 
         /// <summary>Plans a return from one authoritative fief service batch.</summary>

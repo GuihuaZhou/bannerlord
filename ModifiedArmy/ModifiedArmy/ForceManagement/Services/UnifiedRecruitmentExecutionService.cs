@@ -31,7 +31,9 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty party,
             Settlement settlement,
             PartyForceSourceKind sourceKind,
-            string operationId)
+            string operationId,
+            string taskId = null,
+            string attemptId = null)
         {
             if (!CampaignRecoveryCoordinator.CanMutateCampaignState())
                 return Failed("CampaignRecoveryNotReady", operationId);
@@ -45,7 +47,8 @@ namespace ModifiedArmy.ForceManagement.Services
             switch (sourceKind)
             {
                 case PartyForceSourceKind.Fief:
-                    return ExecuteFief(party, settlement, requested, operationId);
+                    return ExecuteFief(party, settlement, requested, operationId,
+                        taskId, attemptId);
                 case PartyForceSourceKind.Professional:
                     return ExecuteGarrison(
                         party, settlement, requested, operationId);
@@ -62,7 +65,9 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty party,
             Settlement settlement,
             int requested,
-            string operationId)
+            string operationId,
+            string taskId,
+            string attemptId)
         {
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
@@ -77,6 +82,8 @@ namespace ModifiedArmy.ForceManagement.Services
                 party, settlement, PartyTroopSourceKind.Mobile);
             return BuildAndExecute(new PartyExchangeContext
             {
+                TaskId = taskId,
+                AttemptId = attemptId,
                 OperationId = operationId,
                 Initiator = party,
                 Operation = PartyExchangeOperation.FiefMobilization,

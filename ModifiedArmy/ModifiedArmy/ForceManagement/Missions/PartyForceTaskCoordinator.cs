@@ -92,8 +92,15 @@ namespace ModifiedArmy.ForceManagement.Missions
             .OrderByDescending(task => task.Version)
             .FirstOrDefault();
 
+        public PartyForceTask FindLatestTask(MobileParty party) => _tasks()
+            .Where(task => task != null &&
+                (task.Party == party || task.PartyId == party?.StringId))
+            .OrderByDescending(task => task.Version)
+            .FirstOrDefault();
+
         public bool TryRegisterInitialRecruitTask(MobileParty party,
-            Settlement boundSettlement, PartyForceSourceKind preferredSource)
+            Settlement boundSettlement, PartyForceSourceKind preferredSource,
+            string creationAttemptId = null, bool requireExactSource = false)
         {
             if (!ManagedPartyPolicy.IsModManagedAiParty(party))
             {
@@ -140,8 +147,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                 return matches;
             }
 
-            PartyForceSourceKind source = SelectAvailableSource(
-                boundSettlement, preferredSource);
+            PartyForceSourceKind source = requireExactSource
+                ? SelectExactAvailableSource(boundSettlement, preferredSource)
+                : SelectAvailableSource(boundSettlement, preferredSource);
             if (source != PartyForceSourceKind.Fief &&
                 source != PartyForceSourceKind.Professional)
             {
@@ -151,10 +159,11 @@ namespace ModifiedArmy.ForceManagement.Missions
                 return false;
             }
             int today = (int)CampaignTime.Now.ToDays;
-            int version = _tasks().Where(task => task?.PartyId == party.StringId)
-                .Select(task => task.Version).DefaultIfEmpty(0).Max() + 1;
+            int version = NextVersion(party);
             PartyForceTask created = new PartyForceTask
             {
+                TaskId = Guid.NewGuid().ToString("N"),
+                CreationAttemptId = creationAttemptId,
                 Party = party,
                 PartyId = party.StringId,
                 ClanId = party.ActualClan.StringId,
@@ -175,6 +184,25 @@ namespace ModifiedArmy.ForceManagement.Missions
                 boundSettlement, source, created, "Created",
                 "InitialPartyRecruitment");
             return true;
+        }
+
+        private static PartyForceSourceKind SelectExactAvailableSource(
+            Settlement settlement, PartyForceSourceKind source)
+        {
+            FiefPartyManager fiefs = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            int minimumFiefBatch = ModifiedArmy.common.MilitaryConfigManager
+                .Instance.RequireActiveConfig().AiRecruitment.ForceManagement
+                .MinimumFiefRecruitBatch;
+            if (source == PartyForceSourceKind.Fief &&
+                PartyCreationSettlementModel.GetEligibleFiefRegulars(
+                    fiefs, settlement) >= Math.Max(1, minimumFiefBatch))
+                return source;
+            if (source == PartyForceSourceKind.Professional &&
+                GarrisonTransferPolicyModel
+                    .GetTransferableGarrisonTroopCount(settlement) > 0)
+                return source;
+            return PartyForceSourceKind.None;
         }
 
         private static PartyForceSourceKind SelectAvailableSource(
@@ -241,6 +269,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                 next.TargetSettlement == null)
                 return;
             next.Party = party;
+            next.TaskId = Guid.NewGuid().ToString("N");
+            next.UsesLegacyOperationId = false;
+            next.Version = NextVersion(party);
             next.PartyId = party?.StringId;
             next.ClanId = party?.ActualClan?.StringId;
             next.LastValidatedDay = today;
@@ -253,6 +284,13 @@ namespace ModifiedArmy.ForceManagement.Missions
             if (party?.Ai != null)
                 party.Ai.RethinkAtNextHourlyTick = true;
         }
+
+        private int NextVersion(MobileParty party) => _tasks()
+            .Where(task => task != null &&
+                (task.Party == party || task.PartyId == party?.StringId))
+            .Select(task => task.Version)
+            .DefaultIfEmpty(0)
+            .Max() + 1;
 
         private static void ReleaseOwnedMovementOrder(
             MobileParty party,

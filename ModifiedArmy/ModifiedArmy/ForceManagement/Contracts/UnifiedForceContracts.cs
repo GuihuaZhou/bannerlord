@@ -121,6 +121,9 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// </summary>
     public sealed class PartyForceTask
     {
+        public string TaskId { get; set; }
+        public string CreationAttemptId { get; set; }
+        public bool UsesLegacyOperationId { get; set; }
         public MobileParty Party { get; set; }
         public string OwnerKey { get; set; }
         public int Version { get; set; }
@@ -271,6 +274,8 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// <summary>All read-only inputs for planning an existing-troop exchange.</summary>
     public sealed class PartyExchangeContext
     {
+        public string TaskId { get; set; }
+        public string AttemptId { get; set; }
         public string OperationId { get; set; }
         public MobileParty Initiator { get; set; }
         public PartyExchangeOperation Operation { get; set; }

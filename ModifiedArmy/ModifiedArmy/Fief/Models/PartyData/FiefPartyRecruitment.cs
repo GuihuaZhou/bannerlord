@@ -544,19 +544,35 @@ namespace ModifiedArmy.Models.Fief
                 int maximumCount,
                 Settlement villageFilter = null)
         {
-            IReadOnlyList<RecruitmentCandidate> candidates =
+            return PreviewFiefRecruitmentApprovals(targetParty, maximumCount,
+                villageFilter, out _, out _, out _, out _);
+        }
+
+        internal IReadOnlyDictionary<CharacterObject, int>
+            PreviewFiefRecruitmentApprovals(
+                MobileParty targetParty,
+                int maximumCount,
+                Settlement villageFilter,
+                out IReadOnlyList<RecruitmentCandidate> candidates,
+                out RecruitmentPlan plan,
+                out int approvedBeforeMinimumBatch,
+                out int minimumBatch)
+        {
+            candidates =
                 PreviewFiefRecruitmentCandidates(
                     targetParty, maximumCount, villageFilter);
+            plan = null;
+            approvedBeforeMinimumBatch = 0;
+            minimumBatch = MilitaryConfigManager.Instance
+                .RequireActiveConfig()
+                .AiRecruitment.ForceManagement.MinimumFiefRecruitBatch;
             if (targetParty?.LeaderHero?.Clan == null || candidates.Count == 0)
                 return new Dictionary<CharacterObject, int>();
-            RecruitmentPlan ignored;
             Dictionary<CharacterObject, int> result =
                 targetParty.LeaderHero.Clan == Clan.PlayerClan
                     ? BuildPlayerFiefRecruitment(targetParty, candidates)
-                    : BuildAiFiefRecruitment(targetParty, candidates, out ignored);
-            int minimumBatch = MilitaryConfigManager.Instance
-                .RequireActiveConfig()
-                .AiRecruitment.ForceManagement.MinimumFiefRecruitBatch;
+                    : BuildAiFiefRecruitment(targetParty, candidates, out plan);
+            approvedBeforeMinimumBatch = result.Values.Sum();
             return targetParty.LeaderHero.Clan != Clan.PlayerClan &&
                 result.Values.Sum() > 0 && result.Values.Sum() < minimumBatch
                     ? new Dictionary<CharacterObject, int>()

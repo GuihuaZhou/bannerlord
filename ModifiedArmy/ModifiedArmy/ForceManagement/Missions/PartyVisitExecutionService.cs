@@ -62,13 +62,12 @@ namespace ModifiedArmy.ForceManagement.Missions
                     { ReasonCode = task.ReasonCode };
             }
             task.Status = PartyForceTaskStatus.Executing;
-            string operationId = string.Format(
-                "force:{0}:{1}:{2}:{3}", party.StringId, task.CreatedDay,
-                task.Version, task.Intent);
+            string operationId = BuildOperationId(party, task);
             PartyExchangeExecutionResult result = task.Intent switch
             {
                 PartyForceIntent.Recruit => _recruitment.Execute(
-                    party, settlement, task.SourceKind, operationId),
+                    party, settlement, task.SourceKind, operationId,
+                    task.TaskId, task.CreationAttemptId),
                 PartyForceIntent.WarRest => ExecuteWarRest(
                     party, task, operationId),
                 _ => new PartyExchangeExecutionResult
@@ -79,6 +78,20 @@ namespace ModifiedArmy.ForceManagement.Missions
                 party, settlement, task, result, before,
                 party?.MemberRoster?.TotalRegulars ?? 0);
             return result;
+        }
+
+        internal static string BuildOperationId(
+            MobileParty party, PartyForceTask task)
+        {
+            if (task?.UsesLegacyOperationId == true)
+                return string.Format("force:{0}:{1}:{2}:{3}",
+                    party?.StringId ?? task.PartyId, task.CreatedDay,
+                    task.Version, task.Intent);
+            string step = string.Format("{0}:{1}:{2}", task?.Intent,
+                task?.SourceKind,
+                task?.TargetSettlement?.StringId ?? "none");
+            return string.Format("force-task:{0}:{1}",
+                task?.TaskId ?? "missing-task-id", step);
         }
 
         public PartyExchangeExecutionResult ExecuteCaptureDonation(

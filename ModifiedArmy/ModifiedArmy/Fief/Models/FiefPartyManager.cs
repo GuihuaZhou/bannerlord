@@ -1588,6 +1588,29 @@ namespace ModifiedArmy.Models.Fief
                     : new Dictionary<CharacterObject, int>();
         }
 
+        public IReadOnlyDictionary<CharacterObject, int>
+            PreviewFiefRecruitmentApprovals(
+                Settlement settlement,
+                MobileParty targetParty,
+                int maximumCount,
+                out IReadOnlyList<RecruitmentCandidate> candidates,
+                out RecruitmentPlan plan,
+                out int approvedBeforeMinimumBatch,
+                out int minimumBatch)
+        {
+            if (TryResolveOperationScope(settlement, targetParty, false,
+                out FiefOperationScope scope))
+                return scope.FiefData.PreviewFiefRecruitmentApprovals(
+                    targetParty, maximumCount, scope.VillageFilter,
+                    out candidates, out plan,
+                    out approvedBeforeMinimumBatch, out minimumBatch);
+            candidates = Array.Empty<RecruitmentCandidate>();
+            plan = null;
+            approvedBeforeMinimumBatch = 0;
+            minimumBatch = 0;
+            return new Dictionary<CharacterObject, int>();
+        }
+
         /// <summary>
         /// Disbands all fief squads in a settlement.
         /// Optionally recovers troops from a mobile party to refill squads.

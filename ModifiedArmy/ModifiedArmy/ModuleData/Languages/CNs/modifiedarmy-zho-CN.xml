@@ -341,7 +341,7 @@
     <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
     <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
-    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试={ATTEMPT_ID}；类型={PARTY_TYPE}；家族={CLAN_NAME}（{CLAN_ID}）；领队={LEADER_NAME}（{LEADER_ID}）；待创建/实际部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；阶段={PHASE}；原因={REASON}。驻军兵源={GARRISON}人，封邑兵源={FIEF}人，合计={TOTAL}人，最低要求={MINIMUM}人，封邑最低批次={MINIMUM_FIEF_BATCH}人，绑定资格={BINDING_ELIGIBLE}，首次来源={SOURCE}。部队ID为none表示此记录发生在MobileParty创建前的候选评估阶段。" />
+    <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试={ATTEMPT_ID}；任务={TASK_ID}；操作={OPERATION_ID}；类型={PARTY_TYPE}；家族={CLAN_NAME}（{CLAN_ID}）；领队={LEADER_NAME}（{LEADER_ID}）；待创建/实际部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；阶段={PHASE}；原因={REASON}。预估驻军兵源={GARRISON}人，封邑兵源={FIEF}人，合计={TOTAL}人，基地兵源门槛={MINIMUM}人，封邑最低批次={MINIMUM_FIEF_BATCH}人，绑定资格={BINDING_ELIGIBLE}，首次来源={SOURCE}；实际招募={ACTUAL_RECRUITED}人，其中封邑={ACTUAL_FIEF}人、职业驻军={ACTUAL_PROFESSIONAL}人，最终正规兵={FINAL_REGULARS}人，最终状态={FINAL_STATE}。部队ID为none表示此记录发生在MobileParty创建前的候选评估阶段。" />
     <string id="ModifiedArmy_ForceInitialTask" text="[调兵任务] 部队{PARTY_NAME}（{PARTY_ID}），定居点{SETTLEMENT_ID}，来源{SOURCE}，状态{STATUS}，原因{REASON}，创建日{CREATED_DAY}，版本{VERSION}。" />
     <string id="ModifiedArmy_SupplyFriendlyProvision" text="[途中补给] {PARTY_NAME}在{SETTLEMENT_NAME}通过{SOURCE}获得{ACQUIRED}份食物，支付{GOLD}第纳尔，食物由{FOOD_BEFORE}变为{FOOD_AFTER}。" />
     <string id="ModifiedArmy_SupplyEmergencyRecovery" text="[紧急安置] {PARTY_NAME}，所属地{HOME_NAME}，安置点{SETTLEMENT_NAME}，行动为{ACTION}，健康{HEALTHY}人，伤兵{WOUNDED}人，总计{TOTAL}人。" />
@@ -368,5 +368,6 @@
     <string id="ModifiedArmy_SupplyPurchaseRecovery" text="{PARTY}在{SETTLEMENT}采购补给时失败；任务已冻结并等待恢复。原因：{REASON}" />
     <string id="ModifiedArmy_CaptureGarrisonContribution" text="[攻占驻守] {CLAN_NAME}的{PARTY_NAME}在{SETTLEMENT_NAME}留下{TROOPS}名士兵和{FOOD}单位粮食；当前驻军{GARRISON}人，粮仓{GRANARY}单位。" />
     <string id="ModifiedArmy_CaptureGarrisonDiagnostic" text="[攻占驻守诊断] 定居点{SETTLEMENT_NAME}；攻城军团统帅为{CLAN_NAME}的{PARTY_NAME}；阶段={PHASE}；结果={REASON}；当前驻军={GARRISON}人；军团队伍={ARMY_PARTIES}支；已进城={INSIDE}支；可贡献={CONTRIBUTORS}支；可贡献士兵={AVAILABLE}人；驻军剩余容量={CAPACITY}人；本次转移士兵={TROOPS}人；本次转移粮食={FOOD}单位。" />
+    <string id="ModifiedArmy_InitialRecruitApprovalDiagnostic" text="[初始征兵审批] 尝试={ATTEMPT_ID}；任务={TASK_ID}；操作={OPERATION_ID}；部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；来源=封邑；申请={REQUESTED}人；就绪名册={RAW}人；健康={HEALTHY}人；伤员={WOUNDED}人；正权重模板根={TEMPLATE_ROOTS}；模板合法={TEMPLATE_ELIGIBLE}；权重匹配={MATCHED}人；无法匹配={UNMATCHED}；候选提供={OFFERED}人；逐项审批=[{EVALUATIONS}]；最低批次判断前批准={APPROVED_BEFORE}人；最低批次={MINIMUM_BATCH}人；判断后批准={APPROVED_AFTER}人；拒绝阶段={STAGE}；拒绝原因={REASON}；来源指纹={SOURCE_FINGERPRINT}；目标指纹={DESTINATION_FINGERPRINT}。Unavailable表示权威审批结果未暴露该值，本日志没有猜测或重复计算。" />
   </strings>
 </base>
