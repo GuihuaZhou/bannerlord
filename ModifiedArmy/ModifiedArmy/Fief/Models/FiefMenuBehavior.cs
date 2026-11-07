@@ -356,7 +356,7 @@ namespace ModifiedArmy.Models.Fief
             FiefManagementPresentationContext context =
                 FiefManagementPresentationContext.Begin(
                     interaction, manager, playerParty,
-                    canModify: false);
+                    canModify: CanModifyCurrentFief());
             args.MenuContext.OpenTroopSelection(
                 fullRoster: context.GetFullRoster(),
                 initialSelections: TroopRoster.CreateDummyTroopRoster(),

@@ -916,7 +916,7 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Head"
-					id="Item.full_helm_over_arming_coif" />
+					id="Item.visored_helmet_over_padded_cloth" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
@@ -942,7 +942,7 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Head"
-					id="Item.full_helm_over_laced_coif" />
+					id="Item.visored_helmet_over_padded_coif" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
@@ -1132,7 +1132,7 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Head"
-					id="Item.visored_helmet_over_laced_coif" />
+					id="Item.visored_helmet_over_padded_coif" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
@@ -1158,7 +1158,7 @@
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Head"
-					id="Item.visored_helmet_over_laced_coif" />
+					id="Item.visored_helmet_over_padded_cloth" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
