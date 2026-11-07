@@ -187,16 +187,23 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     .GetActiveSupplyEscortCount(home);
                 int limit = garrison.Party.PartySizeLimit;
                 int state = component?.MissionStateValue ?? -1;
-                component?.CompleteMission();
-                RestoreTroops(supplyParty.MemberRoster,
-                    garrison.MemberRoster);
+                TransferTroopsLimited(supplyParty.MemberRoster,
+                    garrison.MemberRoster,
+                    supplyParty.MemberRoster.TotalManCount);
                 RemovePurchasedPackAnimalsForRecovery(supplyParty.ItemRoster,
                     purchasedPackAnimals);
                 TransferAllItems(supplyParty.ItemRoster,
                     garrison.ItemRoster);
                 logCapacity?.Invoke(home, supplyParty, garrisonBefore,
                     returning, reservedBefore, limit, state);
-                DestroyPartyAction.Apply(null, supplyParty);
+                if (supplyParty.MemberRoster.TotalManCount == 0 &&
+                    supplyParty.ItemRoster.Count == 0)
+                {
+                    component?.CompleteMission();
+                    DestroyPartyAction.Apply(null, supplyParty);
+                }
+                else
+                    component?.RequireRecovery("RollbackIncomplete", home);
             }
             else if (detachedEscort != null)
             {
@@ -241,6 +248,7 @@ namespace ModifiedArmy.Garrison.Supply.Services
             int remainingGold = payer.Gold;
             int acquiredFood = 0;
             int totalCost = 0;
+            List<ItemRosterElement> moved = new List<ItemRosterElement>();
             for (int index = source.ItemRoster.Count - 1;
                 index >= 0 && remainingFood > 0 && remainingGold > 0;
                 index--)
@@ -258,6 +266,8 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     element.EquipmentElement, -amount);
                 party.ItemRoster.AddToCounts(
                     element.EquipmentElement, amount);
+                moved.Add(new ItemRosterElement(element.EquipmentElement,
+                    amount));
                 int cost = amount * unitPrice;
                 remainingFood -= amount;
                 remainingGold -= cost;
@@ -265,8 +275,24 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 totalCost += cost;
             }
             if (totalCost > 0)
-                GiveGoldAction.ApplyForCharacterToSettlement(
-                    payer, source, totalCost, true);
+            {
+                try
+                {
+                    GiveGoldAction.ApplyForCharacterToSettlement(
+                        payer, source, totalCost, true);
+                }
+                catch
+                {
+                    foreach (ItemRosterElement item in moved)
+                    {
+                        party.ItemRoster.AddToCounts(item.EquipmentElement,
+                            -item.Amount);
+                        source.ItemRoster.AddToCounts(item.EquipmentElement,
+                            item.Amount);
+                    }
+                    throw;
+                }
+            }
             return new SupplyFoodPurchaseResult(acquiredFood, totalCost);
         }
 
@@ -295,6 +321,7 @@ namespace ModifiedArmy.Garrison.Supply.Services
             int remainingGold = payer.Gold;
             int purchased = 0;
             int totalCost = 0;
+            List<ItemRosterElement> moved = new List<ItemRosterElement>();
             foreach (ItemRosterElement element in source.ItemRoster
                 .Where(element => element.Amount > 0 &&
                     element.EquipmentElement.Item?.IsMountable == true &&
@@ -313,6 +340,8 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     element.EquipmentElement, -amount);
                 party.ItemRoster.AddToCounts(
                     element.EquipmentElement, amount);
+                moved.Add(new ItemRosterElement(element.EquipmentElement,
+                    amount));
                 int cost = amount * unitPrice;
                 remaining -= amount;
                 remainingGold -= cost;
@@ -320,8 +349,24 @@ namespace ModifiedArmy.Garrison.Supply.Services
                 totalCost += cost;
             }
             if (totalCost > 0)
-                GiveGoldAction.ApplyForCharacterToSettlement(
-                    payer, source, totalCost, true);
+            {
+                try
+                {
+                    GiveGoldAction.ApplyForCharacterToSettlement(
+                        payer, source, totalCost, true);
+                }
+                catch
+                {
+                    foreach (ItemRosterElement item in moved)
+                    {
+                        party.ItemRoster.AddToCounts(item.EquipmentElement,
+                            -item.Amount);
+                        source.ItemRoster.AddToCounts(item.EquipmentElement,
+                            item.Amount);
+                    }
+                    throw;
+                }
+            }
             return new SupplyAnimalResult(0, purchased, totalCost);
         }
 

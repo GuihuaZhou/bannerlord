@@ -88,7 +88,7 @@ namespace ModifiedArmy.Garrison.Supply
             Settlement source,
             int requestedFood)
         {
-            Hero payer = component.HomeSettlement.OwnerClan?.Leader;
+            Hero payer = component.OriginalDispatchClan?.Leader;
 
             SupplyFoodPurchaseResult purchase = Cargo.PurchaseFood(
                 party, source, payer, requestedFood,
@@ -103,7 +103,7 @@ namespace ModifiedArmy.Garrison.Supply
             Settlement source,
             int requestedFood)
         {
-            Hero payer = component.HomeSettlement.OwnerClan?.Leader;
+            Hero payer = component.OriginalDispatchClan?.Leader;
 
             if (payer == null || payer.Gold <= 0)
             {

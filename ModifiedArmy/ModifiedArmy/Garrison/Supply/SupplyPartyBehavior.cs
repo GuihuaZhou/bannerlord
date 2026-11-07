@@ -36,6 +36,7 @@ namespace ModifiedArmy.Garrison.Supply
         private const int VillagePurchaseBatchSize = 100;
 
         private const int TownPurchaseBatchSize = 75;
+        private const int MinimumResidentGarrisonAfterDispatch = 75;
 
         private const int MinimumTownMarketFoodReserve = 100;
 
@@ -78,6 +79,8 @@ namespace ModifiedArmy.Garrison.Supply
                 .AddNonSerializedListener(this, OnDailySettlementTick);
             CampaignEvents.HourlyTickPartyEvent
                 .AddNonSerializedListener(this, OnHourlyPartyTick);
+            CampaignEvents.AiHourlyTickEvent
+                .AddNonSerializedListener(this, OnAiHourlyTick);
             CampaignEvents.SettlementEntered
                 .AddNonSerializedListener(this, OnSettlementEntered);
             CampaignEvents.MobilePartyDestroyed
@@ -98,6 +101,27 @@ namespace ModifiedArmy.Garrison.Supply
 
             _nextDispatchTimes ??=
                 new Dictionary<Settlement, CampaignTime>();
+        }
+
+        /// <summary>
+        /// Keeps native long-term scoring from replacing an active local
+        /// foraging destination. MobilePartyAi remains enabled so native
+        /// short-term initiative and avoidance can still be evaluated.
+        /// Cross-settlement aid retains its existing behavior in this phase.
+        /// </summary>
+        private static void OnAiHourlyTick(
+            MobileParty party,
+            PartyThinkParams parameters)
+        {
+            if (parameters == null || party?.IsActive != true ||
+                !(party.PartyComponent is SupplyPartyComponent component) ||
+                component.IsAidMission || component.MissionState ==
+                    SupplyPartyMissionState.Completed)
+            {
+                return;
+            }
+
+            parameters.DoNotChangeBehavior = true;
         }
 
         public MobileParty TryDispatchControlledAid(
@@ -213,81 +237,120 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
+            if (!component.IsAidMission)
+            {
+                ReconcileLocalMission(party, component);
+                return;
+            }
+
             // SettlementEntered is not guaranteed to fire again when a
             // loaded or rerouted party is already inside its home. Finalize
             // from authoritative current-settlement state before health and
             // food recovery can reissue the same return order every hour.
-            if (!component.IsAidMission &&
-                component.MissionState ==
-                    SupplyPartyMissionState.ReturningHome &&
-                party.CurrentSettlement == component.HomeSettlement)
-            {
-                CompleteMission(party, component);
-                return;
-            }
-
             LogDailySupplyHealth(party, component);
-
-            if (!component.IsAidMission)
-                HandleLocalMissionFoodRisk(party, component, false);
 
             if (ShouldPauseForThreat(party, component)) return;
 
-            if (component.IsAidMission)
+            AdvanceAidMission(party, component);
+            return;
+
+        }
+
+        private void ReconcileLocalMission(MobileParty party,
+            SupplyPartyComponent component)
+        {
+            component.RestoreLegacyDispatchClan(party.ActualClan);
+            if (component.RecoveryRequired)
             {
-                AdvanceAidMission(party, component);
+                BeginOrContinueLocalRecovery(party, component);
                 return;
             }
-
-            // Route changes occur only after native threat protection. The
-            // read-only risk probe above remains active during avoidance.
-            HandleLocalMissionFoodRisk(party, component, true);
-
-            if (HandleLocalEscortHealthRisk(party, component)) return;
-
-            if (component.MissionState
-                == SupplyPartyMissionState.TravelingToSource)
+            Settlement receiver = GetValidLocalReceiver(component);
+            if (party.CurrentSettlement == receiver && receiver != null)
             {
-                if (!IsValidSource(
-                    component.HomeSettlement,
-                    component.SourceSettlement))
+                if (component.MissionState ==
+                        SupplyPartyMissionState.TravelingToSource &&
+                    !component.PurchaseCommitted &&
+                    !component.HasVisited(component.SourceSettlement) &&
+                    IsValidSource(component.HomeSettlement,
+                        component.SourceSettlement))
                 {
-                    SourceSelection replacement = FindBestSource(
-                        component.HomeSettlement,
-                        component.RequestedFood,
-                        party);
-
-                    if (replacement == null)
-                    {
-                        component.BeginReturnJourney();
-                        MoveToSettlement(
-                            party,
-                            component.HomeSettlement);
-                        return;
-                    }
-
-                    component.ChangeSource(replacement.Settlement);
+                    if (!TransportThreatModel.IsNativeAvoidanceActive(party))
+                        EnsureMovingTo(party, component.SourceSettlement,
+                            "LocalDeparture");
+                    return;
                 }
-
-                LogUnexpectedRouteOverride(
-                    party,
-                    component,
-                    component.SourceSettlement);
-                EnsureMovingTo(party, component.SourceSettlement,
-                    "TravelingToSource");
+                CompleteMission(party, component);
                 return;
             }
-
-            if (component.MissionState
-                == SupplyPartyMissionState.ReturningHome)
+            if (component.MissionState == SupplyPartyMissionState.Completed)
             {
-                LogUnexpectedRouteOverride(
-                    party,
-                    component,
-                    component.HomeSettlement);
-                EnsureMovingTo(party, component.HomeSettlement,
-                    "ReturningHome");
+                component.RequireRecovery("CompletedPartyStillHasAssets");
+                BeginOrContinueLocalRecovery(party, component);
+                return;
             }
+            if (component.MissionState ==
+                    SupplyPartyMissionState.RestingAtFriendlySettlement ||
+                component.MissionState == SupplyPartyMissionState.Recovering)
+                component.BeginReturnJourney();
+            if (component.MissionState ==
+                    SupplyPartyMissionState.TravelingToSource &&
+                party.CurrentSettlement == component.SourceSettlement)
+            {
+                HandleLocalSourceReached(party, component,
+                    component.SourceSettlement);
+                return;
+            }
+            if (component.MissionState ==
+                    SupplyPartyMissionState.TravelingToSource &&
+                (!IsValidSource(component.HomeSettlement,
+                    component.SourceSettlement) || component.PurchaseCommitted))
+                component.BeginReturnJourney();
+            Settlement destination = component.MissionState ==
+                    SupplyPartyMissionState.TravelingToSource
+                ? component.SourceSettlement : receiver;
+            if (destination == null)
+            {
+                component.RequireRecovery("ReceiverUnavailable");
+                BeginOrContinueLocalRecovery(party, component);
+                return;
+            }
+            if (!TransportThreatModel.IsNativeAvoidanceActive(party))
+                EnsureMovingTo(party, destination, "LocalReconcile");
+        }
+
+        private static Settlement GetValidLocalReceiver(
+            SupplyPartyComponent component)
+        {
+            Settlement home = component?.HomeSettlement;
+            return component?.OriginalDispatchClan != null &&
+                home?.Town?.GarrisonParty != null &&
+                home.OwnerClan == component.OriginalDispatchClan &&
+                !home.IsUnderSiege ? home : null;
+        }
+
+        private void BeginOrContinueLocalRecovery(MobileParty party,
+            SupplyPartyComponent component)
+        {
+            Settlement recovery = component.RecoverySettlement;
+            if (recovery?.Town?.GarrisonParty == null ||
+                recovery.OwnerClan != component.OriginalDispatchClan ||
+                recovery.IsUnderSiege)
+            {
+                recovery = Settlement.All.Where(x =>
+                        x?.Town?.GarrisonParty != null &&
+                        x.OwnerClan == component.OriginalDispatchClan &&
+                        !x.IsUnderSiege)
+                    .OrderBy(x => party.Position.DistanceSquared(x.GatePosition))
+                    .FirstOrDefault();
+                component.RequireRecovery(component.RecoveryReason, recovery);
+            }
+            if (recovery == null) return;
+            if (party.CurrentSettlement == recovery)
+                _recoveryService.CompleteReturn(party, component, recovery,
+                    Cargo, LogSupplyEscortCapacity);
+            else if (!TransportThreatModel.IsNativeAvoidanceActive(party))
+                EnsureMovingTo(party, recovery, "LocalRecovery");
         }
 
         private void OnSettlementEntered(
@@ -308,63 +371,11 @@ namespace ModifiedArmy.Garrison.Supply
                 return;
             }
 
-            if (TryHandleFriendlyRecoveryEntry(party, component, settlement))
-                return;
-
             if (component.MissionState
                     == SupplyPartyMissionState.TravelingToSource
                 && settlement == component.SourceSettlement)
             {
-                SupplyAcquisitionResult acquisition =
-                    AcquireFoodAtSource(party, component, settlement);
-                component.RecordSourceVisit(
-                    settlement,
-                    acquisition.FoodAcquired);
-
-                if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
-                {
-                    TextObject message = GameTexts.FindText(
-                        "str_modifiedarmy_supply_party_loaded");
-                    message.SetTextVariable(
-                        "HOME_NAME",
-                        component.HomeSettlement.Name);
-                    message.SetTextVariable("SOURCE_NAME", settlement.Name);
-                    message.SetTextVariable("FOOD", acquisition.FoodAcquired);
-                    message.SetTextVariable("COST", acquisition.GoldCost);
-                    message.SetTextVariable(
-                        "MOUNTS",
-                        acquisition.MountsPurchased);
-                    message.SetTextVariable(
-                        "MOUNT_COST",
-                        acquisition.MountGoldCost);
-                    message.SetTextVariable(
-                        "CARGO_FOOD",
-                        party.ItemRoster.TotalFood);
-                    ModLogger.Info(message.ToString());
-                }
-
-                Hero payer = component.HomeSettlement.OwnerClan?.Leader;
-                bool canContinue = component.RequestedFood > 0
-                    && party.TotalWeightCarried < party.InventoryCapacity
-                    && payer?.Gold > 0;
-                SourceSelection nextSource = canContinue
-                    ? FindBestSource(
-                        component.HomeSettlement,
-                        component.RequestedFood,
-                        party)
-                    : null;
-
-                if (nextSource != null)
-                {
-                    component.ChangeSource(nextSource.Settlement);
-                    MoveToSettlement(party, nextSource.Settlement);
-                }
-                else
-                {
-                    component.BeginReturnJourney();
-                    MoveToSettlement(party, component.HomeSettlement);
-                }
-
+                HandleLocalSourceReached(party, component, settlement);
                 return;
             }
 
@@ -373,6 +384,58 @@ namespace ModifiedArmy.Garrison.Supply
                 && settlement == component.HomeSettlement)
             {
                 CompleteMission(party, component);
+            }
+        }
+
+        private void HandleLocalSourceReached(MobileParty party,
+            SupplyPartyComponent component, Settlement settlement)
+        {
+            if (component.PurchaseCommitted || component.HasVisited(settlement))
+            {
+                component.BeginReturnJourney();
+                ReconcileLocalMission(party, component);
+                return;
+            }
+            try
+            {
+                SupplyAcquisitionResult acquisition = AcquireFoodAtSource(
+                    party, component, settlement);
+                component.RecordSourceVisit(settlement,
+                    acquisition.FoodAcquired);
+                if (component.OriginalDispatchClan == Clan.PlayerClan)
+                {
+                    TextObject loaded = GameTexts.FindText(
+                        "str_modifiedarmy_supply_party_loaded");
+                    loaded.SetTextVariable("HOME_NAME",
+                        component.HomeSettlement.Name);
+                    loaded.SetTextVariable("SOURCE_NAME", settlement.Name);
+                    loaded.SetTextVariable("FOOD",
+                        acquisition.FoodAcquired);
+                    loaded.SetTextVariable("COST", acquisition.GoldCost);
+                    loaded.SetTextVariable("MOUNTS",
+                        acquisition.MountsPurchased);
+                    loaded.SetTextVariable("MOUNT_COST",
+                        acquisition.MountGoldCost);
+                    loaded.SetTextVariable("CARGO_FOOD",
+                        party.ItemRoster.TotalFood);
+                    ModLogger.Info(loaded.ToString());
+                }
+                component.BeginReturnJourney();
+                ReconcileLocalMission(party, component);
+            }
+            catch (Exception exception)
+            {
+                component.RequireRecovery("PurchaseTransactionFailed");
+                TextObject message = new TextObject(
+                    "{=ModifiedArmy_SupplyPurchaseRecovery}" +
+                    "Supply purchase for {PARTY} at {SETTLEMENT} failed; " +
+                    "the mission is frozen for recovery. Reason: {REASON}");
+                message.SetTextVariable("PARTY",
+                    PartyLogFormatter.GetDisplayName(party));
+                message.SetTextVariable("SETTLEMENT", settlement?.Name ??
+                    TextObject.GetEmpty());
+                message.SetTextVariable("REASON", exception.Message);
+                ModLogger.Error(message.ToString());
             }
         }
 
@@ -417,40 +480,13 @@ namespace ModifiedArmy.Garrison.Supply
                     continue;
                 }
 
-                if (component.HomeSettlement == settlement)
-                {
-                    component.SynchronizeOwnership();
-                }
-
                 if (component.HomeSettlement == settlement
                     || component.SourceSettlement == settlement)
                 {
-                    if (component.MissionState
-                            == SupplyPartyMissionState.TravelingToSource
-                        && !IsValidSource(
-                            component.HomeSettlement,
-                            component.SourceSettlement))
-                    {
-                        SourceSelection replacement = FindBestSource(
-                            component.HomeSettlement,
-                            component.RequestedFood,
-                            party);
-
-                        if (replacement != null)
-                        {
-                            component.ChangeSource(replacement.Settlement);
-                            MoveToSettlement(
-                                party,
-                                replacement.Settlement);
-                        }
-                        else
-                        {
-                            component.BeginReturnJourney();
-                            MoveToSettlement(
-                                party,
-                                component.HomeSettlement);
-                        }
-                    }
+                    component.BeginReturnJourney();
+                    if (GetValidLocalReceiver(component) == null)
+                        component.RequireRecovery("HomeOwnershipChanged");
+                    ReconcileLocalMission(party, component);
                 }
             }
         }
@@ -459,8 +495,7 @@ namespace ModifiedArmy.Garrison.Supply
         {
             _recoveryService.RestoreLoadedMissions(
                 AdvanceAidMission,
-                (party, destination) => MoveToSettlement(
-                    party, destination, "LoadRecovery"));
+                ReconcileLocalMission);
         }
 
         private void AdvanceAidMission(
@@ -935,9 +970,16 @@ namespace ModifiedArmy.Garrison.Supply
             int requestedFood)
         {
             MobileParty garrison = home.Town.GarrisonParty;
+            if (GetSafeLocalEscortCount(home) < EscortSize)
+            {
+                SetDispatchCooldown(home, 1f);
+                return false;
+            }
             TroopRoster escortRoster = ExtractEscortRoster(garrison);
 
-            if (escortRoster.TotalHealthyCount < EscortSize)
+            if (escortRoster.TotalHealthyCount < EscortSize ||
+                garrison.MemberRoster.TotalManCount <
+                    MinimumResidentGarrisonAfterDispatch)
             {
                 RestoreTroops(escortRoster, garrison.MemberRoster);
                 SetDispatchCooldown(home, 1f);
@@ -1034,7 +1076,31 @@ namespace ModifiedArmy.Garrison.Supply
         private static TroopRoster ExtractEscortRoster(
             MobileParty garrison)
         {
-            return Cargo.ExtractHealthyEscort(garrison, EscortSize);
+            Dictionary<CharacterObject, int> protectedCounts =
+                Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                    .GetServingTroopCounts(garrison) ??
+                new Dictionary<CharacterObject, int>();
+            return Cargo.ExtractHealthyEscort(garrison, EscortSize,
+                protectedCounts);
+        }
+
+        private static int GetSafeLocalEscortCount(Settlement home)
+        {
+            MobileParty garrison = home?.Town?.GarrisonParty;
+            if (garrison == null) return 0;
+            Dictionary<CharacterObject, int> protectedCounts =
+                Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?
+                    .GetServingTroopCounts(garrison) ??
+                new Dictionary<CharacterObject, int>();
+            int eligible = garrison.MemberRoster.GetTroopRoster()
+                .Where(x => x.Character != null && !x.Character.IsHero)
+                .Sum(x => Math.Max(0, x.Number - x.WoundedNumber -
+                    (protectedCounts.TryGetValue(x.Character, out int count)
+                        ? count : 0)));
+            int safeByResidentFloor = Math.Max(0,
+                garrison.MemberRoster.TotalManCount -
+                    MinimumResidentGarrisonAfterDispatch);
+            return Math.Min(eligible, safeByResidentFloor);
         }
 
         private void CompleteMission(
@@ -1108,7 +1174,8 @@ namespace ModifiedArmy.Garrison.Supply
             int requestedFood,
             MobileParty requestingParty)
         {
-            SourceSelection best = null;
+            List<SupplyDestinationCandidate> candidates =
+                new List<SupplyDestinationCandidate>();
 
             foreach (Settlement candidate in Settlement.All)
             {
@@ -1123,11 +1190,25 @@ namespace ModifiedArmy.Garrison.Supply
 
                 int availableFood = CalculateAvailableFood(candidate)
                     - CalculateReservedFood(candidate, requestingParty);
+                Hero payer = home.OwnerClan?.Leader;
+                int minimumUnitPrice = candidate.ItemRoster
+                    .Where(x => x.Amount > 0 &&
+                        x.EquipmentElement.Item?.IsFood == true)
+                    .Select(x => candidate.IsTown
+                        ? candidate.Town.GetItemPrice(
+                            x.EquipmentElement, null, false)
+                        : x.EquipmentElement.Item.Value)
+                    .DefaultIfEmpty(int.MaxValue)
+                    .Min();
 
-                if (availableFood <= 0)
+                if (availableFood <= 0 || payer?.Gold <= 0 ||
+                    minimumUnitPrice <= 0 ||
+                    minimumUnitPrice == int.MaxValue)
                 {
                     continue;
                 }
+                availableFood = Math.Min(availableFood,
+                    payer.Gold / Math.Max(1, minimumUnitPrice));
 
                 float distance = Campaign.Current.Models.MapDistanceModel
                     .GetDistance(
@@ -1155,22 +1236,15 @@ namespace ModifiedArmy.Garrison.Supply
                         Math.Min(availableFood, requestedFood),
                         MaximumRequestedFood),
                     batchSize);
-                int priority = candidate.IsVillage ? 2 : 1;
-                float score = request / distance;
-
-                if (best == null
-                    || priority > best.Priority
-                    || priority == best.Priority && score > best.Score)
-                {
-                    best = new SourceSelection(
-                        candidate,
-                        request,
-                        priority,
-                        score);
-                }
+                candidates.Add(new SupplyDestinationCandidate(candidate,
+                    request, distance));
             }
-
-            return best;
+            SupplyDestinationDecision decision =
+                new SupplyDestinationModel().Select(candidates);
+            return decision.IsApproved
+                ? new SourceSelection(decision.Settlement, decision.Request,
+                    1, decision.Score)
+                : null;
         }
 
         private static bool IsValidSource(

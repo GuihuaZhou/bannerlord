@@ -15,7 +15,8 @@ namespace ModifiedArmy.Garrison.Supply
 {
     /// <summary>
     /// Identifies a temporary supply party and stores its persistent route.
-    /// Ownership is derived from the current owner of the home settlement.
+    /// Local mission ownership is captured at dispatch and never follows a
+    /// later change of settlement owner.
     /// </summary>
     [SaveableRootClass(1)]
     public class SupplyPartyComponent : PartyComponent
@@ -51,6 +52,21 @@ namespace ModifiedArmy.Garrison.Supply
         [SaveableProperty(10)]
         public CampaignTime Deadline { get; private set; }
 
+        [SaveableProperty(11)]
+        public Clan OriginalDispatchClan { get; private set; }
+
+        [SaveableProperty(12)]
+        public bool RecoveryRequired { get; private set; }
+
+        [SaveableProperty(13)]
+        public string RecoveryReason { get; private set; }
+
+        [SaveableProperty(14)]
+        public bool PurchaseCommitted { get; private set; }
+
+        [SaveableProperty(15)]
+        public CampaignTime LastProgressTime { get; private set; }
+
         [CachedData]
         private TextObject _cachedName;
 
@@ -67,12 +83,15 @@ namespace ModifiedArmy.Garrison.Supply
 
         public override Hero PartyOwner =>
             (IsAidMission ? DispatchClan :
-                SupplyHomeSettlement?.OwnerClan)?.Leader;
+                OriginalDispatchClan)?.Leader;
 
         public override Settlement HomeSettlement =>
             SupplyHomeSettlement;
 
-        public override bool AvoidHostileActions => false;
+        // Marks the local logistics party as non-aggressive without disabling
+        // MobilePartyAi decisions. Native short-term avoidance still requires
+        // matching-version runtime verification for this custom component.
+        public override bool AvoidHostileActions => !IsAidMission;
 
         public override TextObject Name
         {
@@ -105,6 +124,8 @@ namespace ModifiedArmy.Garrison.Supply
             VisitedSettlements = new List<Settlement>();
             MissionStateValue =
                 (int)SupplyPartyMissionState.TravelingToSource;
+            OriginalDispatchClan = homeSettlement?.OwnerClan;
+            LastProgressTime = CampaignTime.Now;
             _initializationArgs = initializationArgs;
         }
 
@@ -170,12 +191,14 @@ namespace ModifiedArmy.Garrison.Supply
         {
             MissionStateValue =
                 (int)SupplyPartyMissionState.ReturningHome;
+            LastProgressTime = CampaignTime.Now;
         }
 
         public void CompleteMission()
         {
             MissionStateValue =
                 (int)SupplyPartyMissionState.Completed;
+            LastProgressTime = CampaignTime.Now;
         }
 
         public void BeginAidReturn()
@@ -203,6 +226,7 @@ namespace ModifiedArmy.Garrison.Supply
             SourceSettlement = sourceSettlement;
             MissionStateValue =
                 (int)SupplyPartyMissionState.TravelingToSource;
+            LastProgressTime = CampaignTime.Now;
         }
 
         public void RecordSourceVisit(Settlement settlement, int acquiredFood)
@@ -215,6 +239,29 @@ namespace ModifiedArmy.Garrison.Supply
             }
 
             RequestedFood = Math.Max(0, RequestedFood - acquiredFood);
+            PurchaseCommitted = true;
+            LastProgressTime = CampaignTime.Now;
+        }
+
+        public void RequireRecovery(string reason, Settlement settlement = null)
+        {
+            RecoveryRequired = true;
+            RecoveryReason = reason ?? "RecoveryRequired";
+            RecoverySettlement = settlement;
+            LastProgressTime = CampaignTime.Now;
+        }
+
+        public void ClearRecovery()
+        {
+            RecoveryRequired = false;
+            RecoveryReason = null;
+            LastProgressTime = CampaignTime.Now;
+        }
+
+        public void RestoreLegacyDispatchClan(Clan clan)
+        {
+            if (!IsAidMission && OriginalDispatchClan == null && clan != null)
+                OriginalDispatchClan = clan;
         }
 
         public bool HasVisited(Settlement settlement)
@@ -231,7 +278,7 @@ namespace ModifiedArmy.Garrison.Supply
         {
             Clan ownerClan = IsAidMission
                 ? DispatchClan
-                : SupplyHomeSettlement?.OwnerClan;
+                : OriginalDispatchClan;
 
             if (MobileParty == null
                 || ownerClan == null
@@ -247,7 +294,8 @@ namespace ModifiedArmy.Garrison.Supply
 
         public override Banner GetDefaultComponentBanner()
         {
-            return DispatchClan?.Banner ?? SupplyHomeSettlement?.Banner;
+            return (IsAidMission ? DispatchClan : OriginalDispatchClan)
+                ?.Banner ?? SupplyHomeSettlement?.Banner;
         }
 
         /// <summary>
@@ -297,7 +345,7 @@ namespace ModifiedArmy.Garrison.Supply
             MobileParty.Aggressiveness = 0f;
             MobileParty.ActualClan = IsAidMission
                 ? DispatchClan
-                : SupplyHomeSettlement.OwnerClan;
+                : OriginalDispatchClan ?? SupplyHomeSettlement.OwnerClan;
             MobileParty.Ai.SetDoNotMakeNewDecisions(false);
 
             if (_initializationArgs != null)

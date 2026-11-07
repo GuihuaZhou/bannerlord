@@ -365,5 +365,6 @@
     <string id="ModifiedArmy_FiefManagement_Cooling" text="返乡" />
     <string id="ModifiedArmy_FiefManagement_RecruitedCount" text="已招募人数" />
     <string id="ModifiedArmy_SupplyRestingAtFriendly" text="在友方定居点休整" />
+    <string id="ModifiedArmy_SupplyPurchaseRecovery" text="{PARTY}在{SETTLEMENT}采购补给时失败；任务已冻结并等待恢复。原因：{REASON}" />
   </strings>
 </base>

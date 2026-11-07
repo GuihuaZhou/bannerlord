@@ -18,13 +18,14 @@ namespace ModifiedArmy.Garrison.Supply.Services
     {
         public void RestoreLoadedMissions(
             Action<MobileParty, SupplyPartyComponent> advanceAid,
-            Action<MobileParty, Settlement> restoreRoute)
+            Action<MobileParty, SupplyPartyComponent> reconcileLocal)
         {
             foreach (MobileParty party in MobileParty.All)
             {
                 SupplyPartyComponent component = party?.PartyComponent as
                     SupplyPartyComponent;
                 if (component == null) continue;
+                component.RestoreLegacyDispatchClan(party.ActualClan);
                 component.SynchronizeOwnership();
                 party.Ai.SetDoNotMakeNewDecisions(false);
                 if (party.MapEvent != null ||
@@ -35,16 +36,7 @@ namespace ModifiedArmy.Garrison.Supply.Services
                     advanceAid(party, component);
                     continue;
                 }
-                if (component.MissionState ==
-                    SupplyPartyMissionState.RestingAtFriendlySettlement)
-                    continue;
-                Settlement destination = component.MissionState ==
-                        SupplyPartyMissionState.TravelingToSource
-                    ? component.SourceSettlement
-                    : component.HomeSettlement;
-                if (destination != null &&
-                    party.CurrentSettlement != destination)
-                    restoreRoute(party, destination);
+                reconcileLocal(party, component);
             }
         }
 
@@ -55,32 +47,58 @@ namespace ModifiedArmy.Garrison.Supply.Services
             Action<Settlement, MobileParty, int, int, int, int, int>
                 logCapacity)
         {
-            MobileParty garrison = component?.HomeSettlement?.Town
-                ?.GarrisonParty;
+            CompleteReturn(party, component, component?.HomeSettlement,
+                cargo, logCapacity);
+        }
+
+        public void CompleteReturn(
+            MobileParty party,
+            SupplyPartyComponent component,
+            Settlement receiver,
+            SupplyCargoService cargo,
+            Action<Settlement, MobileParty, int, int, int, int, int>
+                logCapacity)
+        {
+            MobileParty garrison = receiver?.Town?.GarrisonParty;
             if (party == null || garrison == null) return;
+            component.RestoreLegacyDispatchClan(party.ActualClan);
+            if (receiver.OwnerClan != component.OriginalDispatchClan ||
+                party.CurrentSettlement != receiver)
+            {
+                component.RequireRecovery("InvalidReturnReceiver", receiver);
+                return;
+            }
             int returnedTroops = party.MemberRoster.TotalManCount;
             int returnedFood = party.ItemRoster.TotalFood;
             int returnedPackAnimals = party.ItemRoster.NumberOfPackAnimals;
             int returnedMounts = party.ItemRoster.NumberOfMounts;
             int garrisonBefore = garrison.Party.NumberOfAllMembers;
             int reservedBefore = GarrisonRecruitmentCapacity
-                .GetActiveSupplyEscortCount(component.HomeSettlement);
+                .GetActiveSupplyEscortCount(receiver);
             int partySizeLimit = garrison.Party.PartySizeLimit;
             int missionState = component.MissionStateValue;
 
-            component.CompleteMission();
-            cargo.RestoreTroops(party.MemberRoster, garrison.MemberRoster);
+            cargo.TransferTroopsLimited(party.MemberRoster,
+                garrison.MemberRoster, returnedTroops);
             cargo.TransferAllItems(party.ItemRoster, garrison.ItemRoster);
-            logCapacity?.Invoke(component.HomeSettlement, party,
+            if (party.MemberRoster.TotalManCount > 0 ||
+                party.ItemRoster.Count > 0)
+            {
+                component.RequireRecovery("ReturnTransferIncomplete", receiver);
+                return;
+            }
+            component.ClearRecovery();
+            component.CompleteMission();
+            logCapacity?.Invoke(receiver, party,
                 garrisonBefore, returnedTroops, reservedBefore,
                 partySizeLimit, missionState);
 
-            if (component.HomeSettlement.OwnerClan == Clan.PlayerClan)
+            if (receiver.OwnerClan == Clan.PlayerClan)
             {
                 TextObject message = GameTexts.FindText(
                     "str_modifiedarmy_supply_party_returned");
                 message.SetTextVariable(
-                    "HOME_NAME", component.HomeSettlement.Name);
+                    "HOME_NAME", receiver.Name);
                 message.SetTextVariable("ESCORT", returnedTroops);
                 message.SetTextVariable("FOOD", returnedFood);
                 message.SetTextVariable("PACK_ANIMALS", returnedPackAnimals);
