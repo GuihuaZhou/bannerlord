@@ -2,6 +2,7 @@ using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Models;
@@ -504,7 +505,8 @@ namespace ModifiedArmy.ForceManagement.Models
                     out IReadOnlyList<RecruitmentCandidate> candidates,
                     out RecruitmentPlan admission,
                     out int approvedBeforeMinimumBatch,
-                    out int minimumBatch);
+                    out int minimumBatch,
+                    out FiefRecruitmentCandidateDiagnostics candidateDiagnostics);
             PartyExchangePlan result = CreatePlan(
                 context,
                 PartyExchangeExecutorKind.FiefMobilization);
@@ -519,7 +521,7 @@ namespace ModifiedArmy.ForceManagement.Models
             if (result.SourceToDestination.TotalCount <= 0)
                 LogInitialFiefApprovalFailure(context, roster, candidates,
                     admission, approvedBeforeMinimumBatch, minimumBatch,
-                    result.FiefSourceFingerprint);
+                    result.FiefSourceFingerprint, candidateDiagnostics);
             return Finish(context, result);
         }
 
@@ -530,10 +532,12 @@ namespace ModifiedArmy.ForceManagement.Models
             RecruitmentPlan admission,
             int approvedBeforeMinimumBatch,
             int minimumBatch,
-            string sourceFingerprint)
+            string sourceFingerprint,
+            FiefRecruitmentCandidateDiagnostics candidateDiagnostics)
         {
             MobileParty party = context?.Destination?.Party;
-            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            if (string.IsNullOrEmpty(context?.AttemptId) &&
+                !RecruitmentLogFilter.ShouldLog(party)) return;
             int raw = roster?.TotalRegulars ?? 0;
             int wounded = roster?.GetTroopRoster()
                 .Where(x => x.Character != null && !x.Character.IsHero)
@@ -547,11 +551,16 @@ namespace ModifiedArmy.ForceManagement.Models
                 approvedBeforeMinimumBatch <= 0 ? "RecruitmentAdmission" :
                 approvedBeforeMinimumBatch < minimumBatch
                     ? "MinimumFiefRecruitBatch" : "ManifestConstruction";
+            string admissionLimits = string.Join(",",
+                admission?.Evaluations?
+                    .Where(x => x.RecruitableCount <= 0)
+                    .GroupBy(x => x.PrimaryLimit)
+                    .Select(group => group.Key + ":" + group.Count()) ??
+                Array.Empty<string>());
             string reason = offered <= 0 ? "NoWeightedCandidates" :
                 approvedBeforeMinimumBatch <= 0
-                    ? admission?.Evaluations?.FirstOrDefault(x =>
-                        x.RecruitableCount <= 0)?.PrimaryLimit.ToString() ??
-                        "AdmissionReturnedZero"
+                    ? !string.IsNullOrEmpty(admissionLimits)
+                        ? admissionLimits : "AdmissionReturnedZero"
                     : approvedBeforeMinimumBatch < minimumBatch
                         ? "BelowMinimumFiefRecruitBatch"
                         : "NoApprovedTroops";
@@ -577,14 +586,27 @@ namespace ModifiedArmy.ForceManagement.Models
                 context.TargetSettlement?.Name ?? GetUnknownText());
             message.SetTextVariable("SETTLEMENT_ID",
                 context.TargetSettlement?.StringId ?? "none");
+            FiefSourceAccessDecision binding = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                .EvaluateFiefSourceAccess(context.TargetSettlement, party);
+            message.SetTextVariable("BOUND_PARTY_ID",
+                binding?.BoundPartyId ?? "none");
+            message.SetTextVariable("RESERVATION_OWNER",
+                binding?.ReservationOwner ?? "none");
+            message.SetTextVariable("BINDING_REASON",
+                binding?.ReasonCode ?? "SourceBindingUnavailable");
             message.SetTextVariable("REQUESTED", context.RequestedCount);
             message.SetTextVariable("RAW", raw);
             message.SetTextVariable("HEALTHY", healthy);
             message.SetTextVariable("WOUNDED", wounded);
-            message.SetTextVariable("TEMPLATE_ROOTS", "Unavailable");
-            message.SetTextVariable("TEMPLATE_ELIGIBLE", "Unavailable");
-            message.SetTextVariable("MATCHED", offered);
-            message.SetTextVariable("UNMATCHED", "Unavailable");
+            message.SetTextVariable("TEMPLATE_ROOTS",
+                candidateDiagnostics?.TemplateRoots ?? "none");
+            message.SetTextVariable("TEMPLATE_ELIGIBLE",
+                candidateDiagnostics?.TemplateEligible ?? 0);
+            message.SetTextVariable("MATCHED",
+                candidateDiagnostics?.RootMatched ?? offered);
+            message.SetTextVariable("UNMATCHED",
+                candidateDiagnostics?.Unmatched ?? "none");
             message.SetTextVariable("OFFERED", offered);
             message.SetTextVariable("EVALUATIONS", evaluations);
             message.SetTextVariable("APPROVED_BEFORE",

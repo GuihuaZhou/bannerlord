@@ -30,6 +30,8 @@ namespace ModifiedArmy.Models.Fief
             Dictionary<string, MobileParty> batchParties =
                 new Dictionary<string, MobileParty>(
                     System.StringComparer.Ordinal);
+            Dictionary<Settlement, HashSet<MobileParty>> partiesBySource =
+                new Dictionary<Settlement, HashSet<MobileParty>>();
             foreach (var pair in data)
             foreach (VillageFiefData village in pair.Value?.Villages?.Values ??
                 Enumerable.Empty<VillageFiefData>())
@@ -67,11 +69,54 @@ namespace ModifiedArmy.Models.Fief
                 }
                 batchOwners[batch.BatchId] = village;
                 batchParties[batch.BatchId] = batch.ServingParty;
-                if (batch?.ServingParty == null || batch.IsEmpty()) continue;
+                if (batch.ServingParty == null || batch.IsEmpty())
+                {
+                    string reason = batch.ServingParty == null
+                        ? "MissingServingParty" : "EmptyServiceBatch";
+                    village.RequireRecovery(reason);
+                    ModLogger.FileError(string.Format(
+                        "Invalid fief service batch retained for recovery: " +
+                        "sourceFief={0}, sourceFiefId={1}, sourceVillage={2}, " +
+                        "sourceVillageId={3}, batchId={4}, reason={5}.",
+                        pair.Key?.Name, pair.Key?.StringId,
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId,
+                        batch.BatchId, reason));
+                    continue;
+                }
                 batch.Repair(batch.ServingParty);
                 Register(batch.SourceFief, batch.SourceVillage, batch);
+                if (batch.ServingParty.IsLordParty)
+                {
+                    if (!partiesBySource.TryGetValue(batch.SourceFief,
+                            out HashSet<MobileParty> sourceParties))
+                        partiesBySource[batch.SourceFief] = sourceParties =
+                            new HashSet<MobileParty>();
+                    sourceParties.Add(batch.ServingParty);
+                }
                 if (village.RecoveryRequired)
                     _blockedParties.Add(batch.ServingParty);
+            }
+            foreach (var conflict in partiesBySource.Where(item =>
+                item.Value.Count > 1))
+            {
+                foreach (MobileParty party in conflict.Value)
+                    _blockedParties.Add(party);
+                foreach (VillageFiefData village in data.TryGetValue(
+                    conflict.Key, out FiefPartyData fief)
+                        ? fief?.Villages?.Values ??
+                            Enumerable.Empty<VillageFiefData>()
+                        : Enumerable.Empty<VillageFiefData>())
+                    village?.RequireRecovery(
+                        "FiefSourceMultipleServingParties");
+                ModLogger.FileError(string.Format(
+                    "Fief source has conflicting serving parties: " +
+                    "sourceFief={0}, sourceFiefId={1}, parties={2}, " +
+                    "reason=FiefSourceMultipleServingParties.",
+                    conflict.Key?.Name, conflict.Key?.StringId,
+                    string.Join(",", conflict.Value.OrderBy(party =>
+                        party.StringId).Select(party => string.Format(
+                            "{0}({1})", party.Name, party.StringId)))));
             }
         }
 

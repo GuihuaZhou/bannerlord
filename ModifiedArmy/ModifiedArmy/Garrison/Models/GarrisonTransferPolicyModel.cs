@@ -3,6 +3,8 @@ using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.Models.Fief;
+using ModifiedArmy.PartyManagement.Bindings;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -137,6 +139,22 @@ namespace ModifiedArmy.Garrison.Models
                 requestedCount <= 0 || receivingParty.ActualClan == null ||
                 receivingParty.ActualClan != settlement.OwnerClan)
             {
+                return 0;
+            }
+            FiefSourceAccessDecision access = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                .EvaluateFiefSourceAccess(settlement, receivingParty);
+            if (access?.Allowed != true)
+            {
+                ModLogger.FileWarn(string.Format(
+                    "Garrison source transfer rejected: settlement={0}, " +
+                    "settlementId={1}, requestingParty={2}, partyId={3}, " +
+                    "boundPartyId={4}, reservationOwner={5}, reason={6}.",
+                    settlement?.Name, settlement?.StringId,
+                    receivingParty.Name, receivingParty.StringId,
+                    access?.BoundPartyId ?? "none",
+                    access?.ReservationOwner ?? "none",
+                    access?.ReasonCode ?? "SourceBindingUnavailable"));
                 return 0;
             }
 

@@ -51,10 +51,12 @@ namespace ModifiedArmy.ForceManagement.Services
                         taskId, attemptId);
                 case PartyForceSourceKind.Professional:
                     return ExecuteGarrison(
-                        party, settlement, requested, operationId);
+                        party, settlement, requested, operationId,
+                        taskId, attemptId);
                 case PartyForceSourceKind.Mercenary:
                     return ExecuteMercenary(
-                        party, settlement, requested, operationId);
+                        party, settlement, requested, operationId,
+                        taskId, attemptId);
                 default:
                     return Failed("UnsupportedRecruitmentSource");
             }
@@ -104,7 +106,9 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty party,
             Settlement settlement,
             int requested,
-            string operationId)
+            string operationId,
+            string taskId,
+            string attemptId)
         {
             MobileParty garrison = settlement.Town?.GarrisonParty;
             if (garrison == null) return Failed("MissingGarrison");
@@ -114,6 +118,8 @@ namespace ModifiedArmy.ForceManagement.Services
                 party, settlement, PartyTroopSourceKind.Mobile);
             return BuildAndExecute(new PartyExchangeContext
             {
+                TaskId = taskId,
+                AttemptId = attemptId,
                 OperationId = operationId,
                 Initiator = party,
                 Operation = PartyExchangeOperation.GarrisonToField,
@@ -134,7 +140,9 @@ namespace ModifiedArmy.ForceManagement.Services
             MobileParty party,
             Settlement settlement,
             int requested,
-            string operationId)
+            string operationId,
+            string taskId,
+            string attemptId)
         {
             TransferOperationJournalBehavior journal = Campaign.Current?
                 .GetCampaignBehavior<TransferOperationJournalBehavior>();

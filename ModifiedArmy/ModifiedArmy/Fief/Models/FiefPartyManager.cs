@@ -137,6 +137,9 @@ namespace ModifiedArmy.Models.Fief
             if (CampaignState.IsNewGame)
                 InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
+            PrepareLegacyMobilizationRecovery();
+            foreach (MobileParty party in _servingDetachmentIndex.Keys.ToList())
+                ReconcilePartyFiefTroops(party);
             ReconcileMobilization();
             if (SettlementPopulationServiceRegistry.Current == null)
             {
@@ -374,11 +377,42 @@ namespace ModifiedArmy.Models.Fief
             {
                 data?.DailyUpdate();
             }
-            ReconcileMobilization();
             foreach (MobileParty party in _servingDetachmentIndex.Keys.ToList())
             {
                 AdvanceServiceDays(party);
                 ReconcilePartyFiefTroops(party);
+            }
+            ReconcileMobilization();
+        }
+
+        private void PrepareLegacyMobilizationRecovery()
+        {
+            foreach (FiefPartyData fief in _fiefDataMap.Values)
+            foreach (VillageFiefData village in fief?.Villages?.Values ??
+                Enumerable.Empty<VillageFiefData>())
+            {
+                if (!village.RecoveryRequired ||
+                    village.RecoveryReason != "InvariantMismatch") continue;
+                if (village.TryGetRawServingCount(out int serving,
+                        out string reason) &&
+                    village.MobilizedHearth == serving)
+                {
+                    village.CompleteRecovery();
+                    ModLogger.FileInfo(string.Format(
+                        "Legacy mobilization recovery reopened: village={0}, " +
+                        "villageId={1}, mobilized={2}, rawServing={3}, " +
+                        "reason=LegacyInvariantMatchedRawLedger.",
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId,
+                        village.MobilizedHearth, serving));
+                }
+                else if (reason != null)
+                    ModLogger.FileError(string.Format(
+                        "Legacy mobilization recovery remains frozen: " +
+                        "village={0}, villageId={1}, mobilized={2}, reason={3}.",
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId,
+                        village.MobilizedHearth, reason));
             }
         }
 
@@ -388,17 +422,56 @@ namespace ModifiedArmy.Models.Fief
             foreach (VillageFiefData village in fief?.Villages?.Values ??
                 Enumerable.Empty<VillageFiefData>())
             {
-                int serving = village.GetServingFiefTroopCount(
-                    fief.GetFiefPartyTemplate());
-                if (village.MobilizedHearth != serving)
+                if (!village.TryGetRawServingCount(out int serving,
+                        out string reason))
                 {
-                    bool newlyRequired = !village.RecoveryRequired;
-                    village.RequireRecovery();
-                    if (newlyRequired)
-                        ModLogger.Error(string.Format(
-                            "Fief mobilization mismatch: village={0}, tracked={1}, serving={2}. Dangerous operations remain rejected.",
-                            village.VillageSettlement?.StringId ?? "unknown",
-                            village.MobilizedHearth, serving));
+                    village.RequireRecovery(reason ??
+                        "InvalidServiceBatchStructure");
+                    continue;
+                }
+                bool legacyCountRecovery = village.RecoveryRequired &&
+                    (village.RecoveryReason == "InvariantMismatch" ||
+                     village.RecoveryReason == "MobilizationMismatch");
+                if (village.RecoveryRequired && !legacyCountRecovery)
+                    continue;
+                if (village.MobilizedHearth > serving)
+                {
+                    int before = village.MobilizedHearth;
+                    int excess = before - serving;
+                    int released = village.RemoveInvalidMobilization(
+                        excess, false);
+                    if (released != excess)
+                    {
+                        village.RequireRecovery(
+                            "MobilizationMarkerReleaseFailed");
+                        continue;
+                    }
+                    ModLogger.FileInfo(string.Format(
+                        "Excess mobilization marker reconciled: village={0}, " +
+                        "villageId={1}, before={2}, rawServing={3}, " +
+                        "released={4}, after={5}, hearthRestored=false.",
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId, before,
+                        serving, released, village.MobilizedHearth));
+                }
+                else if (village.MobilizedHearth < serving)
+                {
+                    village.RequireRecovery(
+                        "UnverifiedMobilizationDeficit");
+                    ModLogger.FileError(string.Format(
+                        "Fief mobilization deficit requires intervention: " +
+                        "village={0}, villageId={1}, mobilized={2}, " +
+                        "rawServing={3}, deficit={4}; soldiers retained.",
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId,
+                        village.MobilizedHearth, serving,
+                        serving - village.MobilizedHearth));
+                }
+                else if (village.RecoveryRequired &&
+                    (village.RecoveryReason == "InvariantMismatch" ||
+                     village.RecoveryReason == "MobilizationMismatch"))
+                {
+                    village.CompleteRecovery();
                 }
             }
         }
@@ -458,11 +531,10 @@ namespace ModifiedArmy.Models.Fief
                     }
                 }
             }
-            if (village.MobilizedHearth !=
-                village.GetServingFiefTroopCount(
-                    GetFiefData(sourceFief).GetFiefPartyTemplate()))
+            if (!village.TryGetRawServingCount(out int rawServing,
+                    out reason) || village.MobilizedHearth != rawServing)
             {
-                reason = "MobilizationMismatch";
+                reason ??= "MobilizationMismatch";
                 return false;
             }
             return true;
@@ -498,6 +570,21 @@ namespace ModifiedArmy.Models.Fief
         public int GetMobilizedHearth(Village village)
         {
             return GetVillageFiefData(village?.Settlement)?.MobilizedHearth ?? 0;
+        }
+
+        public IReadOnlyList<MobileParty> GetServingPartiesForFief(
+            Settlement sourceFief)
+        {
+            if (sourceFief?.IsFortification != true) return
+                Array.Empty<MobileParty>();
+            return _servingDetachmentIndex
+                .Where(pair => pair.Key?.IsLordParty == true &&
+                    pair.Value.Any(item =>
+                    item.SourceFief == sourceFief))
+                .Select(pair => pair.Key)
+                .Distinct()
+                .OrderBy(party => party.StringId, StringComparer.Ordinal)
+                .ToList();
         }
 
         public int GetOccupiedSupplyHearth(Settlement settlement)
@@ -999,6 +1086,31 @@ namespace ModifiedArmy.Models.Fief
                     reason ?? "InvalidTarget"));
                 return false;
             }
+            foreach (Settlement sourceFief in GetServingDetachments(sourceParty)
+                .Select(item => item.SourceFief).Where(item => item != null)
+                .Distinct())
+            {
+                bool targetIsSourceGarrison =
+                    sourceFief.Town?.GarrisonParty == targetParty;
+                FiefSourceAccessDecision access = targetIsSourceGarrison
+                    ? null
+                    : Campaign.Current?
+                        .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                        .EvaluateFiefSourceAccess(sourceFief, targetParty);
+                if (!targetIsSourceGarrison && access?.Allowed != true)
+                {
+                    ModLogger.FileWarn(string.Format(
+                        "Fief service transfer rejected by source binding: " +
+                        "sourceFief={0}, sourceFiefId={1}, sourceParty={2}, " +
+                        "sourcePartyId={3}, targetParty={4}, targetPartyId={5}, " +
+                        "boundPartyId={6}, reason={7}.", sourceFief.Name,
+                        sourceFief.StringId, sourceParty.Name,
+                        sourceParty.StringId, targetParty.Name,
+                        targetParty.StringId, access?.BoundPartyId ?? "none",
+                        access?.ReasonCode ?? "SourceBindingUnavailable"));
+                    return false;
+                }
+            }
             Dictionary<CharacterObject, int> remaining = transferredTroops
                 .Where(p => p.Key != null && p.Value > 0)
                 .ToDictionary(p => p.Key, p => p.Value);
@@ -1312,11 +1424,29 @@ namespace ModifiedArmy.Models.Fief
                 : interaction.IsFortification ? interaction : null;
             FiefPartyData data = GetFiefData(sourceFief);
             Settlement villageFilter = interaction.IsVillage ? interaction : null;
+            FiefSourceAccessDecision access = Campaign.Current?
+                .GetCampaignBehavior<PartySettlementBindingBehavior>()?
+                .EvaluateFiefSourceAccess(sourceFief, party);
             if (data == null || sourceFief?.OwnerClan != party.ActualClan ||
                 interaction.OwnerClan != party.ActualClan ||
                 party.MapEvent != null || sourceFief.IsUnderSiege ||
-                villageFilter != null && !data.IsCurrentVillage(villageFilter))
+                villageFilter != null && !data.IsCurrentVillage(villageFilter) ||
+                access?.Allowed != true)
+            {
+                if (sourceFief != null &&
+                    RecruitmentLogFilter.ShouldLog(party))
+                    ModLogger.FileDebug(string.Format(
+                        "Fief source access rejected: source={0}, sourceId={1}, " +
+                        "requestingParty={2}, requestingPartyId={3}, " +
+                        "boundPartyId={4}, reservationOwner={5}, reason={6}, " +
+                        "requireCurrentSettlement={7}.", sourceFief.Name,
+                        sourceFief.StringId, party.Name, party.StringId,
+                        access?.BoundPartyId ?? "none",
+                        access?.ReservationOwner ?? "none",
+                        access?.ReasonCode ?? "SourceBindingUnavailable",
+                        requireCurrentSettlement));
                 return false;
+            }
             scope = new FiefOperationScope
             {
                 InteractionSettlement = interaction,
@@ -1549,18 +1679,21 @@ namespace ModifiedArmy.Models.Fief
                 out IReadOnlyList<RecruitmentCandidate> candidates,
                 out RecruitmentPlan plan,
                 out int approvedBeforeMinimumBatch,
-                out int minimumBatch)
+                out int minimumBatch,
+                out FiefRecruitmentCandidateDiagnostics diagnostics)
         {
             if (TryResolveOperationScope(settlement, targetParty, false,
                 out FiefOperationScope scope))
                 return scope.FiefData.PreviewFiefRecruitmentApprovals(
                     targetParty, maximumCount, scope.VillageFilter,
                     out candidates, out plan,
-                    out approvedBeforeMinimumBatch, out minimumBatch);
+                    out approvedBeforeMinimumBatch, out minimumBatch,
+                    out diagnostics);
             candidates = Array.Empty<RecruitmentCandidate>();
             plan = null;
             approvedBeforeMinimumBatch = 0;
             minimumBatch = 0;
+            diagnostics = new FiefRecruitmentCandidateDiagnostics();
             return new Dictionary<CharacterObject, int>();
         }
 

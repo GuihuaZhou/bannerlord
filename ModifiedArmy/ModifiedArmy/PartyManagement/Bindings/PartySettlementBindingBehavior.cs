@@ -6,9 +6,34 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using ModifiedArmy.Models.Fief;
 
 namespace ModifiedArmy.PartyManagement.Bindings
 {
+    public sealed class FiefSourceAccessDecision
+    {
+        public bool Allowed { get; private set; }
+        public Settlement SourceFief { get; private set; }
+        public string BoundPartyId { get; private set; }
+        public string ReservationOwner { get; private set; }
+        public string ReasonCode { get; private set; }
+
+        internal static FiefSourceAccessDecision Allow(Settlement source,
+            string owner, string reason) => new FiefSourceAccessDecision
+            {
+                Allowed = true, SourceFief = source, BoundPartyId = owner,
+                ReasonCode = reason
+            };
+
+        internal static FiefSourceAccessDecision Reject(Settlement source,
+            string reason, string owner, string reservationOwner) =>
+            new FiefSourceAccessDecision
+            {
+                Allowed = false, SourceFief = source, BoundPartyId = owner,
+                ReservationOwner = reservationOwner, ReasonCode = reason
+            };
+    }
+
     /// <summary>
     /// Owns persistent lord-party base bindings and the runtime reverse index.
     /// Recovery only repairs identities and never moves troops.
@@ -61,8 +86,7 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 return Array.Empty<Settlement>();
             return new[]
                 {
-                    ResolveSettlement(record.PrimarySettlementId),
-                    ResolveSettlement(record.SecondarySettlementId)
+                    ResolveSettlement(record.PrimarySettlementId)
                 }
                 .Where(item => IsLegalBase(party, item))
                 .Distinct()
@@ -70,7 +94,42 @@ namespace ModifiedArmy.PartyManagement.Bindings
         }
 
         public bool IsBoundSettlement(MobileParty party, Settlement settlement) =>
-            settlement != null && GetBoundSettlements(party).Contains(settlement);
+            EvaluateFiefSourceAccess(settlement, party).Allowed;
+
+        public FiefSourceAccessDecision EvaluateFiefSourceAccess(
+            Settlement source, MobileParty requestingParty)
+        {
+            Settlement sourceFief = NormalizeSourceFief(source);
+            if (sourceFief == null || requestingParty?.StringId == null)
+                return FiefSourceAccessDecision.Reject(sourceFief,
+                    "SourceBindingInvalid", null, null);
+            IReadOnlyList<MobileParty> servingParties = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .GetServingPartiesForFief(sourceFief) ??
+                Array.Empty<MobileParty>();
+            if (servingParties.Count > 1 ||
+                (servingParties.Count == 1 &&
+                 servingParties[0] != requestingParty))
+                return FiefSourceAccessDecision.Reject(sourceFief,
+                    "SourceHasConflictingServingParties",
+                    _settlementOwners.TryGetValue(sourceFief.StringId,
+                        out string conflictOwner) ? conflictOwner : null,
+                    null);
+            if (_reservations.TryGetValue(sourceFief.StringId,
+                    out PendingPartyCreation reservation))
+                return FiefSourceAccessDecision.Reject(sourceFief,
+                    "SourceReservedForOtherCreation", null,
+                    reservation.LeaderId);
+            if (!_settlementOwners.TryGetValue(sourceFief.StringId,
+                    out string owner))
+                return FiefSourceAccessDecision.Reject(sourceFief,
+                    "SourceBindingInvalid", null, null);
+            return owner == requestingParty.StringId
+                ? FiefSourceAccessDecision.Allow(sourceFief, owner,
+                    "SourceBoundToSameParty")
+                : FiefSourceAccessDecision.Reject(sourceFief,
+                    "SourceBoundToOtherParty", owner, null);
+        }
 
         public bool IsLegacyUnbound(MobileParty party) =>
             party?.StringId != null &&
@@ -81,29 +140,14 @@ namespace ModifiedArmy.PartyManagement.Bindings
             Hero leader, Clan clan, Settlement primary) =>
             leader != null && clan != null && primary != null &&
             leader.Clan == clan && IsLegalBase(clan, primary) &&
-            IsAvailable(primary, null);
+            IsAvailable(primary, null) &&
+            GetServingParties(primary).Count == 0;
 
         public bool TryBindSecondary(MobileParty party, Settlement settlement)
         {
-            if (!TryGetValidRecord(party, out var record) ||
-                string.IsNullOrEmpty(record.PrimarySettlementId) ||
-                !IsLegalBase(party, settlement) ||
-                record.PrimarySettlementId == settlement.StringId ||
-                !IsAvailable(settlement, party.StringId) ||
-                !string.IsNullOrEmpty(record.SecondarySettlementId))
-            {
-                PartyBindingDiagnostics.LogBindingRejected(
-                    party,
-                    settlement,
-                    "BindSecondary",
-                    "InvalidRecordSlotOrSettlement");
-                return false;
-            }
-            record.SecondarySettlementId = settlement.StringId;
-            record.Version++;
-            record.LegacyUnbound = false;
-            _settlementOwners[settlement.StringId] = party.StringId;
-            return true;
+            PartyBindingDiagnostics.LogBindingRejected(party, settlement,
+                "BindSecondary", "SecondaryBindingsDisabled");
+            return false;
         }
 
         public bool TryReserveForCreation(
@@ -115,7 +159,8 @@ namespace ModifiedArmy.PartyManagement.Bindings
             token = null;
             if (leader == null || clan == null || primary == null ||
                 leader.Clan != clan || !IsLegalBase(clan, primary) ||
-                !IsAvailable(primary, null))
+                !IsAvailable(primary, null) ||
+                GetServingParties(primary).Count > 0)
             {
                 PartyBindingDiagnostics.LogReservation(
                     leader,
@@ -162,6 +207,25 @@ namespace ModifiedArmy.PartyManagement.Bindings
                     "SettlementNoLongerLegal");
                 return false;
             }
+            if (_settlementOwners.TryGetValue(primary.StringId,
+                    out string existingOwner) &&
+                existingOwner != createdParty.StringId)
+            {
+                PartyBindingDiagnostics.LogBindingRejected(createdParty,
+                    primary, "CommitCreation", "SourceBoundToOtherParty");
+                return false;
+            }
+            IReadOnlyList<MobileParty> servingParties = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .GetServingPartiesForFief(primary) ??
+                Array.Empty<MobileParty>();
+            if (servingParties.Any(party => party != createdParty))
+            {
+                PartyBindingDiagnostics.LogBindingRejected(createdParty,
+                    primary, "CommitCreation",
+                    "SourceHasConflictingServingParties");
+                return false;
+            }
             _records[createdParty.StringId] = new PartySettlementBindingRecord
             {
                 PartyId = createdParty.StringId,
@@ -197,6 +261,15 @@ namespace ModifiedArmy.PartyManagement.Bindings
             if (party?.StringId == null ||
                 !_records.TryGetValue(party.StringId, out var record))
                 return;
+            FiefPartyManager fiefManager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (fiefManager?.GetServingDetachments(party).Count > 0)
+            {
+                PartyBindingDiagnostics.LogBindingRejected(party,
+                    ResolveSettlement(record.PrimarySettlementId),
+                    "ReleaseBindings", "UnsettledFiefServiceBatches");
+                return;
+            }
             _records.Remove(party.StringId);
             ReleaseIndex(record.PrimarySettlementId, party.StringId);
             ReleaseIndex(record.SecondarySettlementId, party.StringId);
@@ -221,6 +294,11 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 record.ClanId = party.ActualClan.StringId;
                 ValidateSlot(party, record, true, ref conflicts);
                 ValidateSlot(party, record, false, ref conflicts);
+                if (!string.IsNullOrEmpty(record.SecondarySettlementId))
+                    PartyBindingDiagnostics.LogBindingRejected(party,
+                        ResolveSettlement(record.SecondarySettlementId),
+                        "LegacySecondaryQuarantine",
+                        "SecondaryBindingsDisabled");
                 if (record.PrimarySettlementId == null &&
                     record.SecondarySettlementId != null)
                 {
@@ -315,6 +393,12 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 settlement.StringId, out string owner) || owner == partyId;
         }
 
+        private static IReadOnlyList<MobileParty> GetServingParties(
+            Settlement sourceFief) => Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>()?
+                .GetServingPartiesForFief(sourceFief) ??
+                Array.Empty<MobileParty>();
+
         private static bool IsEligibleParty(MobileParty party) =>
             party != null && party.IsActive && party.IsLordParty &&
             party != MobileParty.MainParty && party.ActualClan != null &&
@@ -334,6 +418,10 @@ namespace ModifiedArmy.PartyManagement.Bindings
         private static Settlement ResolveSettlement(string id) =>
             string.IsNullOrEmpty(id) ? null : Settlement.All.FirstOrDefault(
                 item => item?.StringId == id);
+
+        private static Settlement NormalizeSourceFief(Settlement source) =>
+            source?.IsVillage == true ? source.Village?.Bound :
+            source?.IsFortification == true ? source : null;
 
         private static Hero ResolveHero(string id) =>
             string.IsNullOrEmpty(id) ? null : Hero.AllAliveHeroes.FirstOrDefault(

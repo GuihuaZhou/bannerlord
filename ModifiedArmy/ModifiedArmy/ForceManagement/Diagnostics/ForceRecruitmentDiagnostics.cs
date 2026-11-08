@@ -461,6 +461,10 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 "REASON", result?.ReasonCode ?? None().ToString());
             message.SetTextVariable(
                 "OPERATION_ID", context?.OperationId ?? None().ToString());
+            message.SetTextVariable(
+                "TASK_ID", context?.TaskId ?? None().ToString());
+            message.SetTextVariable(
+                "ATTEMPT_ID", context?.AttemptId ?? None().ToString());
             ModLogger.Debug(message.ToString());
         }
 

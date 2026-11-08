@@ -151,17 +151,33 @@ namespace ModifiedArmy.Models.Fief
                     village => village,
                     village => manager.GetVillageFiefData(village)?
                         .MobilizedHearth ?? -1);
+            Dictionary<Settlement, int> releasesByVillage = new();
             foreach (var loss in lossesByVillage)
             {
                 VillageFiefData village = manager.GetVillageFiefData(loss.Key);
+                string rawReason = null;
                 if (village == null || village.RecoveryRequired ||
-                    village.MobilizedHearth < loss.Value)
+                    !village.TryGetRawServingCount(out int rawBefore,
+                        out rawReason))
                 {
-                    village?.RequireRecovery("ReconciliationPrecheckFailed");
+                    village?.RequireRecovery(rawReason ??
+                        "ReconciliationPrecheckFailed");
                     result.BlockedByRecovery = true;
-                    result.ReasonCode = "ReconciliationPrecheckFailed";
+                    result.ReasonCode = rawReason ??
+                        "ReconciliationPrecheckFailed";
                     return result;
                 }
+                int rawAfter = rawBefore - loss.Value;
+                if (rawAfter < 0 || village.MobilizedHearth < rawAfter)
+                {
+                    village.RequireRecovery(
+                        "UnverifiedMobilizationDeficit");
+                    result.BlockedByRecovery = true;
+                    result.ReasonCode = "UnverifiedMobilizationDeficit";
+                    return result;
+                }
+                releasesByVillage[loss.Key] =
+                    village.MobilizedHearth - rawAfter;
             }
 
             Dictionary<Settlement, int> released = new();
@@ -169,13 +185,14 @@ namespace ModifiedArmy.Models.Fief
             {
                 foreach (ServingDetachmentRef item in refs)
                     item.Detachment.ReplaceTroops(plans[item.Detachment]);
-                foreach (var loss in lossesByVillage.Where(p => p.Value > 0))
+                foreach (var release in releasesByVillage.Where(
+                    pair => pair.Value > 0))
                 {
                     if (manager.ReleaseVillageFiefService(
-                        loss.Key, loss.Value, false) != loss.Value)
+                        release.Key, release.Value, false) != release.Value)
                         throw new InvalidOperationException(
                             "MobilizationReleaseFailed");
-                    released[loss.Key] = loss.Value;
+                    released[release.Key] = release.Value;
                 }
             }
             catch

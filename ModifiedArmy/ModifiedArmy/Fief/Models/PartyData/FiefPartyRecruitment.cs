@@ -29,6 +29,21 @@ using static ModifiedArmy.common.CommonConstants;
 
 namespace ModifiedArmy.Models.Fief
 {
+    public sealed class FiefRecruitmentCandidateDiagnostics
+    {
+        public string TemplateId { get; set; } = "none";
+        public string TemplateRoots { get; set; } = "none";
+        public int ReadyTotal { get; set; }
+        public int ReadyHealthy { get; set; }
+        public int ReadyWounded { get; set; }
+        public int TemplateEligible { get; set; }
+        public int RootMatched { get; set; }
+        public int RootUnmatched { get; set; }
+        public string Unmatched { get; set; } = "none";
+        public int CandidateCount { get; set; }
+        public int WeightedAllocatedCount { get; set; }
+    }
+
     public partial class FiefPartyData
     {
         private void RemoveTroopsFromParty(TroopRoster roster, CharacterObject troop, int countToRemove)
@@ -97,7 +112,8 @@ namespace ModifiedArmy.Models.Fief
                 BuildAvailableRecruitmentCandidates(
                     remainSize,
                     useTemplateWeights,
-                    villageFilter);
+                    villageFilter,
+                    out _);
             LogWeightedCandidateManifest(targetParty, remainSize, candidates);
 
             RecruitmentPlan aiPlan = null;
@@ -265,6 +281,19 @@ namespace ModifiedArmy.Models.Fief
                 int maximumCount,
                 Settlement villageFilter = null)
         {
+            return PreviewFiefRecruitmentCandidates(targetParty,
+                maximumCount, villageFilter, out _);
+        }
+
+        internal IReadOnlyList<RecruitmentCandidate>
+            PreviewFiefRecruitmentCandidates(
+                MobileParty targetParty,
+                int maximumCount,
+                Settlement villageFilter,
+                out FiefRecruitmentCandidateDiagnostics diagnostics)
+        {
+            diagnostics = new FiefRecruitmentCandidateDiagnostics
+            { TemplateId = _fiefPartyTemplate?.TemplateId ?? "none" };
             var candidates = new List<RecruitmentCandidate>();
             if (targetParty == null || _fiefParty == null)
                 return candidates;
@@ -279,7 +308,8 @@ namespace ModifiedArmy.Models.Fief
             return BuildAvailableRecruitmentCandidates(
                 remainSize,
                 useTemplateWeights,
-                villageFilter);
+                villageFilter,
+                out diagnostics);
         }
 
         /// <summary>
@@ -289,13 +319,20 @@ namespace ModifiedArmy.Models.Fief
         private List<RecruitmentCandidate> BuildAvailableRecruitmentCandidates(
             int maximumCount,
             bool useTemplateWeights,
-            Settlement villageFilter)
+            Settlement villageFilter,
+            out FiefRecruitmentCandidateDiagnostics diagnostics)
         {
-            return useTemplateWeights
+            diagnostics = new FiefRecruitmentCandidateDiagnostics
+            { TemplateId = _fiefPartyTemplate?.TemplateId ?? "none" };
+            List<RecruitmentCandidate> result = useTemplateWeights
                 ? BuildTemplateWeightedRecruitmentCandidates(
-                    maximumCount, villageFilter)
+                    maximumCount, villageFilter, diagnostics)
                 : BuildLegacyRecruitmentCandidates(
                     maximumCount, villageFilter);
+            diagnostics.CandidateCount = result.Count;
+            diagnostics.WeightedAllocatedCount = result.Sum(item =>
+                Math.Max(0, item.AvailableCount));
+            return result;
         }
 
         /// <summary>
@@ -336,7 +373,8 @@ namespace ModifiedArmy.Models.Fief
         /// </summary>
         private List<RecruitmentCandidate>
             BuildTemplateWeightedRecruitmentCandidates(int maximumCount,
-                Settlement villageFilter)
+                Settlement villageFilter,
+                FiefRecruitmentCandidateDiagnostics diagnostics)
         {
             var candidates = new List<RecruitmentCandidate>();
             if (_fiefParty == null || _fiefPartyTemplate == null ||
@@ -344,6 +382,9 @@ namespace ModifiedArmy.Models.Fief
                 return candidates;
 
             List<WeightedRecruitmentRoot> roots = BuildWeightedRoots();
+            diagnostics.TemplateRoots = string.Join(",", roots.Select(root =>
+                string.Format("{0}({1}):{2}", root.Troop.Name,
+                    root.Troop.StringId, root.Weight)));
             if (roots.Count == 0) return candidates;
 
             var healthyStock = new Dictionary<CharacterObject, int>();
@@ -352,6 +393,12 @@ namespace ModifiedArmy.Models.Fief
             {
                 CharacterObject troop = element.Character;
                 int healthy = Math.Max(0, element.Number - element.WoundedNumber);
+                if (troop != null && !troop.IsHero)
+                {
+                    diagnostics.ReadyTotal += Math.Max(0, element.Number);
+                    diagnostics.ReadyWounded += Math.Max(0,
+                        element.WoundedNumber);
+                }
                 if (troop == null || troop.IsHero || healthy <= 0 ||
                     !_fiefPartyTemplate.IsEnableTroop(troop))
                     continue;
@@ -359,7 +406,11 @@ namespace ModifiedArmy.Models.Fief
                     ? old + healthy
                     : healthy;
             }
+            diagnostics.ReadyHealthy = Math.Max(0,
+                diagnostics.ReadyTotal - diagnostics.ReadyWounded);
+            diagnostics.TemplateEligible = healthyStock.Values.Sum();
 
+            var matched = new HashSet<CharacterObject>();
             foreach (var stock in healthyStock)
             {
                 WeightedRecruitmentRoot selected = null;
@@ -380,8 +431,19 @@ namespace ModifiedArmy.Models.Fief
                     }
                 }
                 if (selected != null)
+                {
                     selected.Stock[stock.Key] = stock.Value;
+                    matched.Add(stock.Key);
+                }
             }
+            diagnostics.RootMatched = matched.Sum(troop => healthyStock[troop]);
+            diagnostics.RootUnmatched = healthyStock.Where(item =>
+                !matched.Contains(item.Key)).Sum(item => item.Value);
+            diagnostics.Unmatched = diagnostics.RootUnmatched <= 0 ? "none" :
+                string.Join(",", healthyStock.Where(item =>
+                    !matched.Contains(item.Key)).Select(item => string.Format(
+                        "{0}({1}):{2}", item.Key.Name, item.Key.StringId,
+                        item.Value)));
 
             int target = Math.Min(
                 maximumCount,
@@ -545,7 +607,7 @@ namespace ModifiedArmy.Models.Fief
                 Settlement villageFilter = null)
         {
             return PreviewFiefRecruitmentApprovals(targetParty, maximumCount,
-                villageFilter, out _, out _, out _, out _);
+                villageFilter, out _, out _, out _, out _, out _);
         }
 
         internal IReadOnlyDictionary<CharacterObject, int>
@@ -556,11 +618,13 @@ namespace ModifiedArmy.Models.Fief
                 out IReadOnlyList<RecruitmentCandidate> candidates,
                 out RecruitmentPlan plan,
                 out int approvedBeforeMinimumBatch,
-                out int minimumBatch)
+                out int minimumBatch,
+                out FiefRecruitmentCandidateDiagnostics diagnostics)
         {
             candidates =
                 PreviewFiefRecruitmentCandidates(
-                    targetParty, maximumCount, villageFilter);
+                    targetParty, maximumCount, villageFilter,
+                    out diagnostics);
             plan = null;
             approvedBeforeMinimumBatch = 0;
             minimumBatch = MilitaryConfigManager.Instance

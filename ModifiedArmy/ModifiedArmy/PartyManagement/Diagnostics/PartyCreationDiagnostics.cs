@@ -20,7 +20,12 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             int actualProfessional = 0, int finalRegulars = 0,
             string finalState = null)
         {
-            if (!RecruitmentLogFilter.ShouldLog(leader?.Clan)) return;
+            bool playerContext = RecruitmentLogFilter.ShouldLog(leader?.Clan);
+            bool significantFailure = phase == "RecoveryRequired" ||
+                phase == "Failed" || phase == "Rejected" ||
+                phase == "Completed" && finalRegulars > 0 &&
+                finalRegulars < 50;
+            if (!playerContext && !significantFailure) return;
             var message = GameTexts.FindText(
                 "str_modifiedarmy_party_creation_transaction");
             Settlement settlement = Settlement.All.FirstOrDefault(item =>
@@ -63,6 +68,9 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             if (phase == "RecoveryRequired")
                 ModLogger.Error(message.ToString());
             else if (phase == "Failed" || phase == "Rejected")
+                ModLogger.Warn(message.ToString());
+            else if (phase == "Completed" && finalRegulars > 0 &&
+                finalRegulars < 50)
                 ModLogger.Warn(message.ToString());
             else if (phase == "Evaluated")
                 ModLogger.Debug(message.ToString());

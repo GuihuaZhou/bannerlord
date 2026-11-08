@@ -63,6 +63,43 @@ namespace ModifiedArmy.Models.Fief
         public int GetServingFiefTroopCount(FiefPartyTemplate template) =>
             QueryFeudalTroops(template, FiefTroopState.Serving).TotalCount;
 
+        internal bool TryGetRawServingCount(out int count,
+            out string reason)
+        {
+            count = 0;
+            reason = null;
+            var ids = new HashSet<string>(StringComparer.Ordinal);
+            try
+            {
+                foreach (FiefServiceBatch batch in ServiceBatches ??
+                    Enumerable.Empty<FiefServiceBatch>())
+                {
+                    if (batch == null) { reason = "NullServiceBatch"; return false; }
+                    batch.ResolveServingParty();
+                    if (string.IsNullOrEmpty(batch.BatchId))
+                    { reason = "MissingServiceBatchId"; return false; }
+                    if (!ids.Add(batch.BatchId))
+                    { reason = "DuplicateVillageServiceBatchId"; return false; }
+                    if (batch.SourceVillage != VillageSettlement ||
+                        batch.SourceFief != VillageSettlement?.Village?.Bound)
+                    { reason = "InvalidServiceBatchSource"; return false; }
+                    if (batch.ServingParty == null)
+                    { reason = "MissingServingParty"; return false; }
+                    if (batch.Troops == null || batch.Troops.Count == 0 ||
+                        batch.Troops.Any(item => item.Key == null ||
+                            item.Value <= 0))
+                    { reason = "InvalidServiceBatchTroops"; return false; }
+                    count = checked(count + batch.Troops.Values.Sum());
+                }
+                return true;
+            }
+            catch (OverflowException)
+            {
+                reason = "ServingCountOverflow";
+                return false;
+            }
+        }
+
         public int GetCoolingFiefTroopCount(FiefPartyTemplate template) =>
             QueryFeudalTroops(template, FiefTroopState.Cooling).TotalCount;
 
