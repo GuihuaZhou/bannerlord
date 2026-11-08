@@ -39,6 +39,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
             _aiMilitaryBehavior = Campaign.Current?.GetCampaignBehavior<AiMilitaryBehavior>();
+            MarshalArmyEligibilityTrace.AuditRuntimeModelChain();
         }
 
         private void OnAiHourlyTick(MobileParty party, PartyThinkParams thinkParams)
@@ -135,7 +136,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 + " foodDays=" + party.GetNumDaysForFoodToLast()
                 + " sizeRatio=" + MarshalArmyDebugTrace.F(party.PartySizeRatio)
                 + " nativeModel=" + Campaign.Current.Models.ArmyManagementCalculationModel.GetType().FullName
-                + " leaderGateReplacements=" + MarshalArmyPatches.LeaderGateReplacementCount);
+                + " identityAdaptation=MODEL_DIRECT");
             if (!canCreateArmy)
             {
                 SetDiagnosticState(
@@ -434,7 +435,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 return;
 
             TextObject message = new TextObject(
-                $"{{={textId}}}[Hero Offices] Marshal army diagnostic for {{KINGDOM}}: marshal={{MARSHAL}}, party={{PARTY}}, influence={{INFLUENCE}}, food={{FOOD}}, size={{SIZE}}%, candidates={{CANDIDATES}}, added scores={{ADDED_SCORES}}, best army score={{BEST_ARMY_SCORE}}, best overall score={{BEST_OVERALL_SCORE}}, leader-gate replacements={{PATCH_COUNT}}.");
+                $"{{={textId}}}[Hero Offices] Marshal army diagnostic for {{KINGDOM}}: marshal={{MARSHAL}}, party={{PARTY}}, influence={{INFLUENCE}}, food={{FOOD}}, size={{SIZE}}%, candidates={{CANDIDATES}}, added scores={{ADDED_SCORES}}, best army score={{BEST_ARMY_SCORE}}, best overall score={{BEST_OVERALL_SCORE}}, identity adaptation={{IDENTITY_MODE}}.");
             message.SetTextVariable("KINGDOM", kingdom.Name);
             message.SetTextVariable("MARSHAL", party?.LeaderHero?.Name ?? TextObject.GetEmpty());
             message.SetTextVariable("PARTY", party?.Name ?? TextObject.GetEmpty());
@@ -452,7 +453,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             message.SetTextVariable("AVERAGE_FOOD", averageFoodDays);
             message.SetTextVariable("MINIMUM_FOOD", minimumFoodDays);
             message.SetTextVariable("FOOD_THRESHOLD", siegeFoodThreshold.ToString("0.0"));
-            message.SetTextVariable("PATCH_COUNT", MarshalArmyPatches.LeaderGateReplacementCount);
+            message.SetTextVariable("IDENTITY_MODE", "MODEL_DIRECT");
             ModLogger.Info(message.ToString());
         }
     }

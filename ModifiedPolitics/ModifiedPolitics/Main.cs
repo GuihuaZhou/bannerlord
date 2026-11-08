@@ -103,6 +103,8 @@ namespace ModifiedPolitics
                 }
 
                 campaignStarter.AddModel(new WarPotentialModel());
+                campaignStarter.AddModel(
+                    new DiagnosticArmyManagementCalculationModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
                 campaignStarter.AddModel(new SettlementEconomyFoodModel());
                 campaignStarter.AddModel(
