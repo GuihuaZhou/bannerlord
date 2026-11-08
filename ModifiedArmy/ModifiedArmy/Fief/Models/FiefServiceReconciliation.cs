@@ -1,6 +1,7 @@
 using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
@@ -30,19 +31,38 @@ namespace ModifiedArmy.Models.Fief
         public int LostCount { get; internal set; }
         public bool BlockedByRecovery { get; internal set; }
         public string ReasonCode { get; internal set; }
+        public bool PlacementSnapshotValid { get; internal set; }
+        public IReadOnlyDictionary<CharacterObject, FiefTroopCount>
+            UnassignedTroops { get; internal set; } =
+                new ReadOnlyDictionary<CharacterObject, FiefTroopCount>(
+                    new Dictionary<CharacterObject, FiefTroopCount>());
     }
 
     internal static class FiefServiceReconciler
     {
         public static FiefReconciliationResult Reconcile(
             FiefPartyManager manager,
-            MobileParty party)
+            MobileParty party,
+            bool includeUnassigned = false)
         {
             FiefReconciliationResult result = new();
-            if (manager == null || party == null) return result;
+            if (manager == null || party?.MemberRoster == null) return result;
             List<ServingDetachmentRef> refs = manager
                 .GetServingDetachments(party).ToList();
-            if (refs.Count == 0) return result;
+            Dictionary<CharacterObject, FiefTroopCount> actualSnapshot = party
+                .MemberRoster.GetTroopRoster()
+                .Where(e => e.Character != null && !e.Character.IsHero &&
+                    e.Number > 0)
+                .GroupBy(e => e.Character)
+                .ToDictionary(g => g.Key, g => new FiefTroopCount(
+                    g.Sum(e => e.Number), g.Sum(e => e.WoundedNumber)));
+            if (refs.Count == 0)
+            {
+                if (includeUnassigned)
+                    SetPlacementSnapshot(result, actualSnapshot);
+                result.ReasonCode = "NoServingDetachments";
+                return result;
+            }
             string reason = manager.IsServicePartyBlocked(party)
                 ? "LedgerBlockedParty"
                 : null;
@@ -54,29 +74,18 @@ namespace ModifiedArmy.Models.Fief
                 return result;
             }
 
-            Dictionary<CharacterObject, int> actual = party.MemberRoster
-                .GetTroopRoster()
-                .Where(e => e.Character != null && !e.Character.IsHero && e.Number > 0)
-                .GroupBy(e => e.Character)
-                .ToDictionary(g => g.Key, g => g.Sum(e => e.Number));
+            Dictionary<CharacterObject, int> actual = actualSnapshot
+                .ToDictionary(pair => pair.Key, pair => pair.Value.Total);
             Dictionary<CharacterObject, int> registered = refs
                 .SelectMany(r => r.Detachment.Troops)
                 .Where(p => p.Key != null && p.Value > 0)
                 .GroupBy(p => p.Key)
                 .ToDictionary(g => g.Key, g => g.Sum(p => p.Value));
 
-            Dictionary<(CharacterObject From, CharacterObject To), int> matches = new();
-            foreach (CharacterObject troop in registered.Keys.ToList())
-            {
-                int exact = Math.Min(registered[troop], actual.TryGetValue(troop, out int n) ? n : 0);
-                if (exact <= 0) continue;
-                matches[(troop, troop)] = exact;
-                registered[troop] -= exact;
-                actual[troop] -= exact;
-            }
-
-            foreach (var match in CalculateMaximumTreeMatches(registered, actual))
-                matches[match.Key] = match.Value;
+            ReconciliationMatchPlan matchPlan = CalculatePreferredMatches(
+                registered, actualSnapshot);
+            Dictionary<(CharacterObject From, CharacterObject To), int>
+                matches = matchPlan.Matches;
 
             Dictionary<FiefServiceBatch, Dictionary<CharacterObject, int>> plans =
                 refs.ToDictionary(r => r.Detachment, _ => new Dictionary<CharacterObject, int>());
@@ -221,7 +230,35 @@ namespace ModifiedArmy.Models.Fief
                 manager.GetFiefData(item.SourceFief)?.RefreshManpowerCounters();
             }
             result.ReasonCode = "Completed";
+            if (includeUnassigned)
+            {
+                Dictionary<CharacterObject, FiefTroopCount> unassigned =
+                    new();
+                foreach (var pair in actualSnapshot)
+                {
+                    int matched = matches.Where(item => item.Key.To == pair.Key)
+                        .Sum(item => item.Value);
+                    int matchedWounded = matchPlan.MatchedWounded.TryGetValue(
+                        pair.Key, out int wounded) ? wounded : 0;
+                    int remaining = Math.Max(0, pair.Value.Total - matched);
+                    int remainingWounded = Math.Max(0,
+                        pair.Value.Wounded - matchedWounded);
+                    if (remaining > 0)
+                        unassigned[pair.Key] = new FiefTroopCount(
+                            remaining, Math.Min(remaining, remainingWounded));
+                }
+                SetPlacementSnapshot(result, unassigned);
+            }
             return result;
+        }
+
+        private static void SetPlacementSnapshot(FiefReconciliationResult result,
+            IReadOnlyDictionary<CharacterObject, FiefTroopCount> troops)
+        {
+            result.UnassignedTroops = new ReadOnlyDictionary<CharacterObject,
+                FiefTroopCount>(troops.ToDictionary(
+                    pair => pair.Key, pair => pair.Value));
+            result.PlacementSnapshotValid = true;
         }
 
         private static bool ValidatePartyRefs(FiefPartyManager manager,
@@ -264,70 +301,143 @@ namespace ModifiedArmy.Models.Fief
             map[troop] = map.TryGetValue(troop, out int old) ? old + count : count;
         }
 
-        private static Dictionary<(CharacterObject From, CharacterObject To), int>
-            CalculateMaximumTreeMatches(
-                IReadOnlyDictionary<CharacterObject, int> registered,
-                IReadOnlyDictionary<CharacterObject, int> actual)
+        private sealed class ReconciliationMatchPlan
+        {
+            public Dictionary<(CharacterObject From, CharacterObject To), int>
+                Matches { get; } = new();
+            public Dictionary<CharacterObject, int> MatchedWounded { get; } =
+                new();
+        }
+
+        private sealed class FlowEdge
+        {
+            public int To;
+            public int Reverse;
+            public int Capacity;
+            public int Cost;
+            public int InitialCapacity;
+        }
+
+        /// <summary>
+        /// Maximum-cardinality, minimum-cost matching. Wounded assignments
+        /// carry the dominant cost, so health is maximized without reducing
+        /// the number of protected serving identities. Exact matches then win
+        /// over upgrade-tree substitutions; stable node order breaks ties.
+        /// </summary>
+        private static ReconciliationMatchPlan CalculatePreferredMatches(
+            IReadOnlyDictionary<CharacterObject, int> registered,
+            IReadOnlyDictionary<CharacterObject, FiefTroopCount> actual)
         {
             List<CharacterObject> left = registered
                 .Where(p => p.Value > 0).Select(p => p.Key)
                 .OrderBy(t => t.StringId).ToList();
             List<CharacterObject> right = actual
-                .Where(p => p.Value > 0).Select(p => p.Key)
+                .Where(p => p.Value.Total > 0).Select(p => p.Key)
                 .OrderBy(t => t.StringId).ToList();
             int source = 0;
             int leftStart = 1;
-            int rightStart = leftStart + left.Count;
-            int sink = rightStart + right.Count;
+            int healthyStart = leftStart + left.Count;
+            int woundedStart = healthyStart + right.Count;
+            int sink = woundedStart + right.Count;
             int size = sink + 1;
-            int[,] capacity = new int[size, size];
-            int[,] flow = new int[size, size];
+            int healthyPriorityCost = Math.Max(2,
+                registered.Values.Where(value => value > 0).Sum() + 1);
+            List<FlowEdge>[] graph = Enumerable.Range(0, size)
+                .Select(_ => new List<FlowEdge>()).ToArray();
+            void AddEdge(int from, int to, int capacity, int cost)
+            {
+                FlowEdge forward = new FlowEdge { To = to,
+                    Reverse = graph[to].Count, Capacity = capacity,
+                    InitialCapacity = capacity, Cost = cost };
+                FlowEdge reverse = new FlowEdge { To = from,
+                    Reverse = graph[from].Count, Capacity = 0,
+                    InitialCapacity = 0, Cost = -cost };
+                graph[from].Add(forward);
+                graph[to].Add(reverse);
+            }
             for (int i = 0; i < left.Count; i++)
             {
-                capacity[source, leftStart + i] = registered[left[i]];
+                AddEdge(source, leftStart + i, registered[left[i]], 0);
                 for (int j = 0; j < right.Count; j++)
                     if (CanMatchUpgradeTree(left[i], right[j]))
-                        capacity[leftStart + i, rightStart + j] = int.MaxValue / 4;
+                    {
+                        int exactCost = left[i] == right[j] ? 0 : 1;
+                        AddEdge(leftStart + i, healthyStart + j,
+                            int.MaxValue / 4, exactCost);
+                        AddEdge(leftStart + i, woundedStart + j,
+                            int.MaxValue / 4,
+                            healthyPriorityCost + exactCost);
+                    }
             }
             for (int j = 0; j < right.Count; j++)
-                capacity[rightStart + j, sink] = actual[right[j]];
+            {
+                AddEdge(healthyStart + j, sink, actual[right[j]].Healthy, 0);
+                AddEdge(woundedStart + j, sink, actual[right[j]].Wounded, 0);
+            }
 
             while (true)
             {
-                int[] parent = Enumerable.Repeat(-1, size).ToArray();
-                Queue<int> queue = new();
-                parent[source] = source;
-                queue.Enqueue(source);
-                while (queue.Count > 0 && parent[sink] < 0)
+                long[] distance = Enumerable.Repeat(long.MaxValue, size)
+                    .ToArray();
+                int[] parentNode = Enumerable.Repeat(-1, size).ToArray();
+                int[] parentEdge = Enumerable.Repeat(-1, size).ToArray();
+                distance[source] = 0;
+                for (int pass = 0; pass < size - 1; pass++)
                 {
-                    int node = queue.Dequeue();
-                    for (int next = 0; next < size; next++)
+                    bool changed = false;
+                    for (int node = 0; node < size; node++)
                     {
-                        if (parent[next] >= 0 || capacity[node, next] - flow[node, next] <= 0)
-                            continue;
-                        parent[next] = node;
-                        queue.Enqueue(next);
+                        if (distance[node] == long.MaxValue) continue;
+                        for (int edgeIndex = 0;
+                            edgeIndex < graph[node].Count; edgeIndex++)
+                        {
+                            FlowEdge edge = graph[node][edgeIndex];
+                            long candidate = distance[node] + edge.Cost;
+                            if (edge.Capacity <= 0 ||
+                                candidate >= distance[edge.To]) continue;
+                            distance[edge.To] = candidate;
+                            parentNode[edge.To] = node;
+                            parentEdge[edge.To] = edgeIndex;
+                            changed = true;
+                        }
                     }
+                    if (!changed) break;
                 }
-                if (parent[sink] < 0) break;
+                if (parentNode[sink] < 0) break;
                 int augment = int.MaxValue;
-                for (int node = sink; node != source; node = parent[node])
-                    augment = Math.Min(augment,
-                        capacity[parent[node], node] - flow[parent[node], node]);
-                for (int node = sink; node != source; node = parent[node])
+                for (int node = sink; node != source;
+                    node = parentNode[node])
+                    augment = Math.Min(augment, graph[parentNode[node]][
+                        parentEdge[node]].Capacity);
+                for (int node = sink; node != source;
+                    node = parentNode[node])
                 {
-                    flow[parent[node], node] += augment;
-                    flow[node, parent[node]] -= augment;
+                    FlowEdge edge = graph[parentNode[node]][parentEdge[node]];
+                    edge.Capacity -= augment;
+                    graph[node][edge.Reverse].Capacity += augment;
                 }
             }
 
-            Dictionary<(CharacterObject From, CharacterObject To), int> result = new();
+            ReconciliationMatchPlan result = new();
             for (int i = 0; i < left.Count; i++)
                 for (int j = 0; j < right.Count; j++)
-                    if (flow[leftStart + i, rightStart + j] > 0)
-                        result[(left[i], right[j])] = flow[leftStart + i, rightStart + j];
+                {
+                    int healthyFlow = GetFlow(graph[leftStart + i],
+                        healthyStart + j);
+                    int woundedFlow = GetFlow(graph[leftStart + i],
+                        woundedStart + j);
+                    int total = healthyFlow + woundedFlow;
+                    if (total > 0)
+                        result.Matches[(left[i], right[j])] = total;
+                    if (woundedFlow > 0)
+                        Add(result.MatchedWounded, right[j], woundedFlow);
+                }
             return result;
         }
+
+        private static int GetFlow(IEnumerable<FlowEdge> edges, int to) =>
+            edges.Where(edge => edge.To == to && edge.InitialCapacity > 0)
+                .Sum(edge => edge.InitialCapacity - edge.Capacity);
 
         /// <summary>
         /// 判断两个具体兵种是否位于同一条可达升级链。返乡对账只关心

@@ -781,9 +781,11 @@ namespace ModifiedArmy.Models.Fief
                 item.Detachment.AdvanceToCurrentDay();
         }
 
-        public FiefReconciliationResult ReconcilePartyFiefTroops(MobileParty party)
+        public FiefReconciliationResult ReconcilePartyFiefTroops(
+            MobileParty party, bool includeUnassigned = false)
         {
-            return FiefServiceReconciler.Reconcile(this, party);
+            return FiefServiceReconciler.Reconcile(
+                this, party, includeUnassigned);
         }
 
         /// <summary>
@@ -1471,6 +1473,9 @@ namespace ModifiedArmy.Models.Fief
                     remaining[pair.Key] -= pair.Value;
                 if (remaining.Values.All(value => value <= 0)) break;
             }
+            if (returned > 0)
+                FiefTroopPlacementService.TryPlaceAfterReturn(this, party,
+                    interaction, FiefPlacementPurpose.PlayerReturn);
             return returned;
         }
 
@@ -1571,8 +1576,7 @@ namespace ModifiedArmy.Models.Fief
             if (TryResolveOperationScope(settlement, mobileParty, true,
                 out FiefOperationScope scope))
             {
-                scope.FiefData.ReturnTroopsToSettlement(
-                    mobileParty, settlement, scope.VillageFilter);
+                ReturnTroopsAndPlace(scope, settlement, mobileParty);
             }
         }
 
@@ -1586,8 +1590,17 @@ namespace ModifiedArmy.Models.Fief
                 return 0;
             }
 
-            return scope.FiefData.ReturnTroopsToSettlement(
-                mobileParty, settlement, scope.VillageFilter);
+            return ReturnTroopsAndPlace(scope, settlement, mobileParty);
+        }
+
+        private int ReturnTroopsAndPlace(FiefOperationScope scope,
+            Settlement settlement, MobileParty party)
+        {
+            int returned = scope.FiefData.ReturnTroopsToSettlement(
+                party, settlement, scope.VillageFilter);
+            FiefTroopPlacementService.TryPlaceAfterReturn(this, party,
+                settlement, FiefPlacementPurpose.PlayerReturn);
+            return returned;
         }
 
         /// <summary>

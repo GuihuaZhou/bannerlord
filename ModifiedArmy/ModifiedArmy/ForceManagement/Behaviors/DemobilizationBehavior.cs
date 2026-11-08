@@ -300,6 +300,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             message.SetTextVariable("TARGET", decision.TargetCount);
             message.SetTextVariable("APPROVED", decision.ApprovedToday);
             message.SetTextVariable("FIEF_RETURNED", result.ReturnedFiefCount);
+            message.SetTextVariable("FIEF_PLACED", result.PlacedFiefCount);
             message.SetTextVariable(
                 "REGULAR_TRANSFERRED", result.TransferredRegularCount);
             message.SetTextVariable(

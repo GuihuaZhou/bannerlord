@@ -290,7 +290,7 @@
     <string id="ModifiedArmy_TransferCompleted" text="调拨完成" />
     <string id="ModifiedArmy_TransferNoOrdinaryTroops" text="队伍里没有可以移交的普通士兵" />
     <string id="ModifiedArmy_TransferRejected" text="本次调拨没有完成" />
-    <string id="ModifiedArmy_PeaceDemobilization" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}办理复员。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；实际返乡{FIEF_RETURNED}名封邑兵，向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。结果：{RESULT}。" />
+    <string id="ModifiedArmy_PeaceDemobilization" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}办理复员。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；实际返乡{FIEF_RETURNED}名封邑兵，安置{FIEF_PLACED}名多余封建兵，向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。结果：{RESULT}。" />
     <string id="ModifiedArmy_DemobilizationRoute" text="[和平复员] {PARTY_NAME}目前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人，正在前往{SETTLEMENT_NAME}办理复员。" />
     <string id="ModifiedArmy_DemobilizationCompleted" text="本次复员已经办完" />
     <string id="ModifiedArmy_DemobilizationPeaceUnstable" text="和平时间还不够长" />
@@ -303,6 +303,7 @@
     <string id="ModifiedArmy_DisbandGarrisonMerge" text="[整队解散] {PARTY_NAME}在{SETTLEMENT_NAME}完成人员安置：{DETAILS}。" />
     <string id="ModifiedArmy_DisbandFinalization" text="[整队解散] {PARTY_NAME}在{DESTINATION_NAME}结束服役：{DETAILS}。" />
     <string id="ModifiedArmy_DisbandFiefReturned" text="{COUNT}名封建兵返乡" />
+    <string id="ModifiedArmy_DisbandFiefPlaced" text="{COUNT}名多余封建兵进入村庄休整" />
     <string id="ModifiedArmy_DisbandFiefTransferred" text="{COUNT}名封建兵随原服役记录进入驻军" />
     <string id="ModifiedArmy_DisbandOrdinaryAccepted" text="{COUNT}名普通士兵进入驻军" />
     <string id="ModifiedArmy_DisbandFiefLost" text="{COUNT}名封建兵无法安置并离队" />

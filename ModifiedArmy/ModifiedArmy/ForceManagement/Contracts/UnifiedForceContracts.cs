@@ -374,6 +374,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public int RequestedCount { get; set; }
         public int ApprovedCount { get; set; }
         public int TransferredCount { get; set; }
+        public int PlacedCount { get; set; }
         public string OperationId { get; set; }
         public string SourceFingerprint { get; set; }
         public string DestinationFingerprint { get; set; }

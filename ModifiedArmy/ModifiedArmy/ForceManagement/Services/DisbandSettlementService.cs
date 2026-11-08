@@ -24,6 +24,7 @@ namespace ModifiedArmy.ForceManagement.Services
     {
         public string PartyId { get; set; }
         public int FiefReturned { get; set; }
+        public int FiefPlaced { get; set; }
         public int FiefTransferredWithService { get; set; }
         public int OrdinaryAccepted { get; set; }
         public int FiefForcedLost { get; set; }
@@ -90,6 +91,11 @@ namespace ModifiedArmy.ForceManagement.Services
                     PartyExchangePurpose.PartyDisbandment);
                 result.FiefReturned += returned.ActualReturnedCount;
             }
+
+            FiefPlacementResult placement = FiefTroopPlacementService
+                .TryPlaceAfterReturn(manager, party, disbandDestination,
+                    FiefPlacementPurpose.PartyDisbandment);
+            result.FiefPlaced = placement.PlacedCount;
 
             MobileParty garrison = ResolveLegalGarrison(
                 party,

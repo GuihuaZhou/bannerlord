@@ -13,8 +13,10 @@ namespace ModifiedArmy.ForceManagement.Services
     {
         public PeaceDemobilizationDecision Decision { get; set; }
         public int ReturnedFiefCount { get; set; }
+        public int PlacedFiefCount { get; set; }
         public int TransferredRegularCount { get; set; }
-        public int ActualCount => ReturnedFiefCount + TransferredRegularCount;
+        public int ActualCount => ReturnedFiefCount + PlacedFiefCount +
+            TransferredRegularCount;
         public string ReasonCode { get; set; }
     }
 
@@ -86,6 +88,21 @@ namespace ModifiedArmy.ForceManagement.Services
             int liveSurplus = current.Scenario == ForceScenario.Peace
                 ? Math.Max(0, current.CurrentCount - current.TargetCount)
                 : 0;
+            int placementLimit = Math.Min(remaining, liveSurplus);
+            if (manager != null && placementLimit > 0)
+            {
+                FiefPlacementResult placement = FiefTroopPlacementService
+                    .TryPlaceAfterReturn(manager, party, settlement,
+                        FiefPlacementPurpose.PeaceDemobilization,
+                        placementLimit);
+                result.PlacedFiefCount = placement.PlacedCount;
+                remaining -= placement.PlacedCount;
+                current = ForceManagementFacade.Current.GetPartyTarget(party);
+                liveSurplus = current.Scenario == ForceScenario.Peace
+                    ? Math.Max(0,
+                        current.CurrentCount - current.TargetCount)
+                    : 0;
+            }
             remaining = Math.Min(remaining, liveSurplus);
             if (remaining > 0)
             {

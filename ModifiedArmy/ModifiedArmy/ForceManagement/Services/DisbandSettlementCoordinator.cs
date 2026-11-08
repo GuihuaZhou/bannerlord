@@ -141,6 +141,8 @@ namespace ModifiedArmy.ForceManagement.Services
             var details = new List<string>();
             AddResultDetail(details, "str_modifiedarmy_disband_fief_returned",
                 result?.FiefReturned ?? 0);
+            AddResultDetail(details, "str_modifiedarmy_disband_fief_placed",
+                result?.FiefPlaced ?? 0);
             AddResultDetail(details,
                 "str_modifiedarmy_disband_fief_transferred",
                 result?.FiefTransferredWithService ?? 0);

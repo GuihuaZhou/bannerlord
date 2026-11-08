@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Services;
 using ModifiedArmy.PartyManagement.Bindings;
 using ModifiedArmy.Garrison.Behaviors;
+using ModifiedArmy.Models.Fief;
 using System;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
@@ -224,8 +225,27 @@ namespace ModifiedArmy.ForceManagement.Missions
             PartyExchangeService runner = ForceManagementFacade.Current
                 .PartyExchangeRunner;
             runner.PrepareContext(context);
-            return runner.Execute(ForceManagementFacade.Current
-                .PartyExchange.BuildPlan(context));
+            PartyExchangeExecutionResult result = runner.Execute(
+                ForceManagementFacade.Current.PartyExchange.BuildPlan(context));
+            if (result.TransferredCount <= 0 || !result.HasCommittedChanges)
+                return result;
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            int limit = Math.Min(
+                ForceManagementFacade.Current.GetSafeFieldSurplus(party),
+                ForceManagementFacade.Current.WarRestPlanning
+                    .GetRemainingDailyQuota(party));
+            if (manager != null && limit > 0)
+            {
+                FiefPlacementResult placement = FiefTroopPlacementService
+                    .TryPlaceAfterReturn(manager, party,
+                        task.TargetSettlement, FiefPlacementPurpose.WarRest,
+                        limit);
+                result.PlacedCount = placement.PlacedCount;
+                ForceManagementFacade.Current.WarRestPlanning.RecordCompleted(
+                    party, placement.PlacedCount);
+            }
+            return result;
         }
 
         private static void ApplyResult(

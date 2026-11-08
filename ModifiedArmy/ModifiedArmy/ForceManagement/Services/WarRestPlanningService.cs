@@ -97,6 +97,14 @@ namespace ModifiedArmy.ForceManagement.Services
             item.CompletedCount += actualCount;
         }
 
+        public int GetRemainingDailyQuota(MobileParty party)
+        {
+            WarRestContext context = BuildContext(party,
+                ForceManagementFacade.Current.GetPartyTarget(party), false);
+            return Math.Max(0, (context.Settings?.MaximumDailyCount ?? 0) -
+                context.CompletedToday);
+        }
+
         /// <summary>Reports whether a successful return blocks same-day recruitment.</summary>
         public bool ShouldSuppressRecruitment(MobileParty party) =>
             GetCompletedToday(party, CurrentDay()) > 0;
