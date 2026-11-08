@@ -1435,16 +1435,20 @@ namespace ModifiedArmy.Models.Fief
             {
                 if (sourceFief != null &&
                     RecruitmentLogFilter.ShouldLog(party))
-                    ModLogger.FileDebug(string.Format(
-                        "Fief source access rejected: source={0}, sourceId={1}, " +
-                        "requestingParty={2}, requestingPartyId={3}, " +
-                        "boundPartyId={4}, reservationOwner={5}, reason={6}, " +
-                        "requireCurrentSettlement={7}.", sourceFief.Name,
-                        sourceFief.StringId, party.Name, party.StringId,
-                        access?.BoundPartyId ?? "none",
-                        access?.ReservationOwner ?? "none",
-                        access?.ReasonCode ?? "SourceBindingUnavailable",
-                        requireCurrentSettlement));
+                {
+                    TextObject message = new TextObject(
+                        "{=ModifiedArmy_FiefSourceAccessRejected}[Fief source access] Access was rejected: source={SOURCE_NAME} ({SOURCE_ID}); requesting party={PARTY_NAME} ({PARTY_ID}); bound party={BOUND_PARTY_ID}; reservation owner={RESERVATION_OWNER}; reasonCode={REASON_CODE}; require current settlement={REQUIRE_CURRENT_SETTLEMENT}.");
+                    message.SetTextVariable("SOURCE_NAME", sourceFief.Name);
+                    message.SetTextVariable("SOURCE_ID", sourceFief.StringId);
+                    message.SetTextVariable("PARTY_NAME", party.Name);
+                    message.SetTextVariable("PARTY_ID", party.StringId);
+                    message.SetTextVariable("BOUND_PARTY_ID", access?.BoundPartyId ?? "none");
+                    message.SetTextVariable("RESERVATION_OWNER", access?.ReservationOwner ?? "none");
+                    message.SetTextVariable("REASON_CODE", access?.ReasonCode ?? "SourceBindingUnavailable");
+                    message.SetTextVariable("REQUIRE_CURRENT_SETTLEMENT",
+                        requireCurrentSettlement ? "true" : "false");
+                    ModLogger.FileDebug(message.ToString());
+                }
                 return false;
             }
             scope = new FiefOperationScope

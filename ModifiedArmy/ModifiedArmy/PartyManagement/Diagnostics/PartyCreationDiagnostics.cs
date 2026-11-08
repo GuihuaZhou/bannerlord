@@ -68,10 +68,10 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             if (phase == "RecoveryRequired")
                 ModLogger.Error(message.ToString());
             else if (phase == "Failed" || phase == "Rejected")
-                ModLogger.Warn(message.ToString());
+                ModLogger.Debug(message.ToString());
             else if (phase == "Completed" && finalRegulars > 0 &&
                 finalRegulars < 50)
-                ModLogger.Warn(message.ToString());
+                ModLogger.Debug(message.ToString());
             else if (phase == "Evaluated")
                 ModLogger.Debug(message.ToString());
             else

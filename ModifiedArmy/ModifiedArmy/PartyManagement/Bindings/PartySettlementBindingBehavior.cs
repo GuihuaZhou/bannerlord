@@ -120,6 +120,17 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 return FiefSourceAccessDecision.Reject(sourceFief,
                     "SourceReservedForOtherCreation", null,
                     reservation.LeaderId);
+            // The player party is intentionally excluded from persistent AI-party
+            // bindings. It may use an otherwise unclaimed source that belongs to
+            // its clan; ownership and current-settlement checks are repeated by
+            // the operation scope before any roster or Hearth mutation.
+            if (requestingParty == MobileParty.MainParty &&
+                requestingParty.ActualClan != null &&
+                sourceFief.OwnerClan == requestingParty.ActualClan &&
+                !_settlementOwners.ContainsKey(sourceFief.StringId))
+                return FiefSourceAccessDecision.Allow(sourceFief,
+                    requestingParty.StringId,
+                    "UnboundClanSourceAvailableToMainParty");
             if (!_settlementOwners.TryGetValue(sourceFief.StringId,
                     out string owner))
                 return FiefSourceAccessDecision.Reject(sourceFief,

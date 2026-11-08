@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedPolitics.HeroOffices.Domain;
+using ModifiedPolitics.HeroOffices.Diagnostics;
 using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.HeroOffices.Patches;
 using ModifiedPolitics.Tool;
@@ -28,6 +29,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
             CampaignEvents.AiHourlyTickEvent.AddNonSerializedListener(this, OnAiHourlyTick);
+            CampaignEvents.ArmyCreated.AddNonSerializedListener(this, OnArmyCreated);
         }
 
         public override void SyncData(IDataStore dataStore)
@@ -53,14 +55,20 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             if (!isRuler && !IsAppointedMarshal(marshal, kingdom))
                 return;
 
+            string traceId = MarshalArmyDebugTrace.BeginDecision(party, out bool detailedTrace);
+            if (detailedTrace)
+                TraceDecision(party, kingdom, traceId, "ENTRY", "READY_FOR_NATIVE_CHECK", isRuler, true);
+
             if (marshal == Hero.MainHero)
             {
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "PLAYER_MANUAL", isRuler);
                 SetState(party, kingdom, "player", "MP_MarshalArmyAiPlayer", "marshal is the player and remains under manual control");
                 return;
             }
 
             if (!isRuler && !OfficeRules.IsEligible(marshal, kingdom, OfficeType.Marshal))
             {
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "OFFICE_INELIGIBLE", isRuler);
                 SetState(party, kingdom, "ineligible", "MP_MarshalArmyAiIneligible", "marshal no longer leads an eligible war party");
                 return;
             }
@@ -68,6 +76,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             if (party.Army != null)
             {
                 bool leadsArmy = party.Army.LeaderParty == party;
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT",
+                    leadsArmy ? "ALREADY_LEADING_ARMY" : "ATTACHED_TO_ARMY", isRuler);
                 SetState(
                     party,
                     kingdom,
@@ -81,6 +91,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 _aiMilitaryBehavior = Campaign.Current?.GetCampaignBehavior<AiMilitaryBehavior>();
             if (_aiMilitaryBehavior == null)
             {
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "MISSING_NATIVE_AI", isRuler);
                 SetState(party, kingdom, "missing-ai", "MP_MarshalArmyAiMissingBehavior", "native military AI behavior is unavailable");
                 return;
             }
@@ -88,27 +99,44 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             if (party.IsCurrentlyAtSea || party.MapEvent != null
                 || party.CurrentSettlement?.SiegeEvent != null)
             {
+                string busyReason = party.IsCurrentlyAtSea ? "BUSY_SEA"
+                    : party.MapEvent != null ? "BUSY_BATTLE" : "BUSY_SIEGE";
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", busyReason, isRuler);
                 SetState(party, kingdom, "busy", "MP_MarshalArmyAiBusy", "marshal party is currently busy");
                 return;
             }
 
             if (party.PartySizeRatio <= 0.6f)
             {
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "LOW_PARTY_RATIO", isRuler);
                 SetState(party, kingdom, "strength", "MP_MarshalArmyAiLowStrength", "marshal party strength is below 60 percent");
                 return;
             }
 
             if (!kingdom.FactionsAtWarWith.Any(faction => faction?.Fiefs?.Any() == true))
             {
+                TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "NO_ENEMY_FIEF", isRuler);
                 SetState(party, kingdom, "peace", "MP_MarshalArmyAiNoTarget", "kingdom has no enemy faction with a fief");
                 return;
             }
 
             // The current game model owns influence, food, distance and callable-party checks.
             // This bypasses only AiMilitaryBehavior's clan-leader identity gate.
-            if (!Campaign.Current.Models.ArmyManagementCalculationModel.CanLordCreateArmy(
-                    party,
-                    out MBList<MobileParty> candidates))
+            bool canCreateArmy = Campaign.Current.Models.ArmyManagementCalculationModel.CanLordCreateArmy(
+                party,
+                out MBList<MobileParty> candidates);
+            MarshalArmyDebugTrace.Write(
+                "phase=ELIGIBILITY traceId=" + traceId
+                + " party=" + MarshalArmyDebugTrace.DescribeParty(party)
+                + " result=" + canCreateArmy
+                + " candidates=" + (candidates?.Count ?? 0)
+                + " reason=" + (canCreateArmy ? "ELIGIBILITY_PASS" : "ELIGIBILITY_FAIL_NATIVE_UNKNOWN")
+                + " influence=" + MarshalArmyDebugTrace.F(marshal.Clan?.Influence ?? 0f)
+                + " foodDays=" + party.GetNumDaysForFoodToLast()
+                + " sizeRatio=" + MarshalArmyDebugTrace.F(party.PartySizeRatio)
+                + " nativeModel=" + Campaign.Current.Models.ArmyManagementCalculationModel.GetType().FullName
+                + " leaderGateReplacements=" + MarshalArmyPatches.LeaderGateReplacementCount);
+            if (!canCreateArmy)
             {
                 SetDiagnosticState(
                     kingdom,
@@ -134,9 +162,25 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 MapEvent.PowerCalculationContext.Siege);
             foreach (MobileParty candidate in candidates)
             {
-                gatheringStrength += candidate.Party.GetCustomStrength(
+                float candidateStrength = candidate.Party.GetCustomStrength(
                     BattleSideEnum.Attacker,
                     MapEvent.PowerCalculationContext.Siege);
+                gatheringStrength += candidateStrength;
+                if (detailedTrace)
+                {
+                    MarshalArmyDebugTrace.Write(
+                        "phase=ARMY_CANDIDATE traceId=" + traceId
+                        + " party=" + MarshalArmyDebugTrace.DescribeParty(candidate)
+                        + " leader=" + MarshalArmyDebugTrace.DescribeHero(candidate.LeaderHero)
+                        + " clan=" + (candidate.ActualClan?.Name?.ToString() ?? "none")
+                        + " members=" + candidate.MemberRoster.TotalManCount
+                        + " sizeRatio=" + MarshalArmyDebugTrace.F(candidate.PartySizeRatio)
+                        + " foodDays=" + candidate.GetNumDaysForFoodToLast()
+                        + " inArmy=" + (candidate.Army != null)
+                        + " attachedTo=" + MarshalArmyDebugTrace.DescribeParty(candidate.Army?.LeaderParty)
+                        + " atSea=" + candidate.IsCurrentlyAtSea
+                        + " siegeStrength=" + MarshalArmyDebugTrace.F(candidateStrength));
+                }
             }
 
             int totalFoodDays = party.GetNumDaysForFoodToLast();
@@ -149,13 +193,29 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             }
             int averageFoodDays = totalFoodDays / (candidates.Count + 1);
             float siegeFoodThreshold = Campaign.Current.Models.MobilePartyAIModel.NeededFoodsInDaysThresholdForSiege;
+            if (detailedTrace)
+            {
+                MarshalArmyDebugTrace.Write(
+                    "phase=ARMY_CANDIDATE_SUMMARY traceId=" + traceId
+                    + " leader=" + MarshalArmyDebugTrace.DescribeParty(party)
+                    + " candidateCount=" + candidates.Count
+                    + " gatheringStrength=" + MarshalArmyDebugTrace.F(gatheringStrength)
+                    + " averageFoodDays=" + averageFoodDays
+                    + " minimumFoodDays=" + minimumFoodDays
+                    + " siegeFoodThreshold=" + MarshalArmyDebugTrace.F(siegeFoodThreshold));
+            }
 
             thinkParams.WillGatherAnArmy = true;
             int scoreCountBefore = thinkParams.AIBehaviorScores?.Count ?? 0;
             float bestExistingScore = scoreCountBefore == 0
                 ? 0f
                 : thinkParams.AIBehaviorScores.Max(item => item.Item2);
-            float armyCreationMultiplier = CalculateArmyCreationMultiplier(kingdom, party);
+            float armyCreationMultiplier = CalculateArmyCreationMultiplier(
+                kingdom,
+                party,
+                out float armyCountFactor,
+                out float influenceFactor,
+                out float partySizeFactor);
             try
             {
                 for (int i = 0; i < 4; i++)
@@ -163,10 +223,31 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     Army.ArmyTypes armyType = (Army.ArmyTypes)i;
                     if (armyType != Army.ArmyTypes.Raider)
                     {
-                        _aiMilitaryBehavior.FindBestTargetAndItsValueForFaction(
-                            armyType,
-                            thinkParams,
-                            gatheringStrength);
+                        int typeStart = thinkParams.AIBehaviorScores?.Count ?? 0;
+                        MarshalArmyDebugTrace.Write(
+                            "phase=TYPE_START traceId=" + traceId + " armyType=" + armyType
+                            + " preCount=" + typeStart
+                            + " gatheringStrength=" + MarshalArmyDebugTrace.F(gatheringStrength)
+                            + " averageFoodDays=" + averageFoodDays
+                            + " siegeFoodThreshold=" + MarshalArmyDebugTrace.F(siegeFoodThreshold));
+                        using (MarshalArmyDebugTrace.PushTargetContext(party, armyType, traceId, detailedTrace))
+                        {
+                            _aiMilitaryBehavior.FindBestTargetAndItsValueForFaction(
+                                armyType,
+                                thinkParams,
+                                gatheringStrength);
+                            int typeEnd = thinkParams.AIBehaviorScores?.Count ?? 0;
+                            var added = thinkParams.AIBehaviorScores.Skip(typeStart).Take(typeEnd - typeStart).ToList();
+                            int positive = added.Count(item => item.Item2 > 0f);
+                            int zero = added.Count(item => item.Item2 == 0f);
+                            int invalid = added.Count(item => float.IsNaN(item.Item2) || float.IsInfinity(item.Item2));
+                            MarshalArmyDebugTrace.Write(
+                                "phase=TYPE_SUMMARY traceId=" + traceId + " armyType=" + armyType
+                                + " postCount=" + typeEnd + " added=" + added.Count
+                                + " positive=" + positive + " zero=" + zero + " nonFinite=" + invalid
+                                + " omittedTargets=" + MarshalArmyDebugTrace.CurrentOmitted
+                                + " result=" + (added.Count > 0 && positive == 0 ? "ALL_NEW_SCORES_ZERO" : "TYPE_SCORES_OBSERVED"));
+                        }
                     }
                 }
             }
@@ -182,7 +263,19 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             for (int i = scoreCountBefore; i < scoreCountAfter; i++)
             {
                 var score = thinkParams.AIBehaviorScores[i];
-                thinkParams.SetBehaviorScore(score.Item1, score.Item2 * armyCreationMultiplier);
+                float finalScore = score.Item2 * armyCreationMultiplier;
+                thinkParams.SetBehaviorScore(score.Item1, finalScore);
+                if (detailedTrace)
+                    MarshalArmyDebugTrace.Write(
+                        "phase=SCORE_MULTIPLIER traceId=" + traceId
+                        + " behavior=" + score.Item1.AiBehavior
+                        + " target=" + (score.Item1.Party?.ToString() ?? "none")
+                        + " rawScore=" + MarshalArmyDebugTrace.F(score.Item2)
+                        + " multiplier=" + MarshalArmyDebugTrace.F(armyCreationMultiplier)
+                        + " armyCountFactor=" + MarshalArmyDebugTrace.F(armyCountFactor)
+                        + " influenceFactor=" + MarshalArmyDebugTrace.F(influenceFactor)
+                        + " partySizeFactor=" + MarshalArmyDebugTrace.F(partySizeFactor)
+                        + " finalScore=" + MarshalArmyDebugTrace.F(finalScore));
             }
             int positiveAddedScores = addedScores == 0
                 ? 0
@@ -213,12 +306,73 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 siegeFoodThreshold);
         }
 
-        private static float CalculateArmyCreationMultiplier(Kingdom kingdom, MobileParty party)
+        private void OnArmyCreated(Army army)
+        {
+            MobileParty leaderParty = army?.LeaderParty;
+            if (!MarshalArmyDebugTrace.IsRelevant(leaderParty))
+                return;
+
+            MarshalArmyDebugTrace.Write(
+                "phase=CREATE_ARMY_SUCCESS_EVENT kingdom="
+                + MarshalArmyDebugTrace.DescribeKingdom(leaderParty.MapFaction as Kingdom)
+                + " leader=" + MarshalArmyDebugTrace.DescribeHero(leaderParty.LeaderHero)
+                + " party=" + MarshalArmyDebugTrace.DescribeParty(leaderParty)
+                + " armyType=" + army.ArmyType
+                + " target=" + (army.AiBehaviorObject?.ToString() ?? "none")
+                + " initialMembers=" + (army.Parties?.Count ?? 0)
+                + " campaignHour=" + (int)CampaignTime.Now.ToHours);
+        }
+
+        private static void TraceDecision(
+            MobileParty party,
+            Kingdom kingdom,
+            string traceId,
+            string phase,
+            string reason,
+            bool isRuler)
+        {
+            TraceDecision(party, kingdom, traceId, phase, reason, isRuler, false);
+        }
+
+        private static void TraceDecision(
+            MobileParty party,
+            Kingdom kingdom,
+            string traceId,
+            string phase,
+            string reason,
+            bool isRuler,
+            bool force)
+        {
+            if (!force && !MarshalArmyDebugTrace.ShouldTraceState(party, reason))
+                return;
+            MarshalArmyDebugTrace.Write(
+                "phase=" + phase + " traceId=" + traceId
+                + " kingdom=" + MarshalArmyDebugTrace.DescribeKingdom(kingdom)
+                + " hero=" + MarshalArmyDebugTrace.DescribeHero(party?.LeaderHero)
+                + " party=" + MarshalArmyDebugTrace.DescribeParty(party)
+                + " isRuler=" + isRuler
+                + " isMarshal=" + IsAppointedMarshal(party?.LeaderHero, kingdom)
+                + " armyState=" + (party?.Army == null ? "none" : party.Army.LeaderParty == party ? "leader" : "attached")
+                + " partySizeRatio=" + MarshalArmyDebugTrace.F(party?.PartySizeRatio ?? 0f)
+                + " influence=" + MarshalArmyDebugTrace.F(party?.LeaderHero?.Clan?.Influence ?? 0f)
+                + " foodDays=" + (party?.GetNumDaysForFoodToLast() ?? 0)
+                + " atSea=" + (party?.IsCurrentlyAtSea ?? false)
+                + " mapEvent=" + (party?.MapEvent != null)
+                + " settlementSiege=" + (party?.CurrentSettlement?.SiegeEvent != null)
+                + " reasonCode=" + reason);
+        }
+
+        private static float CalculateArmyCreationMultiplier(
+            Kingdom kingdom,
+            MobileParty party,
+            out float armyCountFactor,
+            out float influenceFactor,
+            out float partySizeFactor)
         {
             int existingArmyCount = kingdom.Armies.Count(army => !army.Parties.Contains(MobileParty.MainParty));
-            float armyCountFactor = 1f - existingArmyCount * 0.4f;
-            float influenceFactor = (10f + MathF.Sqrt(MathF.Min(900f, party.LeaderHero.Clan.Influence))) / 50f;
-            float partySizeFactor = MathF.Sqrt(party.PartySizeRatio);
+            armyCountFactor = 1f - existingArmyCount * 0.4f;
+            influenceFactor = (10f + MathF.Sqrt(MathF.Min(900f, party.LeaderHero.Clan.Influence))) / 50f;
+            partySizeFactor = MathF.Sqrt(party.PartySizeRatio);
 
             // LastArmyCreationDay is not exposed by the installed public API. The remaining
             // native factors still preserve army-count, influence and party-size competition.

@@ -545,5 +545,7 @@
     <string id="MP_PopulationNaturalChange" text="每日自然变化" />
     <string id="MP_PopulationCapacity" text="自然承载上限" />
     <string id="MP_PopulationSupportedProsperity" text="可支持繁荣度" />
+    <string id="MP_MarshalArmyDebugPrefix" text="[王国官职][大元帅军团调试]" />
+    <string id="MP_MarshalArmyDebugFieldMap" text="phase=阶段|traceId=追踪编号|kingdom=王国|hero=英雄|party=部队|leader=统帅|reasonCode=原因码|reason=原因|result=结果|armyType=军团类型|target=目标|source=来源|candidates=候选数|candidateCount=候选部队数|members=兵员数|influence=影响力|foodDays=粮食天数|averageFoodDays=平均粮食天数|minimumFoodDays=最低粮食天数|sizeRatio=部队规模比例|gatheringStrength=集结战力|siegeStrength=攻城战力|nativeTargetScore=原生目标分|rawScore=原始分|finalScore=最终分|multiplier=倍率|poolCount=候选池数量|top5=前五候选|allowedByMarshalPatch=官职补丁放行|isRuler=是否统治者|isMarshal=是否大元帅|atSea=是否在海上|mapEvent=是否处于战斗|settlementSiege=所在定居点是否被围攻|boundParty=绑定部队|reservationOwner=创建预留者" />
 </strings>
 </base>
