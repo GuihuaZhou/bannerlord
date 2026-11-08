@@ -111,9 +111,9 @@ namespace ModifiedArmy.Models.Fief
             if (doctrine == null)
                 throw new InvalidOperationException(
                     "Fief budget calculation requires a doctrine.");
-            // Feudal support allocates the full effective Hearth pool. The
-            // 100-Hearth reserve belongs to professional/shared production,
-            // not to feudal troop capacity.
+            // Doctrine weights allocate the effective Hearth pool between
+            // feudal support policy and the professional branch. They no
+            // longer scale either branch's daily production rate.
             int allocatable = GetEffectiveSupplyHearth();
             return checked((int)Math.Floor(
                 (double)allocatable * doctrine.FiefWeight /

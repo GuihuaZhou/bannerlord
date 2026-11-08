@@ -1,4 +1,5 @@
 using ModifiedArmy.Tool;
+using ModifiedArmy.Population.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -37,12 +38,7 @@ namespace ModifiedArmy.common
 
     public sealed class HearthEconomyConfig
     {
-        public IReadOnlyDictionary<int, int> ProfessionalRecruitment { get; internal set; }
         public float FeudalTaxReliefWageRatio { get; internal set; }
-
-        public int GetProfessionalRecruitmentCost(CharacterObject troop) =>
-            GetRequiredCost(ProfessionalRecruitment, troop,
-                "ProfessionalRecruitment");
 
         internal static int GetRequiredCost(
             IReadOnlyDictionary<int, int> costs,
@@ -70,6 +66,11 @@ namespace ModifiedArmy.common
         public int ProfessionalWeight { get; internal set; }
         public int MercenaryWeight { get; internal set; }
         public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
+        public IReadOnlyDictionary<int, int> ProfessionalBurdenCosts {
+            get;
+            internal set;
+        }
+        public int ProfessionalBurdenDailyRecovery { get; internal set; }
         public FiefServiceConfig Service { get; internal set; }
         public ProfessionalTrainingConfig TownTraining { get; internal set; }
         public ProfessionalTrainingConfig CastleTraining { get; internal set; }
@@ -95,6 +96,10 @@ namespace ModifiedArmy.common
             return HearthEconomyConfig.GetRequiredCost(
                 FeudalSupply, troop, "FeudalSupply");
         }
+
+        public int GetProfessionalBurdenCost(CharacterObject troop) =>
+            HearthEconomyConfig.GetRequiredCost(
+                ProfessionalBurdenCosts, troop, "ProfessionalBurden");
 
         public ProfessionalTrainingConfig GetTraining(Settlement settlement) =>
             settlement?.IsCastle == true
@@ -162,7 +167,7 @@ namespace ModifiedArmy.common
         public int MaxDailyDemobilizationCount { get; internal set; } = 30;
     }
 
-    public sealed class MilitaryConfig : MBObjectBase
+    public sealed class MilitaryConfig : MBObjectBase, IRecruitmentBurdenPolicy
     {
         private readonly Dictionary<string, CulturalMilitaryDoctrine> _doctrines =
             new Dictionary<string, CulturalMilitaryDoctrine>(StringComparer.OrdinalIgnoreCase);
@@ -207,6 +212,7 @@ namespace ModifiedArmy.common
             if (_doctrines.Count == 0)
                 throw new InvalidOperationException("MilitaryConfig must contain at least one culture doctrine.");
             MilitaryConfigManager.Instance.Register(this);
+            RecruitmentBurdenPolicyRegistry.Register(this);
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_config_loaded");
             message.SetTextVariable("CONFIG_ID", ConfigId);
@@ -223,6 +229,9 @@ namespace ModifiedArmy.common
 
         public CulturalMilitaryDoctrine GetDoctrine(Settlement settlement) =>
             GetDoctrine(settlement?.Culture);
+
+        public int GetDailyRecovery(Settlement settlement) =>
+            GetDoctrine(settlement).ProfessionalBurdenDailyRecovery;
 
         public (float Fief, float GarrisonTransfer, float Mercenary) GetAiCulturalPreference(CultureObject culture)
         {
@@ -462,7 +471,10 @@ namespace ModifiedArmy.common
             int mercenary = NonNegativeInt(weights, "mercenary");
             if (fief + professional + mercenary == 0 || fief + professional == 0)
                 throw new InvalidOperationException("Invalid zero military doctrine for " + culture.StringId);
-            XmlNode training = Required(Required(node, "Professional"), "Training");
+            XmlNode professionalNode = Required(node, "Professional");
+            XmlNode training = Required(professionalNode, "Training");
+            XmlNode burden = Required(professionalNode,
+                "RecruitmentBurden");
             XmlNode fiefNode = Required(node, "Fief");
             XmlNode production = Required(fiefNode, "Production");
             XmlNode townPortTraining = training.SelectSingleNode("TownPort");
@@ -477,6 +489,11 @@ namespace ModifiedArmy.common
                     Required(fiefNode, "FeudalSupply"),
                     "FeudalSupply for " + culture.StringId,
                     requireStrictIncrease: true),
+                ProfessionalBurdenCosts = ParseTierCosts(
+                    burden, "ProfessionalBurden for " + culture.StringId,
+                    requireStrictIncrease: true, valueAttribute: "Cost"),
+                ProfessionalBurdenDailyRecovery = PositiveInt(
+                    burden, "dailyRecovery"),
                 Service = ParseService(Required(fiefNode, "Service")),
                 TownTraining = ParseTraining(Required(training, "Town")),
                 CastleTraining = ParseTraining(Required(training, "Castle")),
@@ -508,9 +525,6 @@ namespace ModifiedArmy.common
         private static HearthEconomyConfig ParseHearthEconomy(XmlNode node) =>
             new HearthEconomyConfig
             {
-                ProfessionalRecruitment = ParseTierCosts(Required(node,
-                    "ProfessionalRecruitment"), "ProfessionalRecruitment",
-                    expectedValue: 1),
                 FeudalTaxReliefWageRatio = RatioAttribute(Required(node,
                     "FeudalTaxRelief"), "wageRatio", "FeudalTaxRelief")
             };
@@ -530,7 +544,7 @@ namespace ModifiedArmy.common
 
         private static IReadOnlyDictionary<int, int> ParseTierCosts(
             XmlNode node, string group, bool requireStrictIncrease = false,
-            int? expectedValue = null)
+            int? expectedValue = null, string valueAttribute = "Hearth")
         {
             var result = new Dictionary<int, int>();
             foreach (XmlNode tier in node.SelectNodes("Tier"))
@@ -541,11 +555,11 @@ namespace ModifiedArmy.common
                     throw new InvalidOperationException(
                         "HearthEconomy " + group +
                         " contains invalid Level.");
-                if (!int.TryParse(Attr(tier, "Hearth"), NumberStyles.Integer,
+                if (!int.TryParse(Attr(tier, valueAttribute), NumberStyles.Integer,
                     CultureInfo.InvariantCulture, out int hearth) || hearth <= 0)
                     throw new InvalidOperationException(string.Format(
-                        "HearthEconomy {0} Level {1} requires a positive Hearth value.",
-                        group, level));
+                        "HearthEconomy {0} Level {1} requires a positive {2} value.",
+                        group, level, valueAttribute));
                 if (result.ContainsKey(level))
                     throw new InvalidOperationException(string.Format(
                         "HearthEconomy {0} contains duplicate Level {1}.",
@@ -581,6 +595,16 @@ namespace ModifiedArmy.common
         {
             if (!int.TryParse(Attr(node, name), NumberStyles.Integer, CultureInfo.InvariantCulture, out int value) || value < 0)
                 throw new InvalidOperationException("MilitaryConfig requires a non-negative integer: " + name);
+            return value;
+        }
+
+        private static int PositiveInt(XmlNode node, string name)
+        {
+            int value = int.Parse(Attr(node, name),
+                CultureInfo.InvariantCulture);
+            if (value <= 0)
+                throw new InvalidOperationException(
+                    "MilitaryConfig requires positive " + name + ".");
             return value;
         }
         private static float NonNegativeFloat(XmlNode node, string name)

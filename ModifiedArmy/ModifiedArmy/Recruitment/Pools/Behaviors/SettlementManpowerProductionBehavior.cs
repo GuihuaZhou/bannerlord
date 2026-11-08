@@ -131,6 +131,64 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 .ToDictionary(x => x.Key, x => x.Value);
         }
 
+        public int GetMaxAffordableProfessionalCount(Settlement settlement,
+            CharacterObject troop, int requested)
+        {
+            if (settlement?.IsFortification != true || troop == null ||
+                requested <= 0) return 0;
+            try
+            {
+                int burdenCost = MilitaryConfigManager.Instance
+                    .RequireActiveConfig().GetDoctrine(settlement)
+                    .GetProfessionalBurdenCost(troop);
+                return SettlementPopulationServiceRegistry.Current?
+                    .GetMaxAffordableProfessionalCount(
+                        settlement, burdenCost, requested) ?? 0;
+            }
+            catch (Exception exception)
+            {
+                ModLogger.Error(string.Format(
+                    "Professional affordability policy failed: " +
+                    "settlement={0}, id={1}, culture={2}, troop={3}, " +
+                    "tier={4}, requested={5}, reason={6}.", settlement.Name,
+                    settlement.StringId, settlement.Culture?.StringId,
+                    troop.Name, troop.Tier, requested, exception.Message));
+                return 0;
+            }
+        }
+
+        public int GetTotalAffordableProfessionalOffers(Settlement settlement)
+        {
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            if (population == null) return 0;
+            float hearth = population.GetHearth(settlement);
+            float burden = population.GetRecruitmentBurden(settlement);
+            int total = 0;
+            foreach (var pair in GetAvailableProfessionalOffers(settlement)
+                .Where(item => item.Key != null && item.Value > 0)
+                .OrderBy(item => item.Key.StringId, StringComparer.Ordinal))
+            {
+                int cost;
+                try
+                {
+                    cost = MilitaryConfigManager.Instance
+                        .RequireActiveConfig().GetDoctrine(settlement)
+                        .GetProfessionalBurdenCost(pair.Key);
+                }
+                catch { continue; }
+                for (int i = 0; i < pair.Value; i++)
+                {
+                    if (!RecruitmentBurdenMath.CanRecruitExact(
+                        hearth, burden, cost, 1)) return total;
+                    hearth -= 1f;
+                    burden += cost;
+                    total++;
+                }
+            }
+            return total;
+        }
+
         /// <summary>
         /// Returns current offers when recruitment is still pending, otherwise
         /// projects the next daily batch without changing production progress.
@@ -443,19 +501,19 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             _dailyProfessionalOffers.Remove(settlement);
             _professionalOfferDays[settlement] = day;
             data.RecordFiefReplenishment(day, 0);
-            if (forecast.SharedSupply <= 0f &&
-                forecast.ProfessionalAllocation <= 0f)
+            if (forecast.ProfessionalAllocation <= 0f &&
+                forecast.FiefAllocation <= 0f)
             {
                 if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
-                {
-                    TextObject noSupplyMessage = GameTexts.FindText(
-                        "str_modifiedarmy_manpower_produce_no_supply");
-                    noSupplyMessage.SetTextVariable("DAY", day);
-                    noSupplyMessage.SetTextVariable(
-                        "SETTLEMENT_NAME",
-                        settlement.Name);
-                    ModLogger.Debug(noSupplyMessage.ToString());
-                }
+                    ModLogger.FileDebug(string.Format(
+                        "Daily recruitment production skipped: settlement={0}, " +
+                        "settlementId={1}, day={2}, professionalAllocation={3:F2}, " +
+                        "fiefAllocation={4:F2}, professionalEnabled={5}, " +
+                        "reason=NoEligibleDailyAllocation.", settlement.Name,
+                        settlement.StringId, day,
+                        forecast.ProfessionalAllocation,
+                        forecast.FiefAllocation,
+                        forecast.ProfessionalRecruitmentEnabled));
                 return;
             }
 
@@ -497,21 +555,22 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                         professionalCount - offeredCount);
                 }
             }
+            int fiefProduced = 0;
             if (fiefCount > 0)
             {
-                int produced = fiefData.ProduceDailyFiefTroops(fiefCount);
-                data.RecordFiefReplenishment(day, produced);
-                if (produced < fiefCount)
+                fiefProduced = fiefData.ProduceDailyFiefTroops(fiefCount);
+                data.RecordFiefReplenishment(day, fiefProduced);
+                if (fiefProduced < fiefCount)
                 {
                     data.AddProductionProgress(
                         TroopProductionKind.Fief,
-                        fiefCount - produced);
+                        fiefCount - fiefProduced);
                 }
             }
 
             // Zero-output days are routine for fractional production. Logging
             // only completed batches keeps player-kingdom diagnostics useful.
-            if (offeredCount > 0 &&
+            if ((offeredCount > 0 || fiefProduced > 0) &&
                 RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
             {
                 TextObject productionMessage = GameTexts.FindText(
@@ -520,9 +579,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 productionMessage.SetTextVariable(
                     "SETTLEMENT_NAME",
                     settlement.Name);
-                productionMessage.SetTextVariable(
-                    "SUPPLY",
-                    forecast.SharedSupply.ToString("F2"));
                 productionMessage.SetTextVariable(
                     "TRAINING",
                     forecast.ProfessionalTrainingCapacity.ToString("F2"));
@@ -533,6 +589,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     "REQUESTED",
                     professionalCount);
                 productionMessage.SetTextVariable("OFFERED", offeredCount);
+                productionMessage.SetTextVariable("FIEF_REQUESTED", fiefCount);
+                productionMessage.SetTextVariable("FIEF_PRODUCED", fiefProduced);
                 productionMessage.SetTextVariable(
                     "MANIFEST",
                     FormatOfferManifest(offers: _dailyProfessionalOffers
@@ -559,11 +617,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             ProfessionalRecruitmentEligibilitySnapshot eligibility =
                 ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
             ProfessionalTroopTemplate professionalTemplate = eligibility?.Template;
-            float supply = CalculateSettlementSupply(settlement, fiefData, manager);
-            int professionalHearth = SettlementPopulationServiceRegistry.Current
-                ?.GetRecruitableHearth(settlement) ?? 0;
-            float professionalPopulationSupply =
-                CalculatePopulationProductionSupply(professionalHearth);
             IReadOnlyDictionary<string, int> effectiveWeights =
                 GetEffectiveWeights(settlement);
             bool professionalEnabled = professionalTemplate != null &&
@@ -574,7 +627,7 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     settlement,
                     TroopProductionKind.Professional)
                 : 0f;
-            float professionalDemand = professionalEnabled
+            float professionalAllocation = professionalEnabled
                 ? professionalTrainingCapacity
                 : 0f;
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
@@ -585,7 +638,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             float fiefDemand = fiefData.CanProduceAnyFiefTroop()
                 ? fiefProduction.DailyRate
                 : 0f;
-            float ratio = doctrine.ProfessionalShare;
             ProfessionalRecruitmentEligibilitySnapshot productionRule = eligibility;
             ProfessionalTrainingConfig training = doctrine.GetTraining(settlement);
             int barracksLevel = GetBarracksLevel(settlement);
@@ -602,21 +654,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     0f,
                     professionalTrainingCapacity / rawTraining - 1f)
                 : 0f;
-            // Culture doctrine still controls the relative production pace,
-            // but each branch now draws from its own population source.
-            // Unused rural professional share is deliberately not reassigned
-            // to feudal production: doing so would silently amplify fief output.
-            float professionalAllocation = Math.Min(
-                professionalPopulationSupply * ratio,
-                professionalDemand);
-            float fiefAllocation = Math.Min(
-                supply * (1f - ratio),
-                fiefDemand);
+            float fiefAllocation = fiefDemand;
 
             return new RecruitmentProductionForecast
             {
-                SharedSupply = supply,
-                ProfessionalRatio = ratio,
                 FiefDoctrineWeight = doctrine.FiefWeight,
                 ProfessionalDoctrineWeight = doctrine.ProfessionalWeight,
                 ProfessionalTrainingBase = training.Base,
@@ -627,7 +668,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 RawProfessionalTrainingBeforeExternalEffects = rawTraining,
                 ExternalTrainingBonusRate = externalBonusRate,
                 ProfessionalTrainingCapacity = professionalTrainingCapacity,
-                ProfessionalPopulationSupply = professionalPopulationSupply,
                 ProfessionalAllocation = professionalAllocation,
                 FiefDemand = fiefDemand,
                 FiefAllocation = fiefAllocation,
@@ -804,62 +844,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             entry.SetTextVariable("TROOP_NAME", troop.Name);
             entry.SetTextVariable("COUNT", count);
             return entry.ToString();
-        }
-
-        public static float CalculateVillageSupply(Village village,
-            int ignoredLegacyAssignedFiefCount = 0)
-        {
-            if (village?.VillageState != Village.VillageStates.Normal)
-                return 0f;
-            FiefPartyManager manager = Campaign.Current
-                .GetCampaignBehavior<FiefPartyManager>();
-            Settlement bound = village.Settlement.Village?.Bound;
-            if (manager == null || !manager.TryGetReadyFiefData(
-                bound, out FiefPartyData fief)) return 0f;
-            VillageFiefData data = manager?.GetVillageFiefData(
-                village.Settlement);
-            if (data == null) return 0f;
-            float free;
-            try
-            {
-                free = Math.Max(0f, data.GetFreeSupplyHearth(
-                    fief.GetFiefPartyTemplate(),
-                    MilitaryConfigManager.Instance.RequireActiveConfig()
-                        .GetDoctrine(village.Settlement.Village.Bound)));
-            }
-            catch (Exception exception)
-            {
-                ModLogger.Error(string.Format(
-                    "Village supply calculation rejected: village={0}, reason={1}.",
-                    village.Settlement.StringId, exception.Message));
-                return 0f;
-            }
-            return CalculatePopulationProductionSupply(free);
-        }
-
-        private static float CalculatePopulationProductionSupply(float hearth)
-        {
-            float available = Math.Max(0f, hearth);
-            return available <= 100f
-                ? 0f
-                : 0.03f * available * (available - 100f) /
-                    (available + 50f);
-        }
-
-        private static float CalculateSettlementSupply(
-            Settlement settlement,
-            FiefPartyData fiefData,
-            FiefPartyManager manager)
-        {
-            List<Village> villages = settlement.BoundVillages
-                .Where(v => v?.Settlement != null)
-                .OrderBy(v => v.Settlement.StringId)
-                .ToList();
-            if (villages.Count == 0) return 0f;
-            float total = 0f;
-            for (int i = 0; i < villages.Count; i++)
-                total += CalculateVillageSupply(villages[i]);
-            return total;
         }
 
         public static int GetBarracksLevel(Settlement settlement)

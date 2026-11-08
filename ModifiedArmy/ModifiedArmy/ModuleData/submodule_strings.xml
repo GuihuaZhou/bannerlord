@@ -214,10 +214,8 @@
         text="{=ModifiedArmy_ManpowerReasonHearth}所属村庄的户数不足" />
     <string id="str_modifiedarmy_manpower_reason_remaining"
         text="{=ModifiedArmy_ManpowerReasonRemaining}处理后还剩{REMAINING}人" />
-    <string id="str_modifiedarmy_manpower_produce_no_supply"
-        text="{=ModifiedArmy_ManpowerProduceNoSupply}[职业兵生产] {SETTLEMENT_NAME}没有可用兵源，今日没有生成职业兵。" />
     <string id="str_modifiedarmy_manpower_produce"
-        text="{=ModifiedArmy_ManpowerProduce}[职业兵生产] {SETTLEMENT_NAME}分配到{ALLOCATION}点训练产能，计划生成{REQUESTED}人，实际生成{OFFERED}人：{MANIFEST}。当前可用兵源为{SUPPLY}，训练上限为{TRAINING}。" />
+        text="{=ModifiedArmy_ManpowerProduce}[Daily manpower] {SETTLEMENT_NAME}: professional training={TRAINING}, allocation={ALLOCATION}, requested offers={REQUESTED}, produced offers={OFFERED} ({MANIFEST}); fief requested={FIEF_REQUESTED}, produced={FIEF_PRODUCED}." />
     <string id="str_modifiedarmy_manpower_manifest_empty"
         text="{=ModifiedArmy_ManpowerManifestEmpty}无" />
     <string id="str_modifiedarmy_manpower_manifest_entry"

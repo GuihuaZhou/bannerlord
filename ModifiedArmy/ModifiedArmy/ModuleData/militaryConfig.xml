@@ -163,15 +163,6 @@
     </AiRecruitment>
 
     <HearthEconomy>
-      <!-- Newly trained professional troops permanently consume Hearth once. -->
-      <ProfessionalRecruitment>
-        <Tier Level="1" Hearth="1" />
-        <Tier Level="2" Hearth="1" />
-        <Tier Level="3" Hearth="1" />
-        <Tier Level="4" Hearth="1" />
-        <Tier Level="5" Hearth="1" />
-        <Tier Level="6" Hearth="1" />
-      </ProfessionalRecruitment>
       <!-- Share of registered feudal troops' standard daily wages relieved from fief tax. -->
       <FeudalTaxRelief wageRatio="0.50" />
     </HearthEconomy>
@@ -190,7 +181,7 @@
       - prosperityCostPerTroop：征召繁荣度成本基数。
       Fief/FeudalSupply：该文化封建兵按 Tier 持续占用的 Hearth 供养额。
       MilitaryDoctrine 的 fief/professional 权重也决定长期封建供养配额。
-      职业兵 Hearth 成本由上方全局 HearthEconomy 按兵种 Tier 提供。
+      Professional/RecruitmentBurden：新生职业兵按文化与 Tier 增加的征兵负担。
       TownPort 为可选覆盖；未配置时港口城镇继承 Town。
     -->
     <Cultures>
@@ -206,6 +197,11 @@
             <!-- Castle：帝国城堡每日基础职业兵产能；barracksStep为每级有效兵营增加的产能。 -->
             <Castle base="1.45" barracksStep="0.85"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="3" /><Tier Level="2" Cost="5" />
+            <Tier Level="3" Cost="9" /><Tier Level="4" Cost="14" />
+            <Tier Level="5" Cost="22" /><Tier Level="6" Cost="36" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -239,6 +235,11 @@
             <!-- Castle：瓦兰迪亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.25"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="6" /><Tier Level="2" Cost="10" />
+            <Tier Level="3" Cost="16" /><Tier Level="4" Cost="25" />
+            <Tier Level="5" Cost="38" /><Tier Level="6" Cost="60" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -272,6 +273,11 @@
             <!-- Castle：阿塞莱城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.35" barracksStep="0.85"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="4" /><Tier Level="2" Cost="7" />
+            <Tier Level="3" Cost="11" /><Tier Level="4" Cost="17" />
+            <Tier Level="5" Cost="27" /><Tier Level="6" Cost="42" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -305,6 +311,11 @@
             <!-- Castle：斯特吉亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.20"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="8" /><Tier Level="2" Cost="13" />
+            <Tier Level="3" Cost="21" /><Tier Level="4" Cost="33" />
+            <Tier Level="5" Cost="50" /><Tier Level="6" Cost="78" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -338,6 +349,11 @@
             <!-- Castle：巴旦尼亚城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.00" barracksStep="0.15"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="10" /><Tier Level="2" Cost="16" />
+            <Tier Level="3" Cost="26" /><Tier Level="4" Cost="40" />
+            <Tier Level="5" Cost="62" /><Tier Level="6" Cost="96" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -373,6 +389,11 @@
             <!-- Castle：库赛特城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.20"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="8" /><Tier Level="2" Cost="13" />
+            <Tier Level="3" Cost="21" /><Tier Level="4" Cost="33" />
+            <Tier Level="5" Cost="50" /><Tier Level="6" Cost="78" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>
@@ -406,6 +427,11 @@
             <!-- Castle：诺德城堡基础职业兵产能，以及每级有效兵营的产能增量。 -->
             <Castle base="1.05" barracksStep="0.05"/>
           </Training>
+          <RecruitmentBurden dailyRecovery="2">
+            <Tier Level="1" Cost="10" /><Tier Level="2" Cost="16" />
+            <Tier Level="3" Cost="26" /><Tier Level="4" Cost="40" />
+            <Tier Level="5" Cost="62" /><Tier Level="6" Cost="96" />
+          </RecruitmentBurden>
         </Professional>
         <Fief>
           <FeudalSupply>

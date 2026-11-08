@@ -4,6 +4,7 @@ using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Models.Fief.Presentation;
 using ModifiedArmy.Tool;
+using ModifiedArmy.Population.Contracts;
 using SandBox.View.Menu;
 using System;
 using System.Collections.Generic;
@@ -405,8 +406,8 @@ namespace ModifiedArmy.Models.Fief
 
             TextObject text = new TextObject(
                 "{=ModifiedArmy_ReinforcementRate_Description}" +
-                "Base manpower: {SUPPLY}/day" +
-                "{NEWLINE}{NEWLINE}Professional troops" +
+                "Professional troops" +
+                "{NEWLINE}Available manpower: {AVAILABLE_MANPOWER}" +
                 "{NEWLINE}Base training: {TRAINING_BASE}/day" +
                 "{NEWLINE}Barracks bonus (level {BARRACKS_LEVEL}): +{BARRACKS_BONUS}/day" +
                 "{NEWLINE}Culture efficiency: {CULTURE_EFFICIENCY}%" +
@@ -416,11 +417,11 @@ namespace ModifiedArmy.Models.Fief
                 "{NEWLINE}Actual replenishment: {PROFESSIONAL_ACTUAL}" +
                 "{NEWLINE}Automatic recruitment: {AUTO_RECRUIT}" +
                 "{NEWLINE}{NEWLINE}Fief troops" +
+                "{NEWLINE}{VILLAGE_SUPPLY}" +
                 "{NEWLINE}Base replenishment: {FIEF_BASE}/day" +
                 "{NEWLINE}Expected replenishment: {FIEF}/day" +
                 "{NEWLINE}Actual replenishment: {FIEF_ACTUAL}");
             text.SetTextVariable("NEWLINE", Environment.NewLine);
-            text.SetTextVariable("SUPPLY", FormatRate(forecast.SharedSupply));
             text.SetTextVariable(
                 "PROFESSIONAL",
                 FormatRate(forecast.ProfessionalAllocation));
@@ -466,6 +467,12 @@ namespace ModifiedArmy.Models.Fief
                 CreateActualReplenishmentText(
                     productionData?.HasFiefRecord == true,
                     productionData?.LastFiefReplenished ?? 0));
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            text.SetTextVariable("AVAILABLE_MANPOWER",
+                CreateAvailableManpowerText(settlement, population));
+            text.SetTextVariable("VILLAGE_SUPPLY",
+                CreateVillageSupplyText(settlement));
             MBTextManager.SetTextVariable(
                 "REINFORCEMENT_RATE_TEXT",
                 text,
@@ -475,6 +482,96 @@ namespace ModifiedArmy.Models.Fief
         private static string FormatRate(float value)
         {
             return Math.Max(0f, value).ToString("0.00");
+        }
+
+        private static TextObject CreateAvailableManpowerText(
+            Settlement settlement,
+            ISettlementPopulationService population)
+        {
+            if (population == null)
+                return new TextObject(
+                    "{=ModifiedArmy_Common_Unavailable}Unavailable");
+            try
+            {
+                float capacity = population.GetRecruitmentCapacity(settlement);
+                if (float.IsNaN(capacity) || float.IsInfinity(capacity))
+                    throw new InvalidOperationException(
+                        "NonFiniteRecruitmentCapacity");
+                return new TextObject(Math.Max(0,
+                    (int)Math.Floor(capacity)).ToString());
+            }
+            catch (Exception exception)
+            {
+                ModLogger.FileWarn(string.Format(
+                    "Available manpower UI unavailable: settlement={0}, " +
+                    "settlementId={1}, reason={2}.", settlement?.Name,
+                    settlement?.StringId, exception.Message));
+                return new TextObject(
+                    "{=ModifiedArmy_Common_Unavailable}Unavailable");
+            }
+        }
+
+        private static TextObject CreateVillageSupplyText(
+            Settlement settlement)
+        {
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            if (manager == null || !manager.TryGetReadyFiefData(
+                    settlement, out FiefPartyData fiefData))
+                return new TextObject(
+                    "{=ModifiedArmy_Common_Unavailable}Unavailable");
+            try
+            {
+                CulturalMilitaryDoctrine doctrine =
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .GetDoctrine(settlement);
+                FiefPartyTemplate template = fiefData.GetFiefPartyTemplate();
+                var lines = new List<string>();
+                foreach (Village village in (settlement.BoundVillages ??
+                    new List<Village>()).Where(item =>
+                        item?.Settlement != null).OrderBy(item =>
+                        item.Settlement.StringId))
+                {
+                    if (fiefData.Villages == null ||
+                        !fiefData.Villages.TryGetValue(village.Settlement,
+                            out VillageFiefData villageData) ||
+                        villageData == null)
+                    {
+                        TextObject unavailable = new TextObject(
+                            "{=ModifiedArmy_VillageSupplyUnavailable}" +
+                            "{VILLAGE_NAME}: unavailable");
+                        unavailable.SetTextVariable("VILLAGE_NAME",
+                            village.Settlement.Name);
+                        lines.Add(unavailable.ToString());
+                        continue;
+                    }
+                    int limit = villageData.GetFeudalBudgetHearth(doctrine);
+                    int occupied = villageData.GetOccupiedSupplyHearth(
+                        template, doctrine);
+                    TextObject line = new TextObject(
+                        "{=ModifiedArmy_VillageSupply}" +
+                        "{VILLAGE_NAME} support Hearth: " +
+                        "{OCCUPIED}/{LIMIT}");
+                    line.SetTextVariable("VILLAGE_NAME",
+                        village.Settlement.Name);
+                    line.SetTextVariable("OCCUPIED", occupied);
+                    line.SetTextVariable("LIMIT", limit);
+                    lines.Add(line.ToString());
+                }
+                return lines.Count > 0
+                    ? new TextObject(string.Join(Environment.NewLine, lines))
+                    : new TextObject(
+                        "{=ModifiedArmy_Common_Unavailable}Unavailable");
+            }
+            catch (Exception exception)
+            {
+                ModLogger.FileWarn(string.Format(
+                    "Village supply UI unavailable: settlement={0}, " +
+                    "settlementId={1}, reason={2}.", settlement?.Name,
+                    settlement?.StringId, exception.Message));
+                return new TextObject(
+                    "{=ModifiedArmy_Common_Unavailable}Unavailable");
+            }
         }
 
         private static TextObject CreateActualReplenishmentText(

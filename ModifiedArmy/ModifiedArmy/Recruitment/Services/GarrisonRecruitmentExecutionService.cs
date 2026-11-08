@@ -69,6 +69,31 @@ namespace ModifiedArmy.Recruitment.Services
                         garrison, reservedReturningMembers));
                 if (count <= 0 || evaluation.Troop == null) continue;
 
+                if (evaluation.Source ==
+                    RecruitmentSource.ProfessionalProduction)
+                {
+                    int requested = count;
+                    count = Math.Min(count,
+                        pools.GetMaxAffordableProfessionalCount(
+                            settlement, evaluation.Troop, count));
+                    if (count <= 0)
+                    {
+                        result.FailureReason =
+                            "InsufficientRecruitmentCapacity";
+                        if (ModifiedArmy.Recruitment.Diagnostics.RecruitmentLogFilter
+                            .ShouldLog(settlement?.OwnerClan))
+                            ModLogger.FileWarn(string.Format(
+                                "Professional recruitment capacity rejected: " +
+                                "settlement={0}, id={1}, troop={2}, tier={3}, " +
+                                "requested={4}, approved=0, reason={5}.",
+                                settlement?.Name, settlement?.StringId,
+                                evaluation.Troop.Name, evaluation.Troop.Tier,
+                                requested,
+                                "InsufficientRecruitmentCapacity"));
+                        continue;
+                    }
+                }
+
                 ProfessionalRecruitmentCommit professionalCommit = null;
                 PrisonerRecruitmentCommit prisonerCommit = null;
                 try

@@ -216,9 +216,15 @@ namespace ModifiedArmy.Models.Fief
                 catch (Exception exception)
                 {
                     ModLogger.Error(string.Format(
-                        "Fief production capacity rejected: village={0}, troop={1}, tier={2}, reason={3}.",
+                        "Fief production capacity rejected: village={0}, " +
+                        "villageId={1}, boundSettlement={2}, troop={3}, " +
+                        "troopId={4}, tier={5}, reason={6}.",
+                        village.VillageSettlement?.Name ??
+                            new TextObject("{=ModifiedArmy_UnknownVillage}" +
+                                "Unknown village"),
                         village.VillageSettlement?.StringId ?? "unknown",
-                        troop.StringId, troop.Tier, exception.Message));
+                        _settlement?.Name, troop.Name, troop.StringId,
+                        troop.Tier, exception.Message));
                 }
             }
             return false;

@@ -36,7 +36,8 @@ namespace ModifiedPolitics.SettlementEconomy.Models
             if (settlement == null || service == null) return result;
             SettlementEconomyConfig config = SettlementEconomyConfigManager.Instance.RequireActive();
             float perHearth = settlement.IsCastle ? config.CastleProsperityPerHearth : config.TownProsperityPerHearth;
-            float supported = service.GetHearth(settlement) * perHearth;
+            float supported = service.GetEffectiveHearth(settlement) *
+                perHearth;
             float prosperity = fortification.Prosperity;
             float original = result.ResultNumber;
             float constrained = prosperity < supported

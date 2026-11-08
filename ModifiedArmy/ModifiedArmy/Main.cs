@@ -104,6 +104,7 @@ namespace ModifiedArmy
                 // leaking into the next campaign lifecycle.
                 WarDispositionProviderRegistry.Clear();
                 SettlementPopulationServiceRegistry.Clear();
+                RecruitmentBurdenPolicyRegistry.Clear();
 
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup",

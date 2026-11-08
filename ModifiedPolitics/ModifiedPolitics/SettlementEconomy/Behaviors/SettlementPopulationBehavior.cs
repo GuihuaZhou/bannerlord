@@ -17,6 +17,9 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
         public int RejectedCount { get; set; }
         public float Consumed { get; set; }
         public float Restored { get; set; }
+        public int ProfessionalRecruited { get; set; }
+        public float BurdenAdded { get; set; }
+        public float BurdenRecovered { get; set; }
     }
 
     public sealed class PopulationTransactionRecord
@@ -26,6 +29,11 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
         [SaveableProperty(3)] public int Status { get; private set; }
         [SaveableProperty(4)] public float HearthBefore { get; private set; }
         [SaveableProperty(5)] public float HearthAfter { get; private set; }
+        [SaveableProperty(6)] public int TransactionKind { get; private set; }
+        [SaveableProperty(7)] public float BurdenDelta { get; private set; }
+        [SaveableProperty(8)] public float BurdenBefore { get; private set; }
+        [SaveableProperty(9)] public float BurdenAfter { get; private set; }
+        [SaveableProperty(10)] public int CommittedDay { get; private set; }
 
         public PopulationTransactionRecord() { }
 
@@ -42,9 +50,24 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             Status = (int)PopulationTransactionStatus.Committed;
         }
 
-        public void MarkCompensated(float hearthAfter)
+        public static PopulationTransactionRecord ProfessionalRecruitment(
+            Settlement settlement, int count, float hearthBefore,
+            float hearthAfter, float burdenBefore, float burdenAfter,
+            int committedDay) => new PopulationTransactionRecord(
+                settlement, count, hearthBefore, hearthAfter)
+            {
+                TransactionKind = 1,
+                BurdenDelta = burdenAfter - burdenBefore,
+                BurdenBefore = burdenBefore,
+                BurdenAfter = burdenAfter,
+                CommittedDay = committedDay
+            };
+
+        public void MarkCompensated(float hearthAfter,
+            float burdenAfter = 0f)
         {
             HearthAfter = hearthAfter;
+            if (TransactionKind == 1) BurdenAfter = burdenAfter;
             Status = (int)PopulationTransactionStatus.Compensated;
         }
 
@@ -66,12 +89,15 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             "ModifiedPolitics.SettlementPopulation.Recovery.v1";
         private const string DailyTickKey =
             "ModifiedPolitics.SettlementPopulation.LastDailyTick.v1";
+        private const string RecruitmentBurdenKey =
+            "ModifiedPolitics.SettlementPopulation.RecruitmentBurden.v1";
 
         private Dictionary<Settlement, float> _hearth = new();
         private Dictionary<string, PopulationTransactionRecord> _transactions =
             new();
         private Dictionary<Settlement, bool> _recovery = new();
         private Dictionary<Settlement, int> _lastDailyTick = new();
+        private Dictionary<Settlement, float> _recruitmentBurden = new();
         private readonly Dictionary<string, int> _lastRejectionLogDay = new();
         private readonly Dictionary<Settlement, PopulationDailyDiagnostics>
             _dailyDiagnostics = new();
@@ -94,11 +120,13 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             store.SyncData(TransactionKey, ref _transactions);
             store.SyncData(RecoveryKey, ref _recovery);
             store.SyncData(DailyTickKey, ref _lastDailyTick);
+            store.SyncData(RecruitmentBurdenKey, ref _recruitmentBurden);
             _hearth ??= new Dictionary<Settlement, float>();
             _transactions ??=
                 new Dictionary<string, PopulationTransactionRecord>();
             _recovery ??= new Dictionary<Settlement, bool>();
             _lastDailyTick ??= new Dictionary<Settlement, int>();
+            _recruitmentBurden ??= new Dictionary<Settlement, float>();
         }
 
         private void OnSessionReady(CampaignGameStarter starter)
@@ -168,34 +196,64 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 return;
             }
 
-            if (_lastDailyTick.TryGetValue(settlement, out int settledDay) &&
-                settledDay == day)
-            {
-                return;
-            }
+            EnsureDailyPopulationUpdate(settlement, day);
+        }
 
+        private bool EnsureDailyPopulationUpdate(Settlement settlement,
+            int day)
+        {
+            if (_lastDailyTick.TryGetValue(settlement, out int settledDay) &&
+                settledDay == day) return true;
             if (!_hearth.ContainsKey(settlement)) EnsureFortifications();
-            if (!_hearth.TryGetValue(settlement, out float before)) return;
-            float growth = PopulationGrowthModel.Calculate(
-                before,
-                GetNaturalCapacity(settlement),
-                SettlementEconomyConfigManager.Instance.RequireActive());
-            float after = Math.Max(0f, before + growth);
-            _lastDailyTick[settlement] = day;
-            _hearth[settlement] = after;
-            if (ShouldLog(settlement))
+            if (!_hearth.TryGetValue(settlement, out float hearthBefore))
+                return false;
+            float burdenBefore = GetRecruitmentBurden(settlement);
+            if (IsRecoveryRequired(settlement)) return false;
+            float growth;
+            int recovery;
+            try
             {
-                ModLogger.FileDebug(string.Format(
-                    "[Population] Daily growth: settlement={0}, id={1}, " +
-                    "hearthBefore={2:F2}, naturalChange={3:F3}, " +
-                    "hearthAfter={4:F2}, capacity={5:F2}, day={6}.",
-                    settlement.Name,
-                    settlement.StringId,
-                    before,
-                    growth,
-                    after,
+                growth = PopulationGrowthModel.Calculate(hearthBefore,
                     GetNaturalCapacity(settlement),
-                    day));
+                    SettlementEconomyConfigManager.Instance.RequireActive());
+                recovery = RecruitmentBurdenPolicyRegistry.Current?
+                    .GetDailyRecovery(settlement) ?? throw new
+                    InvalidOperationException(
+                        "MissingProfessionalBurdenPolicy");
+                if (recovery <= 0 || float.IsNaN(growth) ||
+                    float.IsInfinity(growth))
+                    throw new InvalidOperationException(
+                        "InvalidDailyPopulationPolicy");
+                float hearthAfter = Math.Max(0f, hearthBefore + growth);
+                float burdenAfter = Math.Max(0f, burdenBefore - recovery);
+                _hearth[settlement] = hearthAfter;
+                _recruitmentBurden[settlement] = burdenAfter;
+                _lastDailyTick[settlement] = day;
+                GetDiagnostics(settlement).BurdenRecovered +=
+                    burdenBefore - burdenAfter;
+                if (ShouldLog(settlement))
+                    ModLogger.FileDebug(string.Format(
+                        "[Population] Daily settlement update: settlement={0}, " +
+                        "id={1}, hearthBefore={2:F2}, naturalChange={3:F3}, " +
+                        "hearthAfter={4:F2}, burdenBefore={5:F2}, recovery={6}, " +
+                        "burdenAfter={7:F2}, effectiveHearth={8:F2}, day={9}.",
+                        settlement.Name, settlement.StringId, hearthBefore,
+                        growth, hearthAfter, burdenBefore, recovery, burdenAfter,
+                        GetEffectiveHearth(settlement), day));
+                return true;
+            }
+            catch (Exception exception)
+            {
+                _hearth[settlement] = hearthBefore;
+                _recruitmentBurden[settlement] = burdenBefore;
+                _recovery[settlement] = true;
+                ModLogger.FileError(string.Format(
+                    "[Population] Daily update failed; settlement frozen: " +
+                    "settlement={0}, id={1}, day={2}, hearth={3:F2}, " +
+                    "burden={4:F2}, reason={5}, error={6}.", settlement.Name,
+                    settlement.StringId, day, hearthBefore, burdenBefore,
+                    "DailyPopulationUpdateFailed", exception.Message));
+                return false;
             }
         }
 
@@ -225,6 +283,156 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             return IsRecoveryRequired(settlement)
                 ? 0
                 : Math.Max(0, (int)Math.Floor(GetHearth(settlement)));
+        }
+
+        public float GetRecruitmentBurden(Settlement settlement)
+        {
+            if (settlement?.IsFortification != true) return 0f;
+            if (!_recruitmentBurden.TryGetValue(settlement, out float value))
+            {
+                _recruitmentBurden[settlement] = 0f;
+                return 0f;
+            }
+            if (RecruitmentBurdenMath.IsFiniteNonNegative(value)) return value;
+            _recovery[settlement] = true;
+            ModLogger.FileError(string.Format(
+                "[Population] Invalid recruitment burden; settlement frozen: " +
+                "settlement={0}, id={1}, burden={2}, reason={3}.",
+                settlement.Name, settlement.StringId, value,
+                "InvalidRecruitmentBurdenState"));
+            return 0f;
+        }
+
+        public float GetRecruitmentCapacity(Settlement settlement) =>
+            GetHearth(settlement) - GetRecruitmentBurden(settlement);
+
+        public float GetEffectiveHearth(Settlement settlement)
+        {
+            float hearth = Math.Max(0f, GetHearth(settlement));
+            float burden = Math.Max(0f, GetRecruitmentBurden(settlement));
+            return hearth - 0.5f * Math.Min(hearth, burden);
+        }
+
+        public int GetMaxAffordableProfessionalCount(Settlement settlement,
+            int burdenCostPerTroop, int requested)
+        {
+            if (settlement?.IsFortification != true ||
+                IsRecoveryRequired(settlement)) return 0;
+            float burden = GetRecruitmentBurden(settlement);
+            if (IsRecoveryRequired(settlement)) return 0;
+            return RecruitmentBurdenMath.GetMaxAffordableCount(
+                GetHearth(settlement), burden, burdenCostPerTroop, requested);
+        }
+
+        public PopulationTransactionResult EvaluateProfessionalRecruitment(
+            Settlement settlement, int count, int burdenCostPerTroop)
+        {
+            float hearth = GetHearth(settlement);
+            float burden = GetRecruitmentBurden(settlement);
+            if (settlement?.IsFortification != true || count <= 0 ||
+                burdenCostPerTroop <= 0)
+                return ProfessionalResult(null,
+                    PopulationTransactionStatus.Rejected, count,
+                    "InvalidProfessionalRecruitmentRequest", hearth, hearth,
+                    burden, burden);
+            if (IsRecoveryRequired(settlement))
+                return ProfessionalResult(null,
+                    PopulationTransactionStatus.RecoveryRequired, count,
+                    "SettlementRecoveryRequired", hearth, hearth,
+                    burden, burden);
+            int approved = GetMaxAffordableProfessionalCount(settlement,
+                burdenCostPerTroop, count);
+            return ProfessionalResult(null,
+                approved == count ? PopulationTransactionStatus.Committed :
+                    PopulationTransactionStatus.Rejected,
+                approved, approved == count ? null :
+                    "InsufficientRecruitmentCapacity", hearth, hearth,
+                burden, burden);
+        }
+
+        public PopulationTransactionResult TryRecruitProfessional(
+            Settlement settlement, int count, int burdenCostPerTroop,
+            string operationId)
+        {
+            float hearthBefore = GetHearth(settlement);
+            float burdenBefore = GetRecruitmentBurden(settlement);
+            if (string.IsNullOrWhiteSpace(operationId) ||
+                settlement?.IsFortification != true || count <= 0 ||
+                burdenCostPerTroop <= 0)
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.Rejected, 0,
+                    "InvalidProfessionalRecruitmentRequest", hearthBefore,
+                    hearthBefore, burdenBefore, burdenBefore);
+            if (_transactions.ContainsKey(operationId))
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.Rejected, 0,
+                    "OperationAlreadyExists", hearthBefore, hearthBefore,
+                    burdenBefore, burdenBefore);
+            if (IsRecoveryRequired(settlement))
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.RecoveryRequired, 0,
+                    "SettlementRecoveryRequired", hearthBefore, hearthBefore,
+                    burdenBefore, burdenBefore);
+            int day = (int)CampaignTime.Now.ToDays;
+            if (!EnsureDailyPopulationUpdate(settlement, day))
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.RecoveryRequired, 0,
+                    "DailyPopulationUpdateFailed", hearthBefore, hearthBefore,
+                    burdenBefore, burdenBefore);
+            hearthBefore = GetHearth(settlement);
+            burdenBefore = GetRecruitmentBurden(settlement);
+            if (!RecruitmentBurdenMath.CanRecruitExact(hearthBefore,
+                    burdenBefore, burdenCostPerTroop, count))
+                return RejectProfessional(settlement, count, operationId,
+                    burdenCostPerTroop, hearthBefore, burdenBefore,
+                    "InsufficientRecruitmentCapacity");
+            float hearthAfter = hearthBefore - count;
+            float burdenAfter;
+            try
+            {
+                burdenAfter = checked(burdenBefore +
+                    checked(count * burdenCostPerTroop));
+                if (!RecruitmentBurdenMath.IsFiniteNonNegative(hearthAfter) ||
+                    !RecruitmentBurdenMath.IsFiniteNonNegative(burdenAfter))
+                    throw new InvalidOperationException(
+                        "ProfessionalTransactionNonFinite");
+                _hearth[settlement] = hearthAfter;
+                _recruitmentBurden[settlement] = burdenAfter;
+                _transactions.Add(operationId,
+                    PopulationTransactionRecord.ProfessionalRecruitment(
+                        settlement, count, hearthBefore, hearthAfter,
+                        burdenBefore, burdenAfter, day));
+                PopulationDailyDiagnostics diagnostics =
+                    GetDiagnostics(settlement);
+                diagnostics.CommittedCount++;
+                diagnostics.Consumed += count;
+                diagnostics.ProfessionalRecruited += count;
+                diagnostics.BurdenAdded += burdenAfter - burdenBefore;
+                LogProfessional(settlement, operationId, count, count,
+                    count, burdenCostPerTroop, hearthBefore, hearthAfter,
+                    burdenBefore, burdenAfter, "Committed");
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.Committed, count, null,
+                    hearthBefore, hearthAfter, burdenBefore, burdenAfter);
+            }
+            catch (Exception exception)
+            {
+                _hearth[settlement] = hearthBefore;
+                _recruitmentBurden[settlement] = burdenBefore;
+                _transactions.Remove(operationId);
+                ModLogger.FileError(string.Format(
+                    "[ProfessionalRecruitment] transaction failed and " +
+                    "rolled back: settlementName={0}, settlementId={1}, " +
+                    "operationId={2}, requested={3}, hearthBefore={4:F2}, " +
+                    "burdenBefore={5:F2}, reason={6}, error={7}.",
+                    settlement.Name, settlement.StringId, operationId, count,
+                    hearthBefore, burdenBefore,
+                    "ProfessionalTransactionFailed", exception.Message));
+                return ProfessionalResult(operationId,
+                    PopulationTransactionStatus.Rejected, 0,
+                    "ProfessionalTransactionFailed", hearthBefore,
+                    hearthBefore, burdenBefore, burdenBefore);
+            }
         }
 
         public PopulationTransactionResult EvaluateConsumption(
@@ -347,30 +555,49 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             }
 
             float before = GetHearth(settlement);
+            float burdenBefore = GetRecruitmentBurden(settlement);
             try
             {
+                if (record.TransactionKind == 1 &&
+                    record.CommittedDay != (int)CampaignTime.Now.ToDays)
+                    throw new InvalidOperationException(
+                        "CrossDayProfessionalCompensationUnverified");
                 float after = before + record.Amount;
+                float burdenAfter = record.TransactionKind == 1
+                    ? burdenBefore - record.BurdenDelta
+                    : burdenBefore;
                 if (after < -0.0001f)
                 {
                     throw new InvalidOperationException(
                         "CompensationWouldCreateNegativeHearth");
                 }
+                if (burdenAfter < -0.0001f)
+                    throw new InvalidOperationException(
+                        "CompensationWouldCreateNegativeBurden");
                 SetHearth(settlement, Math.Max(0f, after));
-                record.MarkCompensated(Math.Max(0f, after));
+                if (record.TransactionKind == 1)
+                    _recruitmentBurden[settlement] = Math.Max(0f,
+                        burdenAfter);
+                record.MarkCompensated(Math.Max(0f, after),
+                    Math.Max(0f, burdenAfter));
                 GetDiagnostics(settlement).CompensatedCount++;
                 ModLogger.FileInfo(string.Format(
                     "[Population] Compensation committed: settlement={0}, " +
                     "id={1}, operation={2}, amount={3:F2}, " +
-                    "hearthBefore={4:F2}, hearthAfter={5:F2}.",
+                    "hearthBefore={4:F2}, hearthAfter={5:F2}, " +
+                    "burdenBefore={6:F2}, burdenAfter={7:F2}, kind={8}.",
                     settlement.Name,
                     settlement.StringId,
                     operationId,
                     Math.Abs(record.Amount),
                     before,
-                    Math.Max(0f, after)));
-                return Result(operationId,
+                    Math.Max(0f, after), burdenBefore,
+                    Math.Max(0f, burdenAfter), record.TransactionKind));
+                return ProfessionalResult(operationId,
                     PopulationTransactionStatus.Compensated,
-                    Math.Abs(record.Amount), null, before, Math.Max(0f, after));
+                    (int)Math.Abs(record.Amount), null, before,
+                    Math.Max(0f, after), burdenBefore,
+                    Math.Max(0f, burdenAfter));
             }
             catch (Exception exception)
             {
@@ -387,10 +614,10 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                     before,
                     "CompensationFailed",
                     exception.Message));
-                return Result(operationId,
+                return ProfessionalResult(operationId,
                     PopulationTransactionStatus.RecoveryRequired,
-                    Math.Abs(record.Amount), "CompensationFailed",
-                    before, before);
+                    0, exception.Message, before, before,
+                    burdenBefore, burdenBefore);
             }
         }
 
@@ -473,6 +700,38 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             return Result(operationId, status, amount, reason, hearth, hearth);
         }
 
+        private PopulationTransactionResult RejectProfessional(
+            Settlement settlement, int requested, string operationId,
+            int burdenCost, float hearth, float burden, string reason)
+        {
+            GetDiagnostics(settlement).RejectedCount++;
+            if (ShouldLogRejection(settlement, reason))
+                LogProfessional(settlement, operationId, requested, 0, 0,
+                    burdenCost, hearth, hearth, burden, burden, reason);
+            return ProfessionalResult(operationId,
+                PopulationTransactionStatus.Rejected, 0, reason,
+                hearth, hearth, burden, burden);
+        }
+
+        private static void LogProfessional(Settlement settlement,
+            string operationId, int requested, int approved, int committed,
+            int burdenCost, float hearthBefore, float hearthAfter,
+            float burdenBefore, float burdenAfter, string reason)
+        {
+            ModLogger.FileInfo(string.Format(
+                "[ProfessionalRecruitment] settlementName={0}, " +
+                "settlementId={1}, culture={2}, requested={3}, approved={4}, " +
+                "committed={5}, burdenCost={6}, hearthBefore={7:F2}, " +
+                "hearthAfter={8:F2}, burdenBefore={9:F2}, burdenAfter={10:F2}, " +
+                "capacityBefore={11:F2}, capacityAfter={12:F2}, " +
+                "operationId={13}, reason={14}.", settlement?.Name,
+                settlement?.StringId, settlement?.Culture?.StringId,
+                requested, approved, committed, burdenCost, hearthBefore,
+                hearthAfter, burdenBefore, burdenAfter,
+                hearthBefore - burdenBefore, hearthAfter - burdenAfter,
+                operationId ?? "missing", reason));
+        }
+
         private void LogCommitted(
             string kind,
             Settlement settlement,
@@ -546,13 +805,18 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             if (ShouldLog(settlement) &&
                 (diagnostics.CommittedCount > 0 ||
                  diagnostics.CompensatedCount > 0 ||
-                 diagnostics.RejectedCount > 0))
+                 diagnostics.RejectedCount > 0 ||
+                 diagnostics.BurdenRecovered > 0f))
             {
                 ModLogger.FileInfo(string.Format(
                     "[Population] Daily transaction summary: " +
                     "settlement={0}, id={1}, committed={2}, " +
                     "compensated={3}, rejected={4}, consumed={5:F2}, " +
-                    "restored={6:F2}, hearth={7:F2}, day={8}.",
+                    "restored={6:F2}, professionalRecruited={7}, " +
+                    "burdenAdded={8:F2}, burdenRecovered={9:F2}, " +
+                    "hearth={10:F2}, burden={11:F2}, capacity={12:F2}, " +
+                    "effectiveHearth={13:F2}, supportedProsperity={14:F2}, " +
+                    "day={15}.",
                     settlement.Name,
                     settlement.StringId,
                     diagnostics.CommittedCount,
@@ -560,7 +824,15 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                     diagnostics.RejectedCount,
                     diagnostics.Consumed,
                     diagnostics.Restored,
+                    diagnostics.ProfessionalRecruited,
+                    diagnostics.BurdenAdded,
+                    diagnostics.BurdenRecovered,
                     GetHearth(settlement),
+                    GetRecruitmentBurden(settlement),
+                    GetRecruitmentCapacity(settlement),
+                    GetEffectiveHearth(settlement),
+                    GetEffectiveHearth(settlement) *
+                        (settlement.IsCastle ? 3f : 5f),
                     day));
             }
             _dailyDiagnostics.Remove(settlement);
@@ -599,12 +871,15 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             PopulationTransactionRecord record,
             string reason)
         {
-            return Result(operationId,
+            return ProfessionalResult(operationId,
                 (PopulationTransactionStatus)record.Status,
-                Math.Abs(record.Amount),
+                record.TransactionKind == 1 ? (int)Math.Abs(record.Amount) : 0,
                 reason,
                 record.HearthBefore,
-                record.HearthAfter);
+                record.HearthAfter,
+                record.BurdenBefore,
+                record.BurdenAfter,
+                Math.Abs(record.Amount));
         }
 
         private static PopulationTransactionResult Result(
@@ -623,6 +898,26 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 ReasonCode = reason,
                 HearthBefore = before,
                 HearthAfter = after
+            };
+        }
+
+        private static PopulationTransactionResult ProfessionalResult(
+            string operationId, PopulationTransactionStatus status,
+            int approved, string reason, float hearthBefore,
+            float hearthAfter, float burdenBefore, float burdenAfter,
+            float? amount = null)
+        {
+            return new PopulationTransactionResult
+            {
+                OperationId = operationId,
+                Status = status,
+                Amount = amount ?? approved,
+                ApprovedCount = approved,
+                ReasonCode = reason,
+                HearthBefore = hearthBefore,
+                HearthAfter = hearthAfter,
+                BurdenBefore = burdenBefore,
+                BurdenAfter = burdenAfter
             };
         }
     }

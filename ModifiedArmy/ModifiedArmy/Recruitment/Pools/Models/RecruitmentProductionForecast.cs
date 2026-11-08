@@ -6,8 +6,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
     /// </summary>
     public sealed class RecruitmentProductionForecast
     {
-        public float SharedSupply { get; internal set; }
-        public float ProfessionalRatio { get; internal set; }
         public int FiefDoctrineWeight { get; internal set; }
         public int ProfessionalDoctrineWeight { get; internal set; }
         public float ProfessionalTrainingBase { get; internal set; }
@@ -22,7 +20,6 @@ namespace ModifiedArmy.Recruitment.Pools.Models
         }
         public float ExternalTrainingBonusRate { get; internal set; }
         public float ProfessionalTrainingCapacity { get; internal set; }
-        public float ProfessionalPopulationSupply { get; internal set; }
         public float ProfessionalAllocation { get; internal set; }
         public float FiefDemand { get; internal set; }
         public float FiefAllocation { get; internal set; }
