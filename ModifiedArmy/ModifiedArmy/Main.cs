@@ -5,6 +5,7 @@ using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Garrison.Supply;
 using ModifiedArmy.Logistics.Models;
+using ModifiedArmy.Logistics.Patches;
 using ModifiedArmy.Models;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyManagement.Behaviors;
@@ -176,6 +177,8 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(
                     new NewMobilePartyFoodConsumptionModel());
                 campaignStarter.AddModel(
+                    new NewPartyFoodBuyingModel());
+                campaignStarter.AddModel(
                     new NewSettlementFoodModel());
                 campaignStarter.AddModel(new NewPartyWageModel());
                 campaignStarter.AddModel(new NewMinorFactionsModel());
@@ -232,6 +235,18 @@ namespace ModifiedArmy
 
         private void OnAfterSessionLaunched(CampaignGameStarter starter)
         {
+            ModLogger.FileInfo(string.Format(
+                "[AI Food Supply] phase=MODEL_ACTIVE " +
+                "foodResupplyTriggerDays={0:0} townTargetDays={1:0} " +
+                "villageTargetDays={2:0} foodBuyingModel={3} " +
+                "patchReplacementCount={4}.",
+                AiFoodResupplyThresholdPatch.FoodResupplyTriggerDays,
+                NewPartyFoodBuyingModel.TargetFoodDays,
+                NewPartyFoodBuyingModel.TargetFoodDays,
+                Campaign.Current?.Models?.PartyFoodBuyingModel?
+                    .GetType().FullName ?? "none",
+                AiFoodResupplyThresholdPatch.ReplacementCount));
+
             if (CampaignState.IsNewGame)
             {
                 Hero.MainHero.ChangeHeroGold(99000);

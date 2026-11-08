@@ -622,7 +622,7 @@ namespace ModifiedArmy.ForceManagement.Models
                 sourceFingerprint ?? "Unavailable");
             message.SetTextVariable("DESTINATION_FINGERPRINT",
                 context.DestinationSnapshot?.Fingerprint ?? "Unavailable");
-            ModLogger.Warn(message.ToString());
+            ModLogger.Debug(message.ToString());
         }
 
         /// <summary>Plans a return from one authoritative fief service batch.</summary>

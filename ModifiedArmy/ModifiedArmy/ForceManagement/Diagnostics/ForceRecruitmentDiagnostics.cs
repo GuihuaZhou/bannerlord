@@ -297,10 +297,7 @@ namespace ModifiedArmy.ForceManagement.Diagnostics
                 "CHANGE_TIME",
                 FormatHour(trace?.CampaignHour));
             message.SetTextVariable("TRACE_ID", GetTraceId(party, task));
-            if (template == "str_modifiedarmy_force_diag_task_without_order")
-                ModLogger.Warn(message.ToString());
-            else
-                ModLogger.Debug(message.ToString());
+            ModLogger.Debug(message.ToString());
         }
 
         internal static void LogInitialTask(
