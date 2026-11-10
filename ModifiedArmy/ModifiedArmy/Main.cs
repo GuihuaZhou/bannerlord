@@ -1,5 +1,8 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
+using ModifiedArmy.Army.Behaviors;
+using ModifiedArmy.Army.Models;
+using ModifiedArmy.Army.Services;
 using ModifiedArmy.common;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Garrison.Models;
@@ -104,6 +107,7 @@ namespace ModifiedArmy
                 // Clearing here prevents a previous campaign registration from
                 // leaking into the next campaign lifecycle.
                 WarDispositionProviderRegistry.Clear();
+                ArmyAuthorityProviderRegistry.Clear();
                 SettlementPopulationServiceRegistry.Clear();
                 RecruitmentBurdenPolicyRegistry.Clear();
 
@@ -173,9 +177,14 @@ namespace ModifiedArmy
                     new GarrisonCaptureSupplyBehavior());
                 campaignStarter.AddBehavior(
                     new SettlementManagementInspectionBehavior());
+                campaignStarter.AddBehavior(new MarshalArmyAiBehavior());
 
                 campaignStarter.AddModel(
                     new NewMobilePartyFoodConsumptionModel());
+                campaignStarter.AddModel(
+                    new DiagnosticArmyManagementCalculationModel());
+                campaignStarter.AddModel(
+                    new DiagnosticTargetScoreCalculatingModel());
                 campaignStarter.AddModel(
                     new NewPartyFoodBuyingModel());
                 campaignStarter.AddModel(

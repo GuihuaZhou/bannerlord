@@ -374,5 +374,29 @@
     <string id="ModifiedArmy_ForceDiagLiveApproval" text="[征兵审批] 部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}；尝试={ATTEMPT_ID}；任务={TASK_ID}；操作={OPERATION_ID}；申请={REQUESTED}；计划批准={PLAN_APPROVED}；计划原因={PLAN_REASON}；来源执行前={SOURCE_BEFORE}；接收方执行前={DESTINATION_BEFORE}；状态={STATUS}；实际转移={TRANSFERRED}；原因={REASON}。" />
     <string id="ModifiedArmy_InitialRecruitApprovalDiagnostic" text="[初始征兵审批] 尝试={ATTEMPT_ID}；任务={TASK_ID}；操作={OPERATION_ID}；部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；来源=封邑；绑定部队={BOUND_PARTY_ID}；预留所有者={RESERVATION_OWNER}；绑定判定={BINDING_REASON}；申请={REQUESTED}人；就绪名册={RAW}人；健康={HEALTHY}人；伤员={WOUNDED}人；正权重模板根={TEMPLATE_ROOTS}；模板合法={TEMPLATE_ELIGIBLE}；权重匹配={MATCHED}人；无法匹配={UNMATCHED}；候选提供={OFFERED}人；逐项审批=[{EVALUATIONS}]；最低批次判断前批准={APPROVED_BEFORE}人；最低批次={MINIMUM_BATCH}人；判断后批准={APPROVED_AFTER}人；拒绝阶段={STAGE}；拒绝原因={REASON}；来源指纹={SOURCE_FINGERPRINT}；目标指纹={DESTINATION_FINGERPRINT}。" />
     <string id="ModifiedArmy_FiefSourceAccessRejected" text="[封邑兵源访问] 拒绝访问：兵源封邑={SOURCE_NAME}（{SOURCE_ID}）；申请部队={PARTY_NAME}（{PARTY_ID}）；绑定部队={BOUND_PARTY_ID}；创建预留者={RESERVATION_OWNER}；原因码={REASON_CODE}；要求位于当前定居点={REQUIRE_CURRENT_SETTLEMENT}。" />
+    <string id="MP_MarshalRequired" text="只有王国统治者或大元帅可以创建军团。" />
+    <string id="MP_MarshalArmyAiPlayer" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}是玩家，保持手动控制军团。" />
+    <string id="MP_MarshalArmyAiIneligible" text="[军团系统] {KINGDOM}的大元帅{MARSHAL}不再领导符合条件的领主部队。" />
+    <string id="MP_MarshalArmyAiArmyActive" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}已经成功领导军团。" />
+    <string id="MP_MarshalArmyAiAttached" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}当前加入了其他军团，暂停主动组建军团。" />
+    <string id="MP_MarshalArmyAiVanilla" text="[军团系统] {KINGDOM}的大元帅符合原版军团创建路径，由本体军事 AI 处理。" />
+    <string id="MP_MarshalArmyAiMissingBehavior" text="[军团系统] {KINGDOM}无法取得本体军事 AI，军团统帅{MARSHAL}暂停组建军团。" />
+    <string id="MP_MarshalArmyAiBusy" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}正在海上、战斗或围城，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiLowStrength" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}部队人数比例不足60%，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiNoTarget" text="[军团系统] {KINGDOM}当前没有拥有封地的敌对势力，军团统帅{MARSHAL}暂不组建军团。" />
+    <string id="MP_MarshalArmyAiInfluence" text="[军团系统] {KINGDOM}的大元帅家族影响力不足，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiFood" text="[军团系统] {KINGDOM}的大元帅部队粮食不足，暂不组建军团。" />
+    <string id="MP_MarshalArmyAiConditions" text="[军团系统] {KINGDOM}的大元帅尚未满足本体的影响力、粮食、距离或部队召集条件。" />
+    <string id="MP_MarshalArmyAiNoMembers" text="[军团系统] {KINGDOM}的军团统帅{MARSHAL}当前没有可召集加入军团的部队。" />
+    <string id="MP_MarshalArmyAiEvaluating" text="[军团系统] {KINGDOM}的大元帅已进入本体军团目标评估。" />
+    <string id="MP_MarshalArmyAiVanillaReady" text="[军团系统] {KINGDOM}的大元帅走原版军团路径且当前满足创建条件。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；可召集部队：{CANDIDATES}；身份适配：{IDENTITY_MODE}。" />
+    <string id="MP_MarshalArmyAiVanillaBlocked" text="[军团系统] {KINGDOM}的大元帅走原版军团路径，但本体当前拒绝创建。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；候选数：{CANDIDATES}；身份适配：{IDENTITY_MODE}。" />
+    <string id="MP_MarshalArmyAiConditionsDetailed" text="[军团系统] {KINGDOM}的大元帅未通过本体军团条件。大元帅：{MARSHAL}；部队：{PARTY}；影响力：{INFLUENCE}；粮食天数：{FOOD}；兵力比例：{SIZE}%；候选数：{CANDIDATES}；身份适配：{IDENTITY_MODE}。" />
+    <string id="MP_MarshalArmyAiNoScoredTarget" text="[军团系统] {KINGDOM}的大元帅通过创建条件，但本体没有产生可用军团目标。大元帅：{MARSHAL}；可召集部队：{CANDIDATES}；军团目标分数条目：{ADDED_SCORES}；身份适配：{IDENTITY_MODE}。" />
+    <string id="MP_MarshalArmyAiEvaluatingDetailed" text="[军团系统] {KINGDOM}的大元帅已生成军团目标。大元帅：{MARSHAL}；可召集部队：{CANDIDATES}；新增目标数：{ADDED_SCORES}；正分目标数：{POSITIVE_SCORES}；集结兵力：{GATHERING_STRENGTH}；平均粮食：{AVERAGE_FOOD}天；最低粮食：{MINIMUM_FOOD}天；围城粮食阈值：{FOOD_THRESHOLD}天；军团权重：{ARMY_MULTIPLIER}；最佳军团分数：{BEST_ARMY_SCORE}；原有最佳分数：{BEST_EXISTING_SCORE}；当前最佳总分：{BEST_OVERALL_SCORE}；身份适配：{IDENTITY_MODE}。" />
+    <string id="MP_MarshalArmyDebugPrefix" text="[军事优化][军团调试]" />
+    <string id="MP_MarshalArmyDebugFieldMap" text="phase=阶段|traceId=追踪编号|kingdom=王国|hero=英雄|party=部队|leader=统帅|reasonCode=原因码|reason=原因|result=结果|armyType=军团类型|target=目标|source=来源|candidates=候选数|candidateCount=候选部队数|members=兵员数|influence=影响力|foodDays=粮食天数|averageFoodDays=平均粮食天数|minimumFoodDays=最低粮食天数|sizeRatio=部队规模比例|gatheringStrength=集结战力|siegeStrength=攻城战力|nativeTargetScore=原生目标分|rawScore=原始分|finalScore=最终分|multiplier=倍率|poolCount=候选池数量|top5=前五候选|allowedByMarshalPatch=军权补丁放行|isRuler=是否统治者|isMarshal=是否大元帅|atSea=是否在海上|mapEvent=是否处于战斗|settlementSiege=所在定居点是否被围攻|boundParty=绑定部队|reservationOwner=创建预留者" />
+    <string id="MP_ArmyEligibilityModelPrefix" text="[军事优化][军团创建资格模型]" />
+    <string id="MP_ArmyEligibilityFieldMap" text="phase=阶段|traceId=追踪编号|model=模型|kingdom=王国|hero=英雄|party=部队|candidate=候选部队|leader=领队|clan=家族|result=结果|reasonCode=原因码|influence=影响力|foodDays=粮食天数|threshold=阈值|partyRatio=部队规模比例|distance=距离|maximum=最大值|influenceCost=影响力成本|estimatedStrength=预估战力|score=评分|candidateCountBeforeStrengthCheck=战力检查前候选数|leaderSiegeStrength=领队攻城战力|candidatesSiegeStrength=候选攻城战力|totalSiegeStrength=总攻城战力|strengthThreshold=战力阈值|candidatesBeforeClear=清空前候选数|candidatesReturned=返回候选数|eligibleBeforeSort=排序前合格数|kingdomWarPartyCount=王国战团数|existingArmyPartyCount=现有军团部队数|maxNewMembers=最大新增成员数|afterTruncationCount=截断后数量|removedCandidateIds=被移除候选|sortedCandidates=升序候选|omitted=省略数|omittedCandidateDetails=省略候选明细数" />
   </strings>
 </base>

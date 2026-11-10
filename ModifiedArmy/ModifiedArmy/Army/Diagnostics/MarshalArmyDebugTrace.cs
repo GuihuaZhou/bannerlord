@@ -2,15 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using ModifiedPolitics.HeroOffices.Behaviors;
-using ModifiedPolitics.HeroOffices.Domain;
-using ModifiedPolitics.Tool;
+using ModifiedArmy.Army.Services;
+using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Localization;
+using CampaignArmy = TaleWorlds.CampaignSystem.Army;
 
-namespace ModifiedPolitics.HeroOffices.Diagnostics
+namespace ModifiedArmy.Army.Diagnostics
 {
     internal static class MarshalArmyDebugTrace
     {
@@ -28,9 +28,9 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
             Hero hero = party?.LeaderHero;
             return party?.IsActive == true && hero != null && kingdom != null && !kingdom.IsEliminated
                    && Clan.PlayerClan?.Kingdom == kingdom
-                   && (hero == kingdom.Leader || HeroOfficeBehavior.Current?
-                       .GetAssignments(kingdom, OfficeType.Marshal)
-                       .Any(assignment => assignment?.Hero == hero) == true);
+                   && (hero == kingdom.Leader ||
+                       ArmyAuthorityProviderRegistry.IsEligibleMarshal(
+                           hero, kingdom));
         }
 
         internal static string BeginDecision(MobileParty party, out bool detailed)
@@ -51,7 +51,7 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
 
         internal static IDisposable PushTargetContext(
             MobileParty party,
-            Army.ArmyTypes armyType,
+            CampaignArmy.ArmyTypes armyType,
             string traceId,
             bool sampled)
         {
@@ -71,7 +71,7 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
 
         internal static void RecordTargetScore(
             Settlement target,
-            Army.ArmyTypes armyType,
+            CampaignArmy.ArmyTypes armyType,
             MobileParty party,
             float ourStrength,
             float score)
@@ -107,6 +107,49 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
         }
 
         internal static int CurrentOmitted => _targetContext?.Omitted ?? 0;
+
+        internal static bool TryGetTargetContext(
+            MobileParty party,
+            CampaignArmy.ArmyTypes armyType,
+            out string traceId)
+        {
+            TargetScoreContext context = _targetContext;
+            bool matches = context != null && context.Sampled &&
+                context.Party == party && context.ArmyType == armyType;
+            traceId = matches ? context.TraceId : null;
+            return matches;
+        }
+
+        internal static void RecordTargetResult(
+            string traceId,
+            Settlement target,
+            MobileParty party,
+            string fields)
+        {
+            TargetScoreContext context = _targetContext;
+            if (context == null || context.TraceId != traceId ||
+                context.Party != party)
+                return;
+
+            context.ScoredTargets++;
+            string reason = ExtractField(fields, "zeroReasonCode") ??
+                "ZERO_FINAL_SCORE_OTHER";
+            context.ReasonCounts[reason] = context.ReasonCounts.TryGetValue(
+                reason, out int oldCount) ? oldCount + 1 : 1;
+
+            Write("phase=TARGET_RESULT traceId=" + traceId +
+                " party=" + DescribeParty(party) +
+                " target=" + DescribeSettlement(target) + " " + fields);
+        }
+
+        internal static int CurrentScoredTargets =>
+            _targetContext?.ScoredTargets ?? 0;
+
+        internal static string CurrentReasonSummary => _targetContext == null
+            ? "none"
+            : string.Join(",", _targetContext.ReasonCounts
+                .OrderBy(item => item.Key)
+                .Select(item => item.Key + ":" + item.Value));
 
         internal static void TraceFinalPool(MobileParty party, PartyThinkParams parameters)
         {
@@ -144,7 +187,7 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
             try
             {
                 string prefix = new TextObject(
-                    "{=MP_MarshalArmyDebugPrefix}[Hero Offices][Marshal army debug]").ToString();
+                    "{=MP_MarshalArmyDebugPrefix}[ModifiedArmy][Army debug]").ToString();
                 ModLogger.FileDebug(prefix + " " + LocalizeFieldNames(fields));
             }
             catch
@@ -198,9 +241,21 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
 
         private static string Quote(string value) => "\"" + (value ?? "unknown").Replace("\"", "'") + "\"";
 
+        private static string ExtractField(string fields, string name)
+        {
+            string marker = name + "=";
+            int start = (fields ?? string.Empty).IndexOf(
+                marker, StringComparison.Ordinal);
+            if (start < 0) return null;
+            start += marker.Length;
+            int end = fields.IndexOf(' ', start);
+            return end < 0 ? fields.Substring(start) :
+                fields.Substring(start, end - start);
+        }
+
         private sealed class TargetScoreContext
         {
-            internal TargetScoreContext(MobileParty party, Army.ArmyTypes armyType, string traceId, bool sampled)
+            internal TargetScoreContext(MobileParty party, CampaignArmy.ArmyTypes armyType, string traceId, bool sampled)
             {
                 Party = party;
                 ArmyType = armyType;
@@ -209,12 +264,15 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
             }
 
             internal MobileParty Party { get; }
-            internal Army.ArmyTypes ArmyType { get; }
+            internal CampaignArmy.ArmyTypes ArmyType { get; }
             internal string TraceId { get; }
             internal bool Sampled { get; }
             internal int ZeroLogged { get; set; }
             internal int PositiveLogged { get; set; }
             internal int Omitted { get; set; }
+            internal int ScoredTargets { get; set; }
+            internal Dictionary<string, int> ReasonCounts { get; } =
+                new Dictionary<string, int>(StringComparer.Ordinal);
         }
 
         private sealed class ContextScope : IDisposable

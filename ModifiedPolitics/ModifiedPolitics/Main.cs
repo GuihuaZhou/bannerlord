@@ -10,6 +10,8 @@ using ModifiedPolitics.Governor.Config;
 using ModifiedPolitics.HeroOffices.Behaviors;
 using ModifiedPolitics.HeroOffices.Config;
 using ModifiedPolitics.HeroOffices.Models;
+using ModifiedPolitics.HeroOffices.Integration;
+using ModifiedArmy.Army.Services;
 using ModifiedPolitics.SettlementEconomy.Config;
 using ModifiedPolitics.SettlementEconomy.Models;
 using ModifiedPolitics.SettlementEconomy.Behaviors;
@@ -103,8 +105,6 @@ namespace ModifiedPolitics
                 }
 
                 campaignStarter.AddModel(new WarPotentialModel());
-                campaignStarter.AddModel(
-                    new DiagnosticArmyManagementCalculationModel());
                 campaignStarter.AddModel(new NewBuildingConstructionModel());
                 campaignStarter.AddModel(new SettlementEconomyFoodModel());
                 campaignStarter.AddModel(
@@ -119,10 +119,11 @@ namespace ModifiedPolitics
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new HeroOfficeBehavior());
+                ArmyAuthorityProviderRegistry.Register(
+                    new MarshalArmyAuthorityProvider());
                 campaignStarter.AddBehavior(new OfficeApplicationAiBehavior());
                 campaignStarter.AddBehavior(new LocalOfficeAiBehavior());
                 campaignStarter.AddBehavior(new MarshalOfficeAiBehavior());
-                campaignStarter.AddBehavior(new MarshalArmyAiBehavior());
                 campaignStarter.AddBehavior(new WarDispositionManager());
                 WarDispositionProviderRegistry.Register(
                     new ModifiedPoliticsWarDispositionProvider());

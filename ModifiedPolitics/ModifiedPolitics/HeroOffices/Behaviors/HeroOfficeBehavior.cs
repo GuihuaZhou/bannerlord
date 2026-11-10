@@ -82,7 +82,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 return;
 
             if (assignment.OfficeType == OfficeType.Marshal)
-                OfficeArmyService.DisbandLedArmy(assignment.Hero);
+                ModifiedArmy.Army.Services.ArmyDisbandService.DisbandLedArmy(
+                    assignment.Hero);
 
             LogAssignment(
                 assignment.Kingdom,

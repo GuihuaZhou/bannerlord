@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
-using ModifiedPolitics.HeroOffices.Behaviors;
-using ModifiedPolitics.HeroOffices.Domain;
-using ModifiedPolitics.Tool;
+using HarmonyLib;
+using ModifiedArmy.Army.Services;
+using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.Localization;
 
-namespace ModifiedPolitics.HeroOffices.Diagnostics
+namespace ModifiedArmy.Army.Diagnostics
 {
     internal sealed class MarshalArmyEligibilityTrace
     {
@@ -42,9 +43,9 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
             Kingdom kingdom = party?.MapFaction as Kingdom;
             Hero hero = party?.LeaderHero;
             bool relevant = kingdom != null && Clan.PlayerClan?.Kingdom == kingdom && hero != null &&
-                (hero == kingdom.Leader || HeroOfficeBehavior.Current?
-                    .GetAssignments(kingdom, OfficeType.Marshal)
-                    .Any(item => item?.Hero == hero) == true);
+                (hero == kingdom.Leader ||
+                    ArmyAuthorityProviderRegistry.IsEligibleMarshal(
+                        hero, kingdom));
             int day = (int)CampaignTime.Now.ToDays;
             string key = (kingdom?.StringId ?? "none") + ":" + (hero?.StringId ?? "none");
             bool detailed = relevant && (!LastDetailDay.TryGetValue(key, out int oldDay) || oldDay != day);
@@ -96,13 +97,13 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
                   Math.Max(0, _candidateObservations - _candidateLines));
         }
 
-        internal static void Audit(string values) => Write("phase=MODEL_CHAIN " + values);
+        internal static void Audit(string values) => Write(values);
 
         internal static void ModelActive(MobileParty party)
         {
             if (System.Threading.Interlocked.Exchange(ref _modelActiveLogged, 1) != 0) return;
             Write("phase=MODEL_ACTIVE model=" +
-                  typeof(ModifiedPolitics.HeroOffices.Models.DiagnosticArmyManagementCalculationModel).FullName +
+                  typeof(ModifiedArmy.Army.Models.DiagnosticArmyManagementCalculationModel).FullName +
                   " party=" + DescribeParty(party));
         }
 
@@ -110,31 +111,68 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
         {
             try
             {
-                object current = Campaign.Current?.Models?.ArmyManagementCalculationModel;
-                var names = new List<string>();
-                var seen = new HashSet<object>();
-                bool cycle = false;
-                for (int depth = 0; current != null && depth < 8; depth++)
-                {
-                    if (!seen.Add(current)) { cycle = true; break; }
-                    names.Add(current.GetType().FullName);
-                    PropertyInfo property = current.GetType().GetProperty(
-                        "BaseModel", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-                    current = property?.GetValue(current);
-                }
-                string chain = string.Join(" -> ", names);
-                Audit("activeModel=" + (names.FirstOrDefault() ?? "none") +
-                      " chain=\"" + chain + "\" depth=" + names.Count +
-                      " cycleDetected=" + cycle +
-                      " diagnosticPresent=" + names.Any(item => item ==
-                          typeof(ModifiedPolitics.HeroOffices.Models.DiagnosticArmyManagementCalculationModel).FullName) +
-                      " navalPresent=" + names.Any(item => item != null &&
-                          item.Contains("NavalDLCArmyManagementCalculationModel")));
+                AuditChain("ARMY_MANAGEMENT",
+                    Campaign.Current?.Models?.ArmyManagementCalculationModel,
+                    typeof(ModifiedArmy.Army.Models
+                        .DiagnosticArmyManagementCalculationModel));
+                AuditChain("TARGET_SCORE",
+                    Campaign.Current?.Models?.TargetScoreCalculatingModel,
+                    typeof(ModifiedArmy.Army.Models
+                        .DiagnosticTargetScoreCalculatingModel));
+                Audit("phase=AUTHORITY_PROVIDER provider=" +
+                    ArmyAuthorityProviderRegistry.ProviderTypeName +
+                    " fallback=" +
+                    (ArmyAuthorityProviderRegistry.ProviderTypeName == "none"
+                        ? "VANILLA_AUTHORITY" : "REGISTERED_POLICY"));
+                AuditModelPatch(typeof(DefaultArmyManagementCalculationModel),
+                    nameof(DefaultArmyManagementCalculationModel.CanLordCreateArmy));
+                AuditModelPatch(typeof(DefaultTargetScoreCalculatingModel),
+                    nameof(DefaultTargetScoreCalculatingModel
+                        .GetTargetScoreForFaction));
             }
             catch (Exception exception)
             {
-                Audit("result=MODEL_CHAIN_AUDIT_FAILED exception=" + exception.GetType().Name);
+                Audit("phase=MODEL_CHAIN_AUDIT_FAILED exception=" +
+                    exception.GetType().Name);
             }
+        }
+
+        private static void AuditChain(
+            string kind, object current, Type expectedType)
+        {
+            var names = new List<string>();
+            var seen = new HashSet<object>();
+            bool cycle = false;
+            for (int depth = 0; current != null && depth < 12; depth++)
+            {
+                if (!seen.Add(current)) { cycle = true; break; }
+                names.Add(current.GetType().FullName);
+                PropertyInfo property = current.GetType().GetProperty(
+                    "BaseModel", BindingFlags.Instance | BindingFlags.Public |
+                    BindingFlags.NonPublic);
+                current = property?.GetValue(current);
+            }
+            Audit("phase=MODEL_CHAIN kind=" + kind +
+                " activeModel=" + (names.FirstOrDefault() ?? "none") +
+                " chain=\"" + string.Join(" -> ", names) + "\" depth=" +
+                names.Count + " cycleDetected=" + cycle +
+                " diagnosticPresent=" + names.Contains(expectedType.FullName) +
+                " navalPresent=" + names.Any(item => item?.Contains(
+                    "NavalDLC") == true));
+        }
+
+        private static void AuditModelPatch(Type type, string methodName)
+        {
+            MethodInfo method = AccessTools.Method(type, methodName);
+            HarmonyLib.Patches patches = method == null
+                ? null
+                : Harmony.GetPatchInfo(method);
+            string owners = patches == null ? "none" : string.Join(",",
+                patches.Owners.Where(owner => owner == "com.mod.ModifiedArmy" ||
+                    owner == "com.mod.ModifiedPolitics"));
+            Audit("phase=MODEL_PATCH_AUDIT target=" + type.FullName + "." +
+                methodName + " armyPoliticsPatchOwners=" +
+                (string.IsNullOrEmpty(owners) ? "none" : owners));
         }
 
         internal static string F(float value) => value.ToString("0.000", CultureInfo.InvariantCulture);
@@ -152,7 +190,7 @@ namespace ModifiedPolitics.HeroOffices.Diagnostics
             try
             {
                 string prefix = new TextObject(
-                    "{=MP_ArmyEligibilityModelPrefix}[Hero Offices][Army eligibility model]").ToString();
+                    "{=MP_ArmyEligibilityModelPrefix}[ModifiedArmy][Army eligibility model]").ToString();
                 string map = new TextObject(
                     "{=MP_ArmyEligibilityFieldMap}phase=phase|traceId=traceId|model=model|kingdom=kingdom|hero=hero|party=party|candidate=candidate|leader=leader|clan=clan|result=result|reasonCode=reasonCode|influence=influence|foodDays=foodDays|threshold=threshold|partyRatio=partyRatio|distance=distance|maximum=maximum|influenceCost=influenceCost|estimatedStrength=estimatedStrength|score=score|candidateCountBeforeStrengthCheck=candidateCountBeforeStrengthCheck|leaderSiegeStrength=leaderSiegeStrength|candidatesSiegeStrength=candidatesSiegeStrength|totalSiegeStrength=totalSiegeStrength|strengthThreshold=strengthThreshold|candidatesBeforeClear=candidatesBeforeClear|candidatesReturned=candidatesReturned|eligibleBeforeSort=eligibleBeforeSort|kingdomWarPartyCount=kingdomWarPartyCount|existingArmyPartyCount=existingArmyPartyCount|maxNewMembers=maxNewMembers|afterTruncationCount=afterTruncationCount|removedCandidateIds=removedCandidateIds|sortedCandidates=sortedCandidates|omitted=omitted|omittedCandidateDetails=omittedCandidateDetails").ToString();
                 string localized = fields ?? string.Empty;

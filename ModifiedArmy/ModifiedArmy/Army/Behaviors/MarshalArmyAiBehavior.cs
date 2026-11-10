@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ModifiedPolitics.HeroOffices.Domain;
-using ModifiedPolitics.HeroOffices.Diagnostics;
-using ModifiedPolitics.HeroOffices.Models;
-using ModifiedPolitics.HeroOffices.Patches;
-using ModifiedPolitics.Tool;
+using ModifiedArmy.Army.Diagnostics;
+using ModifiedArmy.Army.Services;
+using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors.AiBehaviors;
 using TaleWorlds.CampaignSystem.MapEvents;
@@ -14,8 +12,9 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
 using TaleWorlds.SaveSystem;
+using CampaignArmy = TaleWorlds.CampaignSystem.Army;
 
-namespace ModifiedPolitics.HeroOffices.Behaviors
+namespace ModifiedArmy.Army.Behaviors
 {
     /// <summary>
     /// Adds vanilla military target scoring for appointed marshals and a ruler who leads a party.
@@ -67,7 +66,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 return;
             }
 
-            if (!isRuler && !OfficeRules.IsEligible(marshal, kingdom, OfficeType.Marshal))
+            if (!isRuler && !ArmyAuthorityProviderRegistry
+                    .IsEligibleMarshal(marshal, kingdom))
             {
                 TraceDecision(party, kingdom, traceId, "EARLY_EXIT", "OFFICE_INELIGIBLE", isRuler);
                 SetState(party, kingdom, "ineligible", "MP_MarshalArmyAiIneligible", "marshal no longer leads an eligible war party");
@@ -206,6 +206,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                     + " siegeFoodThreshold=" + MarshalArmyDebugTrace.F(siegeFoodThreshold));
             }
 
+            bool previousWillGatherArmy = thinkParams.WillGatherAnArmy;
             thinkParams.WillGatherAnArmy = true;
             int scoreCountBefore = thinkParams.AIBehaviorScores?.Count ?? 0;
             float bestExistingScore = scoreCountBefore == 0
@@ -221,8 +222,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             {
                 for (int i = 0; i < 4; i++)
                 {
-                    Army.ArmyTypes armyType = (Army.ArmyTypes)i;
-                    if (armyType != Army.ArmyTypes.Raider)
+                    CampaignArmy.ArmyTypes armyType = (CampaignArmy.ArmyTypes)i;
+                    if (armyType != CampaignArmy.ArmyTypes.Raider)
                     {
                         int typeStart = thinkParams.AIBehaviorScores?.Count ?? 0;
                         MarshalArmyDebugTrace.Write(
@@ -233,6 +234,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                             + " siegeFoodThreshold=" + MarshalArmyDebugTrace.F(siegeFoodThreshold));
                         using (MarshalArmyDebugTrace.PushTargetContext(party, armyType, traceId, detailedTrace))
                         {
+                            int modelCallsBefore =
+                                MarshalArmyDebugTrace.CurrentScoredTargets;
                             _aiMilitaryBehavior.FindBestTargetAndItsValueForFaction(
                                 armyType,
                                 thinkParams,
@@ -242,10 +245,20 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                             int positive = added.Count(item => item.Item2 > 0f);
                             int zero = added.Count(item => item.Item2 == 0f);
                             int invalid = added.Count(item => float.IsNaN(item.Item2) || float.IsInfinity(item.Item2));
+                            int modelCalls = MarshalArmyDebugTrace
+                                .CurrentScoredTargets - modelCallsBefore;
                             MarshalArmyDebugTrace.Write(
                                 "phase=TYPE_SUMMARY traceId=" + traceId + " armyType=" + armyType
                                 + " postCount=" + typeEnd + " added=" + added.Count
                                 + " positive=" + positive + " zero=" + zero + " nonFinite=" + invalid
+                                + " modelCalls=" + (detailedTrace
+                                    ? modelCalls.ToString() : "not_sampled")
+                                + " zeroReasonSummary=\"" +
+                                    MarshalArmyDebugTrace.CurrentReasonSummary + "\""
+                                + " targetNotScored=" +
+                                    (!detailedTrace ? "not_sampled" :
+                                        modelCalls == 0
+                                            ? "TARGET_NOT_SCORED" : "false")
                                 + " omittedTargets=" + MarshalArmyDebugTrace.CurrentOmitted
                                 + " result=" + (added.Count > 0 && positive == 0 ? "ALL_NEW_SCORES_ZERO" : "TYPE_SCORES_OBSERVED"));
                         }
@@ -254,7 +267,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
             }
             finally
             {
-                thinkParams.WillGatherAnArmy = false;
+                thinkParams.WillGatherAnArmy = previousWillGatherArmy;
             }
 
             int scoreCountAfter = thinkParams.AIBehaviorScores?.Count ?? 0;
@@ -307,7 +320,7 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
                 siegeFoodThreshold);
         }
 
-        private void OnArmyCreated(Army army)
+        private void OnArmyCreated(CampaignArmy army)
         {
             MobileParty leaderParty = army?.LeaderParty;
             if (!MarshalArmyDebugTrace.IsRelevant(leaderParty))
@@ -382,9 +395,8 @@ namespace ModifiedPolitics.HeroOffices.Behaviors
 
         private static bool IsAppointedMarshal(Hero hero, Kingdom kingdom)
         {
-            return hero != null && HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(assignment => assignment?.Hero == hero) == true;
+            return ArmyAuthorityProviderRegistry.IsEligibleMarshal(
+                hero, kingdom);
         }
 
         private void SetState(

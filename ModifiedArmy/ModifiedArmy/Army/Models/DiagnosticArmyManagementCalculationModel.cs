@@ -2,9 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Helpers;
-using ModifiedPolitics.HeroOffices.Diagnostics;
-using ModifiedPolitics.HeroOffices.Behaviors;
-using ModifiedPolitics.HeroOffices.Domain;
+using ModifiedArmy.Army.Diagnostics;
+using ModifiedArmy.Army.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -16,8 +15,9 @@ using TaleWorlds.Core;
 using TaleWorlds.Library;
 using TaleWorlds.LinQuick;
 using TaleWorlds.Localization;
+using CampaignArmy = TaleWorlds.CampaignSystem.Army;
 
-namespace ModifiedPolitics.HeroOffices.Models
+namespace ModifiedArmy.Army.Models
 {
     public sealed class DiagnosticArmyManagementCalculationModel : DefaultArmyManagementCalculationModel
     {
@@ -40,14 +40,14 @@ namespace ModifiedPolitics.HeroOffices.Models
                 ? MathF.Ceiling(result * 0.75f)
                 : result;
         }
-        public override int CalculateTotalInfluenceCost(Army army, float percentage) =>
+        public override int CalculateTotalInfluenceCost(CampaignArmy army, float percentage) =>
             BaseModel.CalculateTotalInfluenceCost(army, percentage);
         public override float GetPartySizeScore(MobileParty party) => BaseModel.GetPartySizeScore(party);
-        public override ExplainedNumber CalculateDailyCohesionChange(Army army, bool includeDescriptions = false) =>
+        public override ExplainedNumber CalculateDailyCohesionChange(CampaignArmy army, bool includeDescriptions = false) =>
             BaseModel.CalculateDailyCohesionChange(army, includeDescriptions);
-        public override int CalculateNewCohesion(Army army, PartyBase party, int cohesion, int sign) =>
+        public override int CalculateNewCohesion(CampaignArmy army, PartyBase party, int cohesion, int sign) =>
             BaseModel.CalculateNewCohesion(army, party, cohesion, sign);
-        public override int GetCohesionBoostInfluenceCost(Army army, int percentageToBoost = 100)
+        public override int GetCohesionBoostInfluenceCost(CampaignArmy army, int percentageToBoost = 100)
         {
             int result = BaseModel.GetCohesionBoostInfluenceCost(army, percentageToBoost);
             return result > 0 && IsArmyAuthority(army?.LeaderParty?.LeaderHero,
@@ -120,9 +120,8 @@ namespace ModifiedPolitics.HeroOffices.Models
                 trace.Result(false, "LEADER_RATIO_LE_AI_THRESHOLD", 0, 0);
                 return false;
             }
-            bool appointedMarshal = HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(item => item?.Hero == mobileParty.LeaderHero) == true;
+            bool appointedMarshal = ArmyAuthorityProviderRegistry
+                .IsEligibleMarshal(mobileParty.LeaderHero, kingdom);
             if (!(appointedMarshal || mobileParty.LeaderHero.Clan.Leader == mobileParty.LeaderHero ||
                   (mobileParty.LeaderHero.Clan.Leader.PartyBelongedTo == null &&
                    mobileParty.LeaderHero.Clan.WarPartyComponents != null &&
@@ -194,7 +193,7 @@ namespace ModifiedPolitics.HeroOffices.Models
                     MarshalArmyEligibilityTrace.F(item.Item2))) + "\" omitted=" +
                 Math.Max(0, list.Count - 25));
             int partyCount = kingdom.WarPartyComponents.Count;
-            int armiesPartyCount = kingdom.Armies.SumQ((Army x) => x.Parties.Count);
+            int armiesPartyCount = kingdom.Armies.SumQ((CampaignArmy x) => x.Parties.Count);
             int maxNewMembers = MathF.Ceiling((float)partyCount * 0.7f - (float)armiesPartyCount);
             trace.Gate("CAPACITY_CHECK", maxNewMembers > 0 ? "CAPACITY_AVAILABLE" : "KINGDOM_ARMY_CAPACITY_EXHAUSTED",
                 "eligibleBeforeSort=" + eligibleBeforeSort + " kingdomWarPartyCount=" + partyCount +
@@ -247,14 +246,11 @@ namespace ModifiedPolitics.HeroOffices.Models
         }
 
         private static bool HasAnyMarshal(Kingdom kingdom) =>
-            kingdom != null && HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(item => item?.Hero != null) == true;
+            ArmyAuthorityProviderRegistry.HasAppointedMarshal(kingdom);
 
         private static bool IsArmyAuthority(Hero hero, Kingdom kingdom) =>
             hero != null && kingdom != null &&
-            (hero == kingdom.Leader || HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(item => item?.Hero == hero) == true);
+            (hero == kingdom.Leader || ArmyAuthorityProviderRegistry
+                .IsEligibleMarshal(hero, kingdom));
     }
 }

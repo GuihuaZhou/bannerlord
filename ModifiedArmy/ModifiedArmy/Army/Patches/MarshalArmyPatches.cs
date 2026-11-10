@@ -1,9 +1,7 @@
 using System.Linq;
 using HarmonyLib;
-using ModifiedPolitics.HeroOffices.Domain;
-using ModifiedPolitics.HeroOffices.Behaviors;
-using ModifiedPolitics.HeroOffices.Diagnostics;
-using ModifiedPolitics.HeroOffices.Services;
+using ModifiedArmy.Army.Diagnostics;
+using ModifiedArmy.Army.Services;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors.AiBehaviors;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -12,8 +10,9 @@ using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
 using TaleWorlds.Library;
+using CampaignArmy = TaleWorlds.CampaignSystem.Army;
 
-namespace ModifiedPolitics.HeroOffices.Patches
+namespace ModifiedArmy.Army.Patches
 {
     /// <summary>
     /// Enforces marshal army authority and applies the marshal's influence discounts.
@@ -27,7 +26,7 @@ namespace ModifiedPolitics.HeroOffices.Patches
             Kingdom __instance,
             Hero armyLeader,
             Settlement targetSettlement,
-            Army.ArmyTypes selectedArmyType)
+            CampaignArmy.ArmyTypes selectedArmyType)
         {
             bool relevant = Clan.PlayerClan?.Kingdom == __instance
                             && (armyLeader == __instance?.Leader || IsAppointedMarshal(armyLeader, __instance));
@@ -77,29 +76,27 @@ namespace ModifiedPolitics.HeroOffices.Patches
 
         private static bool HasAnyMarshal(Kingdom kingdom)
         {
-            return kingdom != null && HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(assignment => assignment?.Hero != null) == true;
+            return ArmyAuthorityProviderRegistry.HasAppointedMarshal(kingdom);
         }
 
         private static bool IsAppointedMarshal(Hero hero, Kingdom kingdom)
         {
-            return hero != null && kingdom != null && HeroOfficeBehavior.Current?
-                .GetAssignments(kingdom, OfficeType.Marshal)
-                .Any(assignment => assignment?.Hero == hero) == true;
+            return ArmyAuthorityProviderRegistry.IsAppointedMarshal(
+                hero, kingdom);
         }
 
         private static bool IsArmyAuthority(Hero hero, Kingdom kingdom)
         {
             return hero != null && kingdom != null
-                   && (hero == kingdom.Leader || IsAppointedMarshal(hero, kingdom));
+                   && ArmyAuthorityProviderRegistry.IsArmyAuthority(
+                       hero, kingdom);
         }
 
         private static void TraceCreateArmy(
             Kingdom kingdom,
             Hero armyLeader,
             Settlement targetSettlement,
-            Army.ArmyTypes selectedArmyType,
+            CampaignArmy.ArmyTypes selectedArmyType,
             bool allowed)
         {
             bool hasMarshal = HasAnyMarshal(kingdom);
