@@ -41,6 +41,15 @@
       </IncludedGameTypes>
     </XmlNode>
     <XmlNode>
+      <XmlName id="WarDispositionConfigs" path="war_disposition" />
+      <IncludedGameTypes>
+        <GameType value="Campaign" />
+        <GameType value="CampaignStoryMode" />
+        <GameType value="CustomGame" />
+        <GameType value="EditorGame" />
+      </IncludedGameTypes>
+    </XmlNode>
+    <XmlNode>
       <XmlName id="Settlements" path="settlements" />
       <IncludedGameTypes>
         <GameType value="Campaign" />

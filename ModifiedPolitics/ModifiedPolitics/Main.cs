@@ -17,6 +17,7 @@ using ModifiedPolitics.SettlementEconomy.Models;
 using ModifiedPolitics.SettlementEconomy.Behaviors;
 using ModifiedPolitics.Tool;
 using ModifiedPolitics.WarDisposition.Integration;
+using ModifiedPolitics.WarDisposition.Config;
 using ModifiedArmy.ForceManagement.Services;
 using System;
 using System.Reflection;
@@ -51,6 +52,30 @@ namespace ModifiedPolitics
             if (game.GameType is Campaign
                 && gameStarterObject is CampaignGameStarter campaignStarter)
             {
+                WarDispositionConfigManager.Instance.Clear();
+                try
+                {
+                    game.ObjectManager.RegisterType<WarDispositionConfig>(
+                        "WarDispositionConfig",
+                        "WarDispositionConfigs",
+                        100U,
+                        true,
+                        false);
+                    MBObjectManager.Instance.LoadXML(
+                        "WarDispositionConfigs",
+                        true);
+                    ModLogger.FileInfo(
+                        "[War Disposition] XML configuration loaded successfully.");
+                }
+                catch (Exception exception)
+                {
+                    WarDispositionConfigManager.Instance.Clear();
+                    ModLogger.FileError(
+                        "[War Disposition] XML configuration load failed; " +
+                        "war disposition cannot start. " + exception);
+                    throw;
+                }
+
                 SettlementEconomyConfigManager.Instance.Clear();
                 try
                 {

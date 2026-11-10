@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using ModifiedPolitics.WarDisposition.Config;
 
 namespace ModifiedPolitics.Models.WarDisposition.Events
 {
@@ -9,11 +10,6 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
     /// </summary>
     public static class WarDispositionEventCatalog
     {
-        private static readonly IReadOnlyDictionary<
-            WarDispositionEventType,
-            WarDispositionEventDefinition> Definitions =
-            CreateDefinitions();
-
         /// <summary>
         /// 获取指定事件的计算定义。
         /// 未注册的枚举值视为程序错误，不使用静默默认值。
@@ -21,7 +17,12 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
         public static WarDispositionEventDefinition Get(
             WarDispositionEventType eventType)
         {
-            if (!Definitions.TryGetValue(
+            IReadOnlyDictionary<
+                WarDispositionEventType,
+                WarDispositionEventDefinition> definitions =
+                CreateDefinitions();
+
+            if (!definitions.TryGetValue(
                 eventType,
                 out WarDispositionEventDefinition definition))
             {
@@ -45,21 +46,21 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
                 [WarDispositionEventType.PartyVictory] = Define(
                     WarDispositionEventType.PartyVictory,
                     WarDispositionInfluenceCategory.Battle,
-                    3f,
+                    ConfiguredBaseValue(WarDispositionEventType.PartyVictory),
                     valor: 0.15f,
                     calculating: 0.05f),
 
                 [WarDispositionEventType.PartyDefeat] = Define(
                     WarDispositionEventType.PartyDefeat,
                     WarDispositionInfluenceCategory.Battle,
-                    -3f,
+                    ConfiguredBaseValue(WarDispositionEventType.PartyDefeat),
                     valor: -0.15f,
                     calculating: 0.10f),
 
                 [WarDispositionEventType.PartyDestroyed] = Define(
                     WarDispositionEventType.PartyDestroyed,
                     WarDispositionInfluenceCategory.Battle,
-                    -6f,
+                    ConfiguredBaseValue(WarDispositionEventType.PartyDestroyed),
                     valor: -0.10f,
                     mercy: 0.10f,
                     calculating: 0.15f),
@@ -67,7 +68,7 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
                 [WarDispositionEventType.ClanMemberCaptured] = Define(
                     WarDispositionEventType.ClanMemberCaptured,
                     WarDispositionInfluenceCategory.Battle,
-                    -3f,
+                    ConfiguredBaseValue(WarDispositionEventType.ClanMemberCaptured),
                     valor: -0.05f,
                     honor: 0.05f),
 
@@ -89,54 +90,54 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
                 [WarDispositionEventType.VillageRaided] = Define(
                     WarDispositionEventType.VillageRaided,
                     WarDispositionInfluenceCategory.Territory,
-                    -3f,
+                    ConfiguredBaseValue(WarDispositionEventType.VillageRaided),
                     mercy: 0.20f,
                     honor: 0.05f),
 
                 [WarDispositionEventType.CastleLost] = Define(
                     WarDispositionEventType.CastleLost,
                     WarDispositionInfluenceCategory.Territory,
-                    -6f,
+                    ConfiguredBaseValue(WarDispositionEventType.CastleLost),
                     valor: -0.10f,
                     calculating: 0.15f),
 
                 [WarDispositionEventType.TownLost] = Define(
                     WarDispositionEventType.TownLost,
                     WarDispositionInfluenceCategory.Territory,
-                    -8f,
+                    ConfiguredBaseValue(WarDispositionEventType.TownLost),
                     valor: -0.10f,
                     calculating: 0.15f),
 
                 [WarDispositionEventType.EnemyCaptured] = Define(
                     WarDispositionEventType.EnemyCaptured,
                     WarDispositionInfluenceCategory.WarGain,
-                    2f),
+                    ConfiguredBaseValue(WarDispositionEventType.EnemyCaptured)),
 
                 [WarDispositionEventType.CastleCaptured] = Define(
                     WarDispositionEventType.CastleCaptured,
                     WarDispositionInfluenceCategory.WarGain,
-                    4f,
+                    ConfiguredBaseValue(WarDispositionEventType.CastleCaptured),
                     valor: 0.10f,
                     calculating: 0.10f),
 
                 [WarDispositionEventType.TownCaptured] = Define(
                     WarDispositionEventType.TownCaptured,
                     WarDispositionInfluenceCategory.WarGain,
-                    5f,
+                    ConfiguredBaseValue(WarDispositionEventType.TownCaptured),
                     valor: 0.10f,
                     calculating: 0.10f),
 
                 [WarDispositionEventType.CastleGranted] = Define(
                     WarDispositionEventType.CastleGranted,
                     WarDispositionInfluenceCategory.WarGain,
-                    10f,
+                    ConfiguredBaseValue(WarDispositionEventType.CastleGranted),
                     generosity: -0.10f,
                     calculating: 0.10f),
 
                 [WarDispositionEventType.TownGranted] = Define(
                     WarDispositionEventType.TownGranted,
                     WarDispositionInfluenceCategory.WarGain,
-                    15f,
+                    ConfiguredBaseValue(WarDispositionEventType.TownGranted),
                     generosity: -0.10f,
                     calculating: 0.10f),
 
@@ -148,6 +149,14 @@ namespace ModifiedPolitics.Models.WarDisposition.Events
                     0f,
                     calculating: 0.20f)
             };
+        }
+
+        private static float ConfiguredBaseValue(
+            WarDispositionEventType eventType)
+        {
+            return WarDispositionConfigManager.Instance
+                .RequireActive()
+                .GetEventBaseValue(eventType);
         }
 
         private static WarDispositionEventDefinition Define(

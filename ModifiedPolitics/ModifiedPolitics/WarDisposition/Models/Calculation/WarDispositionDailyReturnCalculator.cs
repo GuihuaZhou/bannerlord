@@ -1,3 +1,4 @@
+using ModifiedPolitics.WarDisposition.Config;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.Library;
 
@@ -8,7 +9,6 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
     /// </summary>
     public static class WarDispositionDailyReturnCalculator
     {
-        public const float WarWearinessRate = 0.01f;
         public const float InitialPeaceRecoveryRate = 0.005f;
         public const float PeaceRecoveryRatePerDay = 0.002f;
         public const float MaximumPeaceRecoveryRate = 0.06f;
@@ -85,7 +85,9 @@ namespace ModifiedPolitics.Models.WarDisposition.Calculation
         public static float GetWarDailyChange(float currentDisposition)
         {
             return (WarDispositionCalculator.MinimumDisposition - currentDisposition)
-                   * WarWearinessRate;
+                   * WarDispositionConfigManager.Instance
+                       .RequireActive()
+                       .WarWearinessRate;
         }
 
         public static float GetPeaceRecoveryRate(int peaceDays)

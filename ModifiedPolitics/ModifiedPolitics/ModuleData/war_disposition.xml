@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WarDispositionConfigs>
+  <WarDispositionConfig id="default">
+    <Events>
+      <!-- Positive values increase willingness to continue war; negative values reduce it. -->
+      <Event type="PartyVictory" baseValue="2.5" />
+      <Event type="PartyDefeat" baseValue="-2" />
+      <Event type="PartyDestroyed" baseValue="-2" />
+      <Event type="ClanMemberCaptured" baseValue="-1.5" />
+      <Event type="EnemyCaptured" baseValue="1.5" />
+      <Event type="VillageRaided" baseValue="-2" />
+      <Event type="CastleLost" baseValue="-4" />
+      <Event type="TownLost" baseValue="-6" />
+      <Event type="CastleCaptured" baseValue="3" />
+      <Event type="TownCaptured" baseValue="4" />
+      <Event type="CastleGranted" baseValue="4" />
+      <Event type="TownGranted" baseValue="6" />
+    </Events>
+    <DailyReturn>
+      <!-- Fraction of the remaining distance toward -100 applied per wartime day. -->
+      <WarWeariness rate="0.004" />
+    </DailyReturn>
+  </WarDispositionConfig>
+</WarDispositionConfigs>
