@@ -622,40 +622,17 @@ namespace ModifiedArmy.Models.Fief
         public void WeeklyUpdate()
         {
             if (!IsRuntimeReady)
+            {
+                LogRuntimeCoolingUnavailable();
                 return;
+            }
 
             // 升级封邑士兵
             PerformAutoUpgrade();
 
             // Process returned soldiers whose cooldown has completed.
             foreach (VillageFiefData village in OrderedVillages())
-            {
-                if (village.RecoveryRequired) continue;
-                TroopRoster roster = village.GetReadyRoster();
-                for (int i = village.ReturnBatches.Count - 1; i >= 0; i--)
-                {
-                    var detachment = village.ReturnBatches[i];
-                    detachment.Tick();
-
-                    if (detachment.IsReady() && roster != null)
-                    {
-                        foreach (var kvp in detachment.Troops)
-                        {
-                            roster.AddToCounts(kvp.Key, kvp.Value, false, 0, 0, true, -1);
-                        }
-
-                        // 移除该分遣队
-                        village.ReturnBatches.RemoveAt(i);
-
-                        if (_settlement.OwnerClan == Clan.PlayerClan)
-                        {
-                            TextObject textObject = new TextObject("{=FiefTroopsReady}{SETTLEMENT_NAME}'s feudal troops are ready!", null);
-                            textObject.SetTextVariable("SETTLEMENT_NAME", _settlement.Name);
-                            ModLogger.Notice(textObject.ToString());
-                        }
-                    }
-                }
-            }
+                ProcessVillageCooling(village, true, "WeeklyTick");
 
             // Active service has no fixed expiry. Daily reconciliation owns
             // losses and wage eligibility; weekly processing only advances
@@ -665,6 +642,190 @@ namespace ModifiedArmy.Models.Fief
 
             // Daily manpower production is the only path that adds new fief
             // troops. Weekly updates retain expiry, cooldown and upgrades only.
+        }
+
+        internal void ProcessVillageCooling(VillageFiefData village,
+            bool advanceWeeklyClock, string trigger)
+        {
+            if (village?.ReturnBatches == null ||
+                village.ReturnBatches.Count == 0)
+                return;
+
+            bool trace = PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                _settlement, village.VillageSettlement);
+            int campaignDay = (int)CampaignTime.Now.ToDays;
+            if (village.RecoveryRequired)
+            {
+                if (trace)
+                    foreach (var item in village.ReturnBatches
+                        .Select((batch, index) => new { batch, index }))
+                        LogCooling(item.batch, item.index, campaignDay,
+                            item.batch?.WaitWeeks ?? 0,
+                            item.batch?.WaitWeeks ?? 0,
+                            "BlockedByRecovery", trigger, village,
+                            " recoveryReason=" +
+                            (village.RecoveryReason ?? "missing"));
+                return;
+            }
+
+            TroopRoster roster = village.GetReadyRoster();
+            for (int index = village.ReturnBatches.Count - 1;
+                index >= 0; index--)
+            {
+                FiefReturnBatch batch = village.ReturnBatches[index];
+                if (batch == null || batch.IsEmpty()) continue;
+                int before = batch.WaitWeeks;
+                if (advanceWeeklyClock) batch.Tick();
+                int after = batch.WaitWeeks;
+                if (!batch.IsReady())
+                {
+                    if (trace)
+                        LogCooling(batch, index, campaignDay, before, after,
+                            "CoolingProgress", trigger, village);
+                    continue;
+                }
+                if (roster == null)
+                {
+                    if (trace)
+                        LogCooling(batch, index, campaignDay, before, after,
+                            "MaturedWaitingForRoster", trigger, village,
+                            " rosterActive=false militiaComponent=" +
+                            (village.VillageSettlement?.MilitiaPartyComponent !=
+                                null ? "present" : "missing"));
+                    continue;
+                }
+                CommitMaturedBatch(village, batch, index, roster, campaignDay,
+                    before, after, trigger, trace);
+            }
+        }
+
+        private void CommitMaturedBatch(VillageFiefData village,
+            FiefReturnBatch batch, int batchIndex, TroopRoster roster,
+            int campaignDay, int waitBefore, int waitAfter, string trigger,
+            bool trace)
+        {
+            Dictionary<CharacterObject, int> troops = batch.Troops
+                .Where(pair => pair.Key != null && pair.Value > 0)
+                .ToDictionary(pair => pair.Key, pair => pair.Value);
+            Dictionary<CharacterObject, int> readyBefore = troops.Keys
+                .ToDictionary(troop => troop,
+                    troop => roster.GetTroopCount(troop));
+            string operationId = string.Format("fief-cooling:{0}:{1}:{2}",
+                village.VillageSettlement?.StringId ?? "missing-village",
+                campaignDay, Guid.NewGuid().ToString("N"));
+            try
+            {
+                if (troops.Count == 0 || troops.Values.Sum() !=
+                    batch.GetTotalCount())
+                    throw new InvalidOperationException(
+                        "InvalidCoolingBatchTroops");
+                foreach (var pair in troops)
+                {
+                    roster.AddToCounts(pair.Key, pair.Value, false, 0, 0,
+                        true, -1);
+                    if (roster.GetTroopCount(pair.Key) !=
+                        readyBefore[pair.Key] + pair.Value)
+                        throw new InvalidOperationException(
+                            "CoolingReadyDeltaMismatch");
+                }
+                if (!village.ReturnBatches.Remove(batch))
+                    throw new InvalidOperationException(
+                        "CoolingBatchRemovalFailed");
+                RefreshManpowerCounters();
+                if (trace)
+                    LogCooling(batch, batchIndex, campaignDay, waitBefore,
+                        waitAfter, "MovedToReady", trigger, village,
+                        string.Format(" operation={0} readyBefore={1} " +
+                            "readyAfter={2} coolingAfter={3}", operationId,
+                            readyBefore.Values.Sum(), troops.Keys.Sum(troop =>
+                                roster.GetTroopCount(troop)),
+                            village.ReturnBatches.Sum(item =>
+                                item?.GetTotalCount() ?? 0)));
+
+                if (trace)
+                {
+                    TextObject textObject = new TextObject(
+                        "{=FiefTroopsReady}{SETTLEMENT_NAME}'s feudal troops are ready!",
+                        null);
+                    textObject.SetTextVariable("SETTLEMENT_NAME",
+                        _settlement.Name);
+                    ModLogger.Notice(textObject.ToString());
+                }
+            }
+            catch (Exception exception)
+            {
+                bool restored = true;
+                foreach (var pair in readyBefore)
+                {
+                    try
+                    {
+                        int current = roster.GetTroopCount(pair.Key);
+                        roster.AddToCounts(pair.Key, pair.Value - current,
+                            false, 0, 0, true, -1);
+                    }
+                    catch { restored = false; }
+                }
+                if (!village.ReturnBatches.Contains(batch))
+                {
+                    try { village.ReturnBatches.Insert(
+                        Math.Min(batchIndex, village.ReturnBatches.Count),
+                        batch); }
+                    catch { restored = false; }
+                }
+                restored = restored && readyBefore.All(pair =>
+                    roster.GetTroopCount(pair.Key) == pair.Value) &&
+                    village.ReturnBatches.Contains(batch);
+                if (!restored)
+                    village.RequireRecovery("CoolingRollbackUnverified",
+                        operationId);
+                if (trace)
+                    ModLogger.FileError(string.Format(
+                        "[PlayerFiefCooling] fief={0} fiefId={1} " +
+                        "village={2} villageId={3} day={4} batchIndex={5} " +
+                        "troops={6} waitBefore={7} waitAfter={8} " +
+                        "operation={9} result=CoolingCommitFailed " +
+                        "errorType={10} rollback={11}.", _settlement?.Name,
+                        _settlement?.StringId,
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId, campaignDay,
+                        batchIndex, batch.GetTotalCount(), waitBefore,
+                        waitAfter, operationId, exception.GetType().Name,
+                        restored ? "Verified" : "RecoveryRequired"));
+            }
+        }
+
+        private void LogRuntimeCoolingUnavailable()
+        {
+            if (!PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(_settlement))
+                return;
+            foreach (VillageFiefData village in OrderedVillages()
+                .Where(item => item.ReturnBatches?.Count > 0))
+                ModLogger.FileDebug(string.Format(
+                    "[PlayerFiefCooling] fief={0} fiefId={1} village={2} " +
+                    "villageId={3} day={4} troops={5} result=FiefRuntimeNotReady " +
+                    "reason={6}.", _settlement?.Name, _settlement?.StringId,
+                    village.VillageSettlement?.Name,
+                    village.VillageSettlement?.StringId,
+                    (int)CampaignTime.Now.ToDays,
+                    village.ReturnBatches.Sum(batch =>
+                        batch?.GetTotalCount() ?? 0),
+                    RuntimeInitializationFailureReason ?? "missing"));
+        }
+
+        private void LogCooling(FiefReturnBatch batch, int batchIndex,
+            int campaignDay, int waitBefore, int waitAfter, string result,
+            string trigger, VillageFiefData village, string extra = null)
+        {
+            ModLogger.FileDebug(string.Format(
+                "[PlayerFiefCooling] fief={0} fiefId={1} village={2} " +
+                "villageId={3} day={4} trigger={5} batchIndex={6} " +
+                "troops={7} waitBefore={8} waitAfter={9} result={10}{11}.",
+                _settlement?.Name, _settlement?.StringId,
+                village.VillageSettlement?.Name,
+                village.VillageSettlement?.StringId, campaignDay,
+                trigger ?? "unknown", batchIndex,
+                batch?.GetTotalCount() ?? 0, waitBefore, waitAfter, result,
+                extra ?? string.Empty));
         }
     }
 }

@@ -149,6 +149,14 @@ namespace ModifiedArmy.Models.Fief
                     "disabled. reason=PopulationServiceUnavailable.");
             }
             IsSessionReady = true;
+            foreach (FiefPartyData data in _fiefDataMap.Values.Where(item =>
+                item?.IsRuntimeReady == true &&
+                PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                    item.GetSettlement())))
+                foreach (VillageFiefData village in data.OrderedVillages()
+                    .Where(item => item.ReturnBatches?.Count > 0))
+                    data.ProcessVillageCooling(village, false,
+                        "SessionLaunch");
             ModLogger.Info(string.Format(
                 "Fief runtime session ready: fiefs={0}.",
                 _fiefDataMap.Values.Count(data =>
@@ -1303,6 +1311,10 @@ namespace ModifiedArmy.Models.Fief
             FiefPartyData data = GetFiefData(village.Village?.Bound);
             if (data?.RepairVillageMilitiaBinding(village) != true) return;
 
+            VillageFiefData villageData = data.GetVillageData(village);
+            data.ProcessVillageCooling(villageData, false,
+                "MilitiaPartyCreated");
+
             // Recreated militia parties resume through the ordinary daily
             // production path. New-game bulk initialization is intentionally
             // not invoked here.
@@ -1609,9 +1621,8 @@ namespace ModifiedArmy.Models.Fief
                     remaining[pair.Key] -= pair.Value;
                 if (remaining.Values.All(value => value <= 0)) break;
             }
-            if (returned > 0)
-                FiefTroopPlacementService.TryPlaceAfterReturn(this, party,
-                    interaction, FiefPlacementPurpose.PlayerReturn);
+            FiefTroopPlacementService.TryPlaceAfterReturn(this, party,
+                interaction, FiefPlacementPurpose.PlayerReturn);
             return returned;
         }
 

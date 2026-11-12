@@ -125,8 +125,13 @@ namespace ModifiedArmy.Models.Fief
                 .Select(village => new VillagePlan { Village = village })
                 .ToList();
             if (plans.Count == 0)
+            {
+                LogVillageEligibility(scope, template, doctrine, party,
+                    purpose, operationId, reconciliation,
+                    "NoEligiblePlacementVillage");
                 return Reject(result, party, interaction, purpose,
                     operationId, "NoEligiblePlacementVillage");
+            }
 
             int remainingLimit = Math.Max(0, maximumCount);
             bool woundedFirst = purpose != FiefPlacementPurpose.PlayerReturn;
@@ -217,8 +222,158 @@ namespace ModifiedArmy.Models.Fief
                 result.ReasonCode == "NotStarted")
             {
                 result.ReasonCode = "NoEligibleTroopsOrCapacity";
+                LogNoPlacementSummary(scope, template, doctrine, plans,
+                    party, purpose, operationId, reconciliation);
             }
             return result;
+        }
+
+        private static void LogVillageEligibility(FiefOperationScope scope,
+            FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine,
+            MobileParty party, FiefPlacementPurpose purpose,
+            string operationId, FiefReconciliationResult reconciliation,
+            string result)
+        {
+            if (!PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                    scope?.SourceFief))
+                return;
+            int unassigned = reconciliation?.UnassignedTroops?.Values
+                .Sum(value => value.Total) ?? 0;
+            ModLogger.FileDebug(string.Format(
+                "[PlayerFiefPlacement] operation={0} fief={1} fiefId={2} " +
+                "party={3} partyId={4} purpose={5} unassigned={6} " +
+                "placed=0 result={7}.", operationId,
+                scope.SourceFief?.Name, scope.SourceFief?.StringId,
+                PartyLogFormatter.GetDisplayName(party), party?.StringId,
+                purpose, unassigned, result));
+
+            foreach (VillageFiefData village in
+                (scope.FiefData.Villages?.Values ??
+                    Enumerable.Empty<VillageFiefData>())
+                    .Where(item => item?.VillageSettlement != null)
+                    .OrderBy(item => item.VillageSettlement.StringId))
+            {
+                Settlement settlement = village.VillageSettlement;
+                bool currentBound = scope.FiefData.IsCurrentVillage(settlement);
+                bool filtered = scope.VillageFilter != null &&
+                    scope.VillageFilter != settlement;
+                bool rosterActive = village.GetReadyRoster() != null;
+                string rejection = !currentBound ? "VillageNoLongerBound" :
+                    filtered ? "FilteredToCurrentVillage" :
+                    village.RecoveryRequired ? "RecoveryRequired" :
+                    !rosterActive ? "ReadyRosterUnavailable" : "Eligible";
+                ModLogger.FileDebug(string.Format(
+                    "[PlayerFiefPlacementVillage] operation={0} fief={1} " +
+                    "fiefId={2} village={3} villageId={4} " +
+                    "currentBound={5} filtered={6} recoveryRequired={7} " +
+                    "recoveryReason={8} rosterActive={9} {10} " +
+                    "rejection={11}.", operationId,
+                    scope.SourceFief?.Name, scope.SourceFief?.StringId,
+                    settlement.Name, settlement.StringId, currentBound,
+                    filtered, village.RecoveryRequired,
+                    village.RecoveryReason ?? "none", rosterActive,
+                    GetSupplyDiagnostic(village, template, doctrine),
+                    rejection));
+            }
+        }
+
+        private static string GetSupplyDiagnostic(VillageFiefData village,
+            FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine)
+        {
+            try
+            {
+                int effective = village.GetEffectiveSupplyHearth();
+                int occupied = village.GetOccupiedSupplyHearth(template,
+                    doctrine);
+                int free = village.GetFreeSupplyHearth(template, doctrine);
+                int budget = village.GetFeudalBudgetRemainingHearth(template,
+                    doctrine);
+                return string.Format(
+                    "effectiveHearth={0} occupiedHearth={1} supplyFree={2} " +
+                    "feudalBudgetRemaining={3} placementCapacity={4}",
+                    effective, occupied, free, budget,
+                    Math.Max(0, Math.Min(free, budget)));
+            }
+            catch (Exception exception)
+            {
+                return "supplyDiagnostic=Unavailable errorType=" +
+                    exception.GetType().Name;
+            }
+        }
+
+        private static void LogNoPlacementSummary(FiefOperationScope scope,
+            FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine,
+            IReadOnlyCollection<VillagePlan> plans, MobileParty party,
+            FiefPlacementPurpose purpose, string operationId,
+            FiefReconciliationResult reconciliation)
+        {
+            if (!PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                    scope?.SourceFief))
+                return;
+            int unassigned = 0;
+            int templateEligible = 0;
+            int costEligible = 0;
+            int capacityEligible = 0;
+            foreach (var pair in reconciliation.UnassignedTroops.Where(pair =>
+                pair.Key != null && pair.Value.Total > 0))
+            {
+                unassigned += pair.Value.Total;
+                bool templateAllowed = template.IsEnableTroop(pair.Key);
+                if (!templateAllowed)
+                {
+                    LogTroopEligibility(operationId, pair.Key,
+                        pair.Value.Total, false, false, 0,
+                        "TroopNotInTemplate");
+                    continue;
+                }
+                templateEligible += pair.Value.Total;
+                if (!doctrine.TryGetFeudalSupplyCost(pair.Key, out int cost) ||
+                    cost <= 0)
+                {
+                    LogTroopEligibility(operationId, pair.Key,
+                        pair.Value.Total, true, false, 0,
+                        "SupplyCostUnavailable");
+                    continue;
+                }
+                costEligible += pair.Value.Total;
+                int capacity = plans.Sum(plan => Math.Max(0,
+                    EffectiveRemaining(plan, template, doctrine) / cost));
+                int eligible = Math.Min(pair.Value.Total, capacity);
+                capacityEligible += eligible;
+                LogTroopEligibility(operationId, pair.Key,
+                    pair.Value.Total, true, true, eligible,
+                    eligible > 0 ? "CapacityAvailable" : "CapacityZero");
+            }
+            ModLogger.FileDebug(string.Format(
+                "[PlayerFiefPlacement] operation={0} fief={1} fiefId={2} " +
+                "party={3} partyId={4} purpose={5} unassigned={6} " +
+                "templateEligible={7} costEligible={8} capacityEligible={9} " +
+                "placed=0 result=NoEligibleTroopsOrCapacity.", operationId,
+                scope.SourceFief?.Name, scope.SourceFief?.StringId,
+                PartyLogFormatter.GetDisplayName(party), party?.StringId,
+                purpose, unassigned, templateEligible, costEligible,
+                capacityEligible));
+            foreach (VillagePlan plan in plans.OrderBy(item =>
+                item.Village.VillageSettlement.StringId))
+                ModLogger.FileDebug(string.Format(
+                    "[PlayerFiefPlacementVillage] operation={0} village={1} " +
+                    "villageId={2} {3} " +
+                    "rejection=NoEligibleTroopsOrCapacity.", operationId,
+                    plan.Village.VillageSettlement.Name,
+                    plan.Village.VillageSettlement.StringId,
+                    GetSupplyDiagnostic(plan.Village, template, doctrine)));
+        }
+
+        private static void LogTroopEligibility(string operationId,
+            CharacterObject troop, int unassigned, bool templateEligible,
+            bool costEligible, int capacityEligible, string reason)
+        {
+            ModLogger.FileDebug(string.Format(
+                "[PlayerFiefPlacementTroop] operation={0} troop={1} " +
+                "troopId={2} unassigned={3} templateEligible={4} " +
+                "costEligible={5} capacityEligible={6} reason={7}.",
+                operationId, troop?.Name, troop?.StringId, unassigned,
+                templateEligible, costEligible, capacityEligible, reason));
         }
 
         private static bool CommitVillage(FiefPartyManager manager,
