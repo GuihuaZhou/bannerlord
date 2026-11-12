@@ -16,8 +16,8 @@ namespace NavalDLC.GameComponents
 	// Token: 0x02000108 RID: 264
 	public class NavalDLCArmyManagementCalculationModel : ArmyManagementCalculationModel
 	{
-		// Token: 0x17000340 RID: 832
-		// (get) Token: 0x06001337 RID: 4919 RVA: 0x0008C3DA File Offset: 0x0008A5DA
+		// Token: 0x1700033F RID: 831
+		// (get) Token: 0x06001337 RID: 4919 RVA: 0x0008C47E File Offset: 0x0008A67E
 		public override float AIMobilePartySizeRatioToCallToArmy
 		{
 			get
@@ -26,8 +26,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000341 RID: 833
-		// (get) Token: 0x06001338 RID: 4920 RVA: 0x0008C3E7 File Offset: 0x0008A5E7
+		// Token: 0x17000340 RID: 832
+		// (get) Token: 0x06001338 RID: 4920 RVA: 0x0008C48B File Offset: 0x0008A68B
 		public override float PlayerMobilePartySizeRatioToCallToArmy
 		{
 			get
@@ -36,8 +36,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000342 RID: 834
-		// (get) Token: 0x06001339 RID: 4921 RVA: 0x0008C3F4 File Offset: 0x0008A5F4
+		// Token: 0x17000341 RID: 833
+		// (get) Token: 0x06001339 RID: 4921 RVA: 0x0008C498 File Offset: 0x0008A698
 		public override float MinimumNeededFoodInDaysToCallToArmy
 		{
 			get
@@ -46,8 +46,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000343 RID: 835
-		// (get) Token: 0x0600133A RID: 4922 RVA: 0x0008C401 File Offset: 0x0008A601
+		// Token: 0x17000342 RID: 834
+		// (get) Token: 0x0600133A RID: 4922 RVA: 0x0008C4A5 File Offset: 0x0008A6A5
 		public override float MaximumDistanceToCallToArmy
 		{
 			get
@@ -56,8 +56,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000344 RID: 836
-		// (get) Token: 0x0600133B RID: 4923 RVA: 0x0008C40E File Offset: 0x0008A60E
+		// Token: 0x17000343 RID: 835
+		// (get) Token: 0x0600133B RID: 4923 RVA: 0x0008C4B2 File Offset: 0x0008A6B2
 		public override int InfluenceValuePerGold
 		{
 			get
@@ -66,8 +66,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000345 RID: 837
-		// (get) Token: 0x0600133C RID: 4924 RVA: 0x0008C41B File Offset: 0x0008A61B
+		// Token: 0x17000344 RID: 836
+		// (get) Token: 0x0600133C RID: 4924 RVA: 0x0008C4BF File Offset: 0x0008A6BF
 		public override int AverageCallToArmyCost
 		{
 			get
@@ -76,8 +76,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000346 RID: 838
-		// (get) Token: 0x0600133D RID: 4925 RVA: 0x0008C428 File Offset: 0x0008A628
+		// Token: 0x17000345 RID: 837
+		// (get) Token: 0x0600133D RID: 4925 RVA: 0x0008C4CC File Offset: 0x0008A6CC
 		public override int CohesionThresholdForDispersion
 		{
 			get
@@ -86,8 +86,8 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x17000347 RID: 839
-		// (get) Token: 0x0600133E RID: 4926 RVA: 0x0008C435 File Offset: 0x0008A635
+		// Token: 0x17000346 RID: 838
+		// (get) Token: 0x0600133E RID: 4926 RVA: 0x0008C4D9 File Offset: 0x0008A6D9
 		public override float MaximumWaitTime
 		{
 			get
@@ -96,7 +96,7 @@ namespace NavalDLC.GameComponents
 			}
 		}
 
-		// Token: 0x0600133F RID: 4927 RVA: 0x0008C444 File Offset: 0x0008A644
+		// Token: 0x0600133F RID: 4927 RVA: 0x0008C4E8 File Offset: 0x0008A6E8
 		public override ExplainedNumber CalculateDailyCohesionChange(Army army, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = base.BaseModel.CalculateDailyCohesionChange(army, includeDescriptions);
@@ -107,31 +107,31 @@ namespace NavalDLC.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001340 RID: 4928 RVA: 0x0008C4A8 File Offset: 0x0008A6A8
+		// Token: 0x06001340 RID: 4928 RVA: 0x0008C54C File Offset: 0x0008A74C
 		public override int CalculateNewCohesion(Army army, PartyBase newParty, int calculatedCohesion, int sign)
 		{
 			return base.BaseModel.CalculateNewCohesion(army, newParty, calculatedCohesion, sign);
 		}
 
-		// Token: 0x06001341 RID: 4929 RVA: 0x0008C4BA File Offset: 0x0008A6BA
+		// Token: 0x06001341 RID: 4929 RVA: 0x0008C55E File Offset: 0x0008A75E
 		public override int CalculatePartyInfluenceCost(MobileParty armyLeaderParty, MobileParty party)
 		{
 			return base.BaseModel.CalculatePartyInfluenceCost(armyLeaderParty, party);
 		}
 
-		// Token: 0x06001342 RID: 4930 RVA: 0x0008C4C9 File Offset: 0x0008A6C9
+		// Token: 0x06001342 RID: 4930 RVA: 0x0008C56D File Offset: 0x0008A76D
 		public override bool CanLordCreateArmy(MobileParty leaderParty, out MBList<MobileParty> possibleArmyMembers)
 		{
 			return base.BaseModel.CanLordCreateArmy(leaderParty, out possibleArmyMembers);
 		}
 
-		// Token: 0x06001343 RID: 4931 RVA: 0x0008C4D8 File Offset: 0x0008A6D8
+		// Token: 0x06001343 RID: 4931 RVA: 0x0008C57C File Offset: 0x0008A77C
 		public override int CalculateTotalInfluenceCost(Army army, float percentage)
 		{
 			return base.BaseModel.CalculateTotalInfluenceCost(army, percentage);
 		}
 
-		// Token: 0x06001344 RID: 4932 RVA: 0x0008C4E8 File Offset: 0x0008A6E8
+		// Token: 0x06001344 RID: 4932 RVA: 0x0008C58C File Offset: 0x0008A78C
 		public override bool CanPlayerCreateArmy(out TextObject disabledReason)
 		{
 			if (!NavalStorylineData.IsNavalStoryLineActive())
@@ -156,31 +156,31 @@ namespace NavalDLC.GameComponents
 			return false;
 		}
 
-		// Token: 0x06001345 RID: 4933 RVA: 0x0008C545 File Offset: 0x0008A745
+		// Token: 0x06001345 RID: 4933 RVA: 0x0008C5E9 File Offset: 0x0008A7E9
 		public override bool CheckPartyEligibility(MobileParty party, out TextObject explanation)
 		{
 			return base.BaseModel.CheckPartyEligibility(party, out explanation);
 		}
 
-		// Token: 0x06001346 RID: 4934 RVA: 0x0008C554 File Offset: 0x0008A754
+		// Token: 0x06001346 RID: 4934 RVA: 0x0008C5F8 File Offset: 0x0008A7F8
 		public override float DailyBeingAtArmyInfluenceAward(MobileParty armyMemberParty)
 		{
 			return base.BaseModel.DailyBeingAtArmyInfluenceAward(armyMemberParty);
 		}
 
-		// Token: 0x06001347 RID: 4935 RVA: 0x0008C562 File Offset: 0x0008A762
+		// Token: 0x06001347 RID: 4935 RVA: 0x0008C606 File Offset: 0x0008A806
 		public override int GetCohesionBoostInfluenceCost(Army army, int percentageToBoost = 100)
 		{
 			return base.BaseModel.GetCohesionBoostInfluenceCost(army, percentageToBoost);
 		}
 
-		// Token: 0x06001348 RID: 4936 RVA: 0x0008C571 File Offset: 0x0008A771
+		// Token: 0x06001348 RID: 4936 RVA: 0x0008C615 File Offset: 0x0008A815
 		public override int GetPartyRelation(Hero hero)
 		{
 			return base.BaseModel.GetPartyRelation(hero);
 		}
 
-		// Token: 0x06001349 RID: 4937 RVA: 0x0008C57F File Offset: 0x0008A77F
+		// Token: 0x06001349 RID: 4937 RVA: 0x0008C623 File Offset: 0x0008A823
 		public override float GetPartySizeScore(MobileParty party)
 		{
 			return base.BaseModel.GetPartySizeScore(party);
