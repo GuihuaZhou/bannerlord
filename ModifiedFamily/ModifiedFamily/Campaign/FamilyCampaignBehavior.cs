@@ -98,6 +98,15 @@ namespace ModifiedFamily.Campaign
                 if (p.Status == FamilyProposalStatus.PendingResponse && p.ReplyDeadline.IsPast)
                 {
                     // AI receivers decide once the response window closes; unattended player offers expire.
+                    if (p.ProposalType == FamilyProposalType.Marriage &&
+                        MarriageDiagnosticTrace.IsPlayerRelated(p))
+                        MarriageDiagnosticTrace.Write("RESPONSE_DUE",
+                            MarriageDiagnosticTrace.F("proposalId", p.ProposalId),
+                            MarriageDiagnosticTrace.F("chainId", p.ChainId),
+                            MarriageDiagnosticTrace.F("receiverClanName", MarriageDiagnosticTrace.Name(p.ReceiverClan)),
+                            MarriageDiagnosticTrace.F("receiverClanId", MarriageDiagnosticTrace.Id(p.ReceiverClan)),
+                            MarriageDiagnosticTrace.F("receiverIsPlayer", p.ReceiverClan == Clan.PlayerClan),
+                            MarriageDiagnosticTrace.F("status", p.Status));
                     if (p.ProposalType == FamilyProposalType.Adoption || p.ReceiverClan == Clan.PlayerClan) _service.TryExpirePending(p.ProposalId); else _marriageAi.Respond(p);
                 }
                 else if (p.Status == FamilyProposalStatus.AcceptedPendingExecution)

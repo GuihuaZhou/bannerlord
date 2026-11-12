@@ -25,6 +25,12 @@ namespace ModifiedFamily.Utils
             HintText = "{=MF_FileMinLogLevel_Desc}Messages at or above this level are written to ModifiedFamily.log.")]
         public Dropdown<string> FileMinLogLevel { get; set; } = CreateLogLevelDropdown(1);
 
+        [SettingPropertyGroup("{=MF_Logging_Group}Logging", GroupOrder = 0)]
+        [SettingPropertyBool("{=MF_EnableMarriageDiagnostics}Marriage diagnostics",
+            Order = 2, RequireRestart = false,
+            HintText = "{=MF_EnableMarriageDiagnostics_Desc}Writes detailed marriage candidate and lifecycle diagnostics at Debug level. Enable only while investigating marriage behavior.")]
+        public bool EnableMarriageDiagnostics { get; set; } = false;
+
         private static Dropdown<string> CreateLogLevelDropdown(int selectedIndex)
         {
             // MCM renders dropdown values via ToString, so localized strings are stored as the values.

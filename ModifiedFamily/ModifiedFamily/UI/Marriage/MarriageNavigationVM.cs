@@ -322,12 +322,20 @@ namespace ModifiedFamily.UI.Marriage
 
         private void LoadClans()
         {
+            bool diagnostics = MarriageDiagnosticTrace.Enabled;
+            string traceId = diagnostics ? MarriageDiagnosticTrace.NewUiTraceId() : null;
             int examinedClans = 0;
             int usableClans = 0;
             int oppositeGenderHeroes = 0;
             int negotiableHeroes = 0;
             int eligibleClans = 0;
             int eligibleHeroes = 0;
+            int[] bucketTotals = new int[4];
+            int[] bucketPassed = new int[4];
+            int[] bucketHeroes = new int[4];
+            int ownHeroCultureClanTotal = 0;
+            int ownHeroCultureClanPassed = 0;
+            int ownHeroCultureEligibleHeroes = 0;
             var rejectionCounts = new Dictionary<FamilyReasonCode, int>();
             var rows = new List<MarriageClanItemVM>();
             if (OwnHero == null || _service == null)
@@ -337,6 +345,22 @@ namespace ModifiedFamily.UI.Marriage
             }
 
             FamilyProposal activeProposal = _service.GetActiveProposalFor(OwnHero);
+            CampaignClan playerClan = CampaignClan.PlayerClan;
+            if (diagnostics)
+                MarriageDiagnosticTrace.Write("UI_BEGIN",
+                    MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                    MarriageDiagnosticTrace.F("ownHeroId", MarriageDiagnosticTrace.Id(OwnHero)),
+                    MarriageDiagnosticTrace.F("ownHeroName", MarriageDiagnosticTrace.Name(OwnHero)),
+                    MarriageDiagnosticTrace.F("ownHeroCultureId", MarriageDiagnosticTrace.CultureId(OwnHero)),
+                    MarriageDiagnosticTrace.F("mainHeroCultureId", MarriageDiagnosticTrace.CultureId(Hero.MainHero)),
+                    MarriageDiagnosticTrace.F("playerClanId", MarriageDiagnosticTrace.Id(playerClan)),
+                    MarriageDiagnosticTrace.F("playerClanCultureId", MarriageDiagnosticTrace.CultureId(playerClan)),
+                    MarriageDiagnosticTrace.F("playerKingdomId", MarriageDiagnosticTrace.Id(playerClan?.Kingdom)),
+                    MarriageDiagnosticTrace.F("hasKingdom", playerClan?.Kingdom != null),
+                    MarriageDiagnosticTrace.F("isUnderMercenaryService", playerClan?.IsUnderMercenaryService == true),
+                    MarriageDiagnosticTrace.F("activeProposalId", activeProposal?.ProposalId ?? "none"),
+                    MarriageDiagnosticTrace.F("activeProposalStatus", activeProposal?.Status.ToString() ?? "none"),
+                    MarriageDiagnosticTrace.F("allowSameKingdomDifferentCulture", MarriagePolicyModel.AllowSameKingdomDifferentCulture));
             if (activeProposal != null)
             {
                 EmptyStateText = new TextObject("{=MF_UI_OwnHeroProposalLocked}Own Hero Proposal Locked {HERO} {ID}")
@@ -344,42 +368,100 @@ namespace ModifiedFamily.UI.Marriage
                     .SetTextVariable("ID", activeProposal.ProposalId ?? "-")
                     .ToString();
                 FamilyDiagnostics.DebugLog($"Marriage screen [ClanList] produced no candidates: ownHero={OwnHero.StringId}/{OwnHero.Name} is locked by active proposal {activeProposal.ProposalId}, type={activeProposal.ProposalType}, status={activeProposal.Status}.");
+                if (diagnostics)
+                    MarriageDiagnosticTrace.Write("UI_SUMMARY",
+                        MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                        MarriageDiagnosticTrace.F("locked", true),
+                        MarriageDiagnosticTrace.F("activeProposalId", activeProposal.ProposalId),
+                        MarriageDiagnosticTrace.F("activeProposalStatus", activeProposal.Status),
+                        MarriageDiagnosticTrace.F("displayedClans", 0),
+                        MarriageDiagnosticTrace.F("displayedHeroes", 0));
                 return;
             }
 
             foreach (CampaignClan clan in CampaignClan.All)
             {
-                if (clan == CampaignClan.PlayerClan) continue;
+                if (clan == playerClan) continue;
                 examinedClans++;
                 FamilyResult clanResult = MarriageEligibilityModel.CanUseClan(clan);
+                bool sameClanCulture = playerClan?.Culture != null && playerClan.Culture == clan?.Culture;
+                bool sameKingdom = playerClan?.Kingdom != null && playerClan.Kingdom == clan?.Kingdom;
+                bool sameHeroCulture = OwnHero?.Culture != null && OwnHero.Culture == clan?.Culture;
+                bool atWar = playerClan != null && clan != null && playerClan.IsAtWarWith(clan);
+                int bucket = sameClanCulture && sameKingdom ? 0
+                    : sameClanCulture ? 1 : sameKingdom ? 2 : 3;
+                bucketTotals[bucket]++;
+                if (sameHeroCulture) ownHeroCultureClanTotal++;
                 if (!clanResult.IsAllowed)
                 {
                     CountRejection(rejectionCounts, clanResult.ReasonCode);
+                    if (diagnostics) WriteClanCheck(traceId, clan, sameClanCulture,
+                        sameKingdom, sameHeroCulture, atWar, clanResult, 0, 0, 0,
+                        false, clanResult.ReasonCode);
                     continue;
                 }
                 usableClans++;
                 int candidateCount = 0;
+                int clanOppositeGender = 0;
+                int clanNegotiable = 0;
+                FamilyReasonCode primaryDropReason = FamilyReasonCode.None;
+                bool detailHeroes = diagnostics && (sameClanCulture || sameKingdom || sameHeroCulture);
                 foreach (Hero target in clan.Heroes)
                 {
-                    if (target == null || target.Clan == null || target.IsFemale == OwnHero.IsFemale) continue;
+                    bool genderMatch = target != null && target.Clan != null && target.IsFemale != OwnHero.IsFemale;
+                    FamilyResult heroResult = detailHeroes || genderMatch
+                        ? target == null
+                            ? FamilyResult.Deny(FamilyReasonCode.InvalidHero)
+                            : MarriageEligibilityModel.CanNegotiateHero(target)
+                        : null;
+                    if (detailHeroes) WriteHeroCheck(traceId, clan, target,
+                        genderMatch, heroResult);
+                    if (!genderMatch) continue;
                     oppositeGenderHeroes++;
-                    FamilyResult heroResult = MarriageEligibilityModel.CanNegotiateHero(target);
+                    clanOppositeGender++;
                     if (!heroResult.IsAllowed)
                     {
                         CountRejection(rejectionCounts, heroResult.ReasonCode);
+                        if (primaryDropReason == FamilyReasonCode.None)
+                            primaryDropReason = heroResult.ReasonCode;
                         continue;
                     }
                     negotiableHeroes++;
+                    clanNegotiable++;
                     FamilyResult normal = ValidateDraft(target, MarriageDirection.FemaleJoinsMaleClan);
-                    FamilyResult matrilocal = normal.IsAllowed ? normal : ValidateDraft(target, MarriageDirection.MaleJoinsFemaleClan);
+                    FamilyResult matrilocal = normal.IsAllowed && !diagnostics
+                        ? normal
+                        : ValidateDraft(target, MarriageDirection.MaleJoinsFemaleClan);
+                    if (detailHeroes)
+                    {
+                        WriteDirectionCheck(traceId, clan, target,
+                            MarriageDirection.FemaleJoinsMaleClan, normal,
+                            sameClanCulture, sameKingdom, atWar);
+                        WriteDirectionCheck(traceId, clan, target,
+                            MarriageDirection.MaleJoinsFemaleClan, matrilocal,
+                            sameClanCulture, sameKingdom, atWar);
+                    }
                     if (normal.IsAllowed || matrilocal.IsAllowed) candidateCount++;
                     else
                     {
                         CountRejection(rejectionCounts, normal.ReasonCode);
                         if (matrilocal.ReasonCode != normal.ReasonCode) CountRejection(rejectionCounts, matrilocal.ReasonCode);
+                        if (primaryDropReason == FamilyReasonCode.None)
+                            primaryDropReason = normal.ReasonCode;
                     }
                 }
+                if (diagnostics) WriteClanCheck(traceId, clan, sameClanCulture,
+                    sameKingdom, sameHeroCulture, atWar, clanResult,
+                    clanOppositeGender, clanNegotiable, candidateCount,
+                    candidateCount > 0, primaryDropReason);
                 if (candidateCount <= 0) continue;
+                bucketPassed[bucket]++;
+                bucketHeroes[bucket] += candidateCount;
+                if (sameHeroCulture)
+                {
+                    ownHeroCultureClanPassed++;
+                    ownHeroCultureEligibleHeroes += candidateCount;
+                }
                 int tier = GetMatchTier(CampaignClan.PlayerClan, clan);
                 int relation = CampaignClan.PlayerClan.GetRelationWithClan(clan);
                 rows.Add(new MarriageClanItemVM(clan, candidateCount, tier, relation, SelectClan));
@@ -396,6 +478,109 @@ namespace ModifiedFamily.UI.Marriage
 
             string reasons = rejectionCounts.Count == 0 ? "none" : string.Join(", ", rejectionCounts.OrderByDescending(x => x.Value).Select(x => x.Key + "=" + x.Value));
             FamilyDiagnostics.DebugLog($"Marriage screen [ClanList]: ownHero={OwnHero.StringId}/{OwnHero.Name}; examinedClans={examinedClans}, usableClans={usableClans}, oppositeGenderHeroes={oppositeGenderHeroes}, negotiableHeroes={negotiableHeroes}, displayedClans={eligibleClans}, displayedHeroes={eligibleHeroes}; rejectionReasons={reasons}.");
+            if (diagnostics)
+                MarriageDiagnosticTrace.Write("UI_SUMMARY",
+                    MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                    MarriageDiagnosticTrace.F("examinedClans", examinedClans),
+                    MarriageDiagnosticTrace.F("usableClans", usableClans),
+                    MarriageDiagnosticTrace.F("oppositeGenderHeroes", oppositeGenderHeroes),
+                    MarriageDiagnosticTrace.F("negotiableHeroes", negotiableHeroes),
+                    MarriageDiagnosticTrace.F("displayedClans", eligibleClans),
+                    MarriageDiagnosticTrace.F("displayedHeroes", eligibleHeroes),
+                    MarriageDiagnosticTrace.F("sameKingdomAndCulture", Bucket(bucketTotals, bucketPassed, bucketHeroes, 0)),
+                    MarriageDiagnosticTrace.F("crossKingdomSameCulture", Bucket(bucketTotals, bucketPassed, bucketHeroes, 1)),
+                    MarriageDiagnosticTrace.F("sameKingdomDifferentCulture", Bucket(bucketTotals, bucketPassed, bucketHeroes, 2)),
+                    MarriageDiagnosticTrace.F("other", Bucket(bucketTotals, bucketPassed, bucketHeroes, 3)),
+                    MarriageDiagnosticTrace.F("ownHeroCultureId", MarriageDiagnosticTrace.CultureId(OwnHero)),
+                    MarriageDiagnosticTrace.F("ownHeroCultureClans", ownHeroCultureClanTotal + "/" + ownHeroCultureClanPassed + "/" + ownHeroCultureEligibleHeroes),
+                    MarriageDiagnosticTrace.F("rejectionReasons", reasons));
+        }
+
+        private static string Bucket(int[] totals, int[] passed,
+            int[] heroes, int index) => totals[index] + "/" + passed[index] +
+            "/" + heroes[index];
+
+        private static void WriteClanCheck(string traceId, CampaignClan clan,
+            bool sameClanCulture, bool sameKingdom, bool sameHeroCulture,
+            bool atWar, FamilyResult result, int oppositeGenderCount,
+            int negotiableCount, int eligibleCount, bool displayed,
+            FamilyReasonCode primaryDropReason)
+        {
+            MarriageDiagnosticTrace.Write("CLAN_CHECK",
+                MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                MarriageDiagnosticTrace.F("clanId", MarriageDiagnosticTrace.Id(clan)),
+                MarriageDiagnosticTrace.F("clanName", MarriageDiagnosticTrace.Name(clan)),
+                MarriageDiagnosticTrace.F("cultureId", MarriageDiagnosticTrace.CultureId(clan)),
+                MarriageDiagnosticTrace.F("kingdomId", MarriageDiagnosticTrace.Id(clan?.Kingdom)),
+                MarriageDiagnosticTrace.F("sameClanCulture", sameClanCulture),
+                MarriageDiagnosticTrace.F("sameKingdom", sameKingdom),
+                MarriageDiagnosticTrace.F("sameHeroCulture", sameHeroCulture),
+                MarriageDiagnosticTrace.F("atWar", atWar),
+                MarriageDiagnosticTrace.F("isEliminated", clan?.IsEliminated == true),
+                MarriageDiagnosticTrace.F("isBanditFaction", clan?.IsBanditFaction == true),
+                MarriageDiagnosticTrace.F("isRebelClan", clan?.IsRebelClan == true),
+                MarriageDiagnosticTrace.F("isMinorFaction", clan?.IsMinorFaction == true),
+                MarriageDiagnosticTrace.F("isClanTypeMercenary", clan?.IsClanTypeMercenary == true),
+                MarriageDiagnosticTrace.F("isUnderMercenaryService", clan?.IsUnderMercenaryService == true),
+                MarriageDiagnosticTrace.F("hasKingdom", clan?.Kingdom != null),
+                MarriageDiagnosticTrace.F("canUseClan", result?.IsAllowed == true),
+                MarriageDiagnosticTrace.F("canUseReason", result?.ReasonCode.ToString() ?? "none"),
+                MarriageDiagnosticTrace.F("oppositeGenderCount", oppositeGenderCount),
+                MarriageDiagnosticTrace.F("negotiableCount", negotiableCount),
+                MarriageDiagnosticTrace.F("eligibleCount", eligibleCount),
+                MarriageDiagnosticTrace.F("displayed", displayed),
+                MarriageDiagnosticTrace.F("primaryDropReason", primaryDropReason));
+        }
+
+        private static void WriteHeroCheck(string traceId, CampaignClan clan,
+            Hero hero, bool genderMatch, FamilyResult result)
+        {
+            MarriageDiagnosticTrace.Write("HERO_CHECK",
+                MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                MarriageDiagnosticTrace.F("heroId", MarriageDiagnosticTrace.Id(hero)),
+                MarriageDiagnosticTrace.F("heroName", MarriageDiagnosticTrace.Name(hero)),
+                MarriageDiagnosticTrace.F("heroClanId", MarriageDiagnosticTrace.Id(hero?.Clan ?? clan)),
+                MarriageDiagnosticTrace.F("heroCultureId", MarriageDiagnosticTrace.CultureId(hero)),
+                MarriageDiagnosticTrace.F("age", hero?.Age ?? 0f),
+                MarriageDiagnosticTrace.F("isFemale", hero?.IsFemale == true),
+                MarriageDiagnosticTrace.F("spouseId", MarriageDiagnosticTrace.Id(hero?.Spouse)),
+                MarriageDiagnosticTrace.F("spouseIsDead", hero?.Spouse?.IsDead == true),
+                MarriageDiagnosticTrace.F("isLord", hero?.IsLord == true),
+                MarriageDiagnosticTrace.F("isNotable", hero?.IsNotable == true),
+                MarriageDiagnosticTrace.F("isMinorFactionHero", hero?.IsMinorFactionHero == true),
+                MarriageDiagnosticTrace.F("isTemplate", hero?.IsTemplate == true),
+                MarriageDiagnosticTrace.F("isActive", hero?.IsActive == true),
+                MarriageDiagnosticTrace.F("isPrisoner", hero?.IsPrisoner == true),
+                MarriageDiagnosticTrace.F("isFugitive", hero?.IsFugitive == true),
+                MarriageDiagnosticTrace.F("inBattle", hero?.PartyBelongedTo?.MapEvent != null),
+                MarriageDiagnosticTrace.F("inArmy", hero?.PartyBelongedTo?.Army != null),
+                MarriageDiagnosticTrace.F("genderMatch", genderMatch),
+                MarriageDiagnosticTrace.F("negotiableAllowed", result?.IsAllowed == true),
+                MarriageDiagnosticTrace.F("negotiableReason", result?.ReasonCode.ToString() ?? "none"),
+                MarriageDiagnosticTrace.F("temporaryBlockers", MarriageDiagnosticTrace.Blockers(result)));
+        }
+
+        private static void WriteDirectionCheck(string traceId,
+            CampaignClan clan, Hero hero, MarriageDirection direction,
+            FamilyResult result, bool sameCulture, bool sameKingdom, bool atWar)
+        {
+            CampaignClan destination = direction == MarriageDirection.FemaleJoinsMaleClan
+                ? (hero.IsFemale ? CampaignClan.PlayerClan : clan)
+                : (hero.IsFemale ? clan : CampaignClan.PlayerClan);
+            MarriageDiagnosticTrace.Write("DIRECTION_CHECK",
+                MarriageDiagnosticTrace.F("uiTraceId", traceId),
+                MarriageDiagnosticTrace.F("clanName", MarriageDiagnosticTrace.Name(clan)),
+                MarriageDiagnosticTrace.F("clanId", MarriageDiagnosticTrace.Id(clan)),
+                MarriageDiagnosticTrace.F("heroName", MarriageDiagnosticTrace.Name(hero)),
+                MarriageDiagnosticTrace.F("heroId", MarriageDiagnosticTrace.Id(hero)),
+                MarriageDiagnosticTrace.F("direction", direction),
+                MarriageDiagnosticTrace.F("destinationClanId", MarriageDiagnosticTrace.Id(destination)),
+                MarriageDiagnosticTrace.F("allowed", result?.IsAllowed == true),
+                MarriageDiagnosticTrace.F("reasonCode", result?.ReasonCode.ToString() ?? "none"),
+                MarriageDiagnosticTrace.F("temporaryBlockers", MarriageDiagnosticTrace.Blockers(result)),
+                MarriageDiagnosticTrace.F("sameCulture", sameCulture),
+                MarriageDiagnosticTrace.F("sameKingdom", sameKingdom),
+                MarriageDiagnosticTrace.F("atWar", atWar));
         }
 
         private FamilyResult ValidateDraft(Hero target, MarriageDirection direction) => _service.CanCreateMarriageProposal(new MarriageProposalDraft

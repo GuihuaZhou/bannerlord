@@ -20,6 +20,14 @@ namespace ModifiedFamily.Marriage.Execution
             if (!valid.IsAllowed || valid.TemporaryBlockers.Count > 0)
             {
                 FamilyReasonCode reason = valid.TemporaryBlockers.Count > 0 ? valid.TemporaryBlockers[0] : valid.ReasonCode;
+                if (MarriageDiagnosticTrace.IsPlayerRelated(proposal))
+                    MarriageDiagnosticTrace.Write("MARRIAGE_EXECUTION_DEFERRED",
+                    MarriageDiagnosticTrace.F("proposalId", proposal?.ProposalId),
+                    MarriageDiagnosticTrace.F("chainId", proposal?.ChainId),
+                    MarriageDiagnosticTrace.F("reason", reason),
+                    MarriageDiagnosticTrace.F("temporaryBlockers", MarriageDiagnosticTrace.Blockers(valid)),
+                    MarriageDiagnosticTrace.F("status", proposal?.Status.ToString() ?? "none"),
+                    MarriageDiagnosticTrace.F("executionStep", proposal?.ExecutionStep.ToString() ?? "none"));
                 // Funds and transient hero activity may recover. Permanent failures are returned to the lifecycle owner for invalidation.
                 if (valid.TemporaryBlockers.Count > 0 || reason == FamilyReasonCode.InsufficientFunds)
                     FamilyDiagnostics.DebugLog(FamilyLogText.MarriageWaiting(proposal, reason));
@@ -34,6 +42,9 @@ namespace ModifiedFamily.Marriage.Execution
                 if (proposal.HeroA.Spouse != proposal.HeroB || proposal.HeroB.Spouse != proposal.HeroA || proposal.HeroA.Clan != proposal.DestinationClan || proposal.HeroB.Clan != proposal.DestinationClan)
                 {
                     proposal.Status = FamilyProposalStatus.ExecutionFailure; proposal.ReasonCode = FamilyReasonCode.ExecutionVerificationFailed;
+                    MarriageDiagnosticTrace.ProposalEvent("MARRIAGE_EXECUTION_FAILED",
+                        proposal, FamilyProposalStatus.Executing,
+                        FamilyResult.Deny(proposal.ReasonCode), "MarriageVerificationFailed");
                     return FamilyResult.Deny(proposal.ReasonCode);
                 }
                 proposal.ExecutionStep = FamilyExecutionStep.MarriageApplied;
@@ -47,18 +58,27 @@ namespace ModifiedFamily.Marriage.Execution
                     {
                         // Never retry an uncertain payment automatically; doing so could charge twice.
                         proposal.Status = FamilyProposalStatus.PaymentReconcileRequired; proposal.ReasonCode = FamilyReasonCode.PaymentUncertain;
+                        MarriageDiagnosticTrace.ProposalEvent("MARRIAGE_EXECUTION_FAILED",
+                            proposal, FamilyProposalStatus.Executing,
+                            FamilyResult.Deny(proposal.ReasonCode), "PaymentVerificationFailed");
                         FamilyDiagnostics.Warn(FamilyLogText.PaymentUncertain(proposal));
                         return FamilyResult.Deny(proposal.ReasonCode);
                     }
                 }
                 proposal.ExecutionStep = FamilyExecutionStep.GoldSettled;
                 proposal.Status = FamilyProposalStatus.Completed; proposal.ExecutionStep = FamilyExecutionStep.Completed;
+                MarriageDiagnosticTrace.ProposalEvent("MARRIAGE_EXECUTED",
+                    proposal, FamilyProposalStatus.Executing,
+                    FamilyResult.Allow(proposal.ProposalId), "Completed");
                 FamilyDiagnostics.Notice(FamilyLogText.MarriageCompleted(proposal));
                 return FamilyResult.Allow(proposal.ProposalId);
             }
             catch (Exception ex)
             {
                 MarriageExecutionScope.Clear(); proposal.Status = FamilyProposalStatus.ExecutionFailure; proposal.ReasonCode = FamilyReasonCode.ExecutionVerificationFailed;
+                MarriageDiagnosticTrace.ProposalEvent("MARRIAGE_EXECUTION_FAILED",
+                    proposal, FamilyProposalStatus.Executing,
+                    FamilyResult.Deny(proposal.ReasonCode), "Exception");
                 FamilyDiagnostics.Error(FamilyLogText.MarriageFailed(proposal), ex); return FamilyResult.Deny(proposal.ReasonCode);
             }
         }
