@@ -8,16 +8,16 @@ using TaleWorlds.Library;
 
 namespace TaleWorlds.CampaignSystem.GameComponents
 {
-	// Token: 0x02000142 RID: 322
+	// Token: 0x0200014B RID: 331
 	public class DefaultPrisonerRecruitmentCalculationModel : PrisonerRecruitmentCalculationModel
 	{
-		// Token: 0x06001977 RID: 6519 RVA: 0x0007F120 File Offset: 0x0007D320
+		// Token: 0x06001A43 RID: 6723 RVA: 0x000848FD File Offset: 0x00082AFD
 		public override int GetConformityNeededToRecruitPrisoner(CharacterObject character)
 		{
 			return (character.Level + 6) * (character.Level + 6) - 10;
 		}
 
-		// Token: 0x06001978 RID: 6520 RVA: 0x0007F138 File Offset: 0x0007D338
+		// Token: 0x06001A44 RID: 6724 RVA: 0x00084914 File Offset: 0x00082B14
 		public override ExplainedNumber GetConformityChangePerHour(PartyBase party, CharacterObject troopToBoost)
 		{
 			ExplainedNumber result = new ExplainedNumber(10f, false, null);
@@ -25,70 +25,69 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			{
 				result.Add((float)party.LeaderHero.GetSkillValue(DefaultSkills.Leadership) * 0.05f, null, null);
 			}
-			if (troopToBoost.Tier <= 3 && party.MobileParty != null && !party.MobileParty.IsCurrentlyAtSea)
+			if (troopToBoost.Tier <= 3)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.FerventAttacker, party.MobileParty, false, ref result, false);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.FerventAttacker, party.MobileParty, false, ref result, BattleEnvironment.Any);
 			}
-			if (troopToBoost.Tier >= 4 && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.StoutDefender, true))
+			if (troopToBoost.Tier >= 4)
 			{
-				result.AddFactor(DefaultPerks.Leadership.StoutDefender.SecondaryBonus, null);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.StoutDefender, party.MobileParty, false, ref result, BattleEnvironment.Any);
 			}
-			if (troopToBoost.Occupation != Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Leadership.LoyaltyAndHonor, true))
+			if (troopToBoost.Occupation != Occupation.Bandit)
 			{
-				result.AddFactor(DefaultPerks.Leadership.LoyaltyAndHonor.SecondaryBonus, null);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LoyaltyAndHonor, party.MobileParty, false, ref result, BattleEnvironment.Any);
 			}
 			if (troopToBoost.IsInfantry)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, party.MobileParty, true, ref result, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.LeadByExample, party.MobileParty, true, ref result, BattleEnvironment.Any);
 			}
 			if (troopToBoost.IsRanged)
 			{
-				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, true, ref result, party.MobileParty.IsCurrentlyAtSea);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TrustedCommander, party.MobileParty, true, ref result, BattleEnvironment.Any);
 			}
-			if (troopToBoost.Occupation == Occupation.Bandit && !party.MobileParty.IsCurrentlyAtSea && party.MobileParty.HasPerk(DefaultPerks.Roguery.Promises, true))
+			if (troopToBoost.Occupation == Occupation.Bandit)
 			{
-				result.AddFactor(DefaultPerks.Roguery.Promises.SecondaryBonus, null);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.Promises, party.MobileParty, false, ref result, BattleEnvironment.Any);
 			}
 			return result;
 		}
 
-		// Token: 0x06001979 RID: 6521 RVA: 0x0007F2B0 File Offset: 0x0007D4B0
-		public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
+		// Token: 0x06001A45 RID: 6725 RVA: 0x00084A0C File Offset: 0x00082C0C
+		public override float GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
 		{
 			CultureObject culture = character.Culture;
 			Hero leaderHero = party.LeaderHero;
-			if (culture == ((leaderHero != null) ? leaderHero.Culture : null))
+			bool flag = culture == ((leaderHero != null) ? leaderHero.Culture : null) && party.MobileParty != null && party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, true);
+			bool flag2 = character.Occupation == Occupation.Bandit && party.MobileParty != null && party.MobileParty.HasPerk(DefaultPerks.Roguery.TwoFaced, true);
+			if (flag || flag2)
 			{
-				MobileParty mobileParty = party.MobileParty;
-				if (mobileParty != null && mobileParty.HasPerk(DefaultPerks.Leadership.Presence, true))
-				{
-					return 0;
-				}
+				return 0f;
 			}
+			float num2;
 			if (character.Occupation == Occupation.Bandit)
 			{
-				MobileParty mobileParty2 = party.MobileParty;
-				if (mobileParty2 != null && mobileParty2.HasPerk(DefaultPerks.Roguery.TwoFaced, true))
-				{
-					return 0;
-				}
-			}
-			int num2;
-			if (character.Occupation == Occupation.Bandit)
-			{
-				num2 = -2;
+				num2 = -2f;
 			}
 			else
 			{
-				num2 = -1;
+				num2 = -1f;
 			}
-			return num2 * num;
+			float num3 = num2 * (float)num;
+			if (party.LeaderHero != null)
+			{
+				float traitEffectBonus = TraitEffectHelper.GetTraitEffectBonus(party.LeaderHero, DefaultPersonalityTraitEffects.HonorRecruitPenaltyReductionEffect);
+				if (traitEffectBonus != 0f)
+				{
+					num3 *= 1f + traitEffectBonus;
+				}
+			}
+			return num3;
 		}
 
-		// Token: 0x0600197A RID: 6522 RVA: 0x0007F32C File Offset: 0x0007D52C
+		// Token: 0x06001A46 RID: 6726 RVA: 0x00084ACC File Offset: 0x00082CCC
 		public override bool IsPrisonerRecruitable(PartyBase party, CharacterObject character, out int conformityNeeded)
 		{
-			if (!character.IsRegular || character.Tier > Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier)
+			if (!character.IsRegular || character.Tier > Campaign.Current.Models.CharacterStatsModel.MaxCharacterTier || character.Tier < 2 || character.Culture.IsBandit)
 			{
 				conformityNeeded = 0;
 				return false;
@@ -98,13 +97,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return elementXp >= conformityNeeded;
 		}
 
-		// Token: 0x0600197B RID: 6523 RVA: 0x0007F384 File Offset: 0x0007D584
+		// Token: 0x06001A47 RID: 6727 RVA: 0x00084B3C File Offset: 0x00082D3C
 		public override bool ShouldPartyRecruitPrisoners(PartyBase party)
 		{
-			return party.IsMobile && (party.MobileParty.Morale > 30f || party.MobileParty.HasPerk(DefaultPerks.Leadership.Presence, true)) && party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount && !party.MobileParty.IsWageLimitExceeded() && !party.MobileParty.IsPatrolParty;
+			return party.IsMobile && party.PartySizeLimit > party.MobileParty.MemberRoster.TotalManCount && !party.MobileParty.IsWageLimitExceeded() && !party.MobileParty.IsPatrolParty && (party.MobileParty.Morale > 30f || DefaultPrisonerRecruitmentCalculationModel.ShouldRecruitDueToPresencePerk(party.MobileParty));
 		}
 
-		// Token: 0x0600197C RID: 6524 RVA: 0x0007F3F4 File Offset: 0x0007D5F4
+		// Token: 0x06001A48 RID: 6728 RVA: 0x00084BA4 File Offset: 0x00082DA4
 		public override int CalculateRecruitableNumber(PartyBase party, CharacterObject character)
 		{
 			if (character.IsHero || party.PrisonRoster.Count == 0 || party.PrisonRoster.TotalRegulars <= 0)
@@ -116,5 +115,14 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			int elementNumber = party.PrisonRoster.GetElementNumber(character);
 			return MathF.Min(elementXp / conformityNeededToRecruitPrisoner, elementNumber);
 		}
+
+		// Token: 0x06001A49 RID: 6729 RVA: 0x00084C0D File Offset: 0x00082E0D
+		private static bool ShouldRecruitDueToPresencePerk(MobileParty mobileParty)
+		{
+			return mobileParty.HasPerk(DefaultPerks.Leadership.Presence, true);
+		}
+
+		// Token: 0x040008B2 RID: 2226
+		private const int AILordMinTierRequirementForRecruitPrisoners = 2;
 	}
 }

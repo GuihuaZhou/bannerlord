@@ -15,11 +15,11 @@ using TaleWorlds.Localization;
 
 namespace TaleWorlds.CampaignSystem.GameComponents
 {
-	// Token: 0x02000138 RID: 312
+	// Token: 0x0200013F RID: 319
 	public class DefaultPartySizeLimitModel : PartySizeLimitModel
 	{
-		// Token: 0x1700069A RID: 1690
-		// (get) Token: 0x0600194B RID: 6475 RVA: 0x0007D853 File Offset: 0x0007BA53
+		// Token: 0x170006B0 RID: 1712
+		// (get) Token: 0x060019DA RID: 6618 RVA: 0x0008113F File Offset: 0x0007F33F
 		public override int MinimumNumberOfVillagersAtVillagerParty
 		{
 			get
@@ -28,8 +28,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x0600194D RID: 6477 RVA: 0x0007D948 File Offset: 0x0007BB48
-		public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool includeDescriptions = false)
+		// Token: 0x060019DC RID: 6620 RVA: 0x00081234 File Offset: 0x0007F434
+		public override ExplainedNumber GetPartyMemberSizeLimit(PartyBase party, bool isCurrentlyAtSea, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = new ExplainedNumber(0f, includeDescriptions, null);
 			if (!party.IsMobile)
@@ -44,10 +44,10 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			{
 				return this.CalculatePatrolPartySizeLimit(party.MobileParty, includeDescriptions);
 			}
-			return this.CalculateMobilePartyMemberSizeLimit(party.MobileParty, includeDescriptions);
+			return this.CalculateMobilePartyMemberSizeLimit(party.MobileParty, isCurrentlyAtSea, includeDescriptions);
 		}
 
-		// Token: 0x0600194E RID: 6478 RVA: 0x0007D9BC File Offset: 0x0007BBBC
+		// Token: 0x060019DD RID: 6621 RVA: 0x000812A8 File Offset: 0x0007F4A8
 		private ExplainedNumber CalculatePatrolPartySizeLimit(MobileParty mobileParty, bool includeDescriptions)
 		{
 			new ExplainedNumber(10f, includeDescriptions, null);
@@ -61,13 +61,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return new ExplainedNumber(0f, includeDescriptions, null);
 		}
 
-		// Token: 0x0600194F RID: 6479 RVA: 0x0007DA54 File Offset: 0x0007BC54
+		// Token: 0x060019DE RID: 6622 RVA: 0x00081340 File Offset: 0x0007F540
 		private int GetPatrolPartySizeLimitFromGuardHouseLevel(int level)
 		{
 			return 10 + 5 * level;
 		}
 
-		// Token: 0x06001950 RID: 6480 RVA: 0x0007DA5C File Offset: 0x0007BC5C
+		// Token: 0x060019DF RID: 6623 RVA: 0x00081348 File Offset: 0x0007F548
 		public override ExplainedNumber GetPartyPrisonerSizeLimit(PartyBase party, bool includeDescriptions = false)
 		{
 			if (party.IsSettlement)
@@ -77,8 +77,8 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return this.CalculateMobilePartyPrisonerSizeLimitInternal(party, includeDescriptions);
 		}
 
-		// Token: 0x06001951 RID: 6481 RVA: 0x0007DA7C File Offset: 0x0007BC7C
-		private ExplainedNumber CalculateMobilePartyMemberSizeLimit(MobileParty party, bool includeDescriptions = false)
+		// Token: 0x060019E0 RID: 6624 RVA: 0x00081368 File Offset: 0x0007F568
+		private ExplainedNumber CalculateMobilePartyMemberSizeLimit(MobileParty party, bool isCurrentlyAtSea, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = new ExplainedNumber(20f, includeDescriptions, this._baseSizeText);
 			if (party.LeaderHero != null && party.LeaderHero.Clan != null && !party.IsCaravan)
@@ -114,7 +114,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			{
 				result.Add(40f, this._randomSizeBonusTemporary, null);
 			}
-			if (party.IsCurrentlyAtSea)
+			if (isCurrentlyAtSea)
 			{
 				foreach (Ship ship in party.Ships)
 				{
@@ -124,7 +124,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001952 RID: 6482 RVA: 0x0007DC60 File Offset: 0x0007BE60
+		// Token: 0x060019E1 RID: 6625 RVA: 0x00081544 File Offset: 0x0007F744
 		public override ExplainedNumber CalculateGarrisonPartySizeLimit(Settlement settlement, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = new ExplainedNumber(200f, includeDescriptions, this._baseSizeText);
@@ -138,21 +138,19 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001953 RID: 6483 RVA: 0x0007DCCC File Offset: 0x0007BECC
+		// Token: 0x060019E2 RID: 6626 RVA: 0x000815B0 File Offset: 0x0007F7B0
 		private ExplainedNumber CalculateSettlementPartyPrisonerSizeLimitInternal(Settlement settlement, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = new ExplainedNumber(60f, includeDescriptions, this._baseSizeText);
-			Town town = settlement.Town;
-			int num = (town != null) ? town.GetWallLevel() : 0;
-			if (num > 0)
+			if (settlement.Town != null)
 			{
-				result.Add((float)(num * 40), this._wallLevelBonusText, null);
+				result.Add(40f, this._baseSizeText, null);
 			}
 			this.AddSettlementProjectPrisonerBonuses(settlement, ref result);
 			return result;
 		}
 
-		// Token: 0x06001954 RID: 6484 RVA: 0x0007DD20 File Offset: 0x0007BF20
+		// Token: 0x060019E3 RID: 6627 RVA: 0x000815F8 File Offset: 0x0007F7F8
 		private ExplainedNumber CalculateMobilePartyPrisonerSizeLimitInternal(PartyBase party, bool includeDescriptions = false)
 		{
 			ExplainedNumber result = new ExplainedNumber(10f, includeDescriptions, this._baseSizeText);
@@ -165,48 +163,33 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001955 RID: 6485 RVA: 0x0007DDA0 File Offset: 0x0007BFA0
+		// Token: 0x060019E4 RID: 6628 RVA: 0x00081678 File Offset: 0x0007F878
 		private void AddMobilePartyLeaderPrisonerSizePerkEffects(PartyBase party, ref ExplainedNumber result)
 		{
-			if (party.LeaderHero != null)
-			{
-				if (party.LeaderHero.GetPerkValue(DefaultPerks.TwoHanded.Terror))
-				{
-					result.Add(DefaultPerks.TwoHanded.Terror.SecondaryBonus, DefaultPerks.TwoHanded.Terror.Name, null);
-				}
-				if (!party.MobileParty.IsCurrentlyAtSea && party.LeaderHero.GetPerkValue(DefaultPerks.Athletics.Stamina))
-				{
-					result.Add(DefaultPerks.Athletics.Stamina.SecondaryBonus, DefaultPerks.Athletics.Stamina.Name, null);
-				}
-				if (party.LeaderHero.GetPerkValue(DefaultPerks.Roguery.Manhunter))
-				{
-					result.Add(DefaultPerks.Roguery.Manhunter.SecondaryBonus, DefaultPerks.Roguery.Manhunter.Name, null);
-				}
-				if (party.LeaderHero != null && party.LeaderHero.GetPerkValue(DefaultPerks.Scouting.VantagePoint))
-				{
-					result.Add(DefaultPerks.Scouting.VantagePoint.SecondaryBonus, DefaultPerks.Scouting.VantagePoint.Name, null);
-				}
-			}
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.Terror, party.MobileParty, false, ref result, BattleEnvironment.Any);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.Stamina, party.MobileParty, false, ref result, BattleEnvironment.Any);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Roguery.Manhunter, party.MobileParty, false, ref result, BattleEnvironment.Any);
+			PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.VantagePoint, party.MobileParty, false, ref result, BattleEnvironment.Any);
 		}
 
-		// Token: 0x06001956 RID: 6486 RVA: 0x0007DE81 File Offset: 0x0007C081
+		// Token: 0x060019E5 RID: 6629 RVA: 0x000816D5 File Offset: 0x0007F8D5
 		private void AddGarrisonOwnerPerkEffects(Settlement currentSettlement, ref ExplainedNumber result)
 		{
 			if (currentSettlement != null && currentSettlement.IsFortification)
 			{
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, ref result);
-				PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, ref result);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, false, ref result);
+				PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, true, ref result);
 			}
 		}
 
-		// Token: 0x06001957 RID: 6487 RVA: 0x0007DEB0 File Offset: 0x0007C0B0
+		// Token: 0x060019E6 RID: 6630 RVA: 0x00081708 File Offset: 0x0007F908
 		public override int GetNextClanTierPartySizeEffectChangeForHero(Hero hero)
 		{
 			int tierEffectInternal = this.GetTierEffectInternal(hero.Clan.Tier, hero.Clan.Leader == hero);
 			return this.GetTierEffectInternal(hero.Clan.Tier + 1, hero.Clan.Leader == hero) - tierEffectInternal;
 		}
 
-		// Token: 0x06001958 RID: 6488 RVA: 0x0007DF00 File Offset: 0x0007C100
+		// Token: 0x060019E7 RID: 6631 RVA: 0x00081758 File Offset: 0x0007F958
 		private int GetTierEffectInternal(int tier, bool isHeroClanLeader)
 		{
 			if (tier < 1)
@@ -220,7 +203,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return 15 * tier;
 		}
 
-		// Token: 0x06001959 RID: 6489 RVA: 0x0007DF14 File Offset: 0x0007C114
+		// Token: 0x060019E8 RID: 6632 RVA: 0x0008176C File Offset: 0x0007F96C
 		public override int GetAssumedPartySizeForLordParty(Hero leaderHero, IFaction partyMapFaction, Clan actualClan)
 		{
 			ExplainedNumber explainedNumber = new ExplainedNumber(20f, false, this._baseSizeText);
@@ -232,13 +215,13 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return (int)explainedNumber.ResultNumber;
 		}
 
-		// Token: 0x0600195A RID: 6490 RVA: 0x0007DF69 File Offset: 0x0007C169
+		// Token: 0x060019E9 RID: 6633 RVA: 0x000817C1 File Offset: 0x0007F9C1
 		public override int GetClanTierPartySizeEffectForHero(Hero hero)
 		{
 			return this.GetTierEffectInternal(hero.Clan.Tier, hero.Clan.Leader == hero);
 		}
 
-		// Token: 0x0600195B RID: 6491 RVA: 0x0007DF8A File Offset: 0x0007C18A
+		// Token: 0x060019EA RID: 6634 RVA: 0x000817E2 File Offset: 0x0007F9E2
 		private void AddSettlementProjectBonuses(Settlement settlement, ref ExplainedNumber result)
 		{
 			if (settlement != null && settlement.IsFortification)
@@ -247,7 +230,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x0600195C RID: 6492 RVA: 0x0007DFA4 File Offset: 0x0007C1A4
+		// Token: 0x060019EB RID: 6635 RVA: 0x000817FC File Offset: 0x0007F9FC
 		private void AddSettlementProjectPrisonerBonuses(Settlement settlement, ref ExplainedNumber result)
 		{
 			if (settlement != null && settlement.IsFortification)
@@ -256,60 +239,32 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			}
 		}
 
-		// Token: 0x0600195D RID: 6493 RVA: 0x0007DFBF File Offset: 0x0007C1BF
+		// Token: 0x060019EC RID: 6636 RVA: 0x00081817 File Offset: 0x0007FA17
 		private int GetCurrentPartySizeEffect(PartyBase party)
 		{
 			return party.NumberOfHealthyMembers / 2;
 		}
 
-		// Token: 0x0600195E RID: 6494 RVA: 0x0007DFCC File Offset: 0x0007C1CC
+		// Token: 0x060019ED RID: 6637 RVA: 0x00081824 File Offset: 0x0007FA24
 		private void CalculateBaseMemberSize(Hero partyLeader, IFaction partyMapFaction, Clan actualClan, ref ExplainedNumber result)
 		{
 			if (partyMapFaction != null && partyMapFaction.IsKingdomFaction && partyLeader.MapFaction.Leader == partyLeader)
 			{
 				result.Add(20f, this._factionLeaderText, null);
 			}
-			if (partyLeader.GetPerkValue(DefaultPerks.OneHanded.Prestige))
+			if (partyLeader.PartyBelongedTo != null)
 			{
-				result.Add(DefaultPerks.OneHanded.Prestige.SecondaryBonus, DefaultPerks.OneHanded.Prestige.Name, null);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.OneHanded.Prestige, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.TwoHanded.Hope, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Athletics.ImposingStature, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Bow.MerryMen, partyLeader.PartyBelongedTo, true, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Tactics.HordeLeader, partyLeader.PartyBelongedTo, true, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Scouting.MountedScouts, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.Authority, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.UpliftingSpirit, partyLeader.PartyBelongedTo, false, ref result, BattleEnvironment.Any);
+				PerkHelper.AddPerkBonusForParty(DefaultPerks.Leadership.TalentMagnet, partyLeader.PartyBelongedTo, true, ref result, BattleEnvironment.Any);
 			}
-			if (partyLeader.GetPerkValue(DefaultPerks.TwoHanded.Hope))
-			{
-				result.Add(DefaultPerks.TwoHanded.Hope.SecondaryBonus, DefaultPerks.TwoHanded.Hope.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Athletics.ImposingStature))
-			{
-				result.Add(DefaultPerks.Athletics.ImposingStature.SecondaryBonus, DefaultPerks.Athletics.ImposingStature.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Bow.MerryMen))
-			{
-				result.Add(DefaultPerks.Bow.MerryMen.PrimaryBonus, DefaultPerks.Bow.MerryMen.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Tactics.HordeLeader))
-			{
-				result.Add(DefaultPerks.Tactics.HordeLeader.PrimaryBonus, DefaultPerks.Tactics.HordeLeader.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Scouting.MountedScouts))
-			{
-				result.Add(DefaultPerks.Scouting.MountedScouts.SecondaryBonus, DefaultPerks.Scouting.MountedScouts.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Leadership.Authority))
-			{
-				result.Add(DefaultPerks.Leadership.Authority.SecondaryBonus, DefaultPerks.Leadership.Authority.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Leadership.UpliftingSpirit))
-			{
-				result.Add(DefaultPerks.Leadership.UpliftingSpirit.SecondaryBonus, DefaultPerks.Leadership.UpliftingSpirit.Name, null);
-			}
-			if (partyLeader.GetPerkValue(DefaultPerks.Leadership.TalentMagnet))
-			{
-				result.Add(DefaultPerks.Leadership.TalentMagnet.PrimaryBonus, DefaultPerks.Leadership.TalentMagnet.Name, null);
-			}
-			if (partyLeader.GetSkillValue(DefaultSkills.Leadership) > Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus && partyLeader.GetPerkValue(DefaultPerks.Leadership.UltimateLeader))
-			{
-				int num = partyLeader.GetSkillValue(DefaultSkills.Leadership) - Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus;
-				result.Add((float)num * DefaultPerks.Leadership.UltimateLeader.PrimaryBonus, this._leadershipPerkUltimateLeaderBonusText, null);
-			}
+			PerkHelper.AddEpicPerkBonusForCharacter(DefaultPerks.Leadership.UltimateLeader, partyLeader.CharacterObject, DefaultSkills.Leadership, true, ref result, Campaign.Current.Models.CharacterDevelopmentModel.MaxSkillRequiredForEpicPerkBonus, -1, BattleEnvironment.Any);
 			if (actualClan != null)
 			{
 				Hero leader = actualClan.Leader;
@@ -317,21 +272,21 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 				bool flag2 = true;
 				if (flag.GetValueOrDefault() == flag2 & flag != null)
 				{
-					int num2 = 0;
+					int num = 0;
 					using (List<Settlement>.Enumerator enumerator = actualClan.Settlements.GetEnumerator())
 					{
 						while (enumerator.MoveNext())
 						{
 							if (enumerator.Current.IsTown)
 							{
-								num2++;
+								num++;
 							}
 						}
 					}
-					float num3 = (float)num2 * DefaultPerks.Leadership.LeaderOfMasses.PrimaryBonus;
-					if (num3 > 0f)
+					float num2 = (float)num * DefaultPerks.Leadership.LeaderOfMasses.PrimaryBonus;
+					if (num2 > 0f)
 					{
-						result.Add(num3, DefaultPerks.Leadership.LeaderOfMasses.Name, null);
+						result.Add(num2, DefaultPerks.Leadership.LeaderOfMasses.Name, null);
 					}
 				}
 			}
@@ -349,7 +304,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			result.Add((float)Campaign.Current.Models.PartySizeLimitModel.GetClanTierPartySizeEffectForHero(partyLeader), this._clanTierText, null);
 		}
 
-		// Token: 0x0600195F RID: 6495 RVA: 0x0007E358 File Offset: 0x0007C558
+		// Token: 0x060019EE RID: 6638 RVA: 0x00081AC8 File Offset: 0x0007FCC8
 		private float GetPartySizeRatioForSize(PartyTemplateObject partyTemplate, int desiredSize)
 		{
 			int num = partyTemplate.Stacks.Sum((PartyTemplateStack s) => s.MinValue);
@@ -370,7 +325,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001960 RID: 6496 RVA: 0x0007E3F0 File Offset: 0x0007C5F0
+		// Token: 0x060019EF RID: 6639 RVA: 0x00081B60 File Offset: 0x0007FD60
 		private float GetInitialPartySizeRatioForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
 		{
 			float result;
@@ -403,7 +358,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return result;
 		}
 
-		// Token: 0x06001961 RID: 6497 RVA: 0x0007E4AC File Offset: 0x0007C6AC
+		// Token: 0x060019F0 RID: 6640 RVA: 0x00081C1C File Offset: 0x0007FE1C
 		public override int GetIdealVillagerPartySize(Village village)
 		{
 			float num = 0f;
@@ -416,7 +371,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return this.MinimumNumberOfVillagersAtVillagerParty + (int)(village.Hearth / num2);
 		}
 
-		// Token: 0x06001962 RID: 6498 RVA: 0x0007E574 File Offset: 0x0007C774
+		// Token: 0x060019F1 RID: 6641 RVA: 0x00081CE4 File Offset: 0x0007FEE4
 		public override TroopRoster FindAppropriateInitialRosterForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
 		{
 			TroopRoster troopRoster = TroopRoster.CreateDummyTroopRoster();
@@ -436,7 +391,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 				}
 				else
 				{
-					Debug.FailedAssert("initialPartySizeRatio should not be above 1", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultPartySizeLimitModel.cs", "FindAppropriateInitialRosterForMobileParty", 538);
+					Debug.FailedAssert("initialPartySizeRatio should not be above 1", "C:\\BuildAgent\\work\\mb3\\Source\\Bannerlord\\TaleWorlds.CampaignSystem\\GameComponents\\DefaultPartySizeLimitModel.cs", "FindAppropriateInitialRosterForMobileParty", 486);
 					num = maxValue;
 				}
 				if (party.IsVillager)
@@ -467,7 +422,7 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return troopRoster;
 		}
 
-		// Token: 0x06001963 RID: 6499 RVA: 0x0007E6B0 File Offset: 0x0007C8B0
+		// Token: 0x060019F2 RID: 6642 RVA: 0x00081E20 File Offset: 0x00080020
 		public override List<Ship> FindAppropriateInitialShipsForMobileParty(MobileParty party, PartyTemplateObject partyTemplate)
 		{
 			List<Ship> list = new List<Ship>();
@@ -500,92 +455,92 @@ namespace TaleWorlds.CampaignSystem.GameComponents
 			return list;
 		}
 
-		// Token: 0x04000844 RID: 2116
+		// Token: 0x0400086B RID: 2155
 		private const int BaseMobilePartySize = 20;
 
-		// Token: 0x04000845 RID: 2117
+		// Token: 0x0400086C RID: 2156
 		private const int BaseMobilePartyPrisonerSize = 10;
 
-		// Token: 0x04000846 RID: 2118
+		// Token: 0x0400086D RID: 2157
 		private const int BaseSettlementPrisonerSize = 60;
 
-		// Token: 0x04000847 RID: 2119
-		private const int SettlementPrisonerSizeBonusPerWallLevel = 40;
+		// Token: 0x0400086E RID: 2158
+		private const int BaseTownPrisonerSizeBonus = 40;
 
-		// Token: 0x04000848 RID: 2120
+		// Token: 0x0400086F RID: 2159
 		private const int BaseGarrisonPartySize = 200;
 
-		// Token: 0x04000849 RID: 2121
+		// Token: 0x04000870 RID: 2160
 		private const int BasePatrolPartySize = 10;
 
-		// Token: 0x0400084A RID: 2122
+		// Token: 0x04000871 RID: 2161
 		private const int TownGarrisonSizeBonus = 200;
 
-		// Token: 0x0400084B RID: 2123
+		// Token: 0x04000872 RID: 2162
 		private const int AdditionalPartySizeForCheat = 5000;
 
-		// Token: 0x0400084C RID: 2124
+		// Token: 0x04000873 RID: 2163
 		private const int OneVillagerPerHearth = 40;
 
-		// Token: 0x0400084D RID: 2125
+		// Token: 0x04000874 RID: 2164
 		private const int AdditionalPartySizeLimitPerTier = 15;
 
-		// Token: 0x0400084E RID: 2126
+		// Token: 0x04000875 RID: 2165
 		private const int AdditionalPartySizeLimitForLeaderPerTier = 25;
 
-		// Token: 0x0400084F RID: 2127
+		// Token: 0x04000876 RID: 2166
 		private readonly TextObject _leadershipSkillLevelBonusText = GameTexts.FindText("str_leadership_skill_level_bonus", null);
 
-		// Token: 0x04000850 RID: 2128
+		// Token: 0x04000877 RID: 2167
 		private readonly TextObject _leadershipPerkUltimateLeaderBonusText = GameTexts.FindText("str_leadership_perk_bonus", null);
 
-		// Token: 0x04000851 RID: 2129
+		// Token: 0x04000878 RID: 2168
 		private readonly TextObject _wallLevelBonusText = GameTexts.FindText("str_map_tooltip_wall_level", null);
 
-		// Token: 0x04000852 RID: 2130
+		// Token: 0x04000879 RID: 2169
 		private readonly TextObject _baseSizeText = GameTexts.FindText("str_base_size", null);
 
-		// Token: 0x04000853 RID: 2131
+		// Token: 0x0400087A RID: 2170
 		private readonly TextObject _clanTierText = GameTexts.FindText("str_clan_tier_bonus", null);
 
-		// Token: 0x04000854 RID: 2132
+		// Token: 0x0400087B RID: 2171
 		private readonly TextObject _renownText = GameTexts.FindText("str_renown_bonus", null);
 
-		// Token: 0x04000855 RID: 2133
+		// Token: 0x0400087C RID: 2172
 		private readonly TextObject _clanLeaderText = GameTexts.FindText("str_clan_leader_bonus", null);
 
-		// Token: 0x04000856 RID: 2134
+		// Token: 0x0400087D RID: 2173
 		private readonly TextObject _factionLeaderText = GameTexts.FindText("str_faction_leader_bonus", null);
 
-		// Token: 0x04000857 RID: 2135
+		// Token: 0x0400087E RID: 2174
 		private readonly TextObject _leaderLevelText = GameTexts.FindText("str_leader_level_bonus", null);
 
-		// Token: 0x04000858 RID: 2136
+		// Token: 0x0400087F RID: 2175
 		private readonly TextObject _townBonusText = GameTexts.FindText("str_town_bonus", null);
 
-		// Token: 0x04000859 RID: 2137
+		// Token: 0x04000880 RID: 2176
 		private readonly TextObject _minorFactionText = GameTexts.FindText("str_minor_faction_bonus", null);
 
-		// Token: 0x0400085A RID: 2138
+		// Token: 0x04000881 RID: 2177
 		private readonly TextObject _currentPartySizeBonusText = GameTexts.FindText("str_current_party_size_bonus", null);
 
-		// Token: 0x0400085B RID: 2139
+		// Token: 0x04000882 RID: 2178
 		private readonly TextObject _randomSizeBonusTemporary = new TextObject("{=hynFV8jC}Extra size bonus (Perk-like Effect)", null);
 
-		// Token: 0x0400085C RID: 2140
+		// Token: 0x04000883 RID: 2179
 		private static bool _addAdditionalPartySizeAsCheat;
 
-		// Token: 0x0400085D RID: 2141
+		// Token: 0x04000884 RID: 2180
 		private static bool _addAdditionalPrisonerSizeAsCheat;
 
-		// Token: 0x02000599 RID: 1433
+		// Token: 0x020005C6 RID: 1478
 		private enum LimitType
 		{
-			// Token: 0x040017DE RID: 6110
+			// Token: 0x0400190C RID: 6412
 			MobilePartySizeLimit,
-			// Token: 0x040017DF RID: 6111
+			// Token: 0x0400190D RID: 6413
 			GarrisonPartySizeLimit,
-			// Token: 0x040017E0 RID: 6112
+			// Token: 0x0400190E RID: 6414
 			PrisonerSizeLimit
 		}
 	}

@@ -38,6 +38,7 @@ namespace ModifiedArmy.Models
         /// </summary>
         public override ExplainedNumber GetPartyMemberSizeLimit(
             PartyBase party,
+            bool isCurrentlyAtSea,
             bool includeDescriptions = false)
         {
             if (party?.MobileParty?.PartyComponent
@@ -64,6 +65,7 @@ namespace ModifiedArmy.Models
 
             return base.GetPartyMemberSizeLimit(
                 party,
+                isCurrentlyAtSea,
                 includeDescriptions);
         }
 
@@ -71,8 +73,16 @@ namespace ModifiedArmy.Models
         {
             if (currentSettlement != null && currentSettlement.IsFortification)
             {
-                PerkHelper.AddPerkBonusForTown(DefaultPerks.OneHanded.CorpsACorps, currentSettlement.Town, ref result);
-                PerkHelper.AddPerkBonusForTown(DefaultPerks.Leadership.VeteransRespect, currentSettlement.Town, ref result);
+                PerkHelper.AddPerkBonusForTown(
+                    DefaultPerks.OneHanded.CorpsACorps,
+                    currentSettlement.Town,
+                    false,
+                    ref result);
+                PerkHelper.AddPerkBonusForTown(
+                    DefaultPerks.Leadership.VeteransRespect,
+                    currentSettlement.Town,
+                    true,
+                    ref result);
             }
         }
 

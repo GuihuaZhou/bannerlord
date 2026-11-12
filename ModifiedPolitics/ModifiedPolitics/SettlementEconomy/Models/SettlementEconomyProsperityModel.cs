@@ -22,7 +22,9 @@ namespace ModifiedPolitics.SettlementEconomy.Models
             SettlementEconomyConfig config = SettlementEconomyConfigManager.Instance.RequireActive();
             int mobilized = Campaign.Current?.GetCampaignBehavior<FiefPartyManager>()?.GetMobilizedHearth(village) ?? 0;
             float effective = Math.Max(0f, village.Hearth + mobilized);
-            float natural = PopulationGrowthModel.Calculate(effective, config.VillageCapacity, config);
+            float capacity = config.GetCapacity(village.Settlement);
+            float natural = PopulationGrowthModel.CalculateNatural(effective,
+                capacity, config.GetGrowthRate(village.Settlement), config);
             float vanillaBase = village.Hearth < 300f ? 4f : village.Hearth < 600f ? 1.2f : 0.2f;
             result.Add(natural - vanillaBase, NaturalPopulationText, null);
             return result;

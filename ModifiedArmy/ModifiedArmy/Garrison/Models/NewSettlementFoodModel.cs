@@ -85,6 +85,7 @@ namespace ModifiedArmy.Garrison.Models
             PerkHelper.AddPerkBonusForTown(
                 DefaultPerks.Steward.MasterOfWarcraft,
                 town,
+                false,
                 ref prosperityConsumption);
 
             consumption.Add(
@@ -151,6 +152,7 @@ namespace ModifiedArmy.Garrison.Models
                 PerkHelper.AddPerkBonusForTown(
                     DefaultPerks.Roguery.DirtyFighting,
                     town,
+                    false,
                     ref production);
             }
 

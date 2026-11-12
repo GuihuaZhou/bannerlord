@@ -118,14 +118,11 @@ namespace ModifiedPolitics.SettlementEconomy.Presentation
 
             float hearth = Math.Max(0f, population.GetHearth(settlement));
             float capacity = population.GetNaturalCapacity(settlement);
-            float change = PopulationGrowthModel.Calculate(
-                hearth,
-                capacity,
-                SettlementEconomyConfigManager.Instance.RequireActive());
-            change = Math.Max(-hearth, change);
+            DailyHearthForecast forecast = Forecast(settlement, population,
+                hearth, capacity);
             PopulationText = ((int)Math.Floor(hearth)).ToString();
             PopulationChangeAmount = (int)Math.Round(
-                change,
+                forecast.AppliedTotal,
                 MidpointRounding.AwayFromZero);
         }
 
@@ -142,26 +139,49 @@ namespace ModifiedPolitics.SettlementEconomy.Presentation
                 SettlementEconomyConfigManager.Instance.RequireActive();
             float hearth = Math.Max(0f, population.GetHearth(settlement));
             float capacity = population.GetNaturalCapacity(settlement);
-            float change = Math.Max(
-                -hearth,
-                PopulationGrowthModel.Calculate(hearth, capacity, config));
-            float prosperityPerHearth = settlement.IsCastle
-                ? config.CastleProsperityPerHearth
-                : config.TownProsperityPerHearth;
+            DailyHearthForecast forecast = Forecast(settlement, population,
+                hearth, capacity);
 
             properties.Add(Property(
                 new TextObject("{=MP_PopulationHearth}Hearth"),
-                ((int)Math.Floor(hearth)).ToString()));
+                ((int)Math.Floor(hearth)).ToString(),
+                TooltipProperty.TooltipPropertyFlags.Title));
+            AddChangeProperty(properties,
+                new TextObject("{=MP_PopulationNaturalChange}Natural growth"),
+                forecast.Natural + forecast.CapacityAdjustment);
+            AddChangeProperty(properties,
+                new TextObject("{=MP_PopulationFoodChange}Food effect"),
+                forecast.Food);
+            AddChangeProperty(properties,
+                new TextObject("{=MP_PopulationProsperityChange}Prosperity effect"),
+                forecast.Prosperity);
+            AddChangeProperty(properties,
+                new TextObject("{=MP_PopulationBurdenChange}Recruitment pressure"),
+                forecast.RecruitmentBurden);
             properties.Add(Property(
-                new TextObject("{=MP_PopulationNaturalChange}Natural daily change"),
-                change.ToString("+0.00;-0.00;0.00")));
+                new TextObject(string.Empty),
+                string.Empty,
+                TooltipProperty.TooltipPropertyFlags.RundownSeperator));
             properties.Add(Property(
-                new TextObject("{=MP_PopulationCapacity}Natural capacity"),
-                ((int)Math.Floor(capacity)).ToString()));
-            properties.Add(Property(
-                new TextObject("{=MP_PopulationSupportedProsperity}Supported prosperity"),
-                ((int)Math.Floor(hearth * prosperityPerHearth)).ToString()));
+                new TextObject("{=MP_PopulationForecast}Expected change"),
+                forecast.AppliedTotal.ToString("+0.00;-0.00;0.00"),
+                TooltipProperty.TooltipPropertyFlags.RundownResult));
             return properties;
+        }
+
+        private static DailyHearthForecast Forecast(Settlement settlement,
+            ISettlementPopulationService population, float hearth,
+            float capacity)
+        {
+            SettlementEconomyConfig config =
+                SettlementEconomyConfigManager.Instance.RequireActive();
+            float perHearth = settlement.IsCastle
+                ? config.CastleProsperityPerHearth
+                : config.TownProsperityPerHearth;
+            return PopulationGrowthModel.CalculateDailyForecast(hearth,
+                capacity, population.GetRecruitmentBurden(settlement),
+                settlement.Town.Prosperity, settlement.Town.FoodChange,
+                perHearth, config.GetGrowthRate(settlement), config);
         }
 
         private Settlement GetSettlement()
@@ -171,14 +191,29 @@ namespace ModifiedPolitics.SettlementEconomy.Presentation
 
         private static TooltipProperty Property(
             TextObject label,
-            string value)
+            string value,
+            TooltipProperty.TooltipPropertyFlags flags =
+                TooltipProperty.TooltipPropertyFlags.None)
         {
             return new TooltipProperty(
                 label.ToString(),
                 value,
                 0,
                 false,
-                TooltipProperty.TooltipPropertyFlags.None);
+                flags);
+        }
+
+        private static void AddChangeProperty(
+            ICollection<TooltipProperty> properties,
+            TextObject label,
+            float value)
+        {
+            if (Math.Round(value, 2, MidpointRounding.AwayFromZero) == 0d)
+                return;
+
+            properties.Add(Property(
+                label,
+                value.ToString("+0.00;-0.00;0.00")));
         }
     }
 }

@@ -156,8 +156,9 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
 
                 int rawLevel = settlement.Town.GetWallLevel();
                 int level = Math.Max(1, Math.Min(3, rawLevel));
-                PopulationWallConfig wall = GetWall(settlement, level);
-                _hearth.Add(settlement, wall.Initial);
+                SettlementEconomyConfig config =
+                    SettlementEconomyConfigManager.Instance.RequireActive();
+                _hearth.Add(settlement, config.GetInitialHearth(settlement));
                 if (settlement.IsCastle) initializedCastles++;
                 else initializedTowns++;
                 if (rawLevel < 1 || rawLevel > 3)
@@ -209,22 +210,29 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 return false;
             float burdenBefore = GetRecruitmentBurden(settlement);
             if (IsRecoveryRequired(settlement)) return false;
-            float growth;
+            DailyHearthForecast forecast;
             int recovery;
             try
             {
-                growth = PopulationGrowthModel.Calculate(hearthBefore,
-                    GetNaturalCapacity(settlement),
-                    SettlementEconomyConfigManager.Instance.RequireActive());
+                SettlementEconomyConfig config =
+                    SettlementEconomyConfigManager.Instance.RequireActive();
+                float prosperityPerHearth = settlement.IsCastle
+                    ? config.CastleProsperityPerHearth
+                    : config.TownProsperityPerHearth;
+                forecast = PopulationGrowthModel.CalculateDailyForecast(
+                    hearthBefore, GetNaturalCapacity(settlement), burdenBefore,
+                    settlement.Town.Prosperity, settlement.Town.FoodChange,
+                    prosperityPerHearth, config.GetGrowthRate(settlement),
+                    config);
                 recovery = RecruitmentBurdenPolicyRegistry.Current?
                     .GetDailyRecovery(settlement) ?? throw new
                     InvalidOperationException(
                         "MissingProfessionalBurdenPolicy");
-                if (recovery <= 0 || float.IsNaN(growth) ||
-                    float.IsInfinity(growth))
+                if (recovery <= 0)
                     throw new InvalidOperationException(
                         "InvalidDailyPopulationPolicy");
-                float hearthAfter = Math.Max(0f, hearthBefore + growth);
+                float hearthAfter = Math.Max(0f,
+                    hearthBefore + forecast.AppliedTotal);
                 float burdenAfter = Math.Max(0f, burdenBefore - recovery);
                 _hearth[settlement] = hearthAfter;
                 _recruitmentBurden[settlement] = burdenAfter;
@@ -234,12 +242,19 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 if (ShouldLog(settlement))
                     ModLogger.FileDebug(string.Format(
                         "[Population] Daily settlement update: settlement={0}, " +
-                        "id={1}, hearthBefore={2:F2}, naturalChange={3:F3}, " +
-                        "hearthAfter={4:F2}, burdenBefore={5:F2}, recovery={6}, " +
-                        "burdenAfter={7:F2}, effectiveHearth={8:F2}, day={9}.",
+                        "id={1}, hearthBefore={2:F2}, capacity={3:F2}, " +
+                        "natural={4:F3}, food={5:F3}, prosperity={6:F3}, " +
+                        "burdenEffect={7:F3}, raw={8:F3}, boundary={9:F3}, " +
+                        "applied={10:F3}, hearthAfter={11:F2}, " +
+                        "burdenBefore={12:F2}, recovery={13}, " +
+                        "burdenAfter={14:F2}, supportProsperity={15:F2}, " +
+                        "day={16}.",
                         settlement.Name, settlement.StringId, hearthBefore,
-                        growth, hearthAfter, burdenBefore, recovery, burdenAfter,
-                        GetEffectiveHearth(settlement), day));
+                        forecast.Capacity, forecast.Natural, forecast.Food,
+                        forecast.Prosperity, forecast.RecruitmentBurden,
+                        forecast.RawTotal, forecast.CapacityAdjustment,
+                        forecast.AppliedTotal, hearthAfter, burdenBefore,
+                        recovery, burdenAfter, forecast.SupportProsperity, day));
                 return true;
             }
             catch (Exception exception)
@@ -270,12 +285,7 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
         {
             SettlementEconomyConfig config =
                 SettlementEconomyConfigManager.Instance.RequireActive();
-            if (settlement?.Village != null) return config.VillageCapacity;
-            if (settlement?.Town == null) return 0f;
-            int level = Math.Max(
-                1,
-                Math.Min(3, settlement.Town.GetWallLevel()));
-            return GetWall(settlement, level).Capacity;
+            return settlement == null ? 0f : config.GetCapacity(settlement);
         }
 
         public int GetRecruitableHearth(Settlement settlement)
@@ -310,7 +320,7 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
         {
             float hearth = Math.Max(0f, GetHearth(settlement));
             float burden = Math.Max(0f, GetRecruitmentBurden(settlement));
-            return hearth - 0.5f * Math.Min(hearth, burden);
+            return Math.Max(0f, hearth - burden);
         }
 
         public int GetMaxAffordableProfessionalCount(Settlement settlement,
@@ -853,17 +863,6 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 settlement.Village.Hearth = value;
             else
                 _hearth[settlement] = value;
-        }
-
-        private static PopulationWallConfig GetWall(
-            Settlement settlement,
-            int level)
-        {
-            SettlementEconomyConfig config =
-                SettlementEconomyConfigManager.Instance.RequireActive();
-            return (settlement.IsCastle
-                ? config.CastleWalls
-                : config.TownWalls)[level];
         }
 
         private static PopulationTransactionResult ToResult(

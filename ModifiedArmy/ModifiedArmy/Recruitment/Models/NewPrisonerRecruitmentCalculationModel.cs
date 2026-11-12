@@ -45,7 +45,7 @@ namespace ModifiedArmy.Models
         }
 
         // ========== 重写方法：计算士气影响 ==========
-        public override int GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
+        public override float GetPrisonerRecruitmentMoraleEffect(PartyBase party, CharacterObject character, int num)
         {
             // 保留原版的士气计算逻辑
             return base.GetPrisonerRecruitmentMoraleEffect(party, character, num);

@@ -44,7 +44,7 @@ namespace ModifiedArmy.Recruitment.Services
                 evaluation.UnitRecruitmentCost, evaluation.UnitDailyWage);
             CampaignEventDispatcher.Instance.OnTroopRecruited(
                 party.LeaderHero, null, null, troop, approved);
-            int morale = Campaign.Current.Models
+            float morale = Campaign.Current.Models
                 .PrisonerRecruitmentCalculationModel
                 .GetPrisonerRecruitmentMoraleEffect(
                     party.Party, troop, approved);

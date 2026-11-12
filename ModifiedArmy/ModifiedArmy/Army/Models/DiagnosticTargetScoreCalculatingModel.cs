@@ -285,8 +285,6 @@ namespace ModifiedArmy.Army.Models
             float rawScore = relationFactor * relativeStrengthFactor *
                 valueFactor * 1f * objectiveFactor * strategyFactor *
                 behaviorFactor * siegeOverlapFactor * distanceFactor;
-            if (party.Objective == MobileParty.PartyObjective.Aggressive)
-                rawScore *= 1.2f;
             float returnedScore = rawScore < 0f ? 0f : rawScore;
             string zeroFactors = string.Join(",", new[]
             {

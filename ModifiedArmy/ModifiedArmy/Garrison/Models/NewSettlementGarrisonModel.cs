@@ -1,6 +1,8 @@
 using ModifiedArmy.Recruitment.Pools.Behaviors;
+using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
 using TaleWorlds.CampaignSystem.Settlements;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Garrison.Models
 {
@@ -11,12 +13,18 @@ namespace ModifiedArmy.Garrison.Models
     public sealed class NewSettlementGarrisonModel
         : DefaultSettlementGarrisonModel
     {
-        public override int GetMaximumDailyAutoRecruitmentCount(Town town)
+        public override ExplainedNumber GetMaximumDailyAutoRecruitmentCount(
+            Town town,
+            bool includeDescriptions = false)
         {
-            return town == null
+            int maximum = town == null
                 ? 0
-                : 1 + SettlementManpowerProductionBehavior.GetBarracksLevel(
-                    town.Settlement);
+                : 1 + SettlementManpowerProductionBehavior
+                    .GetBarracksLevel(town.Settlement);
+            return new ExplainedNumber(maximum, includeDescriptions,
+                new TextObject(
+                    "{=ModifiedArmy_BarracksRecruitmentLimit}" +
+                    "Barracks recruitment capacity"));
         }
     }
 }

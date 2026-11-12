@@ -411,9 +411,10 @@ namespace ModifiedArmy.Models
         /// </summary>
         private static int GetDailyRecruitmentLimit(Town town)
         {
-            int maximumDailyRecruitment = Campaign.Current.Models
+            int maximumDailyRecruitment = (int)Campaign.Current.Models
                 .SettlementGarrisonModel
-                .GetMaximumDailyAutoRecruitmentCount(town);
+                .GetMaximumDailyAutoRecruitmentCount(town, false)
+                .ResultNumber;
             int freeSlots = GarrisonRecruitmentCapacity
                 .GetHardFreeSlots(town.GarrisonParty);
 

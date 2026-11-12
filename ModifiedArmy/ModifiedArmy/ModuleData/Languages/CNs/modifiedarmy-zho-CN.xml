@@ -4,6 +4,7 @@
     <tag language="简体中文" />
   </tags>
   <strings>
+    <string id="ModifiedArmy_BarracksRecruitmentLimit" text="兵营招募容量" />
     <string id="ModConfig_Loaded" text="[配置] 已加载“{CONFIG_ID}”军事配置，其中包含{DOCTRINE_COUNT}套文化军事规则。" />
     <string id="ModifiedArmy_FiefWeeklyUpdate" text="[封邑补员] 本周已经检查了{COUNT}座定居点。" />
     <string id="ModifiedArmy_FiefNewGameInitialized" text="[封邑初始化] 已按村庄封建供养预算为{FIEF_COUNT}个封邑初始化{TROOP_COUNT}名封建兵。" />
@@ -157,6 +158,7 @@
     <string id="ModifiedArmy_SupplyPartyCancelAttack" text="算了. 你们走吧." />
     <string id="ModifiedArmy_SupplyPartyWarWarning" text="此行为可能引发战争." />
     <string id="ModifiedArmy_SupplyPartyEscortLimit" text="征粮护卫队" />
+    <string id="ModifiedArmy_BarracksRecruitmentLimit" text="兵营征募容量" />
     <string id="ModifiedArmy_GarrisonSettlementTypeValue" text="{LOCATION}{TYPE}" />
     <string id="ModifiedArmy_GarrisonBorder" text="边境" />
     <string id="ModifiedArmy_GarrisonInterior" text="腹地" />
