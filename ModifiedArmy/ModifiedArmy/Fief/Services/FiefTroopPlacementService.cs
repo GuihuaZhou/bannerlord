@@ -10,6 +10,7 @@ using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 using TaleWorlds.Core;
+using TaleWorlds.Localization;
 
 namespace ModifiedArmy.Models.Fief
 {
@@ -76,18 +77,8 @@ namespace ModifiedArmy.Models.Fief
             }
 
             FiefPartyTemplate template = scope.FiefData.GetFiefPartyTemplate();
-            CulturalMilitaryDoctrine doctrine;
-            try
-            {
-                doctrine = MilitaryConfigManager.Instance
-                    .RequireActiveConfig().GetDoctrine(scope.SourceFief);
-            }
-            catch (Exception exception)
-            {
-                return Reject(result, party, interaction, purpose,
-                    operationId, "PlacementDoctrineUnavailable",
-                    exception.Message);
-            }
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(scope.SourceFief);
             if (doctrine == null)
                 return Reject(result, party, interaction, purpose,
                     operationId, "PlacementDoctrineUnavailable");
@@ -119,9 +110,7 @@ namespace ModifiedArmy.Models.Fief
 
             List<VillagePlan> plans = scope.FiefData
                 .OrderedVillages(scope.VillageFilter)
-                .Where(village => village?.VillageSettlement != null &&
-                    !village.RecoveryRequired &&
-                    village.GetReadyRoster() != null)
+                .Where(village => village?.VillageSettlement != null)
                 .Select(village => new VillagePlan { Village = village })
                 .ToList();
             if (plans.Count == 0)
@@ -183,22 +172,21 @@ namespace ModifiedArmy.Models.Fief
             {
                 if (!CommitVillage(manager, party, interaction, scope,
                     template, doctrine, plan, operationId,
-                    out string reason, out bool recoveryRequired))
+                    out string reason))
                 {
-                    result.RecoveryRequired = recoveryRequired;
                     result.ReasonCode = reason;
                     if (RecruitmentLogFilter.ShouldLog(party))
                         ModLogger.FileWarn(string.Format(
                             "Fief placement village commit stopped: " +
                             "village={0}, villageId={1}, party={2}, " +
                             "partyId={3}, operation={4}, requested={5}, " +
-                            "reason={6}, recoveryRequired={7}.",
+                            "reason={6}.",
                             plan.Village.VillageSettlement?.Name,
                             plan.Village.VillageSettlement?.StringId,
                             PartyLogFormatter.GetDisplayName(party),
                             party.StringId, operationId,
                             plan.Troops.Values.Sum(value => value.Count),
-                            reason, recoveryRequired));
+                            reason));
                     break;
                 }
                 foreach (var pair in plan.Troops)
@@ -212,11 +200,13 @@ namespace ModifiedArmy.Models.Fief
                 committed);
             if (result.PlacedCount > 0)
             {
-                result.ReasonCode = result.RecoveryRequired
-                    ? result.ReasonCode : "Completed";
                 scope.FiefData.RefreshManpowerCounters();
-                LogCommitted(party, interaction, purpose, operationId,
-                    result.PlacedCount, committed.Count, committedVillages);
+                if (result.ReasonCode == "NotStarted")
+                {
+                    result.ReasonCode = "Completed";
+                    LogCommitted(party, interaction, purpose, operationId,
+                        result.PlacedCount, committed.Count, committedVillages);
+                }
             }
             else if (string.IsNullOrEmpty(result.ReasonCode) ||
                 result.ReasonCode == "NotStarted")
@@ -257,21 +247,17 @@ namespace ModifiedArmy.Models.Fief
                 bool currentBound = scope.FiefData.IsCurrentVillage(settlement);
                 bool filtered = scope.VillageFilter != null &&
                     scope.VillageFilter != settlement;
-                bool rosterActive = village.GetReadyRoster() != null;
                 string rejection = !currentBound ? "VillageNoLongerBound" :
-                    filtered ? "FilteredToCurrentVillage" :
-                    village.RecoveryRequired ? "RecoveryRequired" :
-                    !rosterActive ? "ReadyRosterUnavailable" : "Eligible";
+                    filtered ? "FilteredToCurrentVillage" : "Eligible";
                 ModLogger.FileDebug(string.Format(
                     "[PlayerFiefPlacementVillage] operation={0} fief={1} " +
                     "fiefId={2} village={3} villageId={4} " +
                     "currentBound={5} filtered={6} recoveryRequired={7} " +
-                    "recoveryReason={8} rosterActive={9} {10} " +
-                    "rejection={11}.", operationId,
+                    "recoveryReason={8} {9} rejection={10}.", operationId,
                     scope.SourceFief?.Name, scope.SourceFief?.StringId,
                     settlement.Name, settlement.StringId, currentBound,
                     filtered, village.RecoveryRequired,
-                    village.RecoveryReason ?? "none", rosterActive,
+                    village.RecoveryReason ?? "none",
                     GetSupplyDiagnostic(village, template, doctrine),
                     rejection));
             }
@@ -280,25 +266,17 @@ namespace ModifiedArmy.Models.Fief
         private static string GetSupplyDiagnostic(VillageFiefData village,
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine)
         {
-            try
-            {
-                int effective = village.GetEffectiveSupplyHearth();
-                int occupied = village.GetOccupiedSupplyHearth(template,
-                    doctrine);
-                int free = village.GetFreeSupplyHearth(template, doctrine);
-                int budget = village.GetFeudalBudgetRemainingHearth(template,
-                    doctrine);
-                return string.Format(
-                    "effectiveHearth={0} occupiedHearth={1} supplyFree={2} " +
-                    "feudalBudgetRemaining={3} placementCapacity={4}",
-                    effective, occupied, free, budget,
-                    Math.Max(0, Math.Min(free, budget)));
-            }
-            catch (Exception exception)
-            {
-                return "supplyDiagnostic=Unavailable errorType=" +
-                    exception.GetType().Name;
-            }
+            int effective = village.GetEffectiveSupplyHearth();
+            int occupied = village.GetOccupiedSupplyHearth(template,
+                doctrine);
+            int free = village.GetFreeSupplyHearth(template, doctrine);
+            int budget = village.GetFeudalBudgetRemainingHearth(template,
+                doctrine);
+            return string.Format(
+                "effectiveHearth={0} occupiedHearth={1} supplyFree={2} " +
+                "feudalBudgetRemaining={3} placementCapacity={4}",
+                effective, occupied, free, budget,
+                Math.Max(0, Math.Min(free, budget)));
         }
 
         private static void LogNoPlacementSummary(FiefOperationScope scope,
@@ -379,18 +357,14 @@ namespace ModifiedArmy.Models.Fief
         private static bool CommitVillage(FiefPartyManager manager,
             MobileParty party, Settlement interaction, FiefOperationScope scope,
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine,
-            VillagePlan plan, string operationId, out string reason,
-            out bool recoveryRequired)
+            VillagePlan plan, string operationId, out string reason)
         {
             reason = null;
-            recoveryRequired = false;
             if (!manager.TryResolveOperationScope(interaction, party, true,
                     out FiefOperationScope liveScope) ||
                 liveScope.SourceFief != scope.SourceFief ||
                 !liveScope.FiefData.IsCurrentVillage(
-                    plan.Village.VillageSettlement) ||
-                plan.Village.RecoveryRequired ||
-                plan.Village.GetReadyRoster() == null)
+                    plan.Village.VillageSettlement))
             {
                 reason = "PlacementScopeChanged";
                 return false;
@@ -404,7 +378,13 @@ namespace ModifiedArmy.Models.Fief
             }
             foreach (var pair in plan.Troops)
             {
-                if (!live.UnassignedTroops.TryGetValue(pair.Key,
+                if (pair.Key == null || pair.Value.Count <= 0 ||
+                    pair.Value.Wounded < 0 ||
+                    pair.Value.Wounded > pair.Value.Count ||
+                    !template.IsEnableTroop(pair.Key) ||
+                    !doctrine.TryGetFeudalSupplyCost(pair.Key, out int cost) ||
+                    cost <= 0 ||
+                    !live.UnassignedTroops.TryGetValue(pair.Key,
                         out FiefTroopCount available) ||
                     available.Total < pair.Value.Count ||
                     available.Wounded < pair.Value.Wounded ||
@@ -412,8 +392,8 @@ namespace ModifiedArmy.Models.Fief
                         pair.Value.Wounded ||
                     party.MemberRoster.GetTroopCount(pair.Key) <
                         pair.Value.Count ||
-                    !plan.Village.CanIncreaseSupply(template, doctrine,
-                        pair.Key, pair.Value.Count))
+                    Snapshot(party.MemberRoster, pair.Key).Wounded <
+                        pair.Value.Wounded)
                 {
                     reason = "PlacementPrecommitChanged";
                     return false;
@@ -434,90 +414,68 @@ namespace ModifiedArmy.Models.Fief
                     batch.WaitWeeks == cooldown);
             bool created = cooling == null;
             if (created) cooling = new FiefReturnBatch(cooldown);
-            Dictionary<CharacterObject, int> coolingBefore = cooling.Troops
-                .ToDictionary(pair => pair.Key, pair => pair.Value);
-            Dictionary<CharacterObject, (int Count, int Wounded)> rosterBefore =
-                plan.Troops.Keys.ToDictionary(troop => troop,
-                    troop => Snapshot(party.MemberRoster, troop));
-            try
+            int requested = plan.Troops.Values.Sum(value => value.Count);
+            int partyBefore = plan.Troops.Keys.Sum(troop =>
+                party.MemberRoster.GetTroopCount(troop));
+            int coolingBefore = cooling.GetTotalCount();
+            if (created) plan.Village.ReturnBatches.Add(cooling);
+            foreach (var pair in plan.Troops.OrderBy(item =>
+                item.Key.StringId, StringComparer.Ordinal))
             {
-                foreach (var pair in plan.Troops.OrderBy(item =>
-                    item.Key.StringId, StringComparer.Ordinal))
+                int accepted = cooling.AddTroops(
+                    new Dictionary<CharacterObject, int>
                 {
-                    party.MemberRoster.AddToCounts(pair.Key,
-                        -pair.Value.Count, false, -pair.Value.Wounded,
-                        0, true, -1);
-                    (int Count, int Wounded) after = Snapshot(
-                        party.MemberRoster, pair.Key);
-                    if (after.Count != rosterBefore[pair.Key].Count -
-                            pair.Value.Count ||
-                        after.Wounded != rosterBefore[pair.Key].Wounded -
-                            pair.Value.Wounded)
-                        throw new InvalidOperationException(
-                            "PlacementRosterDeltaMismatch");
-                }
-                if (created) plan.Village.ReturnBatches.Add(cooling);
-                cooling.AddTroops(plan.Troops.ToDictionary(
-                    pair => pair.Key, pair => pair.Value.Count));
-                foreach (var pair in plan.Troops)
-                {
-                    int before = coolingBefore.TryGetValue(pair.Key,
-                        out int old) ? old : 0;
-                    if (!cooling.Troops.TryGetValue(pair.Key, out int after) ||
-                        after != before + pair.Value.Count)
-                        throw new InvalidOperationException(
-                            "PlacementCoolingDeltaMismatch");
-                }
-                if (plan.Troops.Values.Sum(item => item.Count) !=
-                    cooling.GetTotalCount() - coolingBefore.Values.Sum())
-                    throw new InvalidOperationException(
-                        "PlacementConservationMismatch");
-                return true;
+                    [pair.Key] = pair.Value.Count
+                });
+                if (accepted <= 0) continue;
+
+                party.MemberRoster.AddToCounts(pair.Key,
+                    -accepted, false,
+                    -Math.Min(pair.Value.Wounded, accepted),
+                    0, true, -1);
             }
-            catch (Exception exception)
+
+            int partyAfter = plan.Troops.Keys.Sum(troop =>
+                party.MemberRoster.GetTroopCount(troop));
+            int coolingAfter = cooling.GetTotalCount();
+            int written = Math.Max(0, coolingAfter - coolingBefore);
+            bool countsMatch = written == requested &&
+                partyBefore - partyAfter == written &&
+                coolingAfter - coolingBefore == written;
+            if (PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                scope.SourceFief, plan.Village.VillageSettlement))
+                ModLogger.FileDebug(string.Format(
+                    "[PlayerFiefPlacementCommit] operation={0} fief={1} " +
+                    "fiefId={2} village={3} villageId={4} party={5} " +
+                    "partyId={6} requested={7} written={8} partyBefore={9} " +
+                    "partyAfter={10} coolingBefore={11} coolingAfter={12} " +
+                    "result={13}.", operationId, scope.SourceFief?.Name,
+                    scope.SourceFief?.StringId,
+                    plan.Village.VillageSettlement?.Name,
+                    plan.Village.VillageSettlement?.StringId,
+                    PartyLogFormatter.GetDisplayName(party), party?.StringId,
+                    requested, written, partyBefore, partyAfter, coolingBefore,
+                    coolingAfter, countsMatch ? "Committed" :
+                        "PostconditionMismatch"));
+            if (!countsMatch)
             {
-                bool restored = true;
-                try
-                {
-                    cooling.ReplaceTroops(coolingBefore);
-                    if (created) plan.Village.ReturnBatches.Remove(cooling);
-                }
-                catch { restored = false; }
-                foreach (var pair in rosterBefore)
-                {
-                    try
-                    {
-                        (int Count, int Wounded) current = Snapshot(
-                            party.MemberRoster, pair.Key);
-                        party.MemberRoster.AddToCounts(pair.Key,
-                            pair.Value.Count - current.Count, false,
-                            pair.Value.Wounded - current.Wounded,
-                            0, true, -1);
-                    }
-                    catch { restored = false; }
-                }
-                restored = restored && DictionaryEquals(
-                        cooling.Troops, coolingBefore) &&
-                    (!created || !plan.Village.ReturnBatches.Contains(cooling)) &&
-                    rosterBefore.All(pair => Snapshot(
-                        party.MemberRoster, pair.Key) == pair.Value);
-                if (!restored)
-                {
-                    plan.Village.RequireRecovery(
-                        "PlacementRollbackUnverified", operationId);
-                    recoveryRequired = true;
-                    reason = "PlacementRollbackUnverified";
+                if (PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                    scope.SourceFief, plan.Village.VillageSettlement))
                     ModLogger.FileError(string.Format(
-                        "Fief placement rollback unverified: village={0}, " +
+                        "Fief placement postcondition mismatch: village={0}, " +
                         "villageId={1}, party={2}, partyId={3}, operation={4}, " +
-                        "error={5}.", plan.Village.VillageSettlement?.Name,
+                        "requested={5}, written={6}, partyDelta={7}, " +
+                        "coolingDelta={8}.",
+                        plan.Village.VillageSettlement?.Name,
                         plan.Village.VillageSettlement?.StringId,
                         PartyLogFormatter.GetDisplayName(party),
-                        party?.StringId, operationId, exception.Message));
-                }
-                else reason = "PlacementRolledBackVerified";
+                        party?.StringId, operationId, requested, written,
+                        partyBefore - partyAfter,
+                        coolingAfter - coolingBefore));
+                reason = "PlacementPostconditionMismatch";
                 return false;
             }
+            return true;
         }
 
         private static bool CanPlanOne(VillagePlan plan,
@@ -541,13 +499,6 @@ namespace ModifiedArmy.Models.Fief
                 Math.Max(0, item.WoundedNumber));
         }
 
-        private static bool DictionaryEquals(
-            IReadOnlyDictionary<CharacterObject, int> left,
-            IReadOnlyDictionary<CharacterObject, int> right) =>
-            left.Count == right.Count && left.All(pair =>
-                right.TryGetValue(pair.Key, out int value) &&
-                value == pair.Value);
-
         private static FiefPlacementResult Reject(FiefPlacementResult result,
             MobileParty party, Settlement interaction,
             FiefPlacementPurpose purpose, string operationId, string reason,
@@ -569,14 +520,29 @@ namespace ModifiedArmy.Models.Fief
             Settlement interaction, FiefPlacementPurpose purpose,
             string operationId, int count, int troopKinds, int villages)
         {
-            if (!RecruitmentLogFilter.ShouldLog(party)) return;
-            ModLogger.FileInfo(string.Format(
-                "Fief placement committed: party={0}, partyId={1}, " +
-                "settlement={2}, settlementId={3}, purpose={4}, " +
-                "operation={5}, placed={6}, troopKinds={7}, villages={8}.",
-                PartyLogFormatter.GetDisplayName(party), party?.StringId,
-                interaction?.Name, interaction?.StringId, purpose,
-                operationId, count, troopKinds, villages));
+            Settlement sourceFief = interaction?.IsVillage == true
+                ? interaction.Village?.Bound
+                : interaction;
+            bool notifyPlayer = purpose == FiefPlacementPurpose.PlayerReturn &&
+                PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(sourceFief);
+            if (notifyPlayer)
+            {
+                TextObject message = new TextObject(
+                    "{=ModifiedArmy_FiefPlacementCompleted}" +
+                    "{SETTLEMENT_NAME} received {COUNT} returning feudal troops.");
+                message.SetTextVariable("SETTLEMENT_NAME", sourceFief.Name);
+                message.SetTextVariable("COUNT", count);
+                ModLogger.Notice(message.ToString());
+                return;
+            }
+            if (RecruitmentLogFilter.ShouldLog(party))
+                ModLogger.FileInfo(string.Format(
+                    "Fief placement committed: party={0}, partyId={1}, " +
+                    "settlement={2}, settlementId={3}, purpose={4}, " +
+                    "operation={5}, placed={6}, troopKinds={7}, villages={8}.",
+                    PartyLogFormatter.GetDisplayName(party), party?.StringId,
+                    interaction?.Name, interaction?.StringId, purpose,
+                    operationId, count, troopKinds, villages));
         }
     }
 }

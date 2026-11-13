@@ -133,6 +133,7 @@ namespace ModifiedArmy.Models.Fief
             _runtimeReadinessFailuresLogged.Clear();
             FiefPartyTemplateManager.Instance.InitAllEnableTroops();
             InitializeFiefData();
+            ClearRetiredPlacementRecoveryFlags();
             RemoveInvalidPersistentFeudalTroops();
             if (CampaignState.IsNewGame)
                 InitializeNewGameFiefTroops();
@@ -153,14 +154,57 @@ namespace ModifiedArmy.Models.Fief
                 item?.IsRuntimeReady == true &&
                 PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
                     item.GetSettlement())))
+            {
+                int readyTroops = 0;
                 foreach (VillageFiefData village in data.OrderedVillages()
                     .Where(item => item.ReturnBatches?.Count > 0))
-                    data.ProcessVillageCooling(village, false,
+                    readyTroops += data.ProcessVillageCooling(village, false,
                         "SessionLaunch");
+                data.ShowReadyNotification(readyTroops);
+            }
             ModLogger.Info(string.Format(
                 "Fief runtime session ready: fiefs={0}.",
                 _fiefDataMap.Values.Count(data =>
                     data?.IsRuntimeReady == true)));
+        }
+
+        private void ClearRetiredPlacementRecoveryFlags()
+        {
+            foreach (FiefPartyData fief in _fiefDataMap.Values)
+            foreach (VillageFiefData village in fief?.Villages?.Values ??
+                Enumerable.Empty<VillageFiefData>())
+            {
+                if (!village.RecoveryRequired ||
+                    village.RecoveryReason != "PlacementRollbackUnverified" &&
+                    village.RecoveryReason != "CoolingRollbackUnverified")
+                    continue;
+
+                string previousReason = village.RecoveryReason;
+                string previousOperation = village.RecoveryOperationId;
+                int coolingTroops = village.ReturnBatches?.Sum(batch =>
+                    batch?.GetTotalCount() ?? 0) ?? 0;
+                string waits = string.Join(",", village.ReturnBatches?
+                    .Where(batch => batch != null)
+                    .Select(batch => batch.WaitWeeks.ToString()) ??
+                    Enumerable.Empty<string>());
+                bool trace = PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                    fief.GetSettlement(), village.VillageSettlement);
+                village.CompleteRecovery(false);
+                if (trace)
+                    ModLogger.FileWarn(string.Format(
+                        "[PlayerFiefRecoveryMigration] fief={0} fiefId={1} " +
+                        "village={2} villageId={3} previousReason={4} " +
+                        "previousOperation={5} coolingBatches={6} " +
+                        "coolingTroops={7} waitWeeks={8} result=RetiredFlagCleared; " +
+                        "historical troop balance was not reconstructed.",
+                        fief.GetSettlement()?.Name,
+                        fief.GetSettlement()?.StringId,
+                        village.VillageSettlement?.Name,
+                        village.VillageSettlement?.StringId, previousReason,
+                        previousOperation ?? "missing",
+                        village.ReturnBatches?.Count ?? 0, coolingTroops,
+                        string.IsNullOrEmpty(waits) ? "none" : waits));
+            }
         }
 
         private void RemoveInvalidPersistentFeudalTroops()
@@ -874,8 +918,44 @@ namespace ModifiedArmy.Models.Fief
 
         public void AdvanceServiceDays(MobileParty party)
         {
+            var expiring = new List<(Settlement SourceFief, int Troops,
+                int RemainingDays)>();
             foreach (ServingDetachmentRef item in GetServingDetachments(party))
+            {
+                FiefServiceBatch batch = item.Detachment;
+                int remainingBefore = batch.FreeWageDays - batch.ServiceDays;
                 item.Detachment.AdvanceToCurrentDay();
+                int remainingAfter = batch.FreeWageDays - batch.ServiceDays;
+                if (remainingBefore > 7 && remainingAfter > 0 &&
+                    remainingAfter <= 7 &&
+                    PlayerFiefDiagnostics.ShouldTracePlayerOwnedFief(
+                        item.SourceFief, item.SourceVillage))
+                    expiring.Add((item.SourceFief,
+                        batch.GetTotalCount(), remainingAfter));
+            }
+
+            foreach (var group in expiring.GroupBy(item => item.SourceFief))
+            {
+                Settlement sourceFief = group.Key;
+                int troopCount = group.Sum(item => item.Troops);
+                int remainingDays = group.Min(item => item.RemainingDays);
+                TextObject message = new TextObject(
+                    "{=ModifiedArmy_FiefServiceEndingSoon}" +
+                    "{COUNT} feudal troops from {SETTLEMENT_NAME} serving " +
+                    "in {PARTY_NAME} have {DAYS} days remaining.");
+                message.SetTextVariable("COUNT", troopCount);
+                message.SetTextVariable("SETTLEMENT_NAME", sourceFief.Name);
+                message.SetTextVariable("PARTY_NAME",
+                    PartyLogFormatter.GetDisplayName(party));
+                message.SetTextVariable("DAYS", remainingDays);
+                MBInformationManager.AddQuickInformation(message);
+                ModLogger.FileInfo(string.Format(
+                    "Player fief service ending soon: fief={0}, fiefId={1}, " +
+                    "party={2}, partyId={3}, troops={4}, remainingDays={5}.",
+                    sourceFief.Name, sourceFief.StringId,
+                    PartyLogFormatter.GetDisplayName(party), party?.StringId,
+                    troopCount, remainingDays));
+            }
         }
 
         public FiefReconciliationResult ReconcilePartyFiefTroops(
@@ -1312,8 +1392,9 @@ namespace ModifiedArmy.Models.Fief
             if (data?.RepairVillageMilitiaBinding(village) != true) return;
 
             VillageFiefData villageData = data.GetVillageData(village);
-            data.ProcessVillageCooling(villageData, false,
+            int readyTroops = data.ProcessVillageCooling(villageData, false,
                 "MilitiaPartyCreated");
+            data.ShowReadyNotification(readyTroops);
 
             // Recreated militia parties resume through the ordinary daily
             // production path. New-game bulk initialization is intentionally

@@ -29,16 +29,19 @@ namespace ModifiedArmy.Models.Fief
             WaitWeeks = Math.Max(0, waitWeeks);
         }
 
-        public void AddTroops(IReadOnlyDictionary<CharacterObject, int> troops)
+        public int AddTroops(IReadOnlyDictionary<CharacterObject, int> troops)
         {
-            if (troops == null) return;
+            if (troops == null) return 0;
+            int added = 0;
             foreach (var pair in troops)
             {
                 if (pair.Key == null || pair.Value <= 0) continue;
                 Troops[pair.Key] = Troops.TryGetValue(pair.Key, out int old)
                     ? old + pair.Value
                     : pair.Value;
+                added += pair.Value;
             }
+            return added;
         }
 
         /// <summary>

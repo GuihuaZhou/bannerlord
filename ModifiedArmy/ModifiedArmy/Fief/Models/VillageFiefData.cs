@@ -167,7 +167,7 @@ namespace ModifiedArmy.Models.Fief
             CulturalMilitaryDoctrine doctrine, CharacterObject troop,
             int count)
         {
-            if (RecoveryRequired || troop == null || count <= 0) return false;
+            if (troop == null || count <= 0) return false;
             int required = checked(
                 doctrine.GetFeudalSupplyCost(troop) * count);
             return GetFreeSupplyHearth(template, doctrine) >= required &&
@@ -303,9 +303,9 @@ namespace ModifiedArmy.Models.Fief
                     RecoveryReason));
         }
 
-        internal void CompleteRecovery()
+        internal void CompleteRecovery(bool writeLog = true)
         {
-            if (RecoveryRequired)
+            if (RecoveryRequired && writeLog)
                 ModLogger.FileInfo(string.Format(
                     "Fief population workflow recovery completed: " +
                     "village={0}, id={1}, operation={2}, " +

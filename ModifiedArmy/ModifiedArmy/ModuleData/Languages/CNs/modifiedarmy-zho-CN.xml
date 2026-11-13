@@ -70,6 +70,8 @@
     <string id="ModifiedArmy_ExchangeManifestItem" text="{COUNT}名{TROOP_NAME}" />
     <!-- Fief notifications and descriptions. -->
     <string id="FiefTroopsReady" text="{SETTLEMENT_NAME}的封建部队已经就绪!" />
+    <string id="ModifiedArmy_FiefPlacementCompleted" text="{SETTLEMENT_NAME}已接收{COUNT}名返乡安置的封建兵。" />
+    <string id="ModifiedArmy_FiefServiceEndingSoon" text="来自{SETTLEMENT_NAME}、正在{PARTY_NAME}服役的{COUNT}名封建兵将在{DAYS}天后结束免薪服役期。" />
     <string id="FiefTroopsServiceEnding" text="来自{SETTLEMENT_NAME}的封建部队的服役时间即将到期!" />
     <string id="Fief_Intro_Line_Empire" text="这里是帝国的军区." />
     <string id="Fief_Intro_Line_Vlandia" text="这里是瓦兰迪亚的采邑." />
