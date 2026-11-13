@@ -18,7 +18,7 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             string taskId = null, string operationId = null,
             int actualRecruited = 0, int actualFief = 0,
             int actualProfessional = 0, int finalRegulars = 0,
-            string finalState = null)
+            string finalState = null, string diagnosticDetails = null)
         {
             bool playerContext = RecruitmentLogFilter.ShouldLog(leader?.Clan);
             bool significantFailure = phase == "RecoveryRequired" ||
@@ -65,17 +65,20 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             message.SetTextVariable("ACTUAL_PROFESSIONAL", actualProfessional);
             message.SetTextVariable("FINAL_REGULARS", finalRegulars);
             message.SetTextVariable("FINAL_STATE", finalState ?? phase ?? "Unknown");
+            string rendered = message.ToString();
+            if (!string.IsNullOrWhiteSpace(diagnosticDetails))
+                rendered += " " + diagnosticDetails;
             if (phase == "RecoveryRequired")
-                ModLogger.Error(message.ToString());
+                ModLogger.Error(rendered);
             else if (phase == "Failed" || phase == "Rejected")
-                ModLogger.Debug(message.ToString());
+                ModLogger.Debug(rendered);
             else if (phase == "Completed" && finalRegulars > 0 &&
                 finalRegulars < 50)
-                ModLogger.Debug(message.ToString());
+                ModLogger.Debug(rendered);
             else if (phase == "Evaluated")
-                ModLogger.Debug(message.ToString());
+                ModLogger.Debug(rendered);
             else
-                ModLogger.Info(message.ToString());
+                ModLogger.Info(rendered);
         }
     }
 }

@@ -520,12 +520,32 @@ namespace ModifiedArmy.ForceManagement.Services
         {
             MobileParty party = plan?.Initiator ??
                 plan?.Destination?.Party ?? plan?.Source?.Party;
-            if (!RecruitmentLogFilter.ShouldLog(party)) return;
+            if (string.IsNullOrEmpty(plan?.AttemptId) &&
+                !RecruitmentLogFilter.ShouldLog(party)) return;
             TextObject partyName = PartyLogFormatter.GetDisplayName(party);
             TextObject settlementName = plan?.TargetSettlement?.Name ??
                 plan?.Source?.Settlement?.Name ??
                 plan?.Destination?.Settlement?.Name ??
                 new TextObject("Unknown settlement");
+            if (plan?.Operation == PartyExchangeOperation.FiefMobilization &&
+                result?.HasCommittedChanges != true)
+                ModLogger.FileWarn(string.Format(
+                    "[MA.Diag][FiefExecutionFinal] path=InitialFief " +
+                    "attemptId={0} taskId={1} operationId={2} party={3} " +
+                    "settlement={4} requested={5} planManifestCount={6} " +
+                    "committedCount={7} firstFailedPredicate={8} " +
+                    "executorReason={9} status={10} recoveryRequired={11}.",
+                    plan.AttemptId ?? "none", plan.TaskId ?? "none",
+                    plan.OperationId ?? "none",
+                    party?.StringId ?? "none",
+                    plan.TargetSettlement?.StringId ?? "none",
+                    plan.RequestedCount,
+                    plan.SourceToDestination?.TotalCount ?? 0,
+                    result?.TransferredCount ?? 0,
+                    result?.ReasonCode ?? "Unavailable",
+                    result?.ReasonCode ?? "Unavailable",
+                    result?.Status.ToString() ?? "Unavailable",
+                    result?.Status == TransferCommitStatus.RecoveryRequired));
             if (result?.HasCommittedChanges == true)
             {
                 string templateId = plan?.Operation switch

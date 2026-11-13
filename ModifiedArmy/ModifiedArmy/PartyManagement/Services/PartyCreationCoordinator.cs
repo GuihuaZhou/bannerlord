@@ -52,13 +52,34 @@ namespace ModifiedArmy.PartyManagement.Services
                     candidate.BindingEligible);
             if (bindings == null || planning == null || site?.Settlement == null)
             {
+                int bindingEligibleSites = evaluations.Count(item =>
+                    item.BindingEligible);
+                int supplyEligibleSites = evaluations.Count(item =>
+                    item.EstimatedCombinedRegulars >= item.MinimumRequired);
+                string rejectionCounts = string.Join(",", evaluations
+                    .GroupBy(item => item.RejectionReason ?? "Unknown")
+                    .Select(group => group.Key + ":" + group.Count()));
                 PartyCreationDiagnostics.Log(leader, null, null, "Rejected",
                     bindings == null || planning == null
                         ? "CreationServicesUnavailable"
                         : evaluations.Count == 0
                         ? "NoEligibleClanSettlement"
-                        : "NoEligibleCreationBase", 0, 0, 0,
-                    attemptId: attemptId);
+                        : "NoEligibleCreationBase",
+                    candidate?.EstimatedGarrisonRegulars ?? 0,
+                    candidate?.EstimatedFiefRegulars ?? 0,
+                    candidate?.EstimatedCombinedRegulars ?? 0,
+                    candidate?.PreferredInitialSource.ToString() ?? "None",
+                    attemptId: attemptId,
+                    minimumRequired: candidate?.MinimumRequired ?? 0,
+                    minimumFiefBatch: candidate?.MinimumFiefBatch ?? 0,
+                    bindingEligible: candidate?.BindingEligible ?? false,
+                    diagnosticDetails: string.Format(
+                        "path=InitialFief evaluatedSiteCount={0} " +
+                        "eligibleBindingSiteCount={1} eligibleSupplySiteCount={2} " +
+                        "rejectionReasonCounts=\"{3}\" closestSite={4}",
+                        evaluations.Count, bindingEligibleSites,
+                        supplyEligibleSites, rejectionCounts,
+                        candidate?.Settlement?.StringId ?? "none"));
                 return null;
             }
             if (!bindings.TryReserveForCreation(
@@ -111,22 +132,28 @@ namespace ModifiedArmy.PartyManagement.Services
 
                 PartyForceTask initialTask = planning
                     .GetLatestTaskForCreation(party);
+                int beforeArrivalRegulars = party.MemberRoster.TotalRegulars;
                 EnterSettlementAction.ApplyForParty(party, site.Settlement);
+                int afterArrivalRegulars = party.MemberRoster.TotalRegulars;
                 int fiefRecruited = initialTask?.SourceKind ==
                         PartyForceSourceKind.Fief
                     ? Math.Max(0, initialTask.Progress) : 0;
                 int professionalRecruited = initialTask?.SourceKind ==
                         PartyForceSourceKind.Professional
                     ? Math.Max(0, initialTask.Progress) : 0;
+                PartyForceTask fallback = null;
+                PartyExchangeExecutionResult fallbackResult = null;
+                bool fallbackAttempted = false;
                 if (party.MemberRoster.TotalRegulars <= 0 &&
                     initialTask?.SourceKind == PartyForceSourceKind.Fief &&
                     planning.TryRegisterInitialRecruitTask(
                         party, site.Settlement,
                         PartyForceSourceKind.Professional, attemptId, true))
                 {
-                    PartyForceTask fallback = planning
+                    fallbackAttempted = true;
+                    fallback = planning
                         .GetLatestTaskForCreation(party);
-                    PartyExchangeExecutionResult fallbackResult = planning
+                    fallbackResult = planning
                         .ExecuteAtSettlement(party, site.Settlement);
                     professionalRecruited = Math.Max(
                         Math.Max(0, fallback?.Progress ?? 0),
@@ -160,7 +187,9 @@ namespace ModifiedArmy.PartyManagement.Services
                     return FailAfterCreation(bindings, planning, leader, party,
                         site, "InitialRecruitmentCommittedZeroTroops",
                         attemptId, finalTask, fiefRecruited,
-                        professionalRecruited);
+                        professionalRecruited, initialTask, fallback,
+                        fallbackResult, beforeArrivalRegulars,
+                        afterArrivalRegulars, fallbackAttempted);
                 PartyCreationDiagnostics.Log(leader, party,
                     site.Settlement.StringId, "Completed", site.ReasonCode,
                     site.EstimatedGarrisonRegulars,
@@ -204,11 +233,37 @@ namespace ModifiedArmy.PartyManagement.Services
             AiForcePlanningBehavior planning, Hero leader,
             MobileParty party, PartyCreationSiteResult site, string reason,
             string attemptId, PartyForceTask task = null,
-            int fiefRecruited = 0, int professionalRecruited = 0)
+            int fiefRecruited = 0, int professionalRecruited = 0,
+            PartyForceTask initialTask = null,
+            PartyForceTask fallbackTask = null,
+            PartyExchangeExecutionResult fallbackResult = null,
+            int beforeArrivalRegulars = 0,
+            int afterArrivalRegulars = 0,
+            bool fallbackAttempted = false)
         {
-            planning.CancelTask(party, reason);
-            bindings.ReleasePartyBindings(party, reason);
-            if (party?.IsActive == true) DestroyPartyAction.Apply(null, party);
+            int beforeDestroyRegulars =
+                party?.MemberRoster?.TotalRegulars ?? 0;
+            string details = string.Format(
+                "path=InitialFief initialTaskId={0} initialStatus={1} " +
+                "initialReason={2} initialProgress={3} beforeArrivalRegulars={4} " +
+                "afterArrivalRegulars={5} fallbackAttempted={6} " +
+                "fallbackTaskId={7} fallbackStatus={8} fallbackReason={9} " +
+                "fallbackProgress={10} fallbackExecutorReason={11} " +
+                "fallbackApproved={12} fallbackTransferred={13} " +
+                "beforeDestroyRegulars={14} finalFailureStage={15}",
+                initialTask?.TaskId ?? "none",
+                initialTask?.Status.ToString() ?? "NotRegistered",
+                initialTask?.ReasonCode ?? "Unavailable",
+                initialTask?.Progress ?? 0, beforeArrivalRegulars,
+                afterArrivalRegulars, fallbackAttempted,
+                fallbackTask?.TaskId ?? "none",
+                fallbackTask?.Status.ToString() ?? "NotRegistered",
+                fallbackTask?.ReasonCode ?? "Unavailable",
+                fallbackTask?.Progress ?? 0,
+                fallbackResult?.ReasonCode ?? "Unavailable",
+                fallbackResult?.ApprovedCount ?? 0,
+                fallbackResult?.TransferredCount ?? 0,
+                beforeDestroyRegulars, reason);
             PartyCreationDiagnostics.Log(leader, party,
                 site.Settlement.StringId, "Failed", reason,
                 site.EstimatedGarrisonRegulars,
@@ -221,8 +276,12 @@ namespace ModifiedArmy.PartyManagement.Services
                 actualRecruited: fiefRecruited + professionalRecruited,
                 actualFief: fiefRecruited,
                 actualProfessional: professionalRecruited,
-                finalRegulars: party?.MemberRoster?.TotalRegulars ?? 0,
-                finalState: "Failed");
+                finalRegulars: beforeDestroyRegulars,
+                finalState: "Failed",
+                diagnosticDetails: details);
+            planning.CancelTask(party, reason);
+            bindings.ReleasePartyBindings(party, reason);
+            if (party?.IsActive == true) DestroyPartyAction.Apply(null, party);
             return null;
         }
 

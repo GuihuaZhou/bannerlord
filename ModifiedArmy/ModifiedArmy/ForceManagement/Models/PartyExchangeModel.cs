@@ -622,7 +622,19 @@ namespace ModifiedArmy.ForceManagement.Models
                 sourceFingerprint ?? "Unavailable");
             message.SetTextVariable("DESTINATION_FINGERPRINT",
                 context.DestinationSnapshot?.Fingerprint ?? "Unavailable");
-            ModLogger.Debug(message.ToString());
+            ModLogger.Debug(message + string.Format(
+                " path=InitialFief bindingAllowed={0} bindingReasonCode={1}" +
+                " disabledByTemplate={2} noPositiveWeightRoots={3}" +
+                " noUpgradePathToWeightedRoot={4} filteredTroopTypes=\"{5}\"" +
+                " omittedTypes={6} weightedOffered={7}",
+                binding?.Allowed == true,
+                binding?.ReasonCode ?? "SourceBindingUnavailable",
+                candidateDiagnostics?.DisabledByTemplate ?? 0,
+                candidateDiagnostics?.NoPositiveWeightRoots ?? 0,
+                candidateDiagnostics?.NoUpgradePathToWeightedRoot ?? 0,
+                candidateDiagnostics?.FilteredTroopTypes ?? "none",
+                candidateDiagnostics?.OmittedFilteredTypes ?? 0,
+                candidateDiagnostics?.WeightedAllocatedCount ?? offered));
         }
 
         /// <summary>Plans a return from one authoritative fief service batch.</summary>
@@ -685,6 +697,8 @@ namespace ModifiedArmy.ForceManagement.Models
             PartyExchangeExecutorKind executor) => new PartyExchangePlan
         {
             Initiator = context.Initiator,
+            TaskId = context.TaskId,
+            AttemptId = context.AttemptId,
             OperationId = context.OperationId,
             Operation = context.Operation,
             Purpose = context.Purpose,

@@ -309,6 +309,8 @@ namespace ModifiedArmy.ForceManagement.Contracts
     {
         /// <summary>The party whose approved business operation created this plan.</summary>
         public MobileParty Initiator { get; set; }
+        public string TaskId { get; set; }
+        public string AttemptId { get; set; }
         public string OperationId { get; set; }
         public bool ShouldExecute { get; set; }
         public string ReasonCode { get; set; }

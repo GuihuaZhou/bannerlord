@@ -146,6 +146,7 @@ namespace ModifiedArmy.Models
             int recruited = 0;
             int professionalRecruited = 0;
             int prisonerRecruited = 0;
+            GarrisonRecruitmentExecutionResult executionResult = null;
 
             if (dailyLimit > 0 && candidates.Count > 0)
             {
@@ -159,7 +160,8 @@ namespace ModifiedArmy.Models
                     dailyLimit,
                     pools,
                     out professionalRecruited,
-                    out prisonerRecruited);
+                    out prisonerRecruited,
+                    out executionResult);
             }
 
             productionData?.RecordProfessionalRecruitment(
@@ -225,7 +227,8 @@ namespace ModifiedArmy.Models
                         professionalApproved,
                         professionalRecruited,
                         hardFreeSlots,
-                        softFreeSlots));
+                        softFreeSlots,
+                        executionResult));
                 ModLogger.Debug(recruitmentMessage.ToString());
             }
             if (plan != null && professionalOffered > 0)
@@ -280,7 +283,8 @@ namespace ModifiedArmy.Models
             int approved,
             int recruited,
             int hardFreeSlots,
-            int softFreeSlots)
+            int softFreeSlots,
+            GarrisonRecruitmentExecutionResult executionResult)
         {
             if (hardFreeSlots <= 0)
                 return GameTexts.FindText(
@@ -300,8 +304,8 @@ namespace ModifiedArmy.Models
                 return GameTexts.FindText(
                     "str_modifiedarmy_recruit_limit_no_approved_candidate");
             if (recruited < approved)
-                return GameTexts.FindText(
-                    "str_modifiedarmy_recruit_limit_execution_changed");
+                return new TextObject(executionResult?.FailureReason ??
+                    "ExecutionResultUnavailable");
             return GameTexts.FindText(
                 "str_modifiedarmy_recruit_limit_none");
         }
@@ -326,11 +330,29 @@ namespace ModifiedArmy.Models
             int dailyLimit,
             SettlementManpowerProductionBehavior pools,
             out int professionalRecruited,
-            out int prisonerRecruited)
+            out int prisonerRecruited,
+            out GarrisonRecruitmentExecutionResult executionResult)
         {
-            return GarrisonRecruitmentExecutionService.Execute(
-                settlement, garrison, plan, dailyLimit, pools,
-                out professionalRecruited, out prisonerRecruited);
+            executionResult = GarrisonRecruitmentExecutionService
+                .ExecuteDetailed(settlement, garrison, plan, dailyLimit,
+                    pools, null);
+            professionalRecruited = executionResult.ProfessionalRecruited;
+            prisonerRecruited = executionResult.PrisonerRecruited;
+            if (professionalRecruited == 0 && executionResult.ModelApproved > 0 &&
+                RecruitmentLogFilter.ShouldLog(settlement?.OwnerClan))
+                ModLogger.FileWarn(string.Format(
+                    "[MA.Diag][GarrisonDailyFinal] path=ProfessionalOffer " +
+                    "dayIndex={0} settlement={1} settlementId={2} " +
+                    "modelApproved={3} committed={4} firstFailedStage={5} " +
+                    "reasonCode={6} failureReasonCounts=\"{7}\".",
+                    (int)CampaignTime.Now.ToDays, settlement?.Name,
+                    settlement?.StringId, executionResult.ModelApproved,
+                    executionResult.ProfessionalRecruited,
+                    executionResult.FirstFailedStage ?? "Unavailable",
+                    executionResult.FailureReason ?? "Unavailable",
+                    string.Join(",", executionResult.FailureReasonCounts
+                        .Select(pair => pair.Key + ":" + pair.Value))));
+            return executionResult.TotalCommitted;
         }
 
         private static void LogProfessionalRecruitment(

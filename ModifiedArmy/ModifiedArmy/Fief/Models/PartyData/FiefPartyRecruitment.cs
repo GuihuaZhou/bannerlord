@@ -42,6 +42,11 @@ namespace ModifiedArmy.Models.Fief
         public string Unmatched { get; set; } = "none";
         public int CandidateCount { get; set; }
         public int WeightedAllocatedCount { get; set; }
+        public int DisabledByTemplate { get; set; }
+        public int NoPositiveWeightRoots { get; set; }
+        public int NoUpgradePathToWeightedRoot { get; set; }
+        public string FilteredTroopTypes { get; set; } = "none";
+        public int OmittedFilteredTypes { get; set; }
     }
 
     public partial class FiefPartyData
@@ -385,9 +390,8 @@ namespace ModifiedArmy.Models.Fief
             diagnostics.TemplateRoots = string.Join(",", roots.Select(root =>
                 string.Format("{0}({1}):{2}", root.Troop.Name,
                     root.Troop.StringId, root.Weight)));
-            if (roots.Count == 0) return candidates;
-
             var healthyStock = new Dictionary<CharacterObject, int>();
+            var filteredTypes = new List<string>();
             foreach (TroopRosterElement element in GetFiefTroopRoster(
                 villageFilter, true).GetTroopRoster())
             {
@@ -399,9 +403,18 @@ namespace ModifiedArmy.Models.Fief
                     diagnostics.ReadyWounded += Math.Max(0,
                         element.WoundedNumber);
                 }
-                if (troop == null || troop.IsHero || healthy <= 0 ||
-                    !_fiefPartyTemplate.IsEnableTroop(troop))
+                if (troop == null || troop.IsHero || healthy <= 0)
                     continue;
+                if (!_fiefPartyTemplate.IsEnableTroop(troop))
+                {
+                    diagnostics.DisabledByTemplate += healthy;
+                    if (filteredTypes.Count < 10)
+                        filteredTypes.Add(string.Format(
+                            "{0}:{1}:DisabledByTemplate", troop.StringId,
+                            healthy));
+                    else diagnostics.OmittedFilteredTypes++;
+                    continue;
+                }
                 healthyStock[troop] = healthyStock.TryGetValue(troop, out int old)
                     ? old + healthy
                     : healthy;
@@ -409,6 +422,14 @@ namespace ModifiedArmy.Models.Fief
             diagnostics.ReadyHealthy = Math.Max(0,
                 diagnostics.ReadyTotal - diagnostics.ReadyWounded);
             diagnostics.TemplateEligible = healthyStock.Values.Sum();
+            if (roots.Count == 0)
+            {
+                diagnostics.NoPositiveWeightRoots =
+                    diagnostics.TemplateEligible;
+                diagnostics.FilteredTroopTypes = filteredTypes.Count == 0
+                    ? "none" : string.Join(",", filteredTypes);
+                return candidates;
+            }
 
             var matched = new HashSet<CharacterObject>();
             foreach (var stock in healthyStock)
@@ -439,11 +460,25 @@ namespace ModifiedArmy.Models.Fief
             diagnostics.RootMatched = matched.Sum(troop => healthyStock[troop]);
             diagnostics.RootUnmatched = healthyStock.Where(item =>
                 !matched.Contains(item.Key)).Sum(item => item.Value);
+            diagnostics.NoUpgradePathToWeightedRoot =
+                diagnostics.RootUnmatched;
             diagnostics.Unmatched = diagnostics.RootUnmatched <= 0 ? "none" :
                 string.Join(",", healthyStock.Where(item =>
                     !matched.Contains(item.Key)).Select(item => string.Format(
                         "{0}({1}):{2}", item.Key.Name, item.Key.StringId,
                         item.Value)));
+            int unmatchedTypeCount = healthyStock.Count(item =>
+                !matched.Contains(item.Key));
+            int detailSlots = Math.Max(0, 10 - filteredTypes.Count);
+            foreach (var item in healthyStock.Where(item =>
+                !matched.Contains(item.Key)).Take(detailSlots))
+                filteredTypes.Add(string.Format(
+                    "{0}:{1}:NoUpgradePathToWeightedRoot",
+                    item.Key.StringId, item.Value));
+            diagnostics.OmittedFilteredTypes += Math.Max(0,
+                unmatchedTypeCount - detailSlots);
+            diagnostics.FilteredTroopTypes = filteredTypes.Count == 0
+                ? "none" : string.Join(",", filteredTypes.Take(10));
 
             int target = Math.Min(
                 maximumCount,

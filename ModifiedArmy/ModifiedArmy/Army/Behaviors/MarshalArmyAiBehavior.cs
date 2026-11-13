@@ -126,12 +126,19 @@ namespace ModifiedArmy.Army.Behaviors
             bool canCreateArmy = Campaign.Current.Models.ArmyManagementCalculationModel.CanLordCreateArmy(
                 party,
                 out MBList<MobileParty> candidates);
+            bool instrumented = MarshalArmyEligibilityTrace.TryConsumeResult(
+                party, out string eligibilityReason, out string modelTraceId,
+                out int candidatesBeforeClear, out int candidatesReturned);
             MarshalArmyDebugTrace.Write(
-                "phase=ELIGIBILITY traceId=" + traceId
+                "phase=ELIGIBILITY path=ArmyEligibility traceId=" + traceId
+                + " modelTraceId=" + modelTraceId
                 + " party=" + MarshalArmyDebugTrace.DescribeParty(party)
                 + " result=" + canCreateArmy
                 + " candidates=" + (candidates?.Count ?? 0)
-                + " reason=" + (canCreateArmy ? "ELIGIBILITY_PASS" : "ELIGIBILITY_FAIL_NATIVE_UNKNOWN")
+                + " reason=" + (canCreateArmy ? "ELIGIBILITY_PASS" : eligibilityReason)
+                + " reasonUnavailable=" + (!instrumented)
+                + " candidatesBeforeClear=" + candidatesBeforeClear
+                + " candidatesReturned=" + candidatesReturned
                 + " influence=" + MarshalArmyDebugTrace.F(marshal.Clan?.Influence ?? 0f)
                 + " foodDays=" + party.GetNumDaysForFoodToLast()
                 + " sizeRatio=" + MarshalArmyDebugTrace.F(party.PartySizeRatio)

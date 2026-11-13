@@ -9,6 +9,7 @@ using System.Globalization;
 using ModifiedArmy.Tool;
 using TaleWorlds.Core;
 using TaleWorlds.Localization;
+using TaleWorlds.CampaignSystem;
 
 namespace ModifiedArmy.Recruitment.Services
 {
@@ -35,7 +36,7 @@ namespace ModifiedArmy.Recruitment.Services
             return result.TotalCommitted;
         }
 
-        private static GarrisonRecruitmentExecutionResult ExecuteDetailed(
+        internal static GarrisonRecruitmentExecutionResult ExecuteDetailed(
             Settlement settlement,
             MobileParty garrison,
             RecruitmentPlan plan,
@@ -59,15 +60,33 @@ namespace ModifiedArmy.Recruitment.Services
             }
             foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
             {
+                result.AttemptedCandidates++;
+                result.ModelApproved += Math.Max(0,
+                    evaluation.RecruitableCount);
+                int quotaRemaining = Math.Max(0, dailyLimit - recruited);
+                int hardFree = GarrisonRecruitmentCapacity.GetHardFreeSlots(
+                    garrison, reservedReturningMembers);
+                int softFree = GarrisonRecruitmentCapacity
+                    .GetSoftRecruitmentFreeSlots(
+                        garrison, reservedReturningMembers);
                 int count = Math.Min(evaluation.RecruitableCount,
-                    dailyLimit - recruited);
-                count = Math.Min(count,
-                    GarrisonRecruitmentCapacity.GetHardFreeSlots(
-                        garrison, reservedReturningMembers));
-                count = Math.Min(count,
-                    GarrisonRecruitmentCapacity.GetSoftRecruitmentFreeSlots(
-                        garrison, reservedReturningMembers));
-                if (count <= 0 || evaluation.Troop == null) continue;
+                    quotaRemaining);
+                count = Math.Min(count, hardFree);
+                count = Math.Min(count, softFree);
+                if (count <= 0 || evaluation.Troop == null)
+                {
+                    result.Reject(evaluation.Troop == null
+                        ? "CandidateValidation" : hardFree <= 0
+                        ? "HardCapacity" : softFree <= 0
+                        ? "SoftCapacity" : quotaRemaining <= 0
+                        ? "DailyQuota" : "ModelApproval",
+                        evaluation.Troop == null ? "InvalidTroop" :
+                        hardFree <= 0 ? "HardCapacityInsufficient" :
+                        softFree <= 0 ? "SoftCapacityInsufficient" :
+                        quotaRemaining <= 0 ? "DailyQuotaExhausted" :
+                        "ModelApprovedZero");
+                    continue;
+                }
 
                 if (evaluation.Source ==
                     RecruitmentSource.ProfessionalProduction)
@@ -75,21 +94,38 @@ namespace ModifiedArmy.Recruitment.Services
                     int requested = count;
                     count = Math.Min(count,
                         pools.GetMaxAffordableProfessionalCount(
-                            settlement, evaluation.Troop, count));
+                            settlement, evaluation.Troop, count,
+                            out ProfessionalAffordabilityDiagnostic affordability));
                     if (count <= 0)
                     {
-                        result.FailureReason =
-                            "InsufficientRecruitmentCapacity";
+                        result.Reject("PopulationAffordability",
+                            affordability.ReasonCode);
                         if (ModifiedArmy.Recruitment.Diagnostics.RecruitmentLogFilter
                             .ShouldLog(settlement?.OwnerClan))
                             ModLogger.FileWarn(string.Format(
                                 "Professional recruitment capacity rejected: " +
                                 "settlement={0}, id={1}, troop={2}, tier={3}, " +
-                                "requested={4}, approved=0, reason={5}.",
+                                "path=ProfessionalOffer, dayIndex={0}, " +
+                                "settlement={1}, id={2}, troop={3}, tier={4}, " +
+                                "sourceOfferCount={5}, modelApproved={6}, " +
+                                "dailyQuotaRemaining={7}, hardFree={8}, " +
+                                "softFree={9}, reservedEscorts={10}, " +
+                                "requestedBeforeBurden={11}, hearthBefore={12:F2}, " +
+                                "burdenBefore={13:F2}, effectiveCapacityBefore={14:F2}, " +
+                                "burdenCostPerTroop={15}, affordableCount={16}, " +
+                                "firstFailedStage=PopulationAffordability, reasonCode={17}.",
+                                (int)CampaignTime.Now.ToDays,
                                 settlement?.Name, settlement?.StringId,
                                 evaluation.Troop.Name, evaluation.Troop.Tier,
-                                requested,
-                                "InsufficientRecruitmentCapacity"));
+                                evaluation.RequestedCount,
+                                evaluation.RecruitableCount, quotaRemaining,
+                                hardFree, softFree, reservedReturningMembers,
+                                requested, affordability.HearthBefore,
+                                affordability.BurdenBefore,
+                                affordability.EffectiveCapacityBefore,
+                                affordability.BurdenCostPerTroop,
+                                affordability.AffordableCount,
+                                affordability.ReasonCode));
                         continue;
                     }
                 }
@@ -102,8 +138,11 @@ namespace ModifiedArmy.Recruitment.Services
                     {
                         if (!ProfessionalRecruitmentService.TryCommit(
                             settlement, garrison, evaluation.Troop, count, pools,
-                            out professionalCommit))
+                            out professionalCommit, out string commitReason))
+                        {
+                            result.Reject("SourceCommit", commitReason);
                             continue;
+                        }
                     }
                     else if (evaluation.Source == RecruitmentSource.Prisoner)
                     {

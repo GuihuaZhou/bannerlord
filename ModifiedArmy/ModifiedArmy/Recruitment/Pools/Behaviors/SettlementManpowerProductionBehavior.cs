@@ -24,6 +24,16 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         public string PopulationOperationId { get; set; }
     }
 
+    internal sealed class ProfessionalAffordabilityDiagnostic
+    {
+        public float HearthBefore { get; set; }
+        public float BurdenBefore { get; set; }
+        public float EffectiveCapacityBefore { get; set; }
+        public int BurdenCostPerTroop { get; set; }
+        public int AffordableCount { get; set; }
+        public string ReasonCode { get; set; }
+    }
+
     /// <summary>
     /// Converts settlement manpower into daily professional offers and direct
     /// fief-party reinforcement. No generated troop inventory is persisted.
@@ -134,6 +144,18 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         public int GetMaxAffordableProfessionalCount(Settlement settlement,
             CharacterObject troop, int requested)
         {
+            return GetMaxAffordableProfessionalCount(
+                settlement, troop, requested, out _);
+        }
+
+        internal int GetMaxAffordableProfessionalCount(Settlement settlement,
+            CharacterObject troop, int requested,
+            out ProfessionalAffordabilityDiagnostic diagnostic)
+        {
+            diagnostic = new ProfessionalAffordabilityDiagnostic
+            {
+                ReasonCode = "InvalidRequest"
+            };
             if (settlement?.IsFortification != true || troop == null ||
                 requested <= 0) return 0;
             try
@@ -141,12 +163,35 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 int burdenCost = MilitaryConfigManager.Instance
                     .RequireActiveConfig().GetDoctrine(settlement)
                     .GetProfessionalBurdenCost(troop);
-                return SettlementPopulationServiceRegistry.Current?
+                diagnostic.BurdenCostPerTroop = burdenCost;
+                ISettlementPopulationService population =
+                    SettlementPopulationServiceRegistry.Current;
+                if (population == null)
+                {
+                    diagnostic.ReasonCode = "PopulationProviderMissing";
+                    return 0;
+                }
+                diagnostic.HearthBefore = population.GetHearth(settlement);
+                diagnostic.BurdenBefore =
+                    population.GetRecruitmentBurden(settlement);
+                diagnostic.EffectiveCapacityBefore =
+                    diagnostic.HearthBefore - diagnostic.BurdenBefore;
+                if (population.IsRecoveryRequired(settlement))
+                {
+                    diagnostic.ReasonCode = "SettlementRecoveryRequired";
+                    return 0;
+                }
+                diagnostic.AffordableCount = population
                     .GetMaxAffordableProfessionalCount(
-                        settlement, burdenCost, requested) ?? 0;
+                        settlement, burdenCost, requested);
+                diagnostic.ReasonCode = diagnostic.AffordableCount > 0
+                    ? "Affordable" : "BurdenCapacityInsufficient";
+                return diagnostic.AffordableCount;
             }
             catch (Exception exception)
             {
+                diagnostic.ReasonCode = "PolicyException:" +
+                    exception.GetType().Name;
                 ModLogger.Error(string.Format(
                     "Professional affordability policy failed: " +
                     "settlement={0}, id={1}, culture={2}, troop={3}, " +

@@ -20,6 +20,8 @@ namespace ModifiedArmy.Army.Diagnostics
             new Dictionary<string, HashSet<string>>();
         private static int _callIndex;
         private static int _modelActiveLogged;
+        [ThreadStatic]
+        private static EligibilityResult _completedResult;
         private int _candidateLines;
         private int _candidateObservations;
 
@@ -52,6 +54,7 @@ namespace ModifiedArmy.Army.Diagnostics
             if (detailed) LastDetailDay[key] = day;
             string traceId = key + ":" + day + ":" +
                 System.Threading.Interlocked.Increment(ref _callIndex);
+            _completedResult = null;
             return new MarshalArmyEligibilityTrace(party, relevant, detailed, traceId, key);
         }
 
@@ -90,11 +93,49 @@ namespace ModifiedArmy.Army.Diagnostics
 
         internal void Result(bool result, string reason, int beforeClear, int returned)
         {
-            if (!Enabled) return;
-            Write("phase=RESULT traceId=" + TraceId + " result=" + result +
+            _completedResult = new EligibilityResult
+            {
+                PartyId = Party?.StringId,
+                TraceId = TraceId,
+                DayIndex = (int)CampaignTime.Now.ToDays,
+                Result = result,
+                ReasonCode = reason ?? "Unknown",
+                CandidatesBeforeClear = beforeClear,
+                CandidatesReturned = returned
+            };
+            if (!Enabled && result) return;
+            Write("phase=RESULT path=ArmyEligibility traceId=" + TraceId + " result=" + result +
                   " reasonCode=" + reason + " candidatesBeforeClear=" + beforeClear +
                   " candidatesReturned=" + returned + " omittedCandidateDetails=" +
                   Math.Max(0, _candidateObservations - _candidateLines));
+        }
+
+        internal static bool TryConsumeResult(
+            MobileParty party, out string reasonCode, out string modelTraceId,
+            out int beforeClear, out int returned)
+        {
+            EligibilityResult result = _completedResult;
+            _completedResult = null;
+            bool matches = result != null && party != null &&
+                string.Equals(result.PartyId, party.StringId,
+                    StringComparison.Ordinal) &&
+                result.DayIndex == (int)CampaignTime.Now.ToDays;
+            reasonCode = matches ? result.ReasonCode : "UninstrumentedModel";
+            modelTraceId = matches ? result.TraceId : "none";
+            beforeClear = matches ? result.CandidatesBeforeClear : -1;
+            returned = matches ? result.CandidatesReturned : -1;
+            return matches;
+        }
+
+        private sealed class EligibilityResult
+        {
+            public string PartyId { get; set; }
+            public string TraceId { get; set; }
+            public int DayIndex { get; set; }
+            public bool Result { get; set; }
+            public string ReasonCode { get; set; }
+            public int CandidatesBeforeClear { get; set; }
+            public int CandidatesReturned { get; set; }
         }
 
         internal static void Audit(string values) => Write(values);

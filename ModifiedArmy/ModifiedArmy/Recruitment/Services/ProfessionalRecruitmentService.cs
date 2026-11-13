@@ -26,7 +26,17 @@ namespace ModifiedArmy.Recruitment.Services
             SettlementManpowerProductionBehavior pools,
             out ProfessionalRecruitmentCommit commit)
         {
+            return TryCommit(settlement, garrison, troop, count, pools,
+                out commit, out _);
+        }
+
+        internal static bool TryCommit(Settlement settlement,
+            MobileParty garrison, CharacterObject troop, int count,
+            SettlementManpowerProductionBehavior pools,
+            out ProfessionalRecruitmentCommit commit, out string reasonCode)
+        {
             commit = null;
+            reasonCode = "InvalidRequest";
             if (settlement == null || garrison == null || troop == null ||
                 count <= 0 || pools == null)
             {
@@ -36,7 +46,10 @@ namespace ModifiedArmy.Recruitment.Services
             if (!pools.TryConsumeProfessionalOffer(
                     settlement, troop, count,
                     out ProfessionalOfferConsumption consumption))
+            {
+                reasonCode = "OfferConsumptionRejected";
                 return false;
+            }
             try
             {
                 garrison.MemberRoster.AddToCounts(
@@ -49,6 +62,7 @@ namespace ModifiedArmy.Recruitment.Services
                     RosterBefore = rosterBefore,
                     Consumption = consumption
                 };
+                reasonCode = "Committed";
                 return true;
             }
             catch (Exception exception)
@@ -78,9 +92,13 @@ namespace ModifiedArmy.Recruitment.Services
                 commitMessage.SetTextVariable("ERROR", exception.ToString());
                 ModLogger.Error(commitMessage.ToString());
                 if (rollbackFailure != null)
+                {
+                    reasonCode = "RollbackFailed";
                     throw new InvalidOperationException(
                         "Professional recruitment source rollback failed.",
                         rollbackFailure);
+                }
+                reasonCode = "RosterCommitFailed";
                 return false;
             }
         }
