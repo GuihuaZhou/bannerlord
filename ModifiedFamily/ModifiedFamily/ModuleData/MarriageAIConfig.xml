@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<MarriageAI>
+  <!-- Number of in-game days between AI proposal checks for each clan. -->
+  <ProposalCheckIntervalDays>7</ProposalCheckIntervalDays>
+
+  <!-- Chance that an eligible clan starts candidate search during a scheduled check. Range: 0.0 to 1.0. -->
+  <BaseProposalChance>0.50</BaseProposalChance>
+
+  <!-- In-game days before a clan may create another original AI marriage proposal. -->
+  <ClanProposalCooldownDays>14</ClanProposalCooldownDays>
+
+  <!-- Maximum NPC acceptance probability at or above the theoretical maximum positive score. Range: 0.0 to 1.0. -->
+  <AcceptanceMaxChance>0.50</AcceptanceMaxChance>
+
+  <!-- Exponent applied to the normalized acceptance score. Must be greater than zero. -->
+  <AcceptanceExponent>2.0</AcceptanceExponent>
+
+  <!-- Comma-separated denar amounts available to AI-generated offers and counteroffers. A zero-gift option is always considered separately. -->
+  <GiftSteps>30000,50000,80000,100000</GiftSteps>
+
+  <!-- Maximum share of the payer leader's current gold that an AI-generated gift may use. Range: 0.0 to 1.0. -->
+  <AiMaxGiftGoldRatio>0.30</AiMaxGiftGoldRatio>
+
+  <!-- The theoretical maximum positive marriage score is derived from code constants and is intentionally not configured here. -->
+</MarriageAI>

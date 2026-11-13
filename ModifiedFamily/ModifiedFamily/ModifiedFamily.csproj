@@ -18,6 +18,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="TaleWorlds.ObjectSystem"><HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ObjectSystem.dll</HintPath></Reference>
+    <Reference Include="TaleWorlds.ModuleManager"><HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.ModuleManager.dll</HintPath></Reference>
     <Reference Include="TaleWorlds.CampaignSystem"><HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.dll</HintPath></Reference>
     <Reference Include="TaleWorlds.CampaignSystem.ViewModelCollection"><HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.CampaignSystem.ViewModelCollection.dll</HintPath></Reference>
     <Reference Include="TaleWorlds.SaveSystem"><HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.SaveSystem.dll</HintPath></Reference>

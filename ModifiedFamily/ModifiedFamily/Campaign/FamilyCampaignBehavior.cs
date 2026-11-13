@@ -18,6 +18,7 @@ using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.CampaignBehaviors;
 using TaleWorlds.CampaignSystem.Actions;
 using ModifiedFamily.UI.Notifications;
+using ModifiedFamily.Marriage.Configuration;
 
 namespace ModifiedFamily.Campaign
 {
@@ -34,6 +35,8 @@ namespace ModifiedFamily.Campaign
         private FamilyProposalNotificationService _notificationService;
         private readonly HashSet<Clan> _pendingPoliticalRevalidation = new HashSet<Clan>();
         private readonly MarriagePoliticalValidationModel _politicalValidation = new MarriagePoliticalValidationModel();
+        private readonly Dictionary<string, int> _lastAiCheckDay =
+            new Dictionary<string, int>(StringComparer.Ordinal);
         public IReadOnlyList<AdoptiveKinshipRecord> Adoptions => _adoptions;
         public FamilyProposalService Service => _service;
 
@@ -61,6 +64,8 @@ namespace ModifiedFamily.Campaign
 
         private void OnSessionLaunched(CampaignGameStarter starter)
         {
+            MarriageAiConfig.Load();
+            _lastAiCheckDay.Clear();
             BuildServices(); MigrateVanillaOffers();
             foreach (FamilyProposal proposal in _proposals) _notificationService.Publish(proposal);
             bool correctModel = TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel;
@@ -79,7 +84,35 @@ namespace ModifiedFamily.Campaign
             _adoptionExecution = new AdoptionExecutionService(adoptionModel, new AdoptiveKinshipService(_adoptions));
         }
 
-        private void OnDailyClan(Clan clan) { if (_service != null && FamilyDiagnostics.IsSafeToRunAi) _marriageAi.ConsiderClan(clan); }
+        private void OnDailyClan(Clan clan)
+        {
+            if (_service == null || !FamilyDiagnostics.IsSafeToRunAi ||
+                clan == null || string.IsNullOrEmpty(clan.StringId)) return;
+            MarriageAiConfig config = MarriageAiConfig.Current;
+            int today = (int)Math.Floor(CampaignTime.Now.ToDays);
+            int phase = StablePhase(clan.StringId,
+                config.ProposalCheckIntervalDays);
+            if ((today + phase) % config.ProposalCheckIntervalDays != 0)
+                return;
+            if (_lastAiCheckDay.TryGetValue(clan.StringId, out int lastDay) &&
+                lastDay == today) return;
+            _lastAiCheckDay[clan.StringId] = today;
+            _marriageAi.ConsiderClan(clan, today, phase);
+        }
+
+        private static int StablePhase(string value, int interval)
+        {
+            unchecked
+            {
+                uint hash = 2166136261;
+                foreach (char character in value ?? string.Empty)
+                {
+                    hash ^= character;
+                    hash *= 16777619;
+                }
+                return (int)(hash % (uint)Math.Max(1, interval));
+            }
+        }
         private void OnDaily()
         {
             if (_service == null) BuildServices();

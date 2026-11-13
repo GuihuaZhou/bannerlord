@@ -11,7 +11,8 @@ namespace ModifiedFamily.Marriage.Models
         public float ValueToClan(Hero hero, Clan clan)
         {
             if (hero == null || clan == null) return 0f;
-            float value = 75f - Math.Abs(hero.Age - 28f) * 1.25f;
+            float value = MarriageScoreTuning.MaximumHeroInflow -
+                Math.Abs(hero.Age - 28f) * 1.25f;
             return Clamp(value, 20f, 160f);
         }
 

@@ -159,6 +159,11 @@ namespace ModifiedFamily.Proposals
 
         public IReadOnlyList<FamilyProposal> GetIncoming(Clan clan) => _proposals.Where(p => p.ReceiverClan == clan && p.IsActive).ToList();
         public IReadOnlyList<FamilyProposal> GetOutgoing(Clan clan) => _proposals.Where(p => p.ProposerClan == clan && p.IsActive).ToList();
+        public FamilyProposal GetLatestOriginalMarriageProposal(Clan clan) =>
+            clan == null ? null : _proposals.Where(p => p != null &&
+                p.ProposalType == FamilyProposalType.Marriage &&
+                p.ProposerClan == clan && p.ParentProposalId == null)
+                .OrderByDescending(p => p.CreatedAt.ToDays).FirstOrDefault();
         public FamilyProposal GetProposal(string id) => id == null ? null : _proposals.FirstOrDefault(p => p?.ProposalId == id);
         // UI diagnostics use this read-only lookup to explain why a selected hero cannot start another negotiation.
         public FamilyProposal GetActiveProposalFor(Hero hero) => hero == null ? null : _proposals.FirstOrDefault(p => p != null && p.IsActive && (p.HeroA == hero || p.HeroB == hero || p.AdopteeHero == hero));

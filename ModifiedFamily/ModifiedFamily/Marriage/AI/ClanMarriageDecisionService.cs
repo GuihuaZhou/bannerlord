@@ -1,4 +1,5 @@
 // Decentralized clan AI: searches bounded candidates and independently negotiates each proposal.
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using ModifiedFamily.Core;
@@ -7,6 +8,9 @@ using ModifiedFamily.Localization;
 using ModifiedFamily.Marriage.Models;
 using ModifiedFamily.Proposals;
 using TaleWorlds.CampaignSystem;
+using TaleWorlds.Library;
+using TaleWorlds.Core;
+using ModifiedFamily.Marriage.Configuration;
 
 namespace ModifiedFamily.Marriage.AI
 {
@@ -15,16 +19,50 @@ namespace ModifiedFamily.Marriage.AI
         private readonly FamilyProposalService _service;
         private readonly MarriageProposalModel _proposalModel;
         private readonly ClanHeroValueModel _values = new ClanHeroValueModel();
-        private static readonly int[] GiftSteps = { 5000, 10000, 20000 };
 
         public ClanMarriageDecisionService(FamilyProposalService service, MarriageProposalModel proposalModel)
         { _service = service; _proposalModel = proposalModel; }
 
-        public void ConsiderClan(Clan clan)
+        public void ConsiderClan(Clan clan, int today, int phase)
         {
-            if (clan == Clan.PlayerClan || !MarriageEligibilityModel.CanUseClan(clan).IsAllowed || _service.GetOutgoing(clan).Count > 0) return;
+            MarriageAiConfig config = MarriageAiConfig.Current;
+            FamilyProposal previous = _service
+                .GetLatestOriginalMarriageProposal(clan);
+            int previousDay = previous == null ? int.MinValue :
+                (int)Math.Floor(previous.CreatedAt.ToDays);
+            if (previousDay < 0 || previousDay > today)
+                previousDay = int.MinValue;
+            int cooldownRemaining = previous == null ? 0 : Math.Max(0,
+                config.ClanProposalCooldownDays - (today - previousDay));
+            string reason = clan == Clan.PlayerClan ? "PlayerClan" :
+                !MarriageEligibilityModel.CanUseClan(clan).IsAllowed
+                    ? "ClanIneligible" :
+                _service.GetOutgoing(clan).Any(proposal =>
+                    proposal.ProposalType == FamilyProposalType.Marriage)
+                    ? "ActiveOutgoingProposal" :
+                cooldownRemaining > 0 ? "ClanProposalCooldown" : null;
+            if (reason != null)
+            {
+                TraceProposalCheck(clan, today, phase, previousDay,
+                    cooldownRemaining, config.BaseProposalChance, -1f,
+                    false, reason, null);
+                return;
+            }
+            float proposalRoll = StableProposalRoll(clan.StringId, today);
+            bool enterSearch = proposalRoll < config.BaseProposalChance;
+            TraceProposalCheck(clan, today, phase, previousDay,
+                cooldownRemaining, config.BaseProposalChance, proposalRoll,
+                enterSearch, enterSearch ? "ChancePassed" : "ChanceFailed",
+                null);
+            if (!enterSearch) return;
             List<Hero> ownHeroes = clan.Heroes.Where(h => MarriageEligibilityModel.CanNegotiateHero(h).IsAllowed).Take(3).ToList();
-            if (ownHeroes.Count == 0) return;
+            if (ownHeroes.Count == 0)
+            {
+                TraceProposalCheck(clan, today, phase, previousDay, 0,
+                    config.BaseProposalChance, proposalRoll, true,
+                    "NoEligibleOwnHero", null);
+                return;
+            }
             List<Clan> targetClans = Clan.All.Where(c => c != clan && MarriageEligibilityModel.CanUseClan(c).IsAllowed && (MarriagePolicyModel.EnableAiToPlayer || c != Clan.PlayerClan))
                 .OrderBy(c => ClanTier(clan, c)).ThenByDescending(c => clan.GetRelationWithClan(c)).Take(8).ToList();
             var candidates = new List<OfferCandidate>();
@@ -34,22 +72,31 @@ namespace ModifiedFamily.Marriage.AI
             foreach (MarriageDirection direction in new[] { MarriageDirection.FemaleJoinsMaleClan, MarriageDirection.MaleJoinsFemaleClan })
             {
                 AddCandidate(candidates, clan, targetClan, own, other, direction, null, 0);
-                foreach (int gift in GiftSteps)
+                foreach (int gift in config.GiftSteps)
                 {
-                    if (clan.Leader != null && clan.Leader.Gold >= gift) AddCandidate(candidates, clan, targetClan, own, other, direction, clan, gift);
-                    if (targetClan.Leader != null && targetClan.Leader.Gold >= gift) AddCandidate(candidates, clan, targetClan, own, other, direction, targetClan, gift);
+                    if (CanAiOfferGift(clan, gift, config)) AddCandidate(candidates, clan, targetClan, own, other, direction, clan, gift);
+                    if (CanAiOfferGift(targetClan, gift, config)) AddCandidate(candidates, clan, targetClan, own, other, direction, targetClan, gift);
                 }
             }
-            foreach (OfferCandidate candidate in candidates.OrderBy(x => x.Tier).ThenByDescending(x => x.ProposerScore).ThenByDescending(x => x.ReceiverScore))
+            foreach (OfferCandidate candidate in candidates.OrderBy(x => x.Tier)
+                .ThenByDescending(x => x.ProposerScore)
+                .ThenByDescending(x => x.ReceiverAcceptanceChance)
+                .ThenBy(x => x.Draft.GiftAmount))
             {
                 FamilyResult created = _service.TryCreateMarriageProposal(candidate.Draft);
                 if (!created.IsAllowed) continue;
                 FamilyDiagnostics.DebugLog(FamilyLogText.AiCandidate(clan, candidate.Draft.HeroA, candidate.Draft.HeroB, candidate.Tier, candidate.ProposerScore));
                 FamilyProposal proposal = _service.GetProposal(created.ProposalId);
+                TraceProposalCheck(clan, today, phase, previousDay, 0,
+                    config.BaseProposalChance, proposalRoll, true,
+                    "ProposalCreated", proposal);
                 FamilyDiagnostics.DebugLog(FamilyLogText.MarriageEvaluation(proposal, _values.Evaluate(proposal, clan), "Proposer"));
                 FamilyDiagnostics.DebugLog(FamilyLogText.MarriageEvaluation(proposal, _values.Evaluate(proposal, candidate.Draft.ReceiverClan), "PredictedReceiver"));
                 return;
             }
+            TraceProposalCheck(clan, today, phase, previousDay, 0,
+                config.BaseProposalChance, proposalRoll, true,
+                "NoViableCandidate", null);
         }
 
         public void Respond(FamilyProposal proposal)
@@ -69,25 +116,43 @@ namespace ModifiedFamily.Marriage.AI
             }
             MarriageScoreBreakdown score = _values.Evaluate(proposal, proposal.ReceiverClan);
             FamilyDiagnostics.DebugLog(FamilyLogText.MarriageEvaluation(proposal, score, "Receiver"));
-            if (score.Total >= MarriageScoreTuning.AcceptanceThreshold)
+            float chance = MarriageScoreTuning.CalculateAcceptanceChance(
+                score.Total);
+            if (chance <= 0f && proposal.CounterCount == 0)
             {
-                TraceDecision(proposal, score, "Accept", FamilyReasonCode.None);
-                FamilyResult result = _service.TryAccept(proposal.ProposalId, proposal.ReceiverClan);
-                TraceActionResult("AI_ACCEPT_RESULT", proposal, result);
-                FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(proposal, "Accepted", FamilyReasonCode.None));
-                return;
-            }
-            if (proposal.CounterCount == 0)
-            {
-                TraceDecision(proposal, score, "TryCounter", FamilyReasonCode.LowClanBenefit);
+                TraceAcceptance(proposal, score, chance, -1f,
+                    "TryCounter", false, "ZeroAcceptanceChance");
                 if (TryCounter(proposal)) return;
+            }
+            else if (chance > 0f)
+            {
+                float roll = MBRandom.RandomFloat;
+                bool accepted = roll < chance;
+                FamilyResult action = accepted
+                    ? _service.TryAccept(proposal.ProposalId,
+                        proposal.ReceiverClan)
+                    : _service.TryReject(proposal.ProposalId,
+                        proposal.ReceiverClan,
+                        FamilyReasonCode.LowClanBenefit);
+                TraceAcceptance(proposal, score, chance, roll,
+                    accepted ? "Accept" : "Reject", action.IsAllowed,
+                    action.ReasonCode.ToString());
+                TraceActionResult(accepted ? "AI_ACCEPT_RESULT" :
+                    "AI_REJECT_RESULT", proposal, action);
+                if (action.IsAllowed)
+                    FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(
+                        proposal, accepted ? "Accepted" : "Rejected",
+                        accepted ? FamilyReasonCode.None :
+                            FamilyReasonCode.LowClanBenefit));
+                return;
             }
             FamilyReasonCode reason = FamilyReasonCode.LowClanBenefit;
             if (proposal.CounterCount != 0)
                 TraceDecision(proposal, score, "Reject", reason);
             FamilyResult rejected = _service.TryReject(proposal.ProposalId, proposal.ReceiverClan, reason);
             TraceActionResult("AI_REJECT_RESULT", proposal, rejected);
-            FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(proposal, "Rejected", reason));
+            if (rejected.IsAllowed)
+                FamilyDiagnostics.DebugLog(FamilyLogText.MarriageDecision(proposal, "Rejected", reason));
         }
 
         public bool ShouldContinueAcceptedProposal(FamilyProposal proposal)
@@ -110,8 +175,14 @@ namespace ModifiedFamily.Marriage.AI
             FamilyProposal preview = _service.CreateMarriageProposalPreview(draft);
             float proposerScore = _values.Evaluate(preview, proposer).Total;
             float receiverScore = _values.Evaluate(preview, receiver).Total;
-            if (proposerScore < MarriageScoreTuning.AcceptanceThreshold || receiverScore < MarriageScoreTuning.CandidateReceiverFloor) return;
-            candidates.Add(new OfferCandidate { Draft = draft, Tier = MatchTier(own, other), ProposerScore = proposerScore, ReceiverScore = receiverScore });
+            float receiverChance = MarriageScoreTuning
+                .CalculateAcceptanceChance(receiverScore);
+            if (proposerScore < MarriageScoreTuning.AcceptanceThreshold ||
+                receiver != Clan.PlayerClan && receiverChance <= 0f) return;
+            candidates.Add(new OfferCandidate { Draft = draft,
+                Tier = MatchTier(own, other), ProposerScore = proposerScore,
+                ReceiverScore = receiverScore,
+                ReceiverAcceptanceChance = receiverChance });
         }
 
         private bool TryCounter(FamilyProposal original)
@@ -120,12 +191,13 @@ namespace ModifiedFamily.Marriage.AI
             Clan otherClan = original.ProposerClan;
             MarriageDirection currentDirection = DirectionOf(original);
             var terms = new List<CounterTerms> { new CounterTerms { Direction = Opposite(currentDirection) } };
+            MarriageAiConfig config = MarriageAiConfig.Current;
             foreach (MarriageDirection direction in new[] { currentDirection, Opposite(currentDirection) })
-            foreach (int gift in GiftSteps)
+            foreach (int gift in config.GiftSteps)
             {
-                if (otherClan?.Leader != null && otherClan.Leader.Gold >= gift)
+                if (CanAiOfferGift(otherClan, gift, config))
                     terms.Add(new CounterTerms { Direction = direction, GoldPayer = otherClan, GiftAmount = gift });
-                if (responder?.Leader != null && responder.Leader.Gold >= gift)
+                if (CanAiOfferGift(responder, gift, config))
                     terms.Add(new CounterTerms { Direction = direction, GoldPayer = responder, GiftAmount = gift });
             }
 
@@ -226,6 +298,85 @@ namespace ModifiedFamily.Marriage.AI
                 MarriageDiagnosticTrace.F("statusAfter", proposal?.Status.ToString() ?? "none"));
         }
 
+        private static bool CanAiOfferGift(Clan payer, int gift,
+            MarriageAiConfig config)
+        {
+            int gold = payer?.Leader?.Gold ?? -1;
+            return gift >= 0 && gold >= gift && gift <=
+                (int)Math.Floor(gold * config.AiMaxGiftGoldRatio);
+        }
+
+        private static float StableProposalRoll(string clanId, int day)
+        {
+            unchecked
+            {
+                uint hash = 2166136261;
+                foreach (char character in clanId ?? string.Empty)
+                {
+                    hash ^= character;
+                    hash *= 16777619;
+                }
+                return MBRandom.RandomFloatWithSeed(hash, (uint)day);
+            }
+        }
+
+        private static void TraceProposalCheck(Clan clan, int today,
+            int phase, int previousDay, int cooldownRemaining,
+            float configuredChance, float randomValue, bool enteredSearch,
+            string result, FamilyProposal proposal)
+        {
+            MarriageDiagnosticTrace.Write("AI_PROPOSAL_CHECK",
+                MarriageDiagnosticTrace.F("day", today),
+                MarriageDiagnosticTrace.F("clanName",
+                    MarriageDiagnosticTrace.Name(clan)),
+                MarriageDiagnosticTrace.F("clanId",
+                    MarriageDiagnosticTrace.Id(clan)),
+                MarriageDiagnosticTrace.F("phase", phase),
+                MarriageDiagnosticTrace.F("lastOriginalProposalDay",
+                    previousDay == int.MinValue ? "none" :
+                        previousDay.ToString()),
+                MarriageDiagnosticTrace.F("cooldownRemaining",
+                    cooldownRemaining),
+                MarriageDiagnosticTrace.F("configuredChance",
+                    configuredChance),
+                MarriageDiagnosticTrace.F("randomValue",
+                    randomValue < 0f ? "not_drawn" : randomValue.ToString(
+                        "0.0000", System.Globalization.CultureInfo.InvariantCulture)),
+                MarriageDiagnosticTrace.F("enteredSearch", enteredSearch),
+                MarriageDiagnosticTrace.F("result", result),
+                MarriageDiagnosticTrace.F("proposalId",
+                    proposal?.ProposalId ?? "none"),
+                MarriageDiagnosticTrace.F("chainId",
+                    proposal?.ChainId ?? "none"),
+                MarriageDiagnosticTrace.F("gift", proposal?.GiftAmount ?? 0));
+        }
+
+        private static void TraceAcceptance(FamilyProposal proposal,
+            MarriageScoreBreakdown score, float chance, float randomValue,
+            string decision, bool serviceSucceeded, string serviceReason)
+        {
+            MarriageDiagnosticTrace.Write("AI_MARRIAGE_ACCEPTANCE",
+                MarriageDiagnosticTrace.F("proposalId", proposal?.ProposalId),
+                MarriageDiagnosticTrace.F("chainId", proposal?.ChainId),
+                MarriageDiagnosticTrace.F("receiverClanName",
+                    MarriageDiagnosticTrace.Name(proposal?.ReceiverClan)),
+                MarriageDiagnosticTrace.F("receiverClanId",
+                    MarriageDiagnosticTrace.Id(proposal?.ReceiverClan)),
+                MarriageDiagnosticTrace.F("score", score?.Total ?? 0f),
+                MarriageDiagnosticTrace.F("maxPositiveScore",
+                    MarriageScoreTuning.MaxPositiveScore),
+                MarriageDiagnosticTrace.F("acceptanceChance", chance),
+                MarriageDiagnosticTrace.F("randomValue",
+                    randomValue < 0f ? "not_drawn" : randomValue.ToString(
+                        "0.0000", System.Globalization.CultureInfo.InvariantCulture)),
+                MarriageDiagnosticTrace.F("counterCount",
+                    proposal?.CounterCount ?? 0),
+                MarriageDiagnosticTrace.F("decision", decision),
+                MarriageDiagnosticTrace.F("serviceSucceeded",
+                    serviceSucceeded),
+                MarriageDiagnosticTrace.F("serviceReason", serviceReason));
+        }
+
         private FamilyProposal CounterPreview(FamilyProposal old, CounterTerms terms) => _service.CreateMarriageProposalPreview(new MarriageProposalDraft
         {
             ProposerClan = old.ReceiverClan, ReceiverClan = old.ProposerClan, HeroA = old.HeroA, HeroB = old.HeroB,
@@ -247,7 +398,7 @@ namespace ModifiedFamily.Marriage.AI
             return 99;
         }
         private static int MatchTier(Hero a, Hero b) => ClanTier(a?.Clan, b?.Clan);
-        private sealed class OfferCandidate { public MarriageProposalDraft Draft; public int Tier; public float ProposerScore; public float ReceiverScore; }
+        private sealed class OfferCandidate { public MarriageProposalDraft Draft; public int Tier; public float ProposerScore; public float ReceiverScore; public float ReceiverAcceptanceChance; }
         private sealed class CounterTerms { public MarriageDirection Direction; public Clan GoldPayer; public int GiftAmount; }
     }
 }
