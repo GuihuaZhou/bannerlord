@@ -139,12 +139,12 @@
   <string id="bjUztSDg" text="瓦兰迪亚资深水兵"/>
 
   <string id="OQPDvtpk" text="瓦兰迪亚侠义骑兵"/>
-  <string id="vlandian_feudal_infantry" text="封建步兵"/>
-  <string id="vlandian_veteran_feudal_infantry" text="封建步行军士"/>
-  <string id="pooybAKI" text="城镇步兵"/>
-  <string id="nPyqHxmf" text="城镇步行军士"/>
-  <string id="UrSjhs4x" text="城镇勾镰军士"/>
-  <string id="X6CQ9CMZ" text="城镇弩手军士"/>
+  <string id="vlandian_feudal_infantry" text="瓦兰迪亚封建步兵"/>
+  <string id="vlandian_veteran_feudal_infantry" text="瓦兰迪亚封建军士"/>
+  <string id="pooybAKI" text="瓦兰迪亚城镇步兵"/>
+  <string id="nPyqHxmf" text="瓦兰迪亚城镇军士"/>
+  <string id="UrSjhs4x" text="瓦兰迪亚勾镰军士"/>
+  <string id="X6CQ9CMZ" text="瓦兰迪亚弩手军士"/>
 
 
   <string id="VpTQ5SyS" text="诺德利刃战士"/>
