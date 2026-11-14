@@ -7,6 +7,9 @@
 	  <Content Include="..\GUI\Prefabs\ModifiedArmyRecruitmentWeightPopup.xml" Link="GUI\Prefabs\ModifiedArmyRecruitmentWeightPopup.xml">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </Content>
+	  <Content Include="..\GUI\Prefabs\ModifiedArmyManpowerOverview.xml" Link="GUI\Prefabs\ModifiedArmyManpowerOverview.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <None Update="ModuleData\**\*">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>

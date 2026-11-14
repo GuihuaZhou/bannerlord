@@ -2,6 +2,7 @@ using HarmonyLib;
 using ModifiedArmy.common;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Recruitment.Pools.Models;
+using ModifiedArmy.Recruitment.Presentation;
 using ModifiedArmy.Models.Fief.Presentation;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Population.Contracts;
@@ -152,6 +153,8 @@ namespace ModifiedArmy.Models.Fief
         public override void RegisterEvents()
         {
             CampaignEvents.OnSessionLaunchedEvent.AddNonSerializedListener(this, OnSessionLaunched);
+            CampaignEvents.TickEvent.AddNonSerializedListener(this,
+                ManpowerOverviewScreenService.Tick);
         }
 
         /// <inheritdoc/>
@@ -230,8 +233,8 @@ namespace ModifiedArmy.Models.Fief
                 TOWN_MENU_ID,
                 REINFORCEMENT_RATE_OPTION_ID,
                 "{=ModifiedArmy_ReinforcementRate_Entry}View manpower",
-                fiefCondition,
-                args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
+                ConfigureManpowerOverviewOption,
+                OpenManpowerOverview,
                 isLeave: false,
                 index: -1,
                 isRepeatable: false);
@@ -239,8 +242,8 @@ namespace ModifiedArmy.Models.Fief
                 CASTLE_MENU_ID,
                 REINFORCEMENT_RATE_OPTION_ID,
                 "{=ModifiedArmy_ReinforcementRate_Entry}View manpower",
-                fiefCondition,
-                args => GameMenu.SwitchToMenu(REINFORCEMENT_RATE_MENU_ID),
+                ConfigureManpowerOverviewOption,
+                OpenManpowerOverview,
                 isLeave: false,
                 index: -1,
                 isRepeatable: false);
@@ -303,6 +306,26 @@ namespace ModifiedArmy.Models.Fief
                 ReturnToSettlementAdministration,
                 isLeave: true, index: -1, isRepeatable: false
             );
+        }
+
+        /// <summary>
+        /// Keeps the informational overview available for every fortification,
+        /// including foreign holdings, while marking it as a modal management
+        /// action rather than a submenu transition.
+        /// </summary>
+        private static bool ConfigureManpowerOverviewOption(
+            MenuCallbackArgs args)
+        {
+            bool canView = Settlement.CurrentSettlement?.IsFortification == true;
+            args.IsEnabled = canView;
+            if (canView)
+                args.optionLeaveType = GameMenuOption.LeaveType.Manage;
+            return canView;
+        }
+
+        private static void OpenManpowerOverview(MenuCallbackArgs args)
+        {
+            ManpowerOverviewScreenService.Open(Settlement.CurrentSettlement);
         }
 
         /// <summary>

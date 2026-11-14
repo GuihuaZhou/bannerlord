@@ -1,0 +1,82 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000B0">
+      <Children>
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="608" SuggestedHeight="680" HorizontalAlignment="Center" VerticalAlignment="Center" RenderLate="true">
+          <Children>
+            <!-- Recompose the native encyclopedia shell at its native vertical
+                 proportions. Encyclopedia.Canvas already contains the light
+                 title band and dark content transition, so it must not receive
+                 an additional top offset. -->
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="StdAssets\standart_popup" />
+            <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.Canvas" />
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="352" SuggestedHeight="88" HorizontalAlignment="Center" VerticalAlignment="Top" PositionYOffset="-3" Sprite="StdAssets\tabbar_popup">
+              <Children>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="38" MarginLeft="28" MarginRight="28" MarginTop="18" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="26" Brush.TextHorizontalAlignment="Center" Text="@Title" />
+              </Children>
+            </Widget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="38" SuggestedHeight="38" HorizontalAlignment="Right" VerticalAlignment="Top" PositionXOffset="8" PositionYOffset="-8" Brush="Popup.CloseButton" Command.Click="ExecuteClose" RenderLate="true" />
+
+            <!-- Only the native dark-brown content region scrolls. The title
+                 band above and fixed Done button below remain outside it. -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="480" MarginLeft="48" MarginRight="14" MarginTop="128" VerticalAlignment="Top">
+              <Children>
+                <ScrollbarWidget Id="OverviewScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" MinValue="0" MaxValue="100" AlignmentAxis="Vertical" Handle="OverviewScrollbarHandle">
+                  <Children>
+                    <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="3" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#9B795FFF" AlphaFactor="0.45" />
+                    <ImageWidget Id="OverviewScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="8" SuggestedHeight="56" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                  </Children>
+                </ScrollbarWidget>
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="12" ClipRect="OverviewClip" InnerPanel="OverviewClip\SectionsList" VerticalScrollbar="..\OverviewScrollbar" MouseScrollAxis="Vertical" AutoHideScrollBars="true">
+                  <Children>
+                    <Widget Id="OverviewClip" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+                        <ListPanel Id="SectionsList" DataSource="{Sections}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <ItemTemplate>
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" MarginBottom="8">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="48" Brush="Clan.Management.FamilyCollapser" Command.Click="ExecuteToggle">
+                                  <Children>
+                                    <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="6" MarginRight="19" Brush="Clan.Management.RightCollapser.Text" Brush.FontSize="19" Brush.TextHorizontalAlignment="Left" Text="@Title" />
+                                  </Children>
+                                </ButtonWidget>
+                                <ListPanel DataSource="{Rows}" IsVisible="@IsExpanded" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                  <ItemTemplate>
+                                    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="37" StackLayout.LayoutMethod="VerticalTopToBottom">
+                                      <Children>
+                                        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="36" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                          <Children>
+                                            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="14" MarginRight="6" Brush="Recruitment.Info.Text" Brush.FontSize="16" Brush.TextHorizontalAlignment="Left" Text="@LabelText" />
+                                            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="196" MarginLeft="6" MarginRight="14" Brush="Recruitment.Info.Text" Brush.FontSize="16" Brush.TextHorizontalAlignment="Right" Text="@ValueText" />
+                                          </Children>
+                                        </ListPanel>
+                                        <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="1" Sprite="BlankWhiteSquare_9" AlphaFactor="0.3" />
+                                      </Children>
+                                    </ListPanel>
+                                  </ItemTemplate>
+                                </ListPanel>
+                              </Children>
+                            </ListPanel>
+                          </ItemTemplate>
+                        </ListPanel>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+              </Children>
+            </Widget>
+
+            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="200" SuggestedHeight="45" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="13" Brush="Popup.Done.Button.NineGrid" Command.Click="ExecuteClose">
+              <Children>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@DoneText" />
+              </Children>
+            </ButtonWidget>
+            <!-- Frame1 is the visible outer trim. A larger native extension
+                 keeps it outside the canvas instead of reading as an inset. -->
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="Frame1_frame" ExtendLeft="18" ExtendRight="18" ExtendTop="18" ExtendBottom="18" />
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

@@ -408,6 +408,25 @@
     <string id="MP_MarshalArmyAiEvaluatingDetailed" text="[军团系统] {KINGDOM}的大元帅已生成军团目标。大元帅：{MARSHAL}；可召集部队：{CANDIDATES}；新增目标数：{ADDED_SCORES}；正分目标数：{POSITIVE_SCORES}；集结兵力：{GATHERING_STRENGTH}；平均粮食：{AVERAGE_FOOD}天；最低粮食：{MINIMUM_FOOD}天；围城粮食阈值：{FOOD_THRESHOLD}天；军团权重：{ARMY_MULTIPLIER}；最佳军团分数：{BEST_ARMY_SCORE}；原有最佳分数：{BEST_EXISTING_SCORE}；当前最佳总分：{BEST_OVERALL_SCORE}；身份适配：{IDENTITY_MODE}。" />
     <string id="MP_MarshalArmyDebugPrefix" text="[军事优化][军团调试]" />
     <string id="MP_MarshalArmyDebugFieldMap" text="phase=阶段|traceId=追踪编号|kingdom=王国|hero=英雄|party=部队|leader=统帅|reasonCode=原因码|reason=原因|result=结果|armyType=军团类型|target=目标|source=来源|candidates=候选数|candidateCount=候选部队数|members=兵员数|influence=影响力|foodDays=粮食天数|averageFoodDays=平均粮食天数|minimumFoodDays=最低粮食天数|sizeRatio=部队规模比例|gatheringStrength=集结战力|siegeStrength=攻城战力|nativeTargetScore=原生目标分|rawScore=原始分|finalScore=最终分|multiplier=倍率|poolCount=候选池数量|top5=前五候选|allowedByMarshalPatch=军权补丁放行|isRuler=是否统治者|isMarshal=是否大元帅|atSea=是否在海上|mapEvent=是否处于战斗|settlementSiege=所在定居点是否被围攻|boundParty=绑定部队|reservationOwner=创建预留者" />
+    <string id="ModifiedArmy_Manpower_Title" text="兵源状况" />
+    <string id="ModifiedArmy_Manpower_Done" text="完成" />
+    <string id="ModifiedArmy_Manpower_Professional" text="职业兵" />
+    <string id="ModifiedArmy_Manpower_Fief" text="封邑兵" />
+    <string id="ModifiedArmy_Manpower_Villages" text="村庄供养" />
+    <string id="ModifiedArmy_Manpower_Available" text="可用兵源" />
+    <string id="ModifiedArmy_Manpower_TrainingBase" text="基础训练" />
+    <string id="ModifiedArmy_Manpower_BarracksBonus" text="{LEVEL} 级兵营" />
+    <string id="ModifiedArmy_Manpower_CultureEfficiency" text="文化效率" />
+    <string id="ModifiedArmy_Manpower_OtherBonus" text="其他加成" />
+    <string id="ModifiedArmy_Manpower_TrainingCapacity" text="训练能力" />
+    <string id="ModifiedArmy_Manpower_Expected" text="预计补员" />
+    <string id="ModifiedArmy_Manpower_Actual" text="实际补员" />
+    <string id="ModifiedArmy_Manpower_AutoRecruit" text="自动招募" />
+    <string id="ModifiedArmy_Manpower_FiefCurrent" text="封邑兵总数" />
+    <string id="ModifiedArmy_Manpower_FiefBase" text="基础补员" />
+    <string id="ModifiedArmy_Manpower_Forecast" text="生产预测" />
+    <string id="ModifiedArmy_Manpower_Supply" text="供养 Hearth" />
+    <string id="ModifiedArmy_Manpower_OpenFailed" text="无法打开兵源状况窗口，请检查模组安装和日志。" />
     <string id="MP_ArmyEligibilityModelPrefix" text="[军事优化][军团创建资格模型]" />
     <string id="MP_ArmyEligibilityFieldMap" text="phase=阶段|traceId=追踪编号|model=模型|kingdom=王国|hero=英雄|party=部队|candidate=候选部队|leader=领队|clan=家族|result=结果|reasonCode=原因码|influence=影响力|foodDays=粮食天数|threshold=阈值|partyRatio=部队规模比例|distance=距离|maximum=最大值|influenceCost=影响力成本|estimatedStrength=预估战力|score=评分|candidateCountBeforeStrengthCheck=战力检查前候选数|leaderSiegeStrength=领队攻城战力|candidatesSiegeStrength=候选攻城战力|totalSiegeStrength=总攻城战力|strengthThreshold=战力阈值|candidatesBeforeClear=清空前候选数|candidatesReturned=返回候选数|eligibleBeforeSort=排序前合格数|kingdomWarPartyCount=王国战团数|existingArmyPartyCount=现有军团部队数|maxNewMembers=最大新增成员数|afterTruncationCount=截断后数量|removedCandidateIds=被移除候选|sortedCandidates=升序候选|omitted=省略数|omittedCandidateDetails=省略候选明细数" />
   </strings>
