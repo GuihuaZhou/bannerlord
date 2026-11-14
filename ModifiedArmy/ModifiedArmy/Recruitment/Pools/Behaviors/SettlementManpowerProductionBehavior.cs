@@ -1,5 +1,8 @@
 using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Recruitment.Diagnostics;
+// Professional and feudal daily production coordinator. It owns generated
+// offer/progress state, but delegates authoritative Hearth mutation to the
+// population service and preserves native/office training integration.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,9 +30,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
     internal sealed class ProfessionalAffordabilityDiagnostic
     {
         public float HearthBefore { get; set; }
-        public float BurdenBefore { get; set; }
+        public float ReserveHearth { get; set; }
         public float EffectiveCapacityBefore { get; set; }
-        public int BurdenCostPerTroop { get; set; }
+        public float HearthCostPerTroop { get; set; }
         public int AffordableCount { get; set; }
         public string ReasonCode { get; set; }
     }
@@ -37,6 +40,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
     /// <summary>
     /// Converts settlement manpower into daily professional offers and direct
     /// fief-party reinforcement. No generated troop inventory is persisted.
+    /// </summary>
+    /// <summary>
+    /// Produces and expires daily manpower offers while maintaining fractional
+    /// progress. Professional capacity is population- and loyalty-adjusted;
+    /// feudal production is intentionally unaffected by those multipliers.
     /// </summary>
     public sealed class SettlementManpowerProductionBehavior :
         CampaignBehaviorBase
@@ -99,6 +107,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             return data;
         }
 
+        /// <summary>
+        /// Returns final internal professional training before external Harmony
+        /// Postfix multipliers. Population and loyalty are each applied once.
+        /// </summary>
         public float GetDailyProduction(
             Settlement settlement,
             TroopProductionKind kind)
@@ -117,8 +129,46 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(
                     professionalRule.Culture);
-            return doctrine.GetTraining(settlement).GetDailyProduction(
+            float original = doctrine.GetTraining(settlement).GetDailyProduction(
                 professionalRule.BarracksLevel) * professionalRule.ProductionRate;
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            if (population == null) return 0f;
+            HearthEconomyConfig config = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
+            float populationEfficiency = ProfessionalPopulationMath
+                .CalculatePopulationEfficiency(population.GetHearth(settlement),
+                    population.GetNaturalCapacity(settlement),
+                    config.ProfessionalReserveRatio,
+                    config.ProfessionalFullEfficiencyRatio);
+            return original * populationEfficiency *
+                CalculateLoyaltyRecruitmentEfficiency(settlement);
+        }
+
+        /// <summary>
+        /// Calculates continuous willingness from thresholds supplied by the
+        /// active loyalty model. Invalid/reordered thresholds fail closed to
+        /// avoid NaN production or recruitment during model conflicts.
+        /// </summary>
+        public static float CalculateLoyaltyRecruitmentEfficiency(
+            Settlement settlement)
+        {
+            if (settlement?.Town == null || settlement.InRebelliousState)
+                return 0f;
+            var model = Campaign.Current?.Models?.SettlementLoyaltyModel;
+            if (model == null) return 0f;
+            float r = model.RebelliousStateStartLoyaltyThreshold;
+            float m = model.LoyaltyDriftMedium;
+            float u = model.ThresholdForTaxBoost;
+            float loyalty = settlement.Town.Loyalty;
+            if (float.IsNaN(r) || float.IsNaN(m) || float.IsNaN(u) ||
+                float.IsInfinity(r) || float.IsInfinity(m) ||
+                float.IsInfinity(u) || !(r < m && m < u)) return 0f;
+            if (loyalty <= r) return 0f;
+            if (loyalty < m) return (loyalty - r) / (m - r);
+            if (loyalty < u)
+                return 1f + 0.15f * (loyalty - m) / (u - m);
+            return 1.15f;
         }
 
         /// <summary>
@@ -148,6 +198,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 settlement, troop, requested, out _);
         }
 
+        /// <summary>
+        /// Delegates affordability to the authoritative population service and
+        /// captures diagnostic values without reserving or consuming Hearth.
+        /// </summary>
         internal int GetMaxAffordableProfessionalCount(Settlement settlement,
             CharacterObject troop, int requested,
             out ProfessionalAffordabilityDiagnostic diagnostic)
@@ -160,10 +214,10 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 requested <= 0) return 0;
             try
             {
-                int burdenCost = MilitaryConfigManager.Instance
-                    .RequireActiveConfig().GetDoctrine(settlement)
-                    .GetProfessionalBurdenCost(troop);
-                diagnostic.BurdenCostPerTroop = burdenCost;
+                float hearthCost = MilitaryConfigManager.Instance
+                    .RequireActiveConfig().HearthEconomy
+                    .GetProfessionalHearthCost(troop);
+                diagnostic.HearthCostPerTroop = hearthCost;
                 ISettlementPopulationService population =
                     SettlementPopulationServiceRegistry.Current;
                 if (population == null)
@@ -172,10 +226,12 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     return 0;
                 }
                 diagnostic.HearthBefore = population.GetHearth(settlement);
-                diagnostic.BurdenBefore =
-                    population.GetRecruitmentBurden(settlement);
-                diagnostic.EffectiveCapacityBefore =
-                    diagnostic.HearthBefore - diagnostic.BurdenBefore;
+                diagnostic.ReserveHearth = population
+                    .GetNaturalCapacity(settlement) * MilitaryConfigManager
+                    .Instance.RequireActiveConfig().HearthEconomy
+                    .ProfessionalReserveRatio;
+                diagnostic.EffectiveCapacityBefore = Math.Max(0f,
+                    diagnostic.HearthBefore - diagnostic.ReserveHearth);
                 if (population.IsRecoveryRequired(settlement))
                 {
                     diagnostic.ReasonCode = "SettlementRecoveryRequired";
@@ -183,9 +239,9 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 }
                 diagnostic.AffordableCount = population
                     .GetMaxAffordableProfessionalCount(
-                        settlement, burdenCost, requested);
+                        settlement, troop, requested);
                 diagnostic.ReasonCode = diagnostic.AffordableCount > 0
-                    ? "Affordable" : "BurdenCapacityInsufficient";
+                    ? "Affordable" : "ProfessionalHearthInsufficient";
                 return diagnostic.AffordableCount;
             }
             catch (Exception exception)
@@ -202,32 +258,37 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             }
         }
 
+        /// <summary>
+        /// Aggregates mixed-Tier offers in stable troop-id order against one
+        /// simulated Hearth balance, preventing the same available population
+        /// from being counted independently for every troop type.
+        /// </summary>
         public int GetTotalAffordableProfessionalOffers(Settlement settlement)
         {
             ISettlementPopulationService population =
                 SettlementPopulationServiceRegistry.Current;
             if (population == null) return 0;
             float hearth = population.GetHearth(settlement);
-            float burden = population.GetRecruitmentBurden(settlement);
+            float capacity = population.GetNaturalCapacity(settlement);
+            HearthEconomyConfig config = MilitaryConfigManager.Instance
+                .RequireActiveConfig().HearthEconomy;
             int total = 0;
             foreach (var pair in GetAvailableProfessionalOffers(settlement)
                 .Where(item => item.Key != null && item.Value > 0)
                 .OrderBy(item => item.Key.StringId, StringComparer.Ordinal))
             {
-                int cost;
+                float cost;
                 try
                 {
-                    cost = MilitaryConfigManager.Instance
-                        .RequireActiveConfig().GetDoctrine(settlement)
-                        .GetProfessionalBurdenCost(pair.Key);
+                    cost = config.GetProfessionalHearthCost(pair.Key);
                 }
                 catch { continue; }
                 for (int i = 0; i < pair.Value; i++)
                 {
-                    if (!RecruitmentBurdenMath.CanRecruitExact(
-                        hearth, burden, cost, 1)) return total;
-                    hearth -= 1f;
-                    burden += cost;
+                    if (!ProfessionalPopulationMath.CanRecruitExact(
+                        hearth, capacity, config.ProfessionalReserveRatio,
+                        cost, 1)) break;
+                    hearth -= cost;
                     total++;
                 }
             }
@@ -650,6 +711,11 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
         /// Calculates today's allocation without consuming manpower or
         /// producing troops. The daily tick and UI share this method.
         /// </summary>
+        /// <summary>
+        /// Builds a read-only forecast. RawProfessionalTrainingBeforeExternalEffects
+        /// already includes population and loyalty, so the reported external
+        /// bonus remains meaningful when either multiplier is below one.
+        /// </summary>
         public RecruitmentProductionForecast GetProductionForecast(
             Settlement settlement)
         {
@@ -694,10 +760,22 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
             float rawTraining = training.GetDailyProduction(
                 barracksLevel) *
                 (productionRule?.ProductionRate ?? 0f);
-            float externalBonusRate = rawTraining > 0.0001f
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            HearthEconomyConfig populationConfig = MilitaryConfigManager
+                .Instance.RequireActiveConfig().HearthEconomy;
+            float internalEfficiency = population == null ? 0f :
+                ProfessionalPopulationMath.CalculatePopulationEfficiency(
+                    population.GetHearth(settlement),
+                    population.GetNaturalCapacity(settlement),
+                    populationConfig.ProfessionalReserveRatio,
+                    populationConfig.ProfessionalFullEfficiencyRatio) *
+                CalculateLoyaltyRecruitmentEfficiency(settlement);
+            float effectiveBeforeExternal = rawTraining * internalEfficiency;
+            float externalBonusRate = effectiveBeforeExternal > 0.0001f
                 ? Math.Max(
                     0f,
-                    professionalTrainingCapacity / rawTraining - 1f)
+                    professionalTrainingCapacity / effectiveBeforeExternal - 1f)
                 : 0f;
             float fiefAllocation = fiefDemand;
 
@@ -710,7 +788,8 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 BarracksLevel = barracksLevel,
                 AllowedRecruitmentLevel = allowedRecruitmentLevel,
                 CultureEfficiency = productionRule?.ProductionRate ?? 0f,
-                RawProfessionalTrainingBeforeExternalEffects = rawTraining,
+                RawProfessionalTrainingBeforeExternalEffects =
+                    effectiveBeforeExternal,
                 ExternalTrainingBonusRate = externalBonusRate,
                 ProfessionalTrainingCapacity = professionalTrainingCapacity,
                 ProfessionalAllocation = professionalAllocation,

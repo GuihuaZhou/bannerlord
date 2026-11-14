@@ -61,3 +61,10 @@ Read `ModifiedArmy/AGENTS.md` and `ModifiedArmy/CODE_ORGANIZATION_RULES.md` befo
 - Human-readable world context is mandatory. Never use raw internal IDs such as `lord_1_51_party_1`, `castle_village_N2_2`, or similar party, hero, clan, settlement, village, town, or castle identifiers as the primary identity in a log or player-visible message. Lead with the localized display name and enough context to identify the object unambiguously (for example settlement type and owner clan, or party leader and clan); include the internal ID only as a secondary structured diagnostic field when it is genuinely useful.
 - Repeated diagnostics must be actionable and bounded: state which named object was evaluated, the decision/result and reason, while applying deduplication, throttling, state-change-only emission, or lifecycle aggregation as appropriate. Do not emit the same unidentified warning every tick or render high-frequency technical mismatch probes on the player screen.
 - Keep log construction in the owning domain's diagnostics helper where practical, use stable structured fields, and preserve placeholder parity between base and translated text. File-only debug traces still follow the same language and privacy/noise rules.
+
+## 8. Code comments and documentation
+
+- New or materially refactored runtime files must start with a concise file-level comment describing the business domain, authoritative state owner, and important integration or compatibility boundaries.
+- Add function-level XML documentation to public/internal business APIs and to private methods whose transaction, persistence, AI, Harmony, or recovery semantics are not obvious from the signature.
+- Comments must explain intent, invariants, mutation order, failure/compensation behavior, dynamic game-model assumptions, and save compatibility where relevant. Do not merely restate the code or add noisy comments to trivial accessors.
+- When changing an existing complex workflow, update nearby comments so they describe the active implementation rather than historical behavior.

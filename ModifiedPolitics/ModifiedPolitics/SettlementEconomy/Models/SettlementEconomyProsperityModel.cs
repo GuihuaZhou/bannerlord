@@ -1,6 +1,10 @@
+// Extends the single registered prosperity model with Hearth support and tax
+// policy effects. Tax changes enter the explained daily result before the
+// existing population support cap is enforced.
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.Population.Contracts;
 using ModifiedPolitics.SettlementEconomy.Config;
+using ModifiedPolitics.SettlementEconomy.Behaviors;
 using System;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.GameComponents;
@@ -14,6 +18,7 @@ namespace ModifiedPolitics.SettlementEconomy.Models
     {
         private static readonly TextObject PopulationSupportText = new TextObject("{=MP_PopulationSupportShortfall}Insufficient population support");
         private static readonly TextObject NaturalPopulationText = new TextObject("{=MP_NaturalPopulationGrowth}Natural population growth");
+        private static readonly TextObject TaxPolicyText = new TextObject("{=MP_SettlementTaxPolicy}Settlement tax policy");
 
         public override ExplainedNumber CalculateHearthChange(Village village, bool includeDescriptions = false)
         {
@@ -34,11 +39,14 @@ namespace ModifiedPolitics.SettlementEconomy.Models
         {
             ExplainedNumber result = base.CalculateProsperityChange(fortification, includeDescriptions);
             Settlement settlement = fortification?.Settlement;
+            float tax = SettlementTaxPolicyRegistry.Current?
+                .GetEffects(settlement).Prosperity ?? 0f;
+            if (Math.Abs(tax) > 0.0001f) result.Add(tax, TaxPolicyText, null);
             ISettlementPopulationService service = SettlementPopulationServiceRegistry.Current;
             if (settlement == null || service == null) return result;
             SettlementEconomyConfig config = SettlementEconomyConfigManager.Instance.RequireActive();
             float perHearth = settlement.IsCastle ? config.CastleProsperityPerHearth : config.TownProsperityPerHearth;
-            float supported = service.GetEffectiveHearth(settlement) *
+            float supported = service.GetHearth(settlement) *
                 perHearth;
             float prosperity = fortification.Prosperity;
             float original = result.ResultNumber;

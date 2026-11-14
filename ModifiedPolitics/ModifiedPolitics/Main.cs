@@ -141,6 +141,8 @@ namespace ModifiedPolitics
 
                 campaignStarter.AddBehavior(new AIBuildingAutoBoostBehavior());
                 campaignStarter.AddBehavior(new SettlementPopulationBehavior());
+                SettlementTaxPolicyRegistry.Clear();
+                campaignStarter.AddBehavior(new SettlementTaxPolicyBehavior());
                 // Fill governor vacancies by kingdom policy and allow cross-clan appointments.
                 campaignStarter.AddBehavior(new KingdomGovernorAssignmentBehavior());
                 campaignStarter.AddBehavior(new HeroOfficeBehavior());

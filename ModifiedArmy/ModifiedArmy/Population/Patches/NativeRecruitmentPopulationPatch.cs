@@ -1,3 +1,6 @@
+// Harmony adapter for native party recruitment. It reserves authoritative
+// population before the native roster write and compensates exactly once when
+// the observed roster delta does not match the reserved batch.
 using System;
 using System.Reflection;
 using HarmonyLib;
@@ -12,6 +15,10 @@ using TaleWorlds.Core;
 
 namespace ModifiedArmy.Population.Patches
 {
+    /// <summary>
+    /// Bridges RecruitmentCampaignBehavior to population transactions without
+    /// replacing native recruitment ownership or duplicating roster writes.
+    /// </summary>
     [HarmonyPatch]
     internal static class NativeRecruitmentPopulationPatch
     {
@@ -79,11 +86,8 @@ namespace ModifiedArmy.Population.Patches
             {
                 if (settlement.IsFortification)
                 {
-                    int burdenCost = MilitaryConfigManager.Instance
-                        .RequireActiveConfig().GetDoctrine(settlement)
-                        .GetProfessionalBurdenCost(troop);
                     result = population.TryRecruitProfessional(settlement,
-                        number, burdenCost, __state.OperationId);
+                        troop, number, __state.OperationId);
                 }
                 else if (settlement.IsVillage)
                     result = population.TryConsume(settlement, number,

@@ -1,3 +1,6 @@
+// XML-backed military balance configuration. Professional population reserve,
+// efficiency thresholds, and Tier Hearth costs are defined globally here so
+// every recruitment path resolves one authoritative cost table.
 using ModifiedArmy.Tool;
 using ModifiedArmy.Population.Contracts;
 using System;
@@ -39,6 +42,21 @@ namespace ModifiedArmy.common
     public sealed class HearthEconomyConfig
     {
         public float FeudalTaxReliefWageRatio { get; internal set; }
+        public float ProfessionalReserveRatio { get; internal set; }
+        public float ProfessionalFullEfficiencyRatio { get; internal set; }
+        public IReadOnlyDictionary<int, float> ProfessionalHearthCosts { get; internal set; }
+
+        /// <summary>
+        /// Resolves the global professional Hearth cost for a real troop. A
+        /// missing Tier is a configuration error, never a zero-cost fallback.
+        /// </summary>
+        public float GetProfessionalHearthCost(CharacterObject troop)
+        {
+            if (troop == null || ProfessionalHearthCosts == null ||
+                !ProfessionalHearthCosts.TryGetValue(troop.Tier, out float value))
+                throw new InvalidOperationException("Missing professional Hearth cost for troop tier.");
+            return value;
+        }
 
         internal static int GetRequiredCost(
             IReadOnlyDictionary<int, int> costs,
@@ -66,11 +84,6 @@ namespace ModifiedArmy.common
         public int ProfessionalWeight { get; internal set; }
         public int MercenaryWeight { get; internal set; }
         public IReadOnlyDictionary<int, int> FeudalSupply { get; internal set; }
-        public IReadOnlyDictionary<int, int> ProfessionalBurdenCosts {
-            get;
-            internal set;
-        }
-        public int ProfessionalBurdenDailyRecovery { get; internal set; }
         public FiefServiceConfig Service { get; internal set; }
         public ProfessionalTrainingConfig TownTraining { get; internal set; }
         public ProfessionalTrainingConfig CastleTraining { get; internal set; }
@@ -96,10 +109,6 @@ namespace ModifiedArmy.common
             return HearthEconomyConfig.GetRequiredCost(
                 FeudalSupply, troop, "FeudalSupply");
         }
-
-        public int GetProfessionalBurdenCost(CharacterObject troop) =>
-            HearthEconomyConfig.GetRequiredCost(
-                ProfessionalBurdenCosts, troop, "ProfessionalBurden");
 
         public ProfessionalTrainingConfig GetTraining(Settlement settlement) =>
             settlement?.IsCastle == true
@@ -167,7 +176,7 @@ namespace ModifiedArmy.common
         public int MaxDailyDemobilizationCount { get; internal set; } = 30;
     }
 
-    public sealed class MilitaryConfig : MBObjectBase, IRecruitmentBurdenPolicy
+    public sealed class MilitaryConfig : MBObjectBase
     {
         private readonly Dictionary<string, CulturalMilitaryDoctrine> _doctrines =
             new Dictionary<string, CulturalMilitaryDoctrine>(StringComparer.OrdinalIgnoreCase);
@@ -212,7 +221,6 @@ namespace ModifiedArmy.common
             if (_doctrines.Count == 0)
                 throw new InvalidOperationException("MilitaryConfig must contain at least one culture doctrine.");
             MilitaryConfigManager.Instance.Register(this);
-            RecruitmentBurdenPolicyRegistry.Register(this);
             TextObject message = GameTexts.FindText(
                 "str_modifiedarmy_config_loaded");
             message.SetTextVariable("CONFIG_ID", ConfigId);
@@ -229,9 +237,6 @@ namespace ModifiedArmy.common
 
         public CulturalMilitaryDoctrine GetDoctrine(Settlement settlement) =>
             GetDoctrine(settlement?.Culture);
-
-        public int GetDailyRecovery(Settlement settlement) =>
-            GetDoctrine(settlement).ProfessionalBurdenDailyRecovery;
 
         public (float Fief, float GarrisonTransfer, float Mercenary) GetAiCulturalPreference(CultureObject culture)
         {
@@ -473,8 +478,6 @@ namespace ModifiedArmy.common
                 throw new InvalidOperationException("Invalid zero military doctrine for " + culture.StringId);
             XmlNode professionalNode = Required(node, "Professional");
             XmlNode training = Required(professionalNode, "Training");
-            XmlNode burden = Required(professionalNode,
-                "RecruitmentBurden");
             XmlNode fiefNode = Required(node, "Fief");
             XmlNode production = Required(fiefNode, "Production");
             XmlNode townPortTraining = training.SelectSingleNode("TownPort");
@@ -489,11 +492,6 @@ namespace ModifiedArmy.common
                     Required(fiefNode, "FeudalSupply"),
                     "FeudalSupply for " + culture.StringId,
                     requireStrictIncrease: true),
-                ProfessionalBurdenCosts = ParseTierCosts(
-                    burden, "ProfessionalBurden for " + culture.StringId,
-                    requireStrictIncrease: true, valueAttribute: "Cost"),
-                ProfessionalBurdenDailyRecovery = PositiveInt(
-                    burden, "dailyRecovery"),
                 Service = ParseService(Required(fiefNode, "Service")),
                 TownTraining = ParseTraining(Required(training, "Town")),
                 CastleTraining = ParseTraining(Required(training, "Castle")),
@@ -522,12 +520,31 @@ namespace ModifiedArmy.common
             ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop")
         };
 
-        private static HearthEconomyConfig ParseHearthEconomy(XmlNode node) =>
-            new HearthEconomyConfig
+        private static HearthEconomyConfig ParseHearthEconomy(XmlNode node)
+        {
+            XmlNode population = Required(node, "ProfessionalPopulation");
+            float reserve = RatioAttribute(population, "reserveRatio", "ProfessionalPopulation");
+            float full = RatioAttribute(population, "fullEfficiencyRatio", "ProfessionalPopulation");
+            if (reserve >= full) throw new InvalidOperationException("ProfessionalPopulation requires reserveRatio < fullEfficiencyRatio.");
+            var costs = new Dictionary<int, float>();
+            foreach (XmlNode tier in population.SelectNodes("Tier"))
             {
-                FeudalTaxReliefWageRatio = RatioAttribute(Required(node,
-                    "FeudalTaxRelief"), "wageRatio", "FeudalTaxRelief")
+                int level = int.Parse(Attr(tier, "level"), CultureInfo.InvariantCulture);
+                float cost = float.Parse(Attr(tier, "hearth"), CultureInfo.InvariantCulture);
+                if (level < 1 || level > 6 || costs.ContainsKey(level) || float.IsNaN(cost) || float.IsInfinity(cost) || cost < 1f)
+                    throw new InvalidOperationException("ProfessionalPopulation contains an invalid Tier.");
+                costs.Add(level, cost);
+            }
+            if (costs.Count != 6 || Enumerable.Range(2, 5).Any(level => costs[level] < costs[level - 1]))
+                throw new InvalidOperationException("ProfessionalPopulation must define monotonic Tier 1-6 costs.");
+            return new HearthEconomyConfig
+            {
+                FeudalTaxReliefWageRatio = RatioAttribute(Required(node, "FeudalTaxRelief"), "wageRatio", "FeudalTaxRelief"),
+                ProfessionalReserveRatio = reserve,
+                ProfessionalFullEfficiencyRatio = full,
+                ProfessionalHearthCosts = costs
             };
+        }
 
         private static float RatioAttribute(XmlNode node, string attribute,
             string setting)

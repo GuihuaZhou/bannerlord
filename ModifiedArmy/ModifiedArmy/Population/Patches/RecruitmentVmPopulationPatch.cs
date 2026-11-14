@@ -1,3 +1,6 @@
+// Harmony adapter for the player recruitment VM, whose direct roster mutation
+// bypasses the native behavior hook. Reservations and compensation share the
+// same population transaction service as every other professional entry point.
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -85,12 +88,9 @@ namespace ModifiedArmy.Population.Patches
                 {
                     if (reservation.Settlement.IsFortification)
                     {
-                        int cost = MilitaryConfigManager.Instance
-                            .RequireActiveConfig()
-                            .GetDoctrine(reservation.Settlement)
-                            .GetProfessionalBurdenCost(reservation.Troop);
                         result = population.TryRecruitProfessional(
-                            reservation.Settlement, reservation.Count, cost,
+                            reservation.Settlement, reservation.Troop,
+                            reservation.Count,
                             reservation.OperationId);
                     }
                     else if (reservation.Settlement.IsVillage)

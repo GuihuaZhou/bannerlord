@@ -759,12 +759,12 @@ namespace ModifiedArmy.Models.Fief
         {
             operationId = null;
             if (source == null || troop == null || count <= 0) return false;
-            int burdenCostPerTroop;
+            float hearthCostPerTroop;
             try
             {
-                burdenCostPerTroop = MilitaryConfigManager.Instance
-                    .RequireActiveConfig().GetDoctrine(source)
-                    .GetProfessionalBurdenCost(troop);
+                hearthCostPerTroop = MilitaryConfigManager.Instance
+                    .RequireActiveConfig().HearthEconomy
+                    .GetProfessionalHearthCost(troop);
             }
             catch (Exception exception)
             {
@@ -789,23 +789,22 @@ namespace ModifiedArmy.Models.Fief
             }
             operationId = "professional:" + Guid.NewGuid().ToString("N");
             PopulationTransactionResult result = population
-                .TryRecruitProfessional(source, count,
-                    burdenCostPerTroop, operationId);
+                .TryRecruitProfessional(source, troop, count, operationId);
             if (result?.IsCommitted != true)
             {
                 if (source.OwnerClan == Clan.PlayerClan)
                     ModLogger.FileWarn(string.Format(
                         "Professional population transaction rejected: " +
                         "settlement={0}, id={1}, troop={2}, count={3}, " +
-                        "hearth={4:F2}, burden={5:F2}, burdenCost={6}, " +
+                        "hearth={4:F2}, hearthConsumed={5:F2}, hearthCostPerTroop={6:F2}, " +
                         "reason={7}.",
                         source.Name,
                         source.StringId,
                         troop.Name,
                         count,
                         result?.HearthBefore ?? 0f,
-                        result?.BurdenBefore ?? 0f,
-                        burdenCostPerTroop,
+                        result?.HearthConsumed ?? 0f,
+                        hearthCostPerTroop,
                         result?.ReasonCode ?? "Unknown"));
                 operationId = null;
                 return false;

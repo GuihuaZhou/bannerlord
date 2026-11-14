@@ -8,7 +8,7 @@
     <Population>
       <NaturalGrowth seed="100" lowPopulationMultiplier="2.0" lowPopulationThreshold="0.5" />
       <PopulationRates village="0.004" town="0.002" castle="0.002" />
-      <DailyFactors foodPerChange="0.05" foodMin="-2" foodMax="2" prosperityTriggerSpan="500" prosperityMax="0.6" burdenPerCapacity="0.0003" />
+      <DailyFactors foodPerChange="0.05" foodMin="-2" foodMax="2" prosperityTriggerSpan="500" prosperityMax="0.6" />
       <Cultures>
         <Culture id="Culture.empire" villageCapacity="700" townCapacity="2800" castleCapacity="800" />
         <Culture id="Culture.aserai" villageCapacity="550" townCapacity="2600" castleCapacity="650" />
@@ -21,5 +21,8 @@
       <WallCapacityFactors level1="0.40" level2="0.70" level3="1.00" initialToCapacity="0.3333333333" />
       <ProsperitySupport townPerHearth="5" castlePerHearth="3" excessDecayDays="84" />
     </Population>
+    <TaxPolicy>
+      <Ai safeDays="7" switchThreshold="0.08" fiscalWeight="1.20" economyWeight="0.75" recruitmentWeight="0.65" rebellionWeight="1.50" />
+    </TaxPolicy>
   </SettlementEconomyConfig>
 </SettlementEconomyConfigs>

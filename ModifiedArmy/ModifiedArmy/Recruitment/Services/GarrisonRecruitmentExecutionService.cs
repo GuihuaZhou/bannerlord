@@ -1,3 +1,6 @@
+// Executes approved garrison recruitment candidates. Population affordability,
+// roster capacity, clan budget, and compensation remain separate gates so a
+// failure cannot silently consume Hearth, gold, or an offer twice.
 using System;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Finance;
@@ -110,9 +113,9 @@ namespace ModifiedArmy.Recruitment.Services
                                 "sourceOfferCount={5}, modelApproved={6}, " +
                                 "dailyQuotaRemaining={7}, hardFree={8}, " +
                                 "softFree={9}, reservedEscorts={10}, " +
-                                "requestedBeforeBurden={11}, hearthBefore={12:F2}, " +
-                                "burdenBefore={13:F2}, effectiveCapacityBefore={14:F2}, " +
-                                "burdenCostPerTroop={15}, affordableCount={16}, " +
+                                "requestedBeforePopulation={11}, hearthBefore={12:F2}, " +
+                                "reserveHearth={13:F2}, availableHearth={14:F2}, " +
+                                "hearthCostPerTroop={15:F2}, affordableCount={16}, " +
                                 "firstFailedStage=PopulationAffordability, reasonCode={17}.",
                                 (int)CampaignTime.Now.ToDays,
                                 settlement?.Name, settlement?.StringId,
@@ -121,9 +124,9 @@ namespace ModifiedArmy.Recruitment.Services
                                 evaluation.RecruitableCount, quotaRemaining,
                                 hardFree, softFree, reservedReturningMembers,
                                 requested, affordability.HearthBefore,
-                                affordability.BurdenBefore,
+                                affordability.ReserveHearth,
                                 affordability.EffectiveCapacityBefore,
-                                affordability.BurdenCostPerTroop,
+                                affordability.HearthCostPerTroop,
                                 affordability.AffordableCount,
                                 affordability.ReasonCode));
                         continue;

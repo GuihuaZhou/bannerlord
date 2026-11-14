@@ -1,3 +1,6 @@
+// XML-backed settlement economy and tax-AI balance configuration. This file
+// validates inputs during campaign startup so runtime models can assume finite,
+// normalized weights and hysteresis parameters.
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -32,7 +35,6 @@ namespace ModifiedPolitics.SettlementEconomy.Config
         public float FoodMaximum { get; private set; }
         public float ProsperityTriggerSpan { get; private set; }
         public float ProsperityMaximum { get; private set; }
-        public float BurdenPerCapacity { get; private set; }
         public float WallLevel1Factor { get; private set; }
         public float WallLevel2Factor { get; private set; }
         public float WallLevel3Factor { get; private set; }
@@ -40,6 +42,12 @@ namespace ModifiedPolitics.SettlementEconomy.Config
         public float TownProsperityPerHearth { get; private set; }
         public float CastleProsperityPerHearth { get; private set; }
         public float ExcessProsperityDecayDays { get; private set; }
+        public int TaxProtectionSafeDays { get; private set; }
+        public float TaxSwitchThreshold { get; private set; }
+        public float TaxFiscalWeight { get; private set; }
+        public float TaxEconomyWeight { get; private set; }
+        public float TaxRecruitmentWeight { get; private set; }
+        public float TaxRebellionWeight { get; private set; }
         public IReadOnlyDictionary<string, CulturePopulationCapacityConfig> CultureCapacities => _cultureCapacities;
 
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
@@ -63,7 +71,6 @@ namespace ModifiedPolitics.SettlementEconomy.Config
             FoodMaximum = Number(factors, "foodMax");
             ProsperityTriggerSpan = Positive(factors, "prosperityTriggerSpan");
             ProsperityMaximum = NonNegative(factors, "prosperityMax");
-            BurdenPerCapacity = NonNegative(factors, "burdenPerCapacity");
             if (FoodMinimum > FoodMaximum) throw Error(factors, "foodMin cannot exceed foodMax");
 
             XmlNode walls = Required(node, "Population/WallCapacityFactors");
@@ -94,6 +101,13 @@ namespace ModifiedPolitics.SettlementEconomy.Config
             TownProsperityPerHearth = Positive(support, "townPerHearth");
             CastleProsperityPerHearth = Positive(support, "castlePerHearth");
             ExcessProsperityDecayDays = Positive(support, "excessDecayDays");
+            XmlNode tax = Required(node, "TaxPolicy/Ai");
+            TaxProtectionSafeDays = PositiveInt(tax, "safeDays");
+            TaxSwitchThreshold = NonNegative(tax, "switchThreshold");
+            TaxFiscalWeight = NonNegative(tax, "fiscalWeight");
+            TaxEconomyWeight = NonNegative(tax, "economyWeight");
+            TaxRecruitmentWeight = NonNegative(tax, "recruitmentWeight");
+            TaxRebellionWeight = NonNegative(tax, "rebellionWeight");
             SettlementEconomyConfigManager.Instance.Register(this);
         }
 

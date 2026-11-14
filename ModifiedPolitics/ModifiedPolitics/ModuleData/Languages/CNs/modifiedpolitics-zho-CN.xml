@@ -527,12 +527,12 @@
     <string id="MP_PopulationForecast" text="预计变化" />
     <string id="MP_PopulationFoodChange" text="剩余粮食" />
     <string id="MP_PopulationProsperityChange" text="繁荣度" />
-    <string id="MP_PopulationBurdenChange" text="征兵压力" />
     <string id="MP_PopulationCapacityAdjustment" text="容量限制" />
-    <string id="MP_PopulationRecruitmentBurden" text="征兵压力" />
     <string id="MP_PopulationRecruitmentCapacity" text="征兵余量" />
     <string id="MP_PopulationSupportedProsperity" text="繁荣支撑" />
     <string id="MP_PopulationDynamicProsperity" text="当前繁荣基准" />
     <string id="MP_PopulationFinalProsperity" text="满额繁荣基准" />
+    <string id="MP_SettlementTaxPolicy" text="封邑税率政策" />
+    <string id="MP_GovernorCultureNeutral" text="包容治理" />
 </strings>
 </base>

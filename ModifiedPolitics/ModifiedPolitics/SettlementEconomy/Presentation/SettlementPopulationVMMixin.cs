@@ -155,9 +155,6 @@ namespace ModifiedPolitics.SettlementEconomy.Presentation
             AddChangeProperty(properties,
                 new TextObject("{=MP_PopulationProsperityChange}Prosperity effect"),
                 forecast.Prosperity);
-            AddChangeProperty(properties,
-                new TextObject("{=MP_PopulationBurdenChange}Recruitment pressure"),
-                forecast.RecruitmentBurden);
             properties.Add(Property(
                 new TextObject(string.Empty),
                 string.Empty,
@@ -179,7 +176,7 @@ namespace ModifiedPolitics.SettlementEconomy.Presentation
                 ? config.CastleProsperityPerHearth
                 : config.TownProsperityPerHearth;
             return PopulationGrowthModel.CalculateDailyForecast(hearth,
-                capacity, population.GetRecruitmentBurden(settlement),
+                capacity,
                 settlement.Town.Prosperity, settlement.Town.FoodChange,
                 perHearth, config.GetGrowthRate(settlement), config);
         }

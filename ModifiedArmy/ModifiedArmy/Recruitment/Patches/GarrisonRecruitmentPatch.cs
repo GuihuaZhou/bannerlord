@@ -1,3 +1,6 @@
+// Harmony adapter for native garrison growth. It keeps native troop selection
+// and timing while enforcing the same Tier Hearth transaction and rollback
+// contract used by mod-managed professional recruitment.
 using System;
 using System.Reflection;
 using HarmonyLib;
@@ -48,11 +51,8 @@ namespace ModifiedArmy.Recruitment.Patches
                 if (requested <= 0) return false;
                 CharacterObject troop = (CharacterObject)GetBasicTroop.Invoke(
                     null, new object[] { town });
-                int cost = MilitaryConfigManager.Instance.RequireActiveConfig()
-                    .GetDoctrine(settlement)
-                    .GetProfessionalBurdenCost(troop);
                 int approved = population.GetMaxAffordableProfessionalCount(
-                    settlement, cost, requested);
+                    settlement, troop, requested);
                 if (approved <= 0)
                 {
                     if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
@@ -66,8 +66,8 @@ namespace ModifiedArmy.Recruitment.Patches
                     return false;
                 }
                 PopulationTransactionResult result =
-                    population.TryRecruitProfessional(settlement, approved,
-                        cost, operationId);
+                    population.TryRecruitProfessional(settlement, troop,
+                        approved, operationId);
                 if (!result.IsCommitted) return false;
                 try
                 {
@@ -79,10 +79,13 @@ namespace ModifiedArmy.Recruitment.Patches
                         ModLogger.FileInfo(string.Format(
                             "Native garrison growth committed: settlement={0}, " +
                             "settlementId={1}, troop={2}, tier={3}, " +
-                            "requested={4}, approved={5}, burdenCost={6}, " +
+                            "requested={4}, approved={5}, hearthCostPerTroop={6:F2}, " +
                             "operationId={7}.", settlement.Name,
                             settlement.StringId, troop.Name, troop.Tier,
-                            requested, approved, cost, operationId));
+                            requested, approved,
+                            MilitaryConfigManager.Instance.RequireActiveConfig()
+                                .HearthEconomy.GetProfessionalHearthCost(troop),
+                            operationId));
                 }
                 catch
                 {

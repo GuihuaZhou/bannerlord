@@ -493,7 +493,10 @@ namespace ModifiedArmy.Models.Fief
                     "{=ModifiedArmy_Common_Unavailable}Unavailable");
             try
             {
-                float capacity = population.GetRecruitmentCapacity(settlement);
+                float capacity = Math.Max(0f, population.GetHearth(settlement) -
+                    population.GetNaturalCapacity(settlement) *
+                    MilitaryConfigManager.Instance.RequireActiveConfig()
+                        .HearthEconomy.ProfessionalReserveRatio);
                 if (float.IsNaN(capacity) || float.IsInfinity(capacity))
                     throw new InvalidOperationException(
                         "NonFiniteRecruitmentCapacity");

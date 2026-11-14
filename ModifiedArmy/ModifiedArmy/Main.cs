@@ -109,7 +109,6 @@ namespace ModifiedArmy
                 WarDispositionProviderRegistry.Clear();
                 ArmyAuthorityProviderRegistry.Clear();
                 SettlementPopulationServiceRegistry.Clear();
-                RecruitmentBurdenPolicyRegistry.Clear();
 
                 game.ObjectManager.RegisterType<BasicTroopGroup>(
                     "BasicTroopGroup",
