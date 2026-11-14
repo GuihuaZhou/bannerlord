@@ -4,6 +4,9 @@
 		<LangVersion>latest</LangVersion>
 	</PropertyGroup>
 	<ItemGroup>
+	  <Content Include="..\GUI\Prefabs\ModifiedArmyRecruitmentWeightPopup.xml" Link="GUI\Prefabs\ModifiedArmyRecruitmentWeightPopup.xml">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
 	  <None Update="ModuleData\**\*">
 	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 	  </None>
@@ -77,6 +80,12 @@
 		</Reference>
 		<Reference Include="TaleWorlds.GauntletUI.Data">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.GauntletUI.Data.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.GauntletUI">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.GauntletUI.dll</HintPath>
+		</Reference>
+		<Reference Include="TaleWorlds.TwoDimension">
+			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.TwoDimension.dll</HintPath>
 		</Reference>
 		<Reference Include="TaleWorlds.LinQuick">
 			<HintPath>D:\Steam\steamapps\common\Mount &amp; Blade II Bannerlord\bin\Win64_Shipping_Client\TaleWorlds.LinQuick.dll</HintPath>

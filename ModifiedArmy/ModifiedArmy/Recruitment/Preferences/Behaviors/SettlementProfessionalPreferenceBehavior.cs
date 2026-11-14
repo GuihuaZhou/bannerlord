@@ -1,3 +1,5 @@
+// Owns the persisted per-settlement professional recruitment weights and keeps
+// them aligned with the current eligibility snapshot and save-compatible record.
 using ModifiedArmy.Recruitment.Preferences.Models;
 using ModifiedArmy.Recruitment.Preferences.Diagnostics;
 using System;
@@ -11,7 +13,7 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
 {
     public sealed class SettlementProfessionalPreferenceBehavior : CampaignBehaviorBase
     {
-        public const int MaximumCustomWeight = 20;
+        public const int MaximumCustomWeight = 9;
         private Dictionary<string, SettlementProfessionalPreferenceRecord> _records =
             new Dictionary<string, SettlementProfessionalPreferenceRecord>();
 
@@ -30,6 +32,10 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
             _records ??= new Dictionary<string, SettlementProfessionalPreferenceRecord>();
         }
 
+        /// <summary>
+        /// Rebuilds the save-compatible record only when owner/template identity
+        /// changes, then incrementally aligns eligible keys and normalizes legacy values.
+        /// </summary>
         public IReadOnlyDictionary<string, int> Reconcile(Settlement settlement)
         {
             ProfessionalRecruitmentEligibilitySnapshot snapshot =
@@ -62,17 +68,31 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
             foreach (var pair in eligible)
                 if (!record.ActiveWeights.ContainsKey(pair.Key))
                 {
-                    record.ActiveWeights[pair.Key] = pair.Value.Weight;
+                    record.ActiveWeights[pair.Key] = NormalizeWeight(pair.Value.Weight);
                     added++;
                 }
+            int normalized = 0;
+            foreach (string key in record.ActiveWeights.Keys.ToList())
+            {
+                int value = record.ActiveWeights[key];
+                int safeValue = NormalizeWeight(value);
+                if (safeValue == value) continue;
+                record.ActiveWeights[key] = safeValue;
+                normalized++;
+            }
             _records[id] = record;
-            if (rebuild || added > 0 || removed > 0)
+            if (rebuild || added > 0 || removed > 0 || normalized > 0)
                 ProfessionalPreferenceDiagnostics.LogReconciled(settlement,
-                    rebuild ? "OwnerOrTemplateRebuild" : "EligibilityChanged",
+                    rebuild ? "OwnerOrTemplateRebuild" : normalized > 0
+                        ? "WeightRangeNormalized" : "EligibilityChanged",
                     beforeCount, record.ActiveWeights.Count, added, removed);
             return new Dictionary<string, int>(record.ActiveWeights);
         }
 
+        /// <summary>
+        /// Returns a read-safe eligible snapshot. Values are normalized even
+        /// before campaign recovery has had an opportunity to persist migration.
+        /// </summary>
         public IReadOnlyDictionary<string, int> GetEffectiveWeights(Settlement settlement)
         {
             var snapshot = ProfessionalRecruitmentEligibilityModel.Evaluate(settlement);
@@ -85,12 +105,18 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
                     .Select(x => x.Troop.StringId), StringComparer.Ordinal);
                 return (record.ActiveWeights ?? new Dictionary<string, int>())
                     .Where(x => eligible.Contains(x.Key))
-                    .ToDictionary(x => x.Key, x => x.Value, StringComparer.Ordinal);
+                    .ToDictionary(x => x.Key, x => NormalizeWeight(x.Value),
+                        StringComparer.Ordinal);
             }
             return snapshot.EligibleEntries.ToDictionary(
-                x => x.Troop.StringId, x => x.Weight, StringComparer.Ordinal);
+                x => x.Troop.StringId, x => NormalizeWeight(x.Weight),
+                StringComparer.Ordinal);
         }
 
+        /// <summary>
+        /// Atomically replaces the complete eligible key set for the owning clan,
+        /// then delegates offer cleanup to the existing production behavior.
+        /// </summary>
         public bool TrySetWeights(Settlement settlement,
             IReadOnlyDictionary<string, int> weights, Clan actor)
         {
@@ -103,8 +129,7 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
             }
             var current = Reconcile(settlement);
             if (weights.Count != current.Count || weights.Any(x =>
-                !current.ContainsKey(x.Key) || x.Value < 0 ||
-                x.Value > MaximumCustomWeight))
+                !current.ContainsKey(x.Key) || x.Value != NormalizeWeight(x.Value)))
             {
                 ProfessionalPreferenceDiagnostics.LogWriteRejected(
                     settlement, "StaleEligibilityOrWeightOutOfRange");
@@ -122,6 +147,13 @@ namespace ModifiedArmy.Recruitment.Preferences.Behaviors
         {
             foreach (Town town in Town.AllFiefs) Reconcile(town.Settlement);
         }
+
+        /// <summary>
+        /// Applies the single effective weight policy used by templates, old
+        /// save records, production reads, and the presentation layer.
+        /// </summary>
+        internal static int NormalizeWeight(int value) =>
+            Math.Max(0, Math.Min(MaximumCustomWeight, value));
 
         private void OnSettlementOwnerChanged(Settlement settlement, bool openToClaim,
             Hero newOwner, Hero oldOwner, Hero capturer,

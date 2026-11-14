@@ -338,14 +338,22 @@
     <string id="ModifiedArmy_ForceDiagVisitOutcomeCapture" text="本次访问已交由攻城结束后的一次性驻军移交流程处理" />
     <string id="ModifiedArmy_ForceDiagVisitOutcomeForceTask" text="本次访问已交由常规兵力任务执行流程处理" />
     <string id="ModifiedArmy_ForceDiagVisitOutcomeUnknown" text="本次访问产生了未明确分类的处理结果" />
-    <string id="ModifiedArmy_ProfessionalPreferences" text="职业兵招募偏好" />
+    <string id="ModifiedArmy_ProfessionalPreferences" text="招募管理" />
     <string id="ModifiedArmy_ProfessionalPreferencesDesc" text="选择兵种编辑权重（0表示停止生成新的该职业兵候选）。" />
     <string id="ModifiedArmy_ProfessionalPreferenceHint" text="兵营要求：{REQUIRED}；当前有效等级：{EFFECTIVE}；默认权重：{DEFAULT}" />
     <string id="ModifiedArmy_ProfessionalResetAll" text="全部恢复默认" />
     <string id="ModifiedArmy_ProfessionalEdit" text="编辑" />
     <string id="ModifiedArmy_Save" text="保存" />
     <string id="ModifiedArmy_Cancel" text="取消" />
-    <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到20之间。" />
+    <string id="ModifiedArmy_ProfessionalWeightRange" text="权重必须在0到9之间。" />
+    <string id="ModifiedArmy_RecruitmentWeightTitle" text="招募管理" />
+    <string id="ModifiedArmy_RecruitmentWeightReset" text="恢复默认" />
+    <string id="ModifiedArmy_RecruitmentWeightApply" text="应用修改" />
+    <string id="ModifiedArmy_RecruitmentWeightEmpty" text="当前没有符合条件的职业兵。" />
+    <string id="ModifiedArmy_RecruitmentWeightApplyFailed" text="定居点所有权或兵种资格已经变化，无法应用招募权重。" />
+    <string id="ModifiedArmy_RecruitmentWeightOpenFailed" text="无法打开招募权重窗口，请检查模组安装和日志。" />
+    <string id="ModifiedArmy_RecruitmentWeightDiscardTitle" text="放弃修改？" />
+    <string id="ModifiedArmy_RecruitmentWeightDiscardText" text="打开百科会关闭此窗口。是否放弃尚未应用的招募权重修改？" />
     <string id="ModifiedArmy_ProfessionalPreferenceReconciled" text="[职业兵偏好] 定居点{SETTLEMENT_ID}因{REASON}完成偏好核验。条目由{BEFORE}项变为{AFTER}项；新增{ADDED}项，删除{REMOVED}项。" />
     <string id="ModifiedArmy_ProfessionalPreferenceRejected" text="[职业兵偏好] 定居点{SETTLEMENT_ID}拒绝写入偏好。原因：{REASON}。" />
     <string id="ModifiedArmy_PartyCreationTransaction" text="[部队创建] 尝试={ATTEMPT_ID}；任务={TASK_ID}；操作={OPERATION_ID}；类型={PARTY_TYPE}；家族={CLAN_NAME}（{CLAN_ID}）；领队={LEADER_NAME}（{LEADER_ID}）；待创建/实际部队={PARTY_NAME}（{PARTY_ID}）；定居点={SETTLEMENT_NAME}（{SETTLEMENT_ID}）；阶段={PHASE}；原因={REASON}。预估驻军兵源={GARRISON}人，封邑兵源={FIEF}人，合计={TOTAL}人，基地兵源门槛={MINIMUM}人，封邑最低批次={MINIMUM_FIEF_BATCH}人，绑定资格={BINDING_ELIGIBLE}，首次来源={SOURCE}；实际招募={ACTUAL_RECRUITED}人，其中封邑={ACTUAL_FIEF}人、职业驻军={ACTUAL_PROFESSIONAL}人，最终正规兵={FINAL_REGULARS}人，最终状态={FINAL_STATE}。部队ID为none表示此记录发生在MobileParty创建前的候选评估阶段。" />

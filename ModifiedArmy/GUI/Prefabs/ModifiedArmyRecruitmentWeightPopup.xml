@@ -1,0 +1,105 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Toggle.Width" BrushLayer="Default" BrushName="Party.TroopTupple.Right" BrushValueType="Width" />
+    <Constant Name="Toggle.Height" BrushLayer="Default" BrushName="Party.TroopTupple.Right" BrushValueType="Height" />
+    <Constant Name="Extension.Width" BrushLayer="Default" BrushName="Party.TroopTupple.Extension.Right" BrushValueType="Width" />
+    <Constant Name="Image.Width" Value="130" />
+    <Constant Name="Image.Height" Value="63" />
+    <Constant Name="Image.MarginLeft" Value="36" />
+    <Constant Name="Image.Padding" Value="2" />
+    <Constant Name="NameLeft" Value="170" />
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000B0">
+      <Children>
+        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="740" SuggestedHeight="512" HorizontalAlignment="Center" VerticalAlignment="Center" RenderLate="true">
+          <Children>
+            <!-- Recompose Encyclopedia.Frame so its border follows this popup's
+                 actual 740x512 bounds instead of the brush's inset native size. -->
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="StdAssets\standart_popup" />
+            <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Encyclopedia.Canvas" />
+            <!-- Match the native encyclopedia/town-management title plaque. -->
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="300" SuggestedHeight="82" HorizontalAlignment="Center" VerticalAlignment="Top" PositionYOffset="-10" Sprite="StdAssets\tabbar_popup" RenderLate="true">
+              <Children>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="30" MarginRight="30" PositionYOffset="-13" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="31" Brush.TextHorizontalAlignment="Center" Text="@TitleText" />
+              </Children>
+            </Widget>
+            <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="46" SuggestedHeight="46" MarginTop="-10" MarginRight="-10" HorizontalAlignment="Right" VerticalAlignment="Top" Brush="Popup.CloseButton" Command.Click="ExecuteCancel" RenderLate="true" />
+
+            <!-- Keep the encyclopedia's stone title band clear; troop rows occupy
+                 the brown content canvas beneath it. -->
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="45" MarginRight="45" MarginTop="105" MarginBottom="68">
+              <Children>
+                <!-- The visible rail is bounded by this brown-content container,
+                     so it never extends into the encyclopedia title band. -->
+                <ScrollbarWidget Id="TroopScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" HorizontalAlignment="Right" MarginTop="8" MarginBottom="8" MinValue="0" MaxValue="100" AlignmentAxis="Vertical" Handle="TroopScrollbarHandle">
+                  <Children>
+                    <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5A4033FF" AlphaFactor="0.5" />
+                    <ImageWidget Id="TroopScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="10" SuggestedHeight="70" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                  </Children>
+                </ScrollbarWidget>
+                <ScrollablePanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginRight="14" InnerPanel="TroopClip\TroopList" ClipRect="TroopClip" VerticalScrollbar="..\TroopScrollbar" MouseScrollAxis="Vertical" AutoHideScrollBars="false">
+                  <Children>
+                    <Widget Id="TroopClip" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
+                      <Children>
+                        <ListPanel Id="TroopList" DataSource="{Troops}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <ItemTemplate>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Toggle.Width" SuggestedHeight="!Toggle.Height" HorizontalAlignment="Center" MarginTop="2">
+                              <Children>
+                                <!-- Exact Party/Member tuple brush; the host loads ui_partyscreen. -->
+                                <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Party.TroopTupple.Right" />
+
+                                <!-- Portrait and troop name stay left; a normal click opens the encyclopedia. -->
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="510" HorizontalAlignment="Left" Command.Click="ExecuteOpenEncyclopedia">
+                                  <Children>
+                                    <BrushWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Image.Width" SuggestedHeight="!Image.Height" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="!Image.MarginLeft" Brush="Party.TroopBack">
+                                      <Children>
+                                        <ImageIdentifierWidget DataSource="{Visual}" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="!Image.Padding" MarginRight="!Image.Padding" MarginTop="!Image.Padding" MarginBottom="!Image.Padding" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsBig="true">
+                                          <Children>
+                                            <Widget DataSource="{..\TierIconData}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Top" PositionYOffset="2" Sprite="@Text" />
+                                            <Widget DataSource="{..\TypeIconData}" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" HorizontalAlignment="Left" VerticalAlignment="Top" PositionXOffset="6" PositionYOffset="2" Sprite="@Text" />
+                                          </Children>
+                                        </ImageIdentifierWidget>
+                                      </Children>
+                                    </BrushWidget>
+                                    <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="280" HorizontalAlignment="Left" MarginLeft="!NameLeft" MarginTop="10" MarginBottom="10" Brush="Party.Text.Tuple" Brush.TextHorizontalAlignment="Left" Text="@NameText" />
+                                  </Children>
+                                </ButtonWidget>
+
+                                <!-- One weight display only: minus, current value, plus, aligned right. -->
+                                <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="104" SuggestedHeight="34" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="10" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                  <Children>
+                                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Brush="Inventory.Tuple.Extension.MinusButton" Command.Click="ExecuteDecreaseWeight" IsEnabled="@CanDecrease" UpdateChildrenStates="true" />
+                                    <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="32" SuggestedHeight="34" MarginLeft="5" MarginRight="5" VerticalAlignment="Center" Brush="Inventory.Tuple.Extension.StockButtonText" Brush.FontSize="26" Brush.TextHorizontalAlignment="Center" IntText="@Weight" />
+                                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Brush="Inventory.Tuple.Extension.PlusButton" Command.Click="ExecuteIncreaseWeight" IsEnabled="@CanIncrease" UpdateChildrenStates="true" />
+                                  </Children>
+                                </ListPanel>
+                              </Children>
+                            </Widget>
+                          </ItemTemplate>
+                        </ListPanel>
+                      </Children>
+                    </Widget>
+                  </Children>
+                </ScrollablePanel>
+                <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="70" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="Recruitment.Info.Text" Brush.TextHorizontalAlignment="Center" Text="@EmptyText" IsVisible="@IsEmpty" />
+              </Children>
+            </Widget>
+
+            <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="540" SuggestedHeight="58" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="10" StackLayout.LayoutMethod="HorizontalLeftToRight">
+              <Children>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="240" SuggestedHeight="56" MarginRight="60" Brush="Popup.Done.Button.NineGrid" Command.Click="ExecuteResetDefaults" IsEnabled="@CanApply" UpdateChildrenStates="true">
+                  <Children><TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@ResetText" /></Children>
+                </ButtonWidget>
+                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="240" SuggestedHeight="56" Brush="Popup.Done.Button.NineGrid" Command.Click="ExecuteApply" IsEnabled="@CanApply" UpdateChildrenStates="true">
+                  <Children><TextWidget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Popup.Button.Text" Text="@ApplyText" /></Children>
+                </ButtonWidget>
+              </Children>
+            </ListPanel>
+            <Widget DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="Frame1_frame" ExtendLeft="18" ExtendRight="18" ExtendTop="18" ExtendBottom="18" />
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

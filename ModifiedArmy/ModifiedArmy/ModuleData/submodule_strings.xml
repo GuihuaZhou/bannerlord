@@ -464,14 +464,22 @@
         text="{=ModifiedArmy_GarrisonWageLimitBorderLog}The garrison wage assessment revised the wage limit for the border settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
     <string id="str_modifiedarmy_garrison_wage_limit_interior_log"
         text="{=ModifiedArmy_GarrisonWageLimitInteriorLog}The garrison wage assessment revised the wage limit for the interior settlement {SETTLEMENT_NAME} from {PREVIOUS_LIMIT} to {NEW_LIMIT}. The desired garrison contains {DESIRED_SIZE} soldiers. The expected average wage is {AVERAGE_WAGE} denars, the prosperity factor is {WEALTH_FACTOR}, and the unrounded wage limit is {RAW_LIMIT}." />
-    <string id="str_modifiedarmy_professional_preferences" text="{=ModifiedArmy_ProfessionalPreferences}Professional recruitment preferences" />
+    <string id="str_modifiedarmy_professional_preferences" text="{=ModifiedArmy_ProfessionalPreferences}Recruitment management" />
     <string id="str_modifiedarmy_professional_preferences_desc" text="{=ModifiedArmy_ProfessionalPreferencesDesc}Select a troop to edit its weight (0 disables new professional offers)." />
     <string id="str_modifiedarmy_professional_preference_hint" text="{=ModifiedArmy_ProfessionalPreferenceHint}Barracks {REQUIRED}; effective {EFFECTIVE}; default {DEFAULT}" />
     <string id="str_modifiedarmy_professional_reset_all" text="{=ModifiedArmy_ProfessionalResetAll}Reset all to defaults" />
     <string id="str_modifiedarmy_professional_edit" text="{=ModifiedArmy_ProfessionalEdit}Edit" />
     <string id="str_modifiedarmy_save" text="{=ModifiedArmy_Save}Save" />
     <string id="str_modifiedarmy_cancel" text="{=ModifiedArmy_Cancel}Cancel" />
-    <string id="str_modifiedarmy_professional_weight_range" text="{=ModifiedArmy_ProfessionalWeightRange}Weight must be between 0 and 20." />
+    <string id="str_modifiedarmy_professional_weight_range" text="{=ModifiedArmy_ProfessionalWeightRange}Weight must be between 0 and 9." />
+    <string id="str_modifiedarmy_recruitment_weight_title" text="{=ModifiedArmy_RecruitmentWeightTitle}Recruitment management" />
+    <string id="str_modifiedarmy_recruitment_weight_reset" text="{=ModifiedArmy_RecruitmentWeightReset}Restore defaults" />
+    <string id="str_modifiedarmy_recruitment_weight_apply" text="{=ModifiedArmy_RecruitmentWeightApply}Apply changes" />
+    <string id="str_modifiedarmy_recruitment_weight_empty" text="{=ModifiedArmy_RecruitmentWeightEmpty}No professional troops are currently eligible." />
+    <string id="str_modifiedarmy_recruitment_weight_apply_failed" text="{=ModifiedArmy_RecruitmentWeightApplyFailed}Recruitment weights could not be applied because settlement ownership or troop eligibility changed." />
+    <string id="str_modifiedarmy_recruitment_weight_open_failed" text="{=ModifiedArmy_RecruitmentWeightOpenFailed}The recruitment-weight window could not be opened. Check the module installation and log." />
+    <string id="str_modifiedarmy_recruitment_weight_discard_title" text="{=ModifiedArmy_RecruitmentWeightDiscardTitle}Discard changes?" />
+    <string id="str_modifiedarmy_recruitment_weight_discard_text" text="{=ModifiedArmy_RecruitmentWeightDiscardText}Opening the encyclopedia closes this window. Discard unapplied recruitment-weight changes?" />
     <string id="str_modifiedarmy_professional_preference_reconciled" text="{=ModifiedArmy_ProfessionalPreferenceReconciled}[Professional preference] Settlement {SETTLEMENT_ID} reconciled preferences for reason {REASON}. Entries changed from {BEFORE} to {AFTER}; added {ADDED}, removed {REMOVED}." />
     <string id="str_modifiedarmy_professional_preference_rejected" text="{=ModifiedArmy_ProfessionalPreferenceRejected}[Professional preference] Settlement {SETTLEMENT_ID} rejected a preference write. Reason: {REASON}." />
     <string id="str_modifiedarmy_party_creation_transaction" text="{=ModifiedArmy_PartyCreationTransaction}[Party creation] Attempt={ATTEMPT_ID}; task={TASK_ID}; operation={OPERATION_ID}; type={PARTY_TYPE}; clan={CLAN_NAME} ({CLAN_ID}); leader={LEADER_NAME} ({LEADER_ID}); planned/actual party={PARTY_NAME} ({PARTY_ID}); settlement={SETTLEMENT_NAME} ({SETTLEMENT_ID}); phase={PHASE}; reason={REASON}. Estimated garrison={GARRISON}, fief={FIEF}, total={TOTAL}, minimum base supply={MINIMUM}, minimum fief batch={MINIMUM_FIEF_BATCH}, binding eligible={BINDING_ELIGIBLE}, initial source={SOURCE}; actually recruited={ACTUAL_RECRUITED}, from fief={ACTUAL_FIEF}, from professional garrison={ACTUAL_PROFESSIONAL}, final regulars={FINAL_REGULARS}, final state={FINAL_STATE}. A party ID of none means the candidate was evaluated before the MobileParty was created." />
