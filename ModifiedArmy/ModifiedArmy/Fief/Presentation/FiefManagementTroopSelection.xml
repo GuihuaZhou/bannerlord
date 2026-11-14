@@ -5,7 +5,7 @@
         <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="35" VerticalAlignment="Top" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@TitleText" />
       </Children>
     </Widget>
-    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="55" SuggestedHeight="55" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="18" MarginTop="18" Brush="Popup.CloseButton" Command.Click="ExecuteCancel" />
+    <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="55" SuggestedHeight="55" HorizontalAlignment="Right" VerticalAlignment="Top" PositionXOffset="10" PositionYOffset="-10" Brush="Popup.CloseButton" Command.Click="ExecuteCancel" RenderLate="true" />
 
     <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="590" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="45" MarginTop="190" Sprite="SPGeneral\SPRecruitment\right_dent" SaturationFactor="20">
       <Children>
@@ -13,6 +13,10 @@
           <ItemTemplate>
             <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@IsSelected" Command.Click="ExecuteSelect" UpdateChildrenStates="true" MarginBottom="6">
               <Children>
+                <!-- The native CustomBattle brush has no visible selected
+                     style here, so reflect the authoritative VM selection with
+                     a bounded overlay without changing the filter command. -->
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.32" IsVisible="@IsSelected" DoNotAcceptEvents="true" />
                 <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="12" MarginRight="12" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="21" Brush.TextHorizontalAlignment="Left" Text="@Name" DoNotAcceptEvents="true" />
               </Children>
             </ButtonWidget>
@@ -24,13 +28,22 @@
     <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1080" SuggestedHeight="58" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="65" MarginTop="125" StackLayout.LayoutMethod="HorizontalLeftToRight">
       <Children>
         <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ServingSelected" Command.Click="ExecuteSelectServing" UpdateChildrenStates="true">
-          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ServingText" DoNotAcceptEvents="true" /></Children>
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.32" IsVisible="@ServingSelected" DoNotAcceptEvents="true" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ServingText" DoNotAcceptEvents="true" />
+          </Children>
         </ButtonWidget>
         <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" MarginLeft="15" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ReadySelected" Command.Click="ExecuteSelectReady" UpdateChildrenStates="true">
-          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ReadyText" DoNotAcceptEvents="true" /></Children>
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.32" IsVisible="@ReadySelected" DoNotAcceptEvents="true" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ReadyText" DoNotAcceptEvents="true" />
+          </Children>
         </ButtonWidget>
         <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="350" MarginLeft="15" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@CoolingSelected" Command.Click="ExecuteSelectCooling" UpdateChildrenStates="true">
-          <Children><TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@CoolingText" DoNotAcceptEvents="true" /></Children>
+          <Children>
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.32" IsVisible="@CoolingSelected" DoNotAcceptEvents="true" />
+            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@CoolingText" DoNotAcceptEvents="true" />
+          </Children>
         </ButtonWidget>
       </Children>
     </ListPanel>
