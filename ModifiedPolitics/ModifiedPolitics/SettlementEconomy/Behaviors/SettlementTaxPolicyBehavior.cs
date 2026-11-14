@@ -176,7 +176,7 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             if (next != current && TrySetLevel(settlement, next, false, out _))
                 ModLogger.FileInfo(string.Format(
                     "[TaxPolicy] AI tax level changed: settlement={0}, id={1}, ownerClan={2}, " +
-                    "from={3}, to={4}, fiscalScore={5:F3}, candidateScore={6:F3}, " +
+                    "from={3}, to={4}, currentScore={5:F3}, candidateScore={6:F3}, " +
                     "protection={7}, rebellionDanger={8}, day={9}.",
                     settlement.Name, settlement.StringId, ClanName(settlement),
                     current, next, currentScore, bestScore, protection, danger, day));
@@ -193,7 +193,7 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
             Clan clan = settlement.OwnerClan;
             var finance = Campaign.Current.Models.ClanFinanceModel;
             float income = Math.Max(1f, finance.CalculateClanIncome(clan, false, false, true).ResultNumber);
-            float expenses = Math.Max(1f, finance.CalculateClanExpenses(clan, false, false, true).ResultNumber);
+            float expenses = Math.Max(1f, Math.Abs(finance.CalculateClanExpenses(clan, false, false, true).ResultNumber));
             float deficit = Math.Max(0f, expenses - income);
             float lossRatio = Math.Min(1f, deficit / expenses);
             float runwayPressure = deficit <= 0f ? 0f : 1f - Math.Min(1f, clan.Gold / Math.Max(1f, deficit * 30f));
