@@ -532,7 +532,19 @@
     <string id="MP_PopulationSupportedProsperity" text="繁荣支撑" />
     <string id="MP_PopulationDynamicProsperity" text="当前繁荣基准" />
     <string id="MP_PopulationFinalProsperity" text="满额繁荣基准" />
-    <string id="MP_SettlementTaxPolicy" text="封邑税率政策" />
+    <string id="MP_SettlementTaxPolicy" text="税率政策" />
+    <string id="MP_TaxPolicyShort" text="税率" />
+    <string id="MP_TaxLevelVeryLow" text="极低" />
+    <string id="MP_TaxLevelLow" text="低" />
+    <string id="MP_TaxLevelNormal" text="正常" />
+    <string id="MP_TaxLevelHigh" text="高" />
+    <string id="MP_TaxLevelVeryHigh" text="极高" />
+    <string id="MP_TaxIncomeMultiplier" text="税收：×{MULTIPLIER}" />
+    <string id="MP_TaxDailyEffects" text="每日：忠诚度 {LOYALTY}，繁荣度 {PROSPERITY}" />
+    <string id="MP_TaxDailyEffectsCompact" text="每日忠诚度 {LOYALTY} / 繁荣度 {PROSPERITY}" />
+    <string id="MP_TaxPolicyPlayerManaged" text="由你的家族管理" />
+    <string id="MP_TaxPolicyReadOnly" text="AI 管理的政策（只读）" />
+    <string id="MP_TaxPolicyTownManagementHint" text="请在定居点管理界面调整" />
     <string id="MP_GovernorCultureNeutral" text="包容治理" />
 </strings>
 </base>

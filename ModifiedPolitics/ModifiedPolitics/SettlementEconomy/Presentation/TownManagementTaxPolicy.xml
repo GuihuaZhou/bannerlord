@@ -1,0 +1,59 @@
+<Widget
+    Id="ModifiedPoliticsTaxPolicyPanel"
+    WidthSizePolicy="Fixed"
+    HeightSizePolicy="StretchToParent"
+    SuggestedWidth="260"
+    MarginTop="5">
+  <Children>
+    <NavigationScopeTargeter
+        ScopeID="TaxPolicyScope"
+        ScopeParent="..\TaxPolicyListPanel\TaxPolicySelector"
+        ScopeMovements="Horizontal"
+        HasCircularMovement="false"
+        LeftNavigationScope="GovernorPanelScope"
+        RightNavigationScope="ReserveScope" />
+    <Widget
+        WidthSizePolicy="Fixed"
+        HeightSizePolicy="Fixed"
+        SuggestedWidth="7"
+        SuggestedHeight="220"
+        HorizontalAlignment="Left"
+        VerticalAlignment="Bottom"
+        Sprite="SPGeneral\TownManagement\vertical_divider"
+        AlphaFactor="0.44" />
+    <ListPanel
+        Id="TaxPolicyListPanel"
+        WidthSizePolicy="StretchToParent"
+        HeightSizePolicy="CoverChildren"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Top"
+        StackLayout.LayoutMethod="VerticalTopToBottom">
+      <Children>
+        <TextWidget
+            WidthSizePolicy="CoverChildren"
+            HeightSizePolicy="CoverChildren"
+            HorizontalAlignment="Center"
+            Brush="TownManagement.Item.Title.Text"
+            Brush.FontColor="#f4e1c4ff"
+            Text="@TownTaxPolicyTitle" />
+        <Widget
+            WidthSizePolicy="Fixed"
+            HeightSizePolicy="Fixed"
+            SuggestedWidth="220"
+            SuggestedHeight="7"
+            HorizontalAlignment="Center"
+            Sprite="SPGeneral\TownManagement\title_divider" />
+        <Standard.DropdownWithHorizontalControl
+            Id="TaxPolicySelector"
+            HorizontalAlignment="Center"
+            MarginTop="18"
+            UpdateChildrenStates="true"
+            Parameter.IsCustomWidth="true"
+            Parameter.CustomWidth="95"
+            Parameter.ShowNextAndPrevious="true"
+            Parameter.SelectorDataSource="{TownTaxPolicySelector}"
+            GamepadNavigationIndex="0" />
+      </Children>
+    </ListPanel>
+  </Children>
+</Widget>
