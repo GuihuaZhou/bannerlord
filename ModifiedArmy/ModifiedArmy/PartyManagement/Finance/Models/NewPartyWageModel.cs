@@ -210,9 +210,12 @@ namespace ModifiedArmy.Models
 
         private static bool ShouldApplyWarWage(MobileParty mobileParty)
         {
+            // Only actual lord parties receive the formal-war wage bonus.
+            // WarPartyComponent alone is not the contract for this policy:
+            // garrisons and any other non-lord parties must stay at base wages.
             if (mobileParty == null
                 || !mobileParty.IsActive
-                || mobileParty.WarPartyComponent == null)
+                || !mobileParty.IsLordParty)
             {
                 return false;
             }
