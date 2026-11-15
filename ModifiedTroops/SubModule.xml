@@ -11,6 +11,7 @@
         <DependedModule Id="Bannerlord.ButterLib" DependentVersion="v2.12.0" />
         <DependedModule Id="Bannerlord.MBOptionScreen" DependentVersion="v5.12.3" />
         <DependedModule Id="Bannerlord.UIExtenderEx" DependentVersion="v2.13.3" />
+		<DependedModule Id="OpenSourceArmory" DependentVersion="v2.0.0" Optional="false" />
   		<DependedModule Id="Native" DependentVersion="v1.4.8" Optional="false"/>
 		<DependedModule Id="SandBoxCore" DependentVersion="v1.4.8" Optional="false"/>
 		<DependedModule Id="Sandbox" DependentVersion="v1.4.8" Optional="false"/>

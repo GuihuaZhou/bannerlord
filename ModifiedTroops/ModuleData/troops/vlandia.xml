@@ -882,15 +882,21 @@
 				<equipment
 					slot="Item2"
 					id="Item.western_spear_4_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.white_coat_over_mail" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_c" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
 				<equipment
 					slot="Head"
-					id="Item.full_helm_over_arming_coif" />
+					id="Item.visored_helmet_over_laced_coif" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_mail_mitten" />
@@ -908,9 +914,15 @@
 				<equipment
 					slot="Item2"
 					id="Item.western_spear_4_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.white_coat_over_mail" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_c" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
@@ -934,9 +946,15 @@
 				<equipment
 					slot="Item2"
 					id="Item.western_spear_4_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.white_coat_over_mail" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.LE_vlandia_armor_a" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
@@ -1178,7 +1196,7 @@
 					id="Item.western_spear_4_t4" />
 				<equipment
 					slot="Body"
-					id="Item.nordic_sloven_over_mail" />
+					id="Item.white_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
