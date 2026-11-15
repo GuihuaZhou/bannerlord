@@ -165,6 +165,7 @@ namespace ModifiedArmy.common
         public bool EnableAutomaticReinforcement { get; internal set; }
         public DemobilizationConfig Demobilization { get; } =
             new DemobilizationConfig();
+        public WarRestConfig WarRest { get; } = new WarRestConfig();
     }
 
     public sealed class DemobilizationConfig
@@ -174,6 +175,16 @@ namespace ModifiedArmy.common
         public int PeaceStabilityDays { get; internal set; } = 3;
         public float MaxDailyDemobilizationRatio { get; internal set; } = 0.20f;
         public int MaxDailyDemobilizationCount { get; internal set; } = 30;
+    }
+
+    public sealed class WarRestConfig
+    {
+        public bool Enabled { get; internal set; }
+        public int MaximumDailyCount { get; internal set; } = 30;
+        public float MinimumUrgencyScore { get; internal set; } = 0.75f;
+        public float DispositionWeight { get; internal set; } = 0.30f;
+        public float FinanceWeight { get; internal set; } = 0.30f;
+        public float ServiceWeight { get; internal set; } = 0.40f;
     }
 
     public sealed class MilitaryConfig : MBObjectBase
@@ -226,6 +237,23 @@ namespace ModifiedArmy.common
             message.SetTextVariable("CONFIG_ID", ConfigId);
             message.SetTextVariable("DOCTRINE_COUNT", _doctrines.Count);
             ModLogger.Info(message.ToString());
+            ForceManagementConfig force = AiRecruitment.ForceManagement;
+            TextObject forceMessage = GameTexts.FindText(
+                "str_modifiedarmy_force_feature_config_loaded");
+            forceMessage.SetTextVariable("DEMOB_ENABLED",
+                force.Demobilization.EnableAutomaticDemobilization
+                    .ToString());
+            forceMessage.SetTextVariable("ROUTING_ENABLED",
+                force.Demobilization.EnableDemobilizationRouting
+                    .ToString());
+            forceMessage.SetTextVariable("WAR_REST_ENABLED",
+                force.WarRest.Enabled.ToString());
+            forceMessage.SetTextVariable("WAR_REST_MAX",
+                force.WarRest.MaximumDailyCount);
+            forceMessage.SetTextVariable("WAR_REST_THRESHOLD",
+                force.WarRest.MinimumUrgencyScore.ToString(
+                    "0.00", CultureInfo.InvariantCulture));
+            ModLogger.Info(forceMessage.ToString());
         }
 
         public CulturalMilitaryDoctrine GetDoctrine(CultureObject culture)
@@ -392,6 +420,31 @@ namespace ModifiedArmy.common
                         demobilization,
                         "MaxDailyDemobilizationCount",
                         value.Demobilization.MaxDailyDemobilizationCount);
+            }
+            XmlNode rest = node.SelectSingleNode("WarRest");
+            if (rest != null)
+            {
+                WarRestConfig warRest = value.WarRest;
+                warRest.Enabled = BooleanValue(rest, "Enabled", false);
+                warRest.MaximumDailyCount = NonNegativeValue(
+                    rest, "MaximumDailyCount", warRest.MaximumDailyCount);
+                warRest.MinimumUrgencyScore = BoundedFloatValue(
+                    rest, "MinimumUrgencyScore", warRest.MinimumUrgencyScore,
+                    0f, 1f);
+                warRest.DispositionWeight = BoundedFloatValue(
+                    rest, "DispositionWeight", warRest.DispositionWeight,
+                    0f, 1f);
+                warRest.FinanceWeight = BoundedFloatValue(
+                    rest, "FinanceWeight", warRest.FinanceWeight, 0f, 1f);
+                warRest.ServiceWeight = BoundedFloatValue(
+                    rest, "ServiceWeight", warRest.ServiceWeight, 0f, 1f);
+                if (warRest.Enabled && (warRest.MaximumDailyCount <= 0 ||
+                    warRest.DispositionWeight + warRest.FinanceWeight +
+                        warRest.ServiceWeight <= 0f))
+                {
+                    throw new InvalidOperationException(
+                        "Invalid enabled WarRest configuration.");
+                }
             }
         }
 

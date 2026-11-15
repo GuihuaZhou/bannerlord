@@ -28,6 +28,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
     {
         private List<PartyForceTask> _tasks = new List<PartyForceTask>();
         private Dictionary<string, int> _savedTaskRecords = new();
+        private Dictionary<string, int> _warRestDailyActual = new();
         private readonly PartyForceCandidateService _candidates =
             new PartyForceCandidateService();
         private readonly PartyVisitExecutionService _visitExecution =
@@ -65,7 +66,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             PartyForceTask task = FindTask(party);
             if (task == null ||
                 (task.Intent != PartyForceIntent.Recruit &&
-                    task.Intent != PartyForceIntent.WarRest) ||
+                    task.Intent != PartyForceIntent.WarRest &&
+                    task.Intent != PartyForceIntent.PeaceDemobilize) ||
                 task.Status == PartyForceTaskStatus.Completed ||
                 task.Status == PartyForceTaskStatus.Cancelled ||
                 task.Status == PartyForceTaskStatus.Suspended ||
@@ -73,11 +75,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 party?.CurrentSettlement == task.TargetSettlement)
                 return;
 
-            if (!IsRecruitmentDestinationAuthorized(party, task))
+            if (!IsTravelTaskStillValid(party, task))
             {
                 task.Status = PartyForceTaskStatus.Cancelled;
                 task.OwnsMovementOrder = false;
-                task.ReasonCode = "RecruitmentSettlementBindingInvalid";
+                task.ReasonCode = "TravelTaskNoLongerValid";
                 if (party?.Ai != null)
                     party.Ai.RethinkAtNextHourlyTick = true;
                 return;
@@ -108,6 +110,35 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         : Math.Max(oldScore, score));
             else
                 p.AddBehaviorScore((candidate, score));
+        }
+
+        private bool IsTravelTaskStillValid(
+            MobileParty party,
+            PartyForceTask task)
+        {
+            if (party == null || task?.TargetSettlement == null ||
+                task.TargetSettlement.IsUnderSiege)
+                return false;
+            if (task.Intent == PartyForceIntent.Recruit)
+                return IsRecruitmentDestinationAuthorized(party, task);
+            PartyForcePlanningContext context = _candidates.BuildContext(
+                party, task, true);
+            if (context.IsProtectedByHigherPriorityOrder) return false;
+            if (task.Intent == PartyForceIntent.WarRest)
+                return context.IsAtFormalWar &&
+                    context.WarRest?.IsApproved == true &&
+                    context.WarRest.CandidateFiefBatches.Any(item =>
+                        item.ApprovedCount > 0 &&
+                        item.BatchId == task.SourceBatchId &&
+                        item.SourceFief == task.TargetSettlement);
+            return !context.IsAtFormalWar &&
+                context.PeaceDemobilization?.CanDemobilize == true &&
+                context.PeaceDestinations.Any(item =>
+                    item.Settlement == task.TargetSettlement &&
+                    item.SourceKind == task.SourceKind &&
+                    string.Equals(item.SourceBatchId ?? string.Empty,
+                        task.SourceBatchId ?? string.Empty,
+                        StringComparison.Ordinal));
         }
 
         private static void AddLowStrengthStayCandidate(
@@ -213,6 +244,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             dataStore.SyncData(
                 "modifiedarmy_force_task_records_v1",
                 ref _savedTaskRecords);
+            dataStore.SyncData(
+                "modifiedarmy_war_rest_daily_actual_v1",
+                ref _warRestDailyActual);
             EnsureSaveCollections();
             if (dataStore.IsLoading)
                 _tasks = _persistence.Restore(_savedTaskRecords);
@@ -297,12 +331,31 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                             party,
                             ForceManagementFacade.Current.GetPartyTarget(party),
                             false);
-                    valid = ForceManagementFacade.IsAtFormalWar(
-                            party.ActualClan) &&
-                        rest.FiefBatches.Any(batch =>
+                    WarRestDecision decision = ForceManagementFacade.Current
+                        .WarRest.Evaluate(rest);
+                    valid = rest.Settings.Enabled &&
+                        ForceManagementFacade.IsAtFormalWar(
+                            party.ActualClan) && decision.IsApproved &&
+                        decision.CandidateFiefBatches.Any(batch =>
+                            batch.ApprovedCount > 0 &&
                             batch.BatchId == task.SourceBatchId &&
-                            batch.SourceFief == task.TargetSettlement &&
-                            batch.IsSafe);
+                            batch.SourceFief == task.TargetSettlement);
+                }
+                if (valid && task.Intent ==
+                    PartyForceIntent.PeaceDemobilize)
+                {
+                    PartyForcePlanningContext context = _candidates
+                        .BuildContext(party, task, true);
+                    valid = !context.IsAtFormalWar &&
+                        !context.IsProtectedByHigherPriorityOrder &&
+                        context.PeaceDemobilization?.CanDemobilize == true &&
+                        context.PeaceDestinations.Any(candidate =>
+                            candidate.Settlement == task.TargetSettlement &&
+                            candidate.SourceKind == task.SourceKind &&
+                            string.Equals(candidate.SourceBatchId ??
+                                    string.Empty, task.SourceBatchId ??
+                                    string.Empty,
+                                StringComparison.Ordinal));
                 }
                 if (valid && task.Intent == PartyForceIntent.Recruit)
                 {
@@ -359,6 +412,33 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         {
             _savedTaskRecords ??= new Dictionary<string, int>();
             _tasks ??= new List<PartyForceTask>();
+            _warRestDailyActual ??= new Dictionary<string, int>();
+        }
+
+        internal int GetWarRestCompletedToday(MobileParty party, int today)
+        {
+            if (party == null || string.IsNullOrEmpty(party.StringId)) return 0;
+            string key = party.StringId + "|" + today;
+            return _warRestDailyActual.TryGetValue(key, out int count)
+                ? Math.Max(0, count)
+                : 0;
+        }
+
+        internal void RecordWarRestCompleted(
+            MobileParty party,
+            int today,
+            int actualCount)
+        {
+            if (party == null || actualCount <= 0 ||
+                string.IsNullOrEmpty(party.StringId)) return;
+            string key = party.StringId + "|" + today;
+            _warRestDailyActual.TryGetValue(key, out int oldCount);
+            _warRestDailyActual[key] = checked(oldCount + actualCount);
+            string suffix = "|" + (today - 7);
+            foreach (string stale in _warRestDailyActual.Keys
+                .Where(item => item.EndsWith(suffix,
+                    StringComparison.Ordinal)).ToList())
+                _warRestDailyActual.Remove(stale);
         }
 
         /// <summary>Parses one versioned primitive task record defensively.</summary>
@@ -509,6 +589,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         "str_modifiedarmy_force_plan_recruit",
                     PartyForceIntent.WarRest =>
                         "str_modifiedarmy_force_plan_war_rest",
+                    PartyForceIntent.PeaceDemobilize =>
+                        "str_modifiedarmy_force_plan_peace_demobilize",
                     PartyForceIntent.Maintain =>
                         "str_modifiedarmy_force_plan_maintain",
                     _ => "str_modifiedarmy_force_plan_suspended"
@@ -524,7 +606,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             // candidates. Maintain and suspended templates intentionally omit
             // those variables instead of rendering artificial "none" values.
             if (!suspended && (intent == PartyForceIntent.Recruit ||
-                intent == PartyForceIntent.WarRest))
+                intent == PartyForceIntent.WarRest ||
+                intent == PartyForceIntent.PeaceDemobilize))
             {
                 message.SetTextVariable(
                     "SETTLEMENT_NAME",
@@ -560,6 +643,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     "str_modifiedarmy_force_reason_recruit_planned",
                 "WarRestTaskPlanned" =>
                     "str_modifiedarmy_force_reason_rest_planned",
+                "PeaceDemobilizationTaskPlanned" =>
+                    "str_modifiedarmy_force_reason_demobilize_planned",
+                "PeaceDemobilizationCancelledByWar" =>
+                    "str_modifiedarmy_force_reason_demobilize_cancelled_war",
                 "NoWarRestDestination" =>
                     "str_modifiedarmy_force_reason_no_rest_destination",
                 "WarRestCancelledByPeace" =>
@@ -582,6 +669,9 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     return GameTexts.FindText("str_modifiedarmy_force_intent_recruit");
                 case PartyForceIntent.WarRest:
                     return GameTexts.FindText("str_modifiedarmy_force_intent_war_rest");
+                case PartyForceIntent.PeaceDemobilize:
+                    return GameTexts.FindText(
+                        "str_modifiedarmy_force_intent_peace_demobilize");
                 case PartyForceIntent.Maintain:
                     return GameTexts.FindText("str_modifiedarmy_force_intent_maintain");
                 case PartyForceIntent.Suspended:

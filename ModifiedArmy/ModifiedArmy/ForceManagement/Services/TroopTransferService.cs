@@ -23,6 +23,14 @@ namespace ModifiedArmy.ForceManagement.Services
     /// </summary>
     public sealed class TroopTransferService
     {
+        private sealed class TroopMoveEntry
+        {
+            public CharacterObject Troop { get; set; }
+            public int Healthy { get; set; }
+            public int Wounded { get; set; }
+            public int Total => Healthy + Wounded;
+        }
+
         public int TransferFieldToGarrison(
             MobileParty source,
             Settlement destination,
@@ -118,56 +126,90 @@ namespace ModifiedArmy.ForceManagement.Services
             RecruitmentPlan plan = RecruitmentModelManager.Model.BuildPlan(
                 garrison,
                 candidates);
-            int transferred = 0;
-
-            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations)
+            List<TroopMoveEntry> manifest = new List<TroopMoveEntry>();
+            int planned = 0;
+            foreach (RecruitmentEvaluationResult evaluation in plan.Evaluations
+                .Where(item => item?.Troop != null)
+                .OrderBy(item => item.Troop.StringId,
+                    StringComparer.Ordinal))
             {
                 CharacterObject troop = evaluation.Troop;
-                int protectedCount = troop != null && reserved.TryGetValue(
-                    troop,
-                    out int fiefCount)
-                        ? Math.Max(0, fiefCount)
-                        : 0;
-                int available = troop == null
-                    ? 0
-                    : Math.Max(
-                        0,
-                        source.MemberRoster.GetTroopCount(troop) -
-                            protectedCount);
-                int count = Math.Min(
-                    allowed - transferred,
-                    Math.Min(evaluation.RecruitableCount, available));
-                count = Math.Min(
-                    count,
-                    GarrisonRecruitmentCapacity.GetTransferFreeSlots(garrison));
-                if (count <= 0)
-                {
-                    continue;
-                }
-
+                int protectedCount = reserved.TryGetValue(troop,
+                    out int fiefCount) ? Math.Max(0, fiefCount) : 0;
                 TroopRosterElement rosterElement = source.MemberRoster
-                    .GetTroopRoster()
-                    .FirstOrDefault(item => item.Character == troop);
-                int healthy = Math.Max(0, rosterElement.Number -
-                    rosterElement.WoundedNumber);
-                int wounded = Math.Max(0, count - healthy);
-                source.MemberRoster.AddToCounts(
-                    troop,
-                    -count,
-                    false,
-                    -wounded,
-                    0,
-                    true,
-                    -1);
-                garrison.MemberRoster.AddToCounts(
-                    troop,
-                    count,
-                    false,
-                    wounded,
-                    0,
-                    true,
-                    -1);
-                transferred += count;
+                    .GetTroopRoster().FirstOrDefault(item =>
+                        item.Character == troop);
+                int available = Math.Max(0,
+                    rosterElement.Number - protectedCount);
+                int count = Math.Min(allowed - planned,
+                    Math.Min(evaluation.RecruitableCount, available));
+                if (count <= 0) continue;
+                int healthy = Math.Min(count, Math.Max(0,
+                    rosterElement.Number - rosterElement.WoundedNumber));
+                manifest.Add(new TroopMoveEntry
+                {
+                    Troop = troop,
+                    Healthy = healthy,
+                    Wounded = count - healthy
+                });
+                planned += count;
+                if (planned >= allowed) break;
+            }
+            int transferred = 0;
+
+            foreach (TroopMoveEntry entry in manifest)
+            {
+                int capacity = GarrisonRecruitmentCapacity
+                    .GetTransferFreeSlots(garrison);
+                if (entry.Total <= 0 || capacity < entry.Total)
+                {
+                    break;
+                }
+                if (purpose != GarrisonDonationPurpose.PeaceDemobilization)
+                {
+                    source.MemberRoster.AddToCounts(entry.Troop,
+                        -entry.Total, false, -entry.Wounded, 0, true, -1);
+                    garrison.MemberRoster.AddToCounts(entry.Troop,
+                        entry.Total, false, entry.Wounded, 0, true, -1);
+                    transferred += entry.Total;
+                }
+                else
+                {
+                    try
+                    {
+                        if (entry.Healthy > 0)
+                        {
+                            int index = garrison.MemberRoster.AddToCounts(
+                                entry.Troop, entry.Healthy, false, 0, 0,
+                                true, -1);
+                            if (index < 0) break;
+                            source.MemberRoster.AddToCounts(entry.Troop,
+                                -entry.Healthy, false, 0, 0, true, -1);
+                            transferred += entry.Healthy;
+                        }
+                        if (entry.Wounded > 0)
+                        {
+                            int index = garrison.MemberRoster.AddToCounts(
+                                entry.Troop, entry.Wounded, false,
+                                entry.Wounded, 0, true, -1);
+                            if (index < 0) break;
+                            source.MemberRoster.AddToCounts(entry.Troop,
+                                -entry.Wounded, false, -entry.Wounded, 0,
+                                true, -1);
+                            transferred += entry.Wounded;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        ModLogger.Error(string.Format(
+                            "Peace demobilization transfer failed: party={0}, settlement={1}, troop={2}, completed={3}, error={4}",
+                            PartyLogFormatter.GetDisplayName(source),
+                            destination?.Name?.ToString() ?? "<unknown>",
+                            entry.Troop?.Name?.ToString() ?? "<unknown>",
+                            transferred, ex));
+                        break;
+                    }
+                }
                 if (transferred >= allowed)
                 {
                     break;

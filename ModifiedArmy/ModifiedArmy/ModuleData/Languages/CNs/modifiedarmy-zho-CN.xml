@@ -48,6 +48,11 @@
     <string id="ModifiedArmy_ExchangeDiagSafety" text="当前活动状态、战斗状态、围城状态或真实驻军校验未通过" />
     <string id="ModifiedArmy_ForcePlanRecruit" text="[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}补充兵力，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
     <string id="ModifiedArmy_ForcePlanWarRest" text="[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}进行战时休整，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
+    <string id="ModifiedArmy_ForcePlanPeaceDemobilize" text="[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}执行和平复员，接收类型为{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行目的地。原因：{REASON}。" />
+    <string id="ModifiedArmy_ForceReasonDemobilizePlanned" text="部队存在可安全复员的和平期超额兵力" />
+    <string id="ModifiedArmy_ForceReasonDemobilizeCancelledWar" text="战争已经重新开始，原和平复员路线已取消" />
+    <string id="ModifiedArmy_ForceIntentPeaceDemobilize" text="和平复员" />
+    <string id="ModifiedArmy_ForceFeatureConfigLoaded" text="[兵力配置] 和平复员={DEMOB_ENABLED}，主动路线={ROUTING_ENABLED}，战时休整={WAR_REST_ENABLED}，战时日上限={WAR_REST_MAX}，休整阈值={WAR_REST_THRESHOLD}。" />
     <string id="ModifiedArmy_ForcePlanMaintain" text="[兵力调度] {PARTY_NAME}今天不需要调整兵力，因为{REASON}。" />
     <string id="ModifiedArmy_ForcePlanSuspended" text="[兵力调度] {PARTY_NAME}今天暂不安排新的兵力任务，因为{REASON}。" />
     <string id="ModifiedArmy_ForceReasonTargetSatisfied" text="当前兵力已经达到目标" />

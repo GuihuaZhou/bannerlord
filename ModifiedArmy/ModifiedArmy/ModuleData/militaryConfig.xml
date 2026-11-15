@@ -149,9 +149,9 @@
         <!-- 和平复员配置；复员政策与主动路线分别设有独立开关。 -->
         <Demobilization>
           <!-- EnableAutomaticDemobilization：是否允许和平期自动计算并执行复员。 -->
-          <EnableAutomaticDemobilization value="false"/>
+          <EnableAutomaticDemobilization value="true"/>
           <!-- EnableDemobilizationRouting：是否允许为了复员主动下达前往返乡定居点的路线。 -->
-          <EnableDemobilizationRouting value="false"/>
+          <EnableDemobilizationRouting value="true"/>
           <!-- PeaceStabilityDays：连续和平达到该天数后才允许启动自动复员。 -->
           <PeaceStabilityDays value="3"/>
           <!-- MaxDailyDemobilizationRatio：单日最多复员当前部队人数的比例。 -->
@@ -159,6 +159,14 @@
           <!-- MaxDailyDemobilizationCount：单支部队每天允许复员的绝对人数上限。 -->
           <MaxDailyDemobilizationCount value="30"/>
         </Demobilization>
+        <WarRest>
+          <Enabled value="true"/>
+          <MaximumDailyCount value="30"/>
+          <MinimumUrgencyScore value="0.75"/>
+          <DispositionWeight value="0.30"/>
+          <FinanceWeight value="0.30"/>
+          <ServiceWeight value="0.40"/>
+        </WarRest>
       </ForceManagement>
     </AiRecruitment>
 

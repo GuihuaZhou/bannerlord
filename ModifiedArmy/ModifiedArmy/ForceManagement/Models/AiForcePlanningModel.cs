@@ -19,10 +19,20 @@ namespace ModifiedArmy.ForceManagement.Models
             if (context.CurrentTask?.Intent == PartyForceIntent.WarRest &&
                 !context.IsAtFormalWar)
                 return BuildMaintainPlan(context, "WarRestCancelledByPeace");
+            if (context.CurrentTask?.Intent ==
+                    PartyForceIntent.PeaceDemobilize &&
+                context.IsAtFormalWar)
+                return BuildMaintainPlan(
+                    context, "PeaceDemobilizationCancelledByWar");
             if (context.IsProtectedByHigherPriorityOrder)
                 return PreserveOrSuspend(context, "HigherPriorityOrder");
             if (context.IsAtFormalWar && context.WarRest?.IsApproved == true)
                 return BuildWarRestPlan(context);
+            if (!context.IsAtFormalWar &&
+                context.PeaceDemobilization?.CanDemobilize == true &&
+                context.PeaceDestinations?.Any(item =>
+                    item?.IsSafe == true && item.AvailableCount > 0) == true)
+                return BuildPeaceDemobilizationPlan(context);
 
             PartyForceTargetResult target = context.ForceTarget;
             if (target == null || target.GapCount <= 0 ||
@@ -49,7 +59,8 @@ namespace ModifiedArmy.ForceManagement.Models
 
             PartyForceCandidate selected = ranked[0];
             PartyForceTask current = context.CurrentTask;
-            if (IsSameLiveTask(current, selected, context.Today))
+            if (IsSameLiveTask(current, PartyForceIntent.Recruit, selected,
+                    null, context.Today))
             {
                 return new PartyForcePlan
                 {
@@ -77,29 +88,98 @@ namespace ModifiedArmy.ForceManagement.Models
         private static PartyForcePlan BuildWarRestPlan(
             PartyForcePlanningContext context)
         {
-            PartyForceCandidate candidate = (context.WarRest.DestinationOptions ??
-                    Array.Empty<PartyForceCandidate>())
-                .Where(item => item?.IsSafe == true && item.Settlement != null)
-                .OrderByDescending(item => item.Score)
-                .ThenBy(item => item.Settlement.StringId, StringComparer.Ordinal)
-                .FirstOrDefault();
-            if (candidate == null)
+            var allowed = (context.WarRest.CandidateFiefBatches ??
+                    Array.Empty<FiefBatchTransferApproval>())
+                .Where(item => item != null && item.ApprovedCount > 0 &&
+                    item.SourceFief != null &&
+                    !string.IsNullOrEmpty(item.BatchId))
+                .Select(item => new
+                {
+                    Approval = item,
+                    Destination = (context.WarRest.DestinationOptions ??
+                        Array.Empty<PartyForceCandidate>()).FirstOrDefault(
+                        candidate => candidate?.IsSafe == true &&
+                            candidate.Settlement == item.SourceFief &&
+                            candidate.SourceBatchId == item.BatchId)
+                })
+                .Where(item => item.Destination != null)
+                .ToList();
+            if (allowed.Count == 0)
                 return PreserveOrSuspend(context, "NoWarRestDestination");
+
+            var selected = allowed.FirstOrDefault(item =>
+                IsSameLiveTask(context.CurrentTask, PartyForceIntent.WarRest,
+                    item.Destination, item.Approval.BatchId, context.Today)) ??
+                allowed.OrderByDescending(item => item.Destination.Score)
+                    .ThenByDescending(item => item.Approval.ApprovedCount)
+                    .ThenBy(item => item.Destination.Distance)
+                    .ThenBy(item => item.Approval.BatchId,
+                        StringComparer.Ordinal).First();
+            PartyForceCandidate candidate = selected.Destination;
+            if (IsSameLiveTask(context.CurrentTask, PartyForceIntent.WarRest,
+                    candidate, selected.Approval.BatchId, context.Today))
+            {
+                return new PartyForcePlan
+                {
+                    Task = context.CurrentTask,
+                    RankedCandidates = new[] { candidate },
+                    ReasonCode = "ContinueExistingTask"
+                };
+            }
             PartyForceTask task = CreateTask(
                 context,
                 PartyForceIntent.WarRest,
                 candidate.SourceKind,
                 candidate.Settlement,
                 context.WarRest.ReasonCode);
-            task.SourceBatchId = context.WarRest.CandidateFiefBatches
-                .FirstOrDefault(item => item.SourceFief == candidate.Settlement)?
-                .BatchId;
+            task.SourceBatchId = selected.Approval.BatchId;
             return new PartyForcePlan
             {
                 Task = task,
                 RankedCandidates = new[] { candidate },
                 ShouldReplaceCurrentTask = context.CurrentTask != null,
                 ReasonCode = "WarRestTaskPlanned"
+            };
+        }
+
+        private static PartyForcePlan BuildPeaceDemobilizationPlan(
+            PartyForcePlanningContext context)
+        {
+            List<PartyForceCandidate> ranked = context.PeaceDestinations
+                .Where(item => item?.IsSafe == true &&
+                    item.AvailableCount > 0 && item.Settlement != null)
+                .OrderByDescending(item => item.Score)
+                .ThenByDescending(item => item.AvailableCount)
+                .ThenBy(item => item.Distance)
+                .ThenBy(item => item.Settlement.StringId,
+                    StringComparer.Ordinal)
+                .ThenBy(item => item.SourceBatchId, StringComparer.Ordinal)
+                .ToList();
+            PartyForceCandidate selected = ranked.FirstOrDefault(item =>
+                IsSameLiveTask(context.CurrentTask,
+                    PartyForceIntent.PeaceDemobilize, item,
+                    item.SourceBatchId, context.Today)) ?? ranked[0];
+            if (IsSameLiveTask(context.CurrentTask,
+                    PartyForceIntent.PeaceDemobilize, selected,
+                    selected.SourceBatchId, context.Today))
+            {
+                return new PartyForcePlan
+                {
+                    Task = context.CurrentTask,
+                    RankedCandidates = ranked,
+                    ReasonCode = "ContinueExistingTask"
+                };
+            }
+            PartyForceTask task = CreateTask(context,
+                PartyForceIntent.PeaceDemobilize, selected.SourceKind,
+                selected.Settlement, "PeaceDemobilizationTaskPlanned");
+            task.SourceBatchId = selected.SourceBatchId;
+            return new PartyForcePlan
+            {
+                Task = task,
+                RankedCandidates = ranked,
+                ShouldReplaceCurrentTask = context.CurrentTask != null,
+                ReasonCode = "PeaceDemobilizationTaskPlanned"
             };
         }
 
@@ -165,10 +245,14 @@ namespace ModifiedArmy.ForceManagement.Models
         /// <summary>Prevents same-day destination churn for a still-valid task.</summary>
         private static bool IsSameLiveTask(
             PartyForceTask task,
+            PartyForceIntent intent,
             PartyForceCandidate selected,
-            int today) => task != null && task.Intent == PartyForceIntent.Recruit &&
+            string batchId,
+            int today) => task != null && task.Intent == intent &&
             task.TargetSettlement == selected.Settlement &&
             task.SourceKind == selected.SourceKind &&
+            string.Equals(task.SourceBatchId ?? string.Empty,
+                batchId ?? string.Empty, StringComparison.Ordinal) &&
             task.Status != PartyForceTaskStatus.Cancelled &&
             task.Status != PartyForceTaskStatus.Completed &&
             task.CreatedDay <= today;

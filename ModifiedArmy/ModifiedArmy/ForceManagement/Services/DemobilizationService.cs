@@ -33,7 +33,9 @@ namespace ModifiedArmy.ForceManagement.Services
         public DemobilizationExecutionResult TryExecuteAtSettlement(
             MobileParty party,
             Settlement settlement,
-            PeaceDemobilizationContext context)
+            PeaceDemobilizationContext context,
+            string sourceBatchId = null,
+            bool ordinaryOnly = false)
         {
             context ??= new PeaceDemobilizationContext();
             context.VisitedSettlement = settlement;
@@ -50,12 +52,17 @@ namespace ModifiedArmy.ForceManagement.Services
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
             int remaining = decision.ApprovedToday;
-            if (manager != null)
+            if (manager != null && !ordinaryOnly)
             {
                 manager.AdvanceServiceDays(party);
                 manager.ReconcilePartyFiefTroops(party);
                 foreach (ServingDetachmentRef item in manager
                     .GetServingDetachments(party)
+                    .Where(entry => entry.Detachment != null &&
+                        entry.SourceFief == settlement &&
+                        entry.SourceFief.OwnerClan == party.ActualClan &&
+                        (string.IsNullOrEmpty(sourceBatchId) ||
+                            entry.Detachment.BatchId == sourceBatchId))
                     .OrderByDescending(entry =>
                         entry.Detachment.ServiceDays >=
                         entry.Detachment.FreeWageDays)
@@ -65,11 +72,6 @@ namespace ModifiedArmy.ForceManagement.Services
                     .ToList())
                 {
                     if (remaining <= 0) break;
-                    if (item.Detachment == null ||
-                        item.SourceFief?.OwnerClan != party.ActualClan)
-                    {
-                        continue;
-                    }
                     FiefReturnResult returned = manager.TryReturnFiefTroops(
                         party,
                         item.SourceFief,
@@ -88,21 +90,10 @@ namespace ModifiedArmy.ForceManagement.Services
             int liveSurplus = current.Scenario == ForceScenario.Peace
                 ? Math.Max(0, current.CurrentCount - current.TargetCount)
                 : 0;
-            int placementLimit = Math.Min(remaining, liveSurplus);
-            if (manager != null && placementLimit > 0)
-            {
-                FiefPlacementResult placement = FiefTroopPlacementService
-                    .TryPlaceAfterReturn(manager, party, settlement,
-                        FiefPlacementPurpose.PeaceDemobilization,
-                        placementLimit);
-                result.PlacedFiefCount = placement.PlacedCount;
-                remaining -= placement.PlacedCount;
-                current = ForceManagementFacade.Current.GetPartyTarget(party);
-                liveSurplus = current.Scenario == ForceScenario.Peace
-                    ? Math.Max(0,
-                        current.CurrentCount - current.TargetCount)
-                    : 0;
-            }
+            // Unbound fief placement is intentionally excluded here: its
+            // identity is not proven disjoint from the authoritative serving
+            // batches returned above. Core demobilization proceeds through
+            // true source returns and ordinary garrison transfers only.
             remaining = Math.Min(remaining, liveSurplus);
             if (remaining > 0)
             {

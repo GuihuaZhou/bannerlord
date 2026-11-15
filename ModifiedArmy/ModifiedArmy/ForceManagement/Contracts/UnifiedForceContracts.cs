@@ -11,10 +11,11 @@ namespace ModifiedArmy.ForceManagement.Contracts
     /// <summary>Strategic purpose owned by the unified force planner.</summary>
     public enum PartyForceIntent
     {
-        Maintain,
-        Recruit,
-        WarRest,
-        Suspended
+        Maintain = 0,
+        Recruit = 1,
+        WarRest = 2,
+        Suspended = 3,
+        PeaceDemobilize = 4
     }
 
     /// <summary>Preferred source category without mixing legacy enums.</summary>
@@ -113,6 +114,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public float Score { get; set; }
         public bool IsSafe { get; set; }
         public string ReasonCode { get; set; }
+        public string SourceBatchId { get; set; }
     }
 
     /// <summary>
@@ -149,6 +151,10 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public PartyForceTargetResult ForceTarget { get; set; }
         public bool IsAtFormalWar { get; set; }
         public WarRestDecision WarRest { get; set; }
+        public PeaceDemobilizationDecision PeaceDemobilization { get; set; }
+        public IReadOnlyList<PartyForceCandidate> PeaceDestinations { get; set; } =
+            Array.Empty<PartyForceCandidate>();
+        public bool IsExistingPeaceDemobilizationRoute { get; set; }
         public ClanFinanceSnapshot Finance { get; set; }
         public PartyForceSourceWeights SourceWeights { get; set; }
         public IReadOnlyList<PartyForceCandidate> Candidates { get; set; } =

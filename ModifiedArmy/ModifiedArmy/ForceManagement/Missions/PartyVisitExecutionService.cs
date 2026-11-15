@@ -32,6 +32,16 @@ namespace ModifiedArmy.ForceManagement.Missions
                 party, settlement, task);
             if (task == null || task.TargetSettlement != settlement)
             {
+                PartyExchangeExecutionResult demobilization =
+                    ExecutePeaceDemobilization(
+                        party, settlement, null, false);
+                if (demobilization.HasCommittedChanges)
+                {
+                    ForceRecruitmentDiagnostics.LogExecution(
+                        party, settlement, task, demobilization, before,
+                        party?.MemberRoster?.TotalRegulars ?? 0);
+                    return demobilization;
+                }
                 PartyExchangeExecutionResult donation =
                     ExecuteRoutineDonation(party, settlement);
                 if (donation.Executed)
@@ -41,7 +51,6 @@ namespace ModifiedArmy.ForceManagement.Missions
                         party?.MemberRoster?.TotalRegulars ?? 0);
                     return donation;
                 }
-                TryPeaceDemobilization(party, settlement);
                 PartyExchangeExecutionResult noMatch =
                     new PartyExchangeExecutionResult
                     { ReasonCode = donation.ReasonCode ?? "NoMatchingForceTask" };
@@ -71,6 +80,10 @@ namespace ModifiedArmy.ForceManagement.Missions
                     task.TaskId, task.CreationAttemptId),
                 PartyForceIntent.WarRest => ExecuteWarRest(
                     party, task, operationId),
+                PartyForceIntent.PeaceDemobilize =>
+                    ExecutePeaceDemobilization(
+                        party, settlement, task.SourceBatchId,
+                        task.SourceKind == PartyForceSourceKind.Professional),
                 _ => new PartyExchangeExecutionResult
                     { ReasonCode = "TaskHasNoArrivalOperation" }
             };
@@ -229,22 +242,9 @@ namespace ModifiedArmy.ForceManagement.Missions
                 ForceManagementFacade.Current.PartyExchange.BuildPlan(context));
             if (result.TransferredCount <= 0 || !result.HasCommittedChanges)
                 return result;
-            FiefPartyManager manager = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>();
-            int limit = Math.Min(
-                ForceManagementFacade.Current.GetSafeFieldSurplus(party),
-                ForceManagementFacade.Current.WarRestPlanning
-                    .GetRemainingDailyQuota(party));
-            if (manager != null && limit > 0)
-            {
-                FiefPlacementResult placement = FiefTroopPlacementService
-                    .TryPlaceAfterReturn(manager, party,
-                        task.TargetSettlement, FiefPlacementPurpose.WarRest,
-                        limit);
-                result.PlacedCount = placement.PlacedCount;
-                ForceManagementFacade.Current.WarRestPlanning.RecordCompleted(
-                    party, placement.PlacedCount);
-            }
+            // The authoritative fief return executor already records its
+            // actual count. Optional unbound placement is excluded until its
+            // troop identity can be proven disjoint from that batch.
             return result;
         }
 
@@ -272,16 +272,29 @@ namespace ModifiedArmy.ForceManagement.Missions
             task.OwnsMovementOrder = false;
         }
 
-        private static void TryPeaceDemobilization(
+        private static PartyExchangeExecutionResult
+            ExecutePeaceDemobilization(
             MobileParty party,
-            Settlement settlement)
+            Settlement settlement,
+            string sourceBatchId,
+            bool ordinaryOnly)
         {
-            PartySettlementBindingBehavior bindings = Campaign.Current?
-                .GetCampaignBehavior<PartySettlementBindingBehavior>();
-            if (!ForceManagementFacade.IsAtFormalWar(party?.ActualClan) &&
-                bindings?.IsBoundSettlement(party, settlement) == true)
-                Campaign.Current?.GetCampaignBehavior<DemobilizationBehavior>()?
-                    .OnNaturalVisit(party, settlement);
+            DemobilizationExecutionResult actual = Campaign.Current?
+                .GetCampaignBehavior<DemobilizationBehavior>()?
+                .OnNaturalVisit(
+                    party, settlement, sourceBatchId, ordinaryOnly);
+            int count = Math.Max(0, actual?.ActualCount ?? 0);
+            return new PartyExchangeExecutionResult
+            {
+                Status = count > 0
+                    ? TransferCommitStatus.Committed
+                    : TransferCommitStatus.Rejected,
+                TransferredCount = count,
+                PlacedCount = Math.Max(0,
+                    actual?.TransferredRegularCount ?? 0),
+                ReasonCode = actual?.ReasonCode ??
+                    "PeaceDemobilizationUnavailable"
+            };
         }
     }
 }

@@ -1,8 +1,10 @@
 using ModifiedArmy.ForceManagement.Contracts;
+using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Transport;
 using ModifiedArmy.Models.Fief;
 using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.common;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -17,9 +19,6 @@ namespace ModifiedArmy.ForceManagement.Services
     /// </summary>
     public sealed class WarRestPlanningService
     {
-        private readonly Dictionary<string, DailyWarRestProgress> _progress =
-            new Dictionary<string, DailyWarRestProgress>(StringComparer.Ordinal);
-
         /// <summary>Builds a pure policy context from real service batches.</summary>
         public WarRestContext BuildContext(
             MobileParty party,
@@ -29,6 +28,8 @@ namespace ModifiedArmy.ForceManagement.Services
             int today = CurrentDay();
             FiefPartyManager manager = Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>();
+            WarRestConfig configured = MilitaryConfigManager.Instance
+                .RequireActiveConfig().AiRecruitment.ForceManagement.WarRest;
             List<WarRestFiefBatchCandidate> batches = manager == null
                 ? new List<WarRestFiefBatchCandidate>()
                 : manager.GetServingDetachments(party)
@@ -60,7 +61,12 @@ namespace ModifiedArmy.ForceManagement.Services
                 },
                 Settings = new WarRestPolicySettings
                 {
-                    Enabled = false
+                    Enabled = configured.Enabled,
+                    MaximumDailyCount = configured.MaximumDailyCount,
+                    MinimumUrgencyScore = configured.MinimumUrgencyScore,
+                    DispositionWeight = configured.DispositionWeight,
+                    FinanceWeight = configured.FinanceWeight,
+                    ServiceWeight = configured.ServiceWeight
                 },
                 FiefBatches = batches,
                 DestinationOptions = batches
@@ -69,6 +75,7 @@ namespace ModifiedArmy.ForceManagement.Services
                     {
                         Settlement = item.SourceFief,
                         SourceKind = PartyForceSourceKind.Fief,
+                        SourceBatchId = item.BatchId,
                         AvailableCount = item.AvailableCount,
                         GapCovered = item.AvailableCount,
                         Distance = item.Distance,
@@ -86,15 +93,8 @@ namespace ModifiedArmy.ForceManagement.Services
         public void RecordCompleted(MobileParty party, int actualCount)
         {
             if (party == null || actualCount <= 0) return;
-            int today = CurrentDay();
-            string key = party.StringId ?? string.Empty;
-            if (!_progress.TryGetValue(key, out DailyWarRestProgress item) ||
-                item.Day != today)
-            {
-                item = new DailyWarRestProgress { Day = today };
-                _progress[key] = item;
-            }
-            item.CompletedCount += actualCount;
+            Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>()?
+                .RecordWarRestCompleted(party, CurrentDay(), actualCount);
         }
 
         public int GetRemainingDailyQuota(MobileParty party)
@@ -109,11 +109,11 @@ namespace ModifiedArmy.ForceManagement.Services
         public bool ShouldSuppressRecruitment(MobileParty party) =>
             GetCompletedToday(party, CurrentDay()) > 0;
 
-        /// <summary>Clears stale runtime progress when war or ownership ends.</summary>
-        public void Cancel(MobileParty party)
-        {
-            if (party?.StringId != null) _progress.Remove(party.StringId);
-        }
+        /// <summary>
+        /// Cancels route intent only. Completed daily work remains recorded so
+        /// peace and same-day renewed war cannot reset the quota.
+        /// </summary>
+        public void Cancel(MobileParty party) { }
 
         /// <summary>
         /// Creates an exact phase-two return request only at the real source
@@ -218,12 +218,9 @@ namespace ModifiedArmy.ForceManagement.Services
         /// <summary>Reads today's actual completed count.</summary>
         private int GetCompletedToday(MobileParty party, int today)
         {
-            string key = party?.StringId;
-            return key != null && _progress.TryGetValue(
-                key,
-                out DailyWarRestProgress item) && item.Day == today
-                    ? Math.Max(0, item.CompletedCount)
-                    : 0;
+            return Campaign.Current?
+                .GetCampaignBehavior<AiForcePlanningBehavior>()?
+                .GetWarRestCompletedToday(party, today) ?? 0;
         }
 
         /// <summary>Returns the current campaign day.</summary>
@@ -231,10 +228,5 @@ namespace ModifiedArmy.ForceManagement.Services
             ? 0
             : (int)Math.Floor(CampaignTime.Now.ToDays);
 
-        private sealed class DailyWarRestProgress
-        {
-            public int Day { get; set; }
-            public int CompletedCount { get; set; }
-        }
     }
 }

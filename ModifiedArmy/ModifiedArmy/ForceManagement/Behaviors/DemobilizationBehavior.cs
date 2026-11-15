@@ -55,15 +55,21 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         /// Re-evaluates a party after native garrison handling, then charges
         /// only soldiers that were actually returned or moved.
         /// </summary>
-        public void OnNaturalVisit(MobileParty party, Settlement settlement)
+        public DemobilizationExecutionResult OnNaturalVisit(
+            MobileParty party,
+            Settlement settlement,
+            string sourceBatchId = null,
+            bool ordinaryOnly = false)
         {
-            if (!IsEnabled()) return;
+            if (!IsEnabled()) return Rejected("AutomaticDemobilizationDisabled");
             if (!ManagedPartyPolicy.IsModManagedAiParty(party) ||
-                string.IsNullOrEmpty(party.StringId)) return;
-            if (Campaign.Current?
-                    .GetCampaignBehavior<PartySettlementBindingBehavior>()?
-                    .IsBoundSettlement(party, settlement) != true)
-                return;
+                string.IsNullOrEmpty(party.StringId))
+                return Rejected("InvalidParty");
+            if (settlement?.IsFortification != true ||
+                settlement.OwnerClan != party.ActualClan ||
+                settlement.IsUnderSiege ||
+                party.CurrentSettlement != settlement)
+                return Rejected("UnsafeOrNotAtClanFortification");
 
             _routingTargets.Remove(party.StringId);
 
@@ -73,7 +79,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (!_clanPeaceSinceDay.TryGetValue(clanId, out int peaceSinceDay))
             {
                 if (ForceManagementFacade.IsAtFormalWar(party.ActualClan))
-                    return;
+                    return Rejected("AtFormalWar");
                 peaceSinceDay = today;
                 _clanPeaceSinceDay[clanId] = today;
             }
@@ -89,7 +95,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 };
             DemobilizationExecutionResult result = ForceManagementFacade
                 .Current.DemobilizationRunner.TryExecuteAtSettlement(
-                    party, settlement, context);
+                    party, settlement, context, sourceBatchId, ordinaryOnly);
             if (result.ActualCount > 0)
             {
                 _partyLastDemobDay[party.StringId] = today;
@@ -97,7 +103,16 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     already + result.ActualCount;
             }
             LogResult(party, settlement, peaceSinceDay, today, result);
+            return result;
         }
+
+        private static DemobilizationExecutionResult Rejected(string reason) =>
+            new DemobilizationExecutionResult
+            {
+                Decision = new PeaceDemobilizationDecision
+                    { ReasonCode = reason },
+                ReasonCode = reason
+            };
 
         /// <summary>
         /// Returns the unified live decision used by the optional daily
@@ -226,10 +241,20 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                 if (clan?.MapFaction == first || clan?.MapFaction == second)
                     _clanPeaceSinceDay.Remove(clan.StringId);
             }
+            AiForcePlanningBehavior planning = Campaign.Current?
+                .GetCampaignBehavior<AiForcePlanningBehavior>();
             foreach (MobileParty party in MobileParty.AllLordParties)
             {
                 if (party?.MapFaction != first && party?.MapFaction != second)
                     continue;
+                PartyForceTask task = planning?.GetTaskForDiagnostics(party);
+                if (task?.Intent == PartyForceIntent.PeaceDemobilize)
+                {
+                    planning.CancelTask(party,
+                        "PeaceDemobilizationCancelledByWar");
+                    if (party.Ai != null)
+                        party.Ai.RethinkAtNextHourlyTick = true;
+                }
                 if (string.IsNullOrEmpty(party.StringId) ||
                     !_routingTargets.TryGetValue(
                         party.StringId,
@@ -241,12 +266,8 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                         AiBehavior.GoToSettlement &&
                     party.TargetSettlement == destination;
                 _routingTargets.Remove(party.StringId);
-                if (ownsOrder && party.Army == null && party.MapEvent == null)
-                {
-                    party.SetMovePatrolAroundPoint(
-                        party.Position,
-                        MobileParty.NavigationType.Default);
-                }
+                if (ownsOrder && party.Ai != null)
+                    party.Ai.RethinkAtNextHourlyTick = true;
             }
         }
 

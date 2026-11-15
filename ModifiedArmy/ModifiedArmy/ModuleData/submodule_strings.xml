@@ -139,6 +139,7 @@
     <string id="str_modifiedarmy_force_route_released" text="{=ModifiedArmy_ForceRouteReleased}[兵力调度] {PARTY_NAME}前往{SETTLEMENT_NAME}的调兵任务已经取消，原路线也一并撤销。释放原因：{REASON}。任务追踪标识：{TRACE_ID}。" />
     <string id="str_modifiedarmy_force_plan_recruit" text="{=ModifiedArmy_ForcePlanRecruit}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}补充兵力，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
     <string id="str_modifiedarmy_force_plan_war_rest" text="{=ModifiedArmy_ForcePlanWarRest}[兵力调度] {PARTY_NAME}决定前往{SETTLEMENT_NAME}进行战时休整，计划使用{SOURCE}。本次比较了{CANDIDATE_COUNT}个可行方案，选择该方案是因为{REASON}。" />
+    <string id="str_modifiedarmy_force_plan_peace_demobilize" text="{=ModifiedArmy_ForcePlanPeaceDemobilize}[Force planning] {PARTY_NAME} will travel to {SETTLEMENT_NAME} for peacetime demobilization using {SOURCE}. {CANDIDATE_COUNT} feasible destinations were evaluated. Reason: {REASON}." />
     <string id="str_modifiedarmy_force_plan_maintain" text="{=ModifiedArmy_ForcePlanMaintain}[兵力调度] {PARTY_NAME}今天不需要调整兵力，因为{REASON}。" />
     <string id="str_modifiedarmy_force_plan_suspended" text="{=ModifiedArmy_ForcePlanSuspended}[兵力调度] {PARTY_NAME}今天暂不安排新的兵力任务，因为{REASON}。" />
     <string id="str_modifiedarmy_force_reason_target_satisfied" text="{=ModifiedArmy_ForceReasonTargetSatisfied}当前兵力已经达到目标" />
@@ -148,6 +149,8 @@
     <string id="str_modifiedarmy_force_reason_continue_task" text="{=ModifiedArmy_ForceReasonContinueTask}现有任务仍然有效" />
     <string id="str_modifiedarmy_force_reason_recruit_planned" text="{=ModifiedArmy_ForceReasonRecruitPlanned}这是当前最合适的补兵方案" />
     <string id="str_modifiedarmy_force_reason_rest_planned" text="{=ModifiedArmy_ForceReasonRestPlanned}部队需要在战争期间补充和休整" />
+    <string id="str_modifiedarmy_force_reason_demobilize_planned" text="{=ModifiedArmy_ForceReasonDemobilizePlanned}The party has a safe peacetime surplus to demobilize" />
+    <string id="str_modifiedarmy_force_reason_demobilize_cancelled_war" text="{=ModifiedArmy_ForceReasonDemobilizeCancelledWar}War has resumed, so the demobilization route is cancelled" />
     <string id="str_modifiedarmy_force_reason_no_rest_destination" text="{=ModifiedArmy_ForceReasonNoRestDestination}没有找到安全的战时休整地点" />
     <string id="str_modifiedarmy_force_reason_rest_cancelled_peace" text="{=ModifiedArmy_ForceReasonRestCancelledPeace}战争已经结束，原休整任务不再需要" />
     <string id="str_modifiedarmy_force_reason_higher_priority" text="{=ModifiedArmy_ForceReasonHigherPriority}部队正在执行优先级更高的命令" />
@@ -155,6 +158,8 @@
     <string id="str_modifiedarmy_force_reason_other" text="{=ModifiedArmy_ForceReasonOther}当前没有适合执行的新计划" />
     <string id="str_modifiedarmy_force_intent_recruit" text="{=ModifiedArmy_ForceIntentRecruit}补充兵力" />
     <string id="str_modifiedarmy_force_intent_war_rest" text="{=ModifiedArmy_ForceIntentWarRest}战时休整" />
+    <string id="str_modifiedarmy_force_intent_peace_demobilize" text="{=ModifiedArmy_ForceIntentPeaceDemobilize}Peacetime demobilization" />
+    <string id="str_modifiedarmy_force_feature_config_loaded" text="{=ModifiedArmy_ForceFeatureConfigLoaded}[Force configuration] demobilization={DEMOB_ENABLED}, routing={ROUTING_ENABLED}, warRest={WAR_REST_ENABLED}, warRestMaximum={WAR_REST_MAX}, warRestThreshold={WAR_REST_THRESHOLD}." />
     <string id="str_modifiedarmy_force_intent_maintain" text="{=ModifiedArmy_ForceIntentMaintain}维持现状" />
     <string id="str_modifiedarmy_force_intent_suspended" text="{=ModifiedArmy_ForceIntentSuspended}暂缓处理" />
     <string id="str_modifiedarmy_force_source_fief" text="{=ModifiedArmy_ForceSourceFief}封邑兵" />

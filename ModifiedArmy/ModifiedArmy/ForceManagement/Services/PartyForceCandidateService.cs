@@ -1,4 +1,5 @@
 using HarmonyLib;
+using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.ForceManagement.Transport;
@@ -42,6 +43,20 @@ namespace ModifiedArmy.ForceManagement.Services
                 party,
                 config,
                 atWar);
+            bool isProtected = IsProtected(party);
+            DemobilizationBehavior demobilization = Campaign.Current?
+                .GetCampaignBehavior<DemobilizationBehavior>();
+            bool continuingPeace = currentTask?.Intent ==
+                PartyForceIntent.PeaceDemobilize;
+            PeaceDemobilizationDecision peace = !atWar &&
+                demobilization != null
+                    ? demobilization.EvaluateRouting(party, continuingPeace)
+                    : new PeaceDemobilizationDecision
+                        { ReasonCode = "AtFormalWar" };
+            IReadOnlyList<PartyForceCandidate> peaceDestinations =
+                !isProtected && peace.CanDemobilize
+                    ? EnumeratePeaceDestinations(party, peace)
+                    : Array.Empty<PartyForceCandidate>();
             return new PartyForcePlanningContext
             {
                 Party = party,
@@ -52,7 +67,10 @@ namespace ModifiedArmy.ForceManagement.Services
                     ForceManagementFacade.Current.WarRestPlanning.BuildContext(
                         party,
                         target,
-                        IsProtected(party))),
+                        isProtected)),
+                PeaceDemobilization = peace,
+                PeaceDestinations = peaceDestinations,
+                IsExistingPeaceDemobilizationRoute = continuingPeace,
                 Finance = GetFinance(party),
                 SourceWeights = weights,
                 Candidates = EnumerateCandidates(
@@ -70,10 +88,118 @@ namespace ModifiedArmy.ForceManagement.Services
                 IsRandomGateOpen = randomGateOpen &&
                     !ForceManagementFacade.Current.WarRestPlanning
                         .ShouldSuppressRecruitment(party),
-                IsProtectedByHigherPriorityOrder = IsProtected(party),
+                IsProtectedByHigherPriorityOrder = isProtected,
                 Today = CurrentDay()
             };
         }
+
+        /// <summary>
+        /// Enumerates true source-fief returns and same-clan garrisons without
+        /// reserving soldiers or relaxing recruitment settlement bindings.
+        /// </summary>
+        private static IReadOnlyList<PartyForceCandidate>
+            EnumeratePeaceDestinations(
+                MobileParty party,
+                PeaceDemobilizationDecision decision)
+        {
+            var result = new List<PartyForceCandidate>();
+            if (party?.ActualClan == null || decision?.CanDemobilize != true ||
+                decision.ApprovedToday <= 0)
+                return result;
+
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            int surplus = Math.Min(decision.SurplusCount,
+                decision.ApprovedToday);
+            if (manager != null)
+            {
+                foreach (ServingDetachmentRef item in manager
+                    .GetServingDetachments(party)
+                    .Where(item => item.Detachment != null &&
+                        !item.Detachment.IsEmpty() &&
+                        item.SourceFief?.OwnerClan == party.ActualClan &&
+                        !item.SourceFief.IsUnderSiege)
+                    .OrderBy(item => item.Detachment.BatchId,
+                        StringComparer.Ordinal))
+                {
+                    if (!TryGetTravelDistance(
+                            party, item.SourceFief, out float distance) ||
+                        IsThreatened(party, item.SourceFief))
+                        continue;
+                    int amount = Math.Min(surplus,
+                        item.Detachment.GetTotalCount());
+                    if (amount <= 0) continue;
+                    float overdue = item.Detachment.ServiceDays >=
+                        item.Detachment.FreeWageDays ? 100f : 0f;
+                    result.Add(new PartyForceCandidate
+                    {
+                        Settlement = item.SourceFief,
+                        SourceKind = PartyForceSourceKind.Fief,
+                        SourceBatchId = item.Detachment.BatchId,
+                        AvailableCount = amount,
+                        GapCovered = amount,
+                        Distance = distance,
+                        TravelCost = distance * 0.05f,
+                        IsSafe = true,
+                        ReasonCode = "PeaceFiefReturnCandidate",
+                        Score = overdue + item.Detachment.ServiceDays +
+                            amount * 2f - distance * 0.05f
+                    });
+                }
+            }
+
+            int serving = manager?.GetServingTroopCounts(party).Values
+                .Sum(value => Math.Max(0, value)) ?? 0;
+            int ordinary = Math.Max(0,
+                party.MemberRoster.TotalRegulars - serving);
+            foreach (Settlement settlement in party.ActualClan.Settlements
+                .Where(item => item?.IsFortification == true &&
+                    item.OwnerClan == party.ActualClan &&
+                    !item.IsUnderSiege)
+                .OrderBy(item => item.StringId, StringComparer.Ordinal))
+            {
+                MobileParty garrison = settlement.Town?.GarrisonParty;
+                int capacity = GarrisonRecruitmentCapacity
+                    .GetTransferFreeSlots(garrison);
+                if (garrison == null || capacity <= 0 ||
+                    !PartyTransferOwnershipPolicy.IsAuthorizedRosterPair(
+                        party, garrison, settlement,
+                        PartyExchangePurpose.PeaceDemobilization) ||
+                    !TryGetTravelDistance(party, settlement,
+                        out float distance) || IsThreatened(party, settlement))
+                    continue;
+                int amount = Math.Min(surplus,
+                    Math.Min(ordinary, capacity));
+                if (amount <= 0) continue;
+                result.Add(new PartyForceCandidate
+                {
+                    Settlement = settlement,
+                    SourceKind = PartyForceSourceKind.Professional,
+                    AvailableCount = amount,
+                    GapCovered = amount,
+                    Distance = distance,
+                    TravelCost = distance * 0.05f,
+                    IsSafe = true,
+                    ReasonCode = "PeaceGarrisonCandidate",
+                    Score = amount * 2f - distance * 0.05f
+                });
+            }
+            return result.OrderByDescending(item => item.Score)
+                .ThenByDescending(item => item.AvailableCount)
+                .ThenBy(item => item.Distance)
+                .ThenBy(item => item.Settlement.StringId,
+                    StringComparer.Ordinal)
+                .ThenBy(item => item.SourceBatchId, StringComparer.Ordinal)
+                .ToList();
+        }
+
+        private static bool IsThreatened(
+            MobileParty party,
+            Settlement settlement) =>
+            TransportThreatModel.HasSuperiorEnemy(
+                party, party.Position, party.MapFaction) ||
+            TransportThreatModel.HasSuperiorEnemy(
+                party, settlement.GatePosition, party.MapFaction);
 
         /// <summary>Enumerates all feasible source/settlement combinations.</summary>
         public IReadOnlyList<PartyForceCandidate> EnumerateCandidates(
