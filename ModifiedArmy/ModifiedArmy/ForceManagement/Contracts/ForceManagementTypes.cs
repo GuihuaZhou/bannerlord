@@ -82,6 +82,19 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public bool IsOwnFiefDefense { get; set; }
     }
 
+    /// <summary>Side-effect-free inputs for live and planned force targets.</summary>
+    public sealed class PartyForceEvaluationInput
+    {
+        public Clan Clan { get; set; }
+        public int PartyLimit { get; set; }
+        public int CurrentCount { get; set; }
+        public bool IsOwnFiefDefense { get; set; }
+        public bool IsActive { get; set; }
+        public bool IsInMapEvent { get; set; }
+        public bool IsStarving { get; set; }
+        public bool IsInArmy { get; set; }
+    }
+
     public sealed class PartyForceTargetResult
     {
         public ForceScenario Scenario { get; set; }
@@ -203,6 +216,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public interface IPartyForceTargetModel
     {
         PartyForceTargetResult Evaluate(PartyForceContext context);
+        PartyForceTargetResult Evaluate(PartyForceEvaluationInput input);
     }
 
     public interface IRecruitmentAdmissionModel

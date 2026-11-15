@@ -251,6 +251,26 @@ namespace ModifiedArmy.PartyManagement.Bindings
             return true;
         }
 
+        /// <summary>
+        /// Confirms that a creation preview still owns the exact campaign-scoped
+        /// reservation. This check is read-only and never commits a binding.
+        /// </summary>
+        public bool IsCreationReservationValid(
+            PendingPartyCreation token,
+            Hero leader,
+            Clan clan,
+            Settlement primary)
+        {
+            return token != null && leader != null && clan != null &&
+                primary != null && token.LeaderId == leader.StringId &&
+                token.ClanId == clan.StringId &&
+                token.PrimarySettlementId == primary.StringId &&
+                _reservations.TryGetValue(primary.StringId, out var current) &&
+                current.TokenId == token.TokenId &&
+                IsLegalBase(clan, primary) &&
+                GetServingParties(primary).Count == 0;
+        }
+
         public void CancelCreationReservation(PendingPartyCreation token)
         {
             if (token != null &&

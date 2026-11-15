@@ -19,6 +19,8 @@ namespace ModifiedArmy.Recruitment.Models
 
         public int ProjectedMemberCount { get; private set; }
 
+        public int ProjectedRegularCount { get; private set; }
+
         public int ReservedReturningMembers { get; private set; }
 
         public int EffectiveProjectedMemberCount =>
@@ -38,6 +40,8 @@ namespace ModifiedArmy.Recruitment.Models
                     PartySizeLimit = party?.Party.PartySizeLimit ?? 0,
                     ProjectedMemberCount =
                         party?.Party.NumberOfAllMembers ?? 0,
+                    ProjectedRegularCount =
+                        party?.MemberRoster.TotalRegulars ?? 0,
                     ReservedReturningMembers = party?.IsGarrison == true
                         ? GarrisonRecruitmentCapacity
                             .GetActiveSupplyEscortCount(
@@ -51,6 +55,45 @@ namespace ModifiedArmy.Recruitment.Models
 
             return result;
         }
+
+        /// <summary>Creates a detached state for a planned or live subject.</summary>
+        public static RecruitmentSimulationState Create(
+            RecruitmentSubject subject)
+        {
+            if (subject?.Kind == RecruitmentSubjectKind.ExistingParty)
+            {
+                return Create(subject.LiveParty);
+            }
+
+            RecruitmentSimulationState result =
+                new RecruitmentSimulationState
+                {
+                    PartySizeLimit = Math.Max(0, subject?.PartySizeLimit ?? 0),
+                    ProjectedMemberCount = Math.Max(
+                        0,
+                        subject?.CurrentMemberCount ?? 0),
+                    ProjectedRegularCount = Math.Max(
+                        0,
+                        subject?.CurrentRegularCount ?? 0),
+                    ReservedReturningMembers = 0,
+                    Budget = RecruitmentBudget.Create(subject)
+                };
+            result.ProjectedDailyWage = result.Budget.CurrentLongTermWage;
+            return result;
+        }
+
+        /// <summary>Copies the local projection for transactional preview branches.</summary>
+        public RecruitmentSimulationState Clone() =>
+            new RecruitmentSimulationState
+            {
+                PartySizeLimit = PartySizeLimit,
+                ProjectedMemberCount = ProjectedMemberCount,
+                ProjectedRegularCount = ProjectedRegularCount,
+                ReservedReturningMembers = ReservedReturningMembers,
+                ProjectedDailyWage = ProjectedDailyWage,
+                CommittedRecruitmentCost = CommittedRecruitmentCost,
+                Budget = Budget
+            };
 
         /// <summary>
         /// Applies an approved candidate only to the projected state. The live
@@ -69,6 +112,7 @@ namespace ModifiedArmy.Recruitment.Models
             }
 
             ProjectedMemberCount += count;
+            ProjectedRegularCount += count;
             ProjectedDailyWage += count * unitDailyWage;
             CommittedRecruitmentCost += count * unitRecruitmentCost;
         }

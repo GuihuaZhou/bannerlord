@@ -30,8 +30,21 @@ namespace ModifiedArmy.Recruitment.Models
         {
             RecruitmentPartyType partyType = GetPartyType(party);
             string cultureId = GetCultureId(party, partyType);
-            RecruitmentSimulationState state =
-                RecruitmentSimulationState.Create(party);
+            RecruitmentSimulationState state = RecruitmentSimulationState.Create(party);
+            int target = GetRecruitmentTarget(party, state, RecruitmentSource.Fief);
+            RecruitmentSubject subject = RecruitmentSubject.FromLiveParty(party, target);
+            return BuildPlanCore(subject, candidates, state, int.MaxValue,
+                partyType, cultureId);
+        }
+
+        internal RecruitmentPlan BuildPlanCore(
+            RecruitmentSubject subject,
+            IReadOnlyList<RecruitmentCandidate> candidates,
+            RecruitmentSimulationState state,
+            int requestLimit,
+            RecruitmentPartyType partyType = RecruitmentPartyType.MobileParty,
+            string cultureId = "default")
+        {
             List<RecruitmentEvaluationResult> results =
                 new List<RecruitmentEvaluationResult>();
 
@@ -47,7 +60,7 @@ namespace ModifiedArmy.Recruitment.Models
             List<RecruitmentCandidate> orderedCandidates = candidates
                 .Where(candidate => candidate != null)
                 .OrderByDescending(candidate => GetPriority(
-                    party,
+                    subject,
                     candidate.Troop,
                     candidate.Source,
                     state))
@@ -56,11 +69,16 @@ namespace ModifiedArmy.Recruitment.Models
 
             foreach (RecruitmentCandidate candidate in orderedCandidates)
             {
+                if (requestLimit <= state.ProjectedRegularCount -
+                    Math.Max(0, subject?.CurrentRegularCount ?? 0)) break;
+                int available = Math.Min(candidate.AvailableCount,
+                    Math.Max(0, requestLimit - (state.ProjectedRegularCount -
+                        Math.Max(0, subject?.CurrentRegularCount ?? 0))));
                 RecruitmentEvaluationResult evaluation =
-                    EvaluateRecruitment(
-                        party,
+                    EvaluateRecruitmentCore(
+                        subject,
                         candidate.Troop,
-                        candidate.AvailableCount,
+                        available,
                         candidate.Source,
                         state);
                 evaluation.Candidate = candidate;
@@ -96,10 +114,24 @@ namespace ModifiedArmy.Recruitment.Models
             RecruitmentSource source,
             RecruitmentSimulationState state)
         {
+            int target = GetRecruitmentTarget(party, state, source);
+            return EvaluateRecruitmentCore(
+                RecruitmentSubject.FromLiveParty(party, target),
+                troop, availableCount, source, state);
+        }
+
+        internal RecruitmentEvaluationResult EvaluateRecruitmentCore(
+            RecruitmentSubject subject,
+            CharacterObject troop,
+            int availableCount,
+            RecruitmentSource source,
+            RecruitmentSimulationState state)
+        {
             RecruitmentEvaluationResult result =
                 CreateBaseResult(troop, source, availableCount);
 
-            if (party == null || state == null || !party.IsActive)
+            if (subject == null || state == null ||
+                !subject.IsActiveForAdmission)
             {
                 result.PrimaryLimit = RecruitmentLimitReason.InvalidParty;
                 return result;
@@ -112,18 +144,17 @@ namespace ModifiedArmy.Recruitment.Models
             }
 
             if (RecruitmentTroopEligibilityPolicy
-                .ShouldExcludeBanditForAiRecruitment(party, troop))
+                .ShouldExcludeBanditForAiRecruitment(subject, troop))
             {
                 result.PrimaryLimit = RecruitmentLimitReason.BanditTroopExcluded;
                 return result;
             }
 
-            int recruitmentTarget = GetRecruitmentTarget(
-                party,
-                state,
-                source);
+            int recruitmentTarget = Math.Min(
+                state.PartySizeLimit,
+                subject.TargetCount);
             ForceOperation operation = source == RecruitmentSource.Transfer
-                ? party.IsGarrison
+                ? subject.IsGarrison
                     ? ForceOperation.FieldToGarrison
                     : ForceOperation.GarrisonToField
                 : ForceOperation.NewRecruitment;
@@ -148,8 +179,8 @@ namespace ModifiedArmy.Recruitment.Models
 
             float unitWage =
                 AiRecruitmentFinancialModel.EstimateUnitDailyWage(
-                    party,
-                    troop);
+                    troop,
+                    subject.IsAtFormalWar && subject.IsLordParty);
             // Fief troops and transferred soldiers require no purchase.
             // Converted prisoners use the discounted cost defined by the
             // active prisoner recruitment model. Every source still reserves
@@ -169,14 +200,14 @@ namespace ModifiedArmy.Recruitment.Models
                 unitCost = model.CalculateGoldCostForRecruitment(
                     troop,
                     1,
-                    GetRecruitingHero(party));
+                    subject.Leader ?? subject.Clan?.Leader);
             }
             else
             {
                 unitCost = Campaign.Current.Models.PartyWageModel
                     .GetTroopRecruitmentCost(
                         troop,
-                        GetRecruitingHero(party),
+                        subject.Leader ?? subject.Clan?.Leader,
                         false)
                     .RoundedResultNumber;
             }
@@ -184,7 +215,7 @@ namespace ModifiedArmy.Recruitment.Models
             result.UnitDailyWage = unitWage;
             result.UnitRecruitmentCost = Math.Max(0, unitCost);
             result.Priority = GetPriority(
-                party,
+                subject,
                 troop,
                 source,
                 state);
@@ -231,12 +262,12 @@ namespace ModifiedArmy.Recruitment.Models
         /// two equal-tier troops are not ranked differently by a deleted quota.
         /// </summary>
         private float GetPriority(
-            MobileParty party,
+            RecruitmentSubject subject,
             CharacterObject troop,
             RecruitmentSource source,
             RecruitmentSimulationState state)
         {
-            if (party == null || troop == null || state == null)
+            if (subject == null || troop == null || state == null)
             {
                 return float.MinValue;
             }

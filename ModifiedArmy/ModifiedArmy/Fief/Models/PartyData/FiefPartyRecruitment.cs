@@ -1,10 +1,12 @@
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.PartyManagement.Finance.Models;
+using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.Recruitment;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Recruitment.Finance;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Population.Contracts;
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;
@@ -676,6 +678,117 @@ namespace ModifiedArmy.Models.Fief
                 result.Values.Sum() > 0 && result.Values.Sum() < minimumBatch
                     ? new Dictionary<CharacterObject, int>()
                     : result;
+        }
+
+        /// <summary>
+        /// Builds a creation-time fief plan from healthy weighted candidates,
+        /// shared admission state, and exact per-village Hearth availability.
+        /// No roster, population, service batch, or budget is changed.
+        /// </summary>
+        internal IReadOnlyList<PlannedVillageWithdrawal>
+            PreviewPlannedFiefRecruitment(
+                RecruitmentSubject subject,
+                RecruitmentSimulationState sharedState,
+                int maximumCount,
+                out RecruitmentSimulationState acceptedState,
+                out string reason)
+        {
+            acceptedState = sharedState;
+            reason = null;
+            var empty = new List<PlannedVillageWithdrawal>();
+            if (subject == null || sharedState == null || maximumCount <= 0 ||
+                subject.Clan != _settlement?.OwnerClan ||
+                RecruitmentModelManager.Model is not DefaultAiTroopRecruitmentModel model)
+            {
+                reason = "InvalidPlannedFiefContext";
+                return empty;
+            }
+
+            IReadOnlyList<RecruitmentCandidate> candidates =
+                BuildAvailableRecruitmentCandidates(
+                    maximumCount,
+                    true,
+                    null,
+                    out _);
+            if (candidates.Count == 0)
+            {
+                reason = "NoWeightedFiefCandidates";
+                return empty;
+            }
+
+            RecruitmentSimulationState branch = sharedState.Clone();
+            RecruitmentPlan plan = model.BuildPlanCore(
+                subject,
+                candidates,
+                branch,
+                maximumCount);
+            Dictionary<CharacterObject, int> approvals = plan.Evaluations
+                .Where(item => item.Troop != null && item.RecruitableCount > 0)
+                .ToDictionary(item => item.Troop,
+                    item => item.RecruitableCount);
+            int approved = approvals.Values.Sum();
+            int minimum = MilitaryConfigManager.Instance
+                .RequireActiveConfig().AiRecruitment.ForceManagement
+                .MinimumFiefRecruitBatch;
+            if (approved < minimum)
+            {
+                reason = approved > 0
+                    ? "FiefBelowMinimumBatch"
+                    : "NoHealthyFiefTroops";
+                return empty;
+            }
+
+            var result = new List<PlannedVillageWithdrawal>();
+            var hearthByVillage = new Dictionary<VillageFiefData, int>();
+            ISettlementPopulationService population =
+                SettlementPopulationServiceRegistry.Current;
+            foreach (var approval in approvals
+                .OrderBy(item => item.Key.StringId, StringComparer.Ordinal))
+            {
+                int remaining = approval.Value;
+                foreach (VillageFiefData village in OrderedVillages())
+                {
+                    if (remaining <= 0) break;
+                    if (village.RecoveryRequired) continue;
+                    TroopRoster roster = village.GetReadyRoster();
+                    if (roster == null) continue;
+                    var counts = GetRosterCounts(roster, approval.Key);
+                    int healthy = Math.Max(0,
+                        counts.Count - counts.Wounded);
+                    int already = hearthByVillage.TryGetValue(
+                        village,
+                        out int used) ? used : 0;
+                    int hearth = Math.Max(0, (int)Math.Floor(
+                        village.VillageSettlement?.Village?.Hearth ?? 0f));
+                    int take = Math.Min(remaining,
+                        Math.Min(healthy, Math.Max(0, hearth - already)));
+                    if (take <= 0) continue;
+                    PopulationTransactionResult evaluation = population?
+                        .EvaluateConsumption(
+                            village.VillageSettlement,
+                            already + take);
+                    if (evaluation == null || !evaluation.IsCommitted ||
+                        evaluation.Amount + 0.0001f < already + take)
+                        continue;
+                    result.Add(new PlannedVillageWithdrawal
+                    {
+                        Village = village.VillageSettlement,
+                        Troop = approval.Key,
+                        Count = take,
+                        WoundedCount = 0,
+                        HearthCost = take
+                    });
+                    hearthByVillage[village] = already + take;
+                    remaining -= take;
+                }
+                if (remaining > 0)
+                {
+                    reason = "VillageHearthInsufficient";
+                    return empty;
+                }
+            }
+            acceptedState = branch;
+            return result;
         }
 
         /// <summary>

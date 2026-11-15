@@ -102,6 +102,11 @@ namespace ModifiedArmy.PartyManagement.Services
             bool committed = false;
             try
             {
+                RunShadowDryRun(
+                    leader,
+                    site.Settlement,
+                    token,
+                    attemptId);
                 if (leader.GovernorOf != null)
                     ChangeGovernorAction.RemoveGovernorOf(leader);
                 using (PartyCreationScope.Begin(leader))
@@ -226,6 +231,61 @@ namespace ModifiedArmy.PartyManagement.Services
             {
                 if (!committed) bindings.CancelCreationReservation(token);
             }
+        }
+
+        /// <summary>
+        /// Runs the creation preview twice before any governor, party, roster,
+        /// Hearth, or binding commit mutation. Failures are diagnostic-only and
+        /// deliberately preserve the established production creation path.
+        /// </summary>
+        private static void RunShadowDryRun(
+            Hero leader,
+            TaleWorlds.CampaignSystem.Settlements.Settlement settlement,
+            PendingPartyCreation token,
+            string attemptId)
+        {
+            PartyCreationDryRunDiagnostics.ResourceSnapshot before = null;
+            PartyCreationDryRunDiagnostics.ResourceSnapshot after = null;
+            InitialMobilizationPreview first = null;
+            bool deterministic = false;
+            bool noMutation = false;
+            string failure = null;
+            string stage = "CaptureBefore";
+            try
+            {
+                before = PartyCreationDryRunDiagnostics.Capture(
+                    leader, settlement);
+                var planner = new InitialPartyMobilizationPlanner();
+                stage = "FirstDryRun";
+                first = planner.DryRun(
+                    leader, leader.Clan, settlement, token, attemptId, 50);
+                stage = "CaptureMiddle";
+                PartyCreationDryRunDiagnostics.ResourceSnapshot middle =
+                    PartyCreationDryRunDiagnostics.Capture(
+                        leader, settlement);
+                stage = "SecondDryRun";
+                InitialMobilizationPreview second = planner.DryRun(
+                    leader, leader.Clan, settlement, token, attemptId, 50);
+                stage = "CaptureAfter";
+                after = PartyCreationDryRunDiagnostics.Capture(
+                    leader, settlement);
+                stage = "Compare";
+                deterministic = PartyCreationDryRunDiagnostics
+                    .GetPlanFingerprint(first) ==
+                    PartyCreationDryRunDiagnostics.GetPlanFingerprint(second);
+                noMutation = before.SameAs(middle) && before.SameAs(after);
+            }
+            catch (Exception exception)
+            {
+                failure = stage + ":" + exception.ToString()
+                    .Replace('\r', ' ').Replace('\n', ' ');
+                after = PartyCreationDryRunDiagnostics.Capture(
+                    leader, settlement);
+                noMutation = before?.SameAs(after) == true;
+            }
+            PartyCreationDryRunDiagnostics.Log(
+                leader, settlement, attemptId, first, deterministic,
+                noMutation, before, after, failure);
         }
 
         private static MobileParty FailAfterCreation(

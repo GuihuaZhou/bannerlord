@@ -24,11 +24,31 @@ namespace ModifiedArmy.ForceManagement.Models
         public PartyForceTargetResult Evaluate(PartyForceContext context)
         {
             MobileParty party = context?.Party;
-            int limit = Math.Max(0, party?.Party.PartySizeLimit ?? 0);
-            int current = Math.Max(0, party?.Party.NumberOfAllMembers ?? 0);
+            return EvaluateCore(new PartyForceEvaluationInput
+            {
+                Clan = party?.ActualClan,
+                PartyLimit = party?.Party.PartySizeLimit ?? 0,
+                CurrentCount = party?.Party.NumberOfAllMembers ?? 0,
+                IsOwnFiefDefense = context?.IsOwnFiefDefense == true,
+                IsActive = party?.IsActive == true,
+                IsInMapEvent = party?.MapEvent != null,
+                IsStarving = party?.Party.IsStarving == true,
+                IsInArmy = party?.Army != null
+            });
+        }
+
+        public PartyForceTargetResult Evaluate(
+            PartyForceEvaluationInput input) => EvaluateCore(input);
+
+        /// <summary>Computes a target without requiring or mutating a party.</summary>
+        public PartyForceTargetResult EvaluateCore(
+            PartyForceEvaluationInput input)
+        {
+            int limit = Math.Max(0, input?.PartyLimit ?? 0);
+            int current = Math.Max(0, input?.CurrentCount ?? 0);
             ForceManagementConfig config = MilitaryConfigManager.Instance
                 .RequireActiveConfig().AiRecruitment.ForceManagement;
-            Clan clan = party?.ActualClan;
+            Clan clan = input?.Clan;
 
             // Minor factions are intentionally outside the unified force
             // system. Their clans do not participate in ModifiedPolitics war
@@ -62,7 +82,7 @@ namespace ModifiedArmy.ForceManagement.Models
             ForceScenario scenario;
             float ratio;
 
-            if (context?.IsOwnFiefDefense == true)
+            if (input?.IsOwnFiefDefense == true)
             {
                 scenario = ForceScenario.OwnFiefDefense;
                 ratio = config.OwnFiefDefenseTargetRatio;
@@ -87,10 +107,10 @@ namespace ModifiedArmy.ForceManagement.Models
             }
             target = Math.Min(limit, Math.Max(0, target));
             int gap = Math.Max(0, target - current);
-            bool canVisit = gap > 0 && party != null && party.IsActive &&
-                party.MapEvent == null && !party.Party.IsStarving &&
+            bool canVisit = gap > 0 && input?.IsActive == true &&
+                !input.IsInMapEvent && !input.IsStarving &&
                 scenario != ForceScenario.OwnFiefDefense &&
-                party.Army == null;
+                !input.IsInArmy;
 
             return new PartyForceTargetResult
             {

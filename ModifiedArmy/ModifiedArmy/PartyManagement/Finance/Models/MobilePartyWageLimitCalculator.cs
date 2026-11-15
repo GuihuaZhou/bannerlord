@@ -29,6 +29,27 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
                     .MaxWagePaymentLimit;
             }
 
+            return Calculate(
+                clan,
+                party.LeaderHero,
+                NewPartyWageModel.GetWarWageMultiplier(party) > 1f);
+        }
+
+        /// <summary>
+        /// Calculates the same limit without requiring a live party. Creation
+        /// previews use the leader and formal-war snapshot supplied here.
+        /// </summary>
+        public static int Calculate(
+            Clan clan,
+            Hero leader,
+            bool isAtFormalWar)
+        {
+            if (clan?.Leader == null || leader == null)
+            {
+                return Campaign.Current.Models.PartyWageModel
+                    .MaxWagePaymentLimit;
+            }
+
             int leaderGold = Math.Max(0, clan.Leader.Gold);
 
             if (leaderGold > RichClanGold)
@@ -55,7 +76,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
                     + wealthRatio * wealthRatio * 400f;
             }
 
-            if (party.LeaderHero == clan.Leader)
+            if (leader == clan.Leader)
             {
                 vanillaLimit *= 1.5f;
             }
@@ -65,7 +86,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
             float wageScale =
                 NewPartyWageModel.Tier5TroopWage
                 / VanillaTier5Wage
-                * NewPartyWageModel.GetWarWageMultiplier(party);
+                * (isAtFormalWar ? NewPartyWageModel.WarWageMultiplier : 1f);
             int scaledLimit = (int)Math.Round(
                 vanillaLimit * wageScale,
                 MidpointRounding.AwayFromZero);

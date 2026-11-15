@@ -88,6 +88,38 @@ namespace ModifiedArmy.Recruitment.Models
         }
 
         /// <summary>
+        /// Captures a planned party's budget from clan snapshots only. The
+        /// returned object is detached from the manager's mutable daily balance.
+        /// </summary>
+        public static RecruitmentBudget Create(RecruitmentSubject subject)
+        {
+            if (subject?.Kind == RecruitmentSubjectKind.ExistingParty)
+            {
+                return Create(subject.LiveParty);
+            }
+
+            RecruitmentBudget result = new RecruitmentBudget
+            {
+                MaintenanceDays = DefaultMaintenanceDays,
+                CurrentLongTermWage = 0f,
+                UsableWageLimit = Math.Max(
+                    0f,
+                    (subject?.PaymentLimit ?? 0) * WageLimitUsageRatio)
+            };
+            Clan clan = subject?.Clan;
+            ClanRecruitmentBudgetSnapshot snapshot =
+                ClanRecruitmentBudgetManager.GetSnapshot(clan);
+            result.SpendableFunds = snapshot.RemainingCommitmentBudget;
+            float transactionFunds = Math.Max(
+                0f,
+                subject?.Leader?.Gold ?? 0);
+            result.AvailablePurchaseFunds = Math.Min(
+                snapshot.RemainingPurchaseBudget,
+                transactionFunds);
+            return result;
+        }
+
+        /// <summary>
         /// Returns funds attributable to one party without counting clan gold
         /// twice when the clan leader commands that party. Non-leader lord
         /// parties retain their genuinely separate frontline cash in addition

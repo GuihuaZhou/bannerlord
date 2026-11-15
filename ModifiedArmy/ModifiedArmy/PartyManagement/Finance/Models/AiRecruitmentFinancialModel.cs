@@ -80,10 +80,17 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
             MobileParty party,
             CharacterObject troop)
         {
-            return Campaign.Current.Models.PartyWageModel
-                .GetCharacterWage(troop)
-                * NewPartyWageModel.GetWarWageMultiplier(party);
+            return EstimateUnitDailyWage(
+                troop,
+                NewPartyWageModel.GetWarWageMultiplier(party) > 1f);
         }
+
+        /// <summary>Estimates unit wage for a live or planned lord party.</summary>
+        public static float EstimateUnitDailyWage(
+            CharacterObject troop,
+            bool formalWarLordParty) =>
+            Campaign.Current.Models.PartyWageModel.GetCharacterWage(troop) *
+            (formalWarLordParty ? NewPartyWageModel.WarWageMultiplier : 1f);
 
         /// <summary>
         /// Returns the wage a party must sustain after temporary fief troop

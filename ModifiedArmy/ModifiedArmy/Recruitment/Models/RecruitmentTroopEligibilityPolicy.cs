@@ -51,5 +51,18 @@ namespace ModifiedArmy.Recruitment.Models
             return home != null && home.OwnerClan != Clan.PlayerClan &&
                 home.Town?.GarrisonAutoRecruitmentIsEnabled == true;
         }
+
+        /// <summary>Applies the same filtering to a detached recruitment subject.</summary>
+        public static bool ShouldExcludeBanditForAiRecruitment(
+            RecruitmentSubject subject,
+            CharacterObject troop)
+        {
+            if (subject?.Kind == RecruitmentSubjectKind.ExistingParty)
+                return ShouldExcludeBanditForAiRecruitment(
+                    subject.LiveParty,
+                    troop);
+            return subject != null && !subject.IsMainParty &&
+                subject.IsLordParty && IsBanditTroop(troop);
+        }
     }
 }

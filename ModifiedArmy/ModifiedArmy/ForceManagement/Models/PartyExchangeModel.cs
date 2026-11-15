@@ -266,6 +266,70 @@ namespace ModifiedArmy.ForceManagement.Models
         {
             RecruitmentSimulationState destinationState =
                 RecruitmentSimulationState.Create(destination);
+            PartyForceTargetResult target = ForceManagementFacade.Current
+                .GetPartyTarget(destination);
+            RecruitmentSubject subject = RecruitmentSubject.FromLiveParty(
+                destination,
+                target.TargetCount);
+            FillSoftGarrisonWithdrawalManifestCore(
+                manifest, source, destination?.MemberRoster, subject,
+                destinationState, candidates, limit, protectedCounts);
+        }
+
+        /// <summary>
+        /// Selects a deterministic, safe garrison manifest for a party that has
+        /// not yet been created. Authorization is supplied by the outer creation
+        /// reservation and is revalidated during commit.
+        /// </summary>
+        internal TroopExchangeManifest BuildGarrisonWithdrawalPreview(
+            RecruitmentSubject subject,
+            Settlement settlement,
+            RecruitmentSimulationState sharedState,
+            int maximum)
+        {
+            var manifest = new TroopExchangeManifest();
+            MobileParty source = settlement?.Town?.GarrisonParty;
+            if (subject == null || sharedState == null || source == null ||
+                settlement.OwnerClan != subject.Clan || settlement.IsUnderSiege ||
+                maximum <= 0)
+                return manifest;
+            GarrisonDefenseSnapshot defense = ForceManagementFacade.Current
+                .GarrisonDefense.Evaluate(settlement);
+            int allowed = Math.Min(maximum, ForceManagementFacade.Current
+                .GarrisonDefense.GetSafeTransferOutCount(
+                    defense,
+                    source.MemberRoster));
+            FiefPartyManager manager = Campaign.Current?
+                .GetCampaignBehavior<FiefPartyManager>();
+            Dictionary<CharacterObject, int> protectedCounts = manager?
+                .GetServingTroopCounts(source) ??
+                new Dictionary<CharacterObject, int>();
+            List<RecruitmentCandidate> candidates = source.MemberRoster
+                .GetTroopRoster()
+                .Where(item => item.Character != null && !item.Character.IsHero)
+                .Select(item => new RecruitmentCandidate(
+                    item.Character,
+                    Math.Max(0, item.Number - GetCount(
+                        protectedCounts, item.Character)),
+                    RecruitmentSource.Transfer))
+                .Where(item => item.AvailableCount > 0)
+                .ToList();
+            FillSoftGarrisonWithdrawalManifestCore(
+                manifest, source, null, subject, sharedState, candidates,
+                allowed, protectedCounts);
+            return manifest;
+        }
+
+        private static void FillSoftGarrisonWithdrawalManifestCore(
+            TroopExchangeManifest manifest,
+            MobileParty source,
+            TroopRoster destinationRoster,
+            RecruitmentSubject subject,
+            RecruitmentSimulationState destinationState,
+            IEnumerable<RecruitmentCandidate> candidates,
+            int limit,
+            IReadOnlyDictionary<CharacterObject, int> protectedCounts)
+        {
             Dictionary<CharacterObject, int> available = candidates
                 .Where(candidate => candidate?.Troop != null &&
                     candidate.AvailableCount > 0)
@@ -277,7 +341,7 @@ namespace ModifiedArmy.ForceManagement.Models
                 source.MemberRoster,
                 protectedCounts);
             Dictionary<TransferRole, int> destinationRoles = CountRoles(
-                destination.MemberRoster,
+                destinationRoster,
                 null);
             int sourceTotal = available.Values.Sum();
             int remaining = Math.Max(0, limit);
@@ -293,13 +357,12 @@ namespace ModifiedArmy.ForceManagement.Models
                     }
 
                     RecruitmentEvaluationResult evaluation =
-                        RecruitmentModelManager.Model.EvaluateRecruitment(
-                            destination,
-                            pair.Key,
-                            1,
-                            RecruitmentSource.Transfer,
-                            destinationState);
-                    if (evaluation.RecruitableCount <= 0)
+                        RecruitmentModelManager.Model is
+                            DefaultAiTroopRecruitmentModel model
+                        ? model.EvaluateRecruitmentCore(subject, pair.Key, 1,
+                            RecruitmentSource.Transfer, destinationState)
+                        : null;
+                    if (evaluation == null || evaluation.RecruitableCount <= 0)
                     {
                         continue;
                     }
