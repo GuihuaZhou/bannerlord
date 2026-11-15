@@ -297,7 +297,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             .GetActiveConfig()?.AiRecruitment.ForceManagement.Demobilization
             .EnableAutomaticDemobilization == true;
 
-        /// <summary>Writes one localized audit record for an evaluated visit.</summary>
+        /// <summary>
+        /// Keeps no-op evaluations in the low-priority file log and selects a
+        /// result-specific screen template containing only mutations that
+        /// actually occurred.
+        /// </summary>
         private static void LogResult(
             MobileParty party,
             Settlement settlement,
@@ -308,15 +312,25 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (!RecruitmentLogFilter.ShouldLog(party)) return;
             PeaceDemobilizationDecision decision = result.Decision ??
                 new PeaceDemobilizationDecision();
-            TextObject message = GameTexts.FindText(
-                "str_modifiedarmy_peace_demobilization");
+            int peaceDays = Math.Max(0, today - peaceSinceDay);
+            int remaining = Math.Max(
+                0, decision.SurplusCount - result.ActualCount);
+            bool allZero = peaceDays == 0 && decision.CurrentCount == 0 &&
+                decision.TargetCount == 0 && decision.ApprovedToday == 0 &&
+                result.ActualCount == 0 && remaining == 0;
+            string templateId = allZero
+                ? "str_modifiedarmy_peace_demobilization_no_data"
+                : result.ActualCount == 0
+                    ? "str_modifiedarmy_peace_demobilization_no_movement"
+                    : GetCompletedTemplateId(result);
+            TextObject message = GameTexts.FindText(templateId);
             message.SetTextVariable(
                 "PARTY_NAME", PartyLogFormatter.GetDisplayName(party));
             message.SetTextVariable(
                 "SETTLEMENT_NAME",
                 settlement?.Name ?? TextObject.GetEmpty());
             message.SetTextVariable(
-                "PEACE_DAYS", Math.Max(0, today - peaceSinceDay));
+                "PEACE_DAYS", peaceDays);
             message.SetTextVariable("CURRENT", decision.CurrentCount);
             message.SetTextVariable("TARGET", decision.TargetCount);
             message.SetTextVariable("APPROVED", decision.ApprovedToday);
@@ -325,10 +339,35 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             message.SetTextVariable(
                 "REGULAR_TRANSFERRED", result.TransferredRegularCount);
             message.SetTextVariable(
-                "REMAINING",
-                Math.Max(0, decision.SurplusCount - result.ActualCount));
+                "REMAINING", remaining);
             message.SetTextVariable("RESULT", GetReasonText(result.ReasonCode));
+            if (result.ActualCount <= 0)
+            {
+                ModLogger.FileInfo(message.ToString());
+                return;
+            }
             ModLogger.Notice(message.ToString());
+        }
+
+        private static string GetCompletedTemplateId(
+            DemobilizationExecutionResult result)
+        {
+            bool returned = result.ReturnedFiefCount > 0;
+            bool placed = result.PlacedFiefCount > 0;
+            bool transferred = result.TransferredRegularCount > 0;
+            if (returned && placed && transferred)
+                return "str_modifiedarmy_peace_demobilization_all";
+            if (returned && placed)
+                return "str_modifiedarmy_peace_demobilization_returned_placed";
+            if (returned && transferred)
+                return "str_modifiedarmy_peace_demobilization_returned_transferred";
+            if (placed && transferred)
+                return "str_modifiedarmy_peace_demobilization_placed_transferred";
+            if (returned)
+                return "str_modifiedarmy_peace_demobilization_returned";
+            if (placed)
+                return "str_modifiedarmy_peace_demobilization_placed";
+            return "str_modifiedarmy_peace_demobilization_transferred";
         }
 
         /// <summary>Converts internal outcomes into readable localized text.</summary>

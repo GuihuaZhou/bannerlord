@@ -301,7 +301,15 @@
     <string id="ModifiedArmy_TransferCompleted" text="调拨完成" />
     <string id="ModifiedArmy_TransferNoOrdinaryTroops" text="队伍里没有可以移交的普通士兵" />
     <string id="ModifiedArmy_TransferRejected" text="本次调拨没有完成" />
-    <string id="ModifiedArmy_PeaceDemobilization" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}办理复员。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；实际返乡{FIEF_RETURNED}名封邑兵，安置{FIEF_PLACED}名多余封建兵，向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。结果：{RESULT}。" />
+    <string id="ModifiedArmy_PeaceDemobilizationNoData" text="[和平复员] 已评估{PARTY_NAME}在{SETTLEMENT_NAME}的复员条件，本次没有生成兵力或迁移数据。结果：{RESULT}。" />
+    <string id="ModifiedArmy_PeaceDemobilizationNoMovement" text="[和平复员] 已评估{PARTY_NAME}在{SETTLEMENT_NAME}的复员条件。已经和平{PEACE_DAYS}天，当前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人；没有士兵发生移动，仍超编{REMAINING}人。结果：{RESULT}。" />
+    <string id="ModifiedArmy_PeaceDemobilizationReturned" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际返乡{FIEF_RETURNED}名封邑兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationPlaced" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际安置{FIEF_PLACED}名多余封建兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationTransferred" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}向驻军实际移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationReturnedPlaced" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际返乡{FIEF_RETURNED}名封邑兵，并安置{FIEF_PLACED}名多余封建兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationReturnedTransferred" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际返乡{FIEF_RETURNED}名封邑兵，并向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationPlacedTransferred" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际安置{FIEF_PLACED}名多余封建兵，并向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。" />
+    <string id="ModifiedArmy_PeaceDemobilizationAll" text="[和平复员] {PARTY_NAME}在{SETTLEMENT_NAME}实际返乡{FIEF_RETURNED}名封邑兵，安置{FIEF_PLACED}名多余封建兵，并向驻军移交{REGULAR_TRANSFERRED}名普通兵，仍超编{REMAINING}人。" />
     <string id="ModifiedArmy_DemobilizationRoute" text="[和平复员] {PARTY_NAME}目前有{CURRENT}人，和平编制为{TARGET}人，本次最多可退役{APPROVED}人，正在前往{SETTLEMENT_NAME}办理复员。" />
     <string id="ModifiedArmy_DemobilizationCompleted" text="本次复员已经办完" />
     <string id="ModifiedArmy_DemobilizationPeaceUnstable" text="和平时间还不够长" />
