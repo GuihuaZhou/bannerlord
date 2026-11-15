@@ -4,6 +4,7 @@ using ModifiedArmy.ForceManagement.Diagnostics;
 using ModifiedArmy.Garrison.Behaviors;
 using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
+using ModifiedArmy.PartyManagement.Models;
 using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
@@ -64,6 +65,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             Settlement settlement,
             string eventName)
         {
+            if (PartyCreationInitializationScope.IsInitializing(party)) return;
             // This workflow and its diagnostics belong only to Mod-managed AI
             // lord parties. Native villagers, caravans and other parties must
             // not enter the visit ledger or produce duplicate-day messages.

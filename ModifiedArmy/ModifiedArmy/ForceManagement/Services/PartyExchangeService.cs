@@ -119,6 +119,84 @@ namespace ModifiedArmy.ForceManagement.Services
             return result;
         }
 
+        /// <summary>
+        /// Reverses only the exact garrison manifest moved by the same creation
+        /// attempt. Normal field-surplus policy is intentionally not used for
+        /// this transaction compensation.
+        /// </summary>
+        internal PartyExchangeExecutionResult
+            CompensateCreationGarrisonWithdrawal(
+                MobileParty garrison,
+                MobileParty createdParty,
+                TroopExchangeManifest manifest,
+                string operationId,
+                string expectedGarrisonFingerprint,
+                string expectedPartyFingerprint)
+        {
+            PartyExchangeExecutionResult result;
+            if (garrison == null || createdParty == null || manifest == null ||
+                manifest.TotalCount <= 0 || !garrison.IsActive ||
+                !createdParty.IsActive ||
+                !ManifestAvailable(createdParty.MemberRoster, manifest,
+                    new Dictionary<CharacterObject, int>()))
+            {
+                result = Result(TransferCommitStatus.RecoveryRequired,
+                    "CreationCompensationPreconditionFailed", 0);
+            }
+            else
+            {
+                var rollback = new List<Action>();
+                try
+                {
+                    foreach (var pair in manifest.Troops)
+                    {
+                        CharacterObject troop = pair.Key;
+                        int count = pair.Value.Count;
+                        int wounded = pair.Value.WoundedCount;
+                        createdParty.MemberRoster.AddToCounts(troop, -count,
+                            false, -wounded, 0, true, -1);
+                        rollback.Add(() => createdParty.MemberRoster.AddToCounts(
+                            troop, count, false, wounded, 0, true, -1));
+                        garrison.MemberRoster.AddToCounts(troop, count,
+                            false, wounded, 0, true, -1);
+                        rollback.Add(() => garrison.MemberRoster.AddToCounts(
+                            troop, -count, false, -wounded, 0, true, -1));
+                    }
+                    bool restored = GetFingerprint(garrison.MemberRoster) ==
+                            expectedGarrisonFingerprint &&
+                        GetFingerprint(createdParty.MemberRoster) ==
+                            expectedPartyFingerprint;
+                    result = restored
+                        ? Result(TransferCommitStatus.RolledBack,
+                            "CreationGarrisonWithdrawalCompensated",
+                            manifest.TotalCount)
+                        : Result(TransferCommitStatus.RecoveryRequired,
+                            "CreationCompensationFingerprintMismatch", 0);
+                }
+                catch (Exception exception)
+                {
+                    bool rollbackFailed = false;
+                    for (int index = rollback.Count - 1; index >= 0; index--)
+                    {
+                        try { rollback[index](); }
+                        catch { rollbackFailed = true; }
+                    }
+                    result = Result(TransferCommitStatus.RecoveryRequired,
+                        "CreationCompensationFailed:" +
+                        exception.GetType().Name +
+                        (rollbackFailed ? ":RollbackFailed" : string.Empty), 0);
+                }
+            }
+            result.OperationId = operationId;
+            result.FreezeDomain = "party-create:" +
+                (createdParty?.StringId ?? "unknown");
+            if (result.Status == TransferCommitStatus.RecoveryRequired)
+                Campaign.Current?.GetCampaignBehavior<
+                    TransferOperationJournalBehavior>()?.Record(
+                        result, (int)CampaignTime.Now.ToDays);
+            return result;
+        }
+
         /// <summary>Rejects replayed, empty, or stale plans before any mutation.</summary>
         private string Validate(PartyExchangePlan plan)
         {

@@ -1,3 +1,5 @@
+// Lord-party creation transaction coordinator. Binding, fief, garrison, Hearth,
+// budget, and recovery journals remain owned by their established domains.
 using Helpers;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Contracts;
@@ -12,338 +14,262 @@ using System.Linq;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.Party;
+using TaleWorlds.CampaignSystem.Settlements;
 
 namespace ModifiedArmy.PartyManagement.Services
 {
-    /// <summary>Orchestrates creation; existing systems retain every ledger.</summary>
+    /// <summary>Selects by read-only approval, then synchronously mobilizes once.</summary>
     public sealed class PartyCreationCoordinator
     {
-        private readonly PartyCreationSettlementModel _sites =
-            new PartyCreationSettlementModel();
+        private readonly PartyCreationSettlementModel _sites = new PartyCreationSettlementModel();
 
         public MobileParty TryCreateManagedLordParty(Hero leader, bool isNewGame)
         {
             if (!ManagedPartyPolicy.IsModManagedAiLeader(leader)) return null;
             string attemptId = Guid.NewGuid().ToString("N");
-            PartySettlementBindingBehavior bindings = Campaign.Current?
-                .GetCampaignBehavior<PartySettlementBindingBehavior>();
-            AiForcePlanningBehavior planning = Campaign.Current?
-                .GetCampaignBehavior<AiForcePlanningBehavior>();
+            PartySettlementBindingBehavior bindings = Campaign.Current?.GetCampaignBehavior<PartySettlementBindingBehavior>();
+            AiForcePlanningBehavior planning = Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>();
             var evaluations = new List<PartyCreationSiteResult>();
-            PartyCreationSiteResult site = _sites.FindEligibleBase(
-                leader, leader.Clan, 50, evaluations);
-            // One representative candidate is enough to reconstruct a failed
-            // decision. Logging every town and attached village on every probe
-            // floods the file without adding a distinct transaction outcome.
-            PartyCreationSiteResult candidate = evaluations
+            _sites.FindEligibleBase(leader, leader.Clan, 50, evaluations);
+            PartyCreationSiteResult representative = evaluations
                 .OrderByDescending(item => item.BindingEligible)
                 .ThenByDescending(item => item.EstimatedCombinedRegulars)
-                .ThenBy(item => item.Distance)
-                .FirstOrDefault();
-            if (candidate != null)
-                PartyCreationDiagnostics.Log(leader, null,
-                    candidate.Settlement?.StringId, "Evaluated",
-                    candidate.RejectionReason,
-                    candidate.EstimatedGarrisonRegulars,
-                    candidate.EstimatedFiefRegulars,
-                    candidate.EstimatedCombinedRegulars,
-                    candidate.PreferredInitialSource.ToString(), attemptId,
-                    candidate.MinimumRequired, candidate.MinimumFiefBatch,
-                    candidate.BindingEligible);
-            if (bindings == null || planning == null || site?.Settlement == null)
+                .ThenBy(item => item.Distance).FirstOrDefault();
+            if (representative != null)
+                LogSite(leader, representative, attemptId, "Evaluated", representative.RejectionReason);
+            if (bindings == null || planning == null)
             {
-                int bindingEligibleSites = evaluations.Count(item =>
-                    item.BindingEligible);
-                int supplyEligibleSites = evaluations.Count(item =>
-                    item.EstimatedCombinedRegulars >= item.MinimumRequired);
-                string rejectionCounts = string.Join(",", evaluations
-                    .GroupBy(item => item.RejectionReason ?? "Unknown")
-                    .Select(group => group.Key + ":" + group.Count()));
-                PartyCreationDiagnostics.Log(leader, null, null, "Rejected",
-                    bindings == null || planning == null
-                        ? "CreationServicesUnavailable"
-                        : evaluations.Count == 0
-                        ? "NoEligibleClanSettlement"
-                        : "NoEligibleCreationBase",
-                    candidate?.EstimatedGarrisonRegulars ?? 0,
-                    candidate?.EstimatedFiefRegulars ?? 0,
-                    candidate?.EstimatedCombinedRegulars ?? 0,
-                    candidate?.PreferredInitialSource.ToString() ?? "None",
-                    attemptId: attemptId,
-                    minimumRequired: candidate?.MinimumRequired ?? 0,
-                    minimumFiefBatch: candidate?.MinimumFiefBatch ?? 0,
-                    bindingEligible: candidate?.BindingEligible ?? false,
-                    diagnosticDetails: string.Format(
-                        "path=InitialFief evaluatedSiteCount={0} " +
-                        "eligibleBindingSiteCount={1} eligibleSupplySiteCount={2} " +
-                        "rejectionReasonCounts=\"{3}\" closestSite={4}",
-                        evaluations.Count, bindingEligibleSites,
-                        supplyEligibleSites, rejectionCounts,
-                        candidate?.Settlement?.StringId ?? "none"));
+                LogNoCandidate(leader, representative, evaluations, attemptId, "CreationServicesUnavailable");
                 return null;
             }
-            if (!bindings.TryReserveForCreation(
-                    leader, leader.Clan, site.Settlement, out var token))
+
+            PendingPartyCreation selectedToken = null;
+            PartyCreationSiteResult selectedSite = null;
+            InitialMobilizationPreview selectedPreview = null;
+            foreach (PartyCreationSiteResult candidate in evaluations
+                .Where(item => item?.Settlement != null && item.BindingEligible)
+                .OrderByDescending(item => item.EstimatedCombinedRegulars)
+                .ThenBy(item => item.Distance)
+                .ThenBy(item => item.Settlement.StringId, StringComparer.Ordinal))
             {
-                PartyCreationDiagnostics.Log(leader, null,
-                    site.Settlement.StringId, "Rejected",
-                    "CreationBaseReservationRejected",
-                    site.EstimatedGarrisonRegulars,
-                    site.EstimatedFiefRegulars,
-                    site.EstimatedCombinedRegulars,
-                    attemptId: attemptId,
-                    minimumRequired: site.MinimumRequired,
-                    minimumFiefBatch: site.MinimumFiefBatch,
-                    bindingEligible: site.BindingEligible);
+                if (!bindings.TryReserveForCreation(leader, leader.Clan,
+                        candidate.Settlement, out PendingPartyCreation token))
+                    continue;
+                InitialMobilizationPreview preview = RunSingleDryRun(
+                    leader, candidate.Settlement, token, attemptId);
+                if (preview?.Approved != true)
+                {
+                    bindings.CancelCreationReservation(token);
+                    continue;
+                }
+                if (selectedPreview == null || IsBetter(preview, candidate,
+                        selectedPreview, selectedSite))
+                {
+                    if (selectedToken != null) bindings.CancelCreationReservation(selectedToken);
+                    selectedToken = token;
+                    selectedSite = candidate;
+                    selectedPreview = preview;
+                }
+                else bindings.CancelCreationReservation(token);
+            }
+            if (selectedPreview == null)
+            {
+                LogNoCandidate(leader, representative, evaluations, attemptId, "NoApprovedCreationBase");
                 return null;
             }
 
             MobileParty party = null;
-            bool committed = false;
+            bool bindingCommitted = false;
+            bool resourceCommitStarted = false;
+            InitialMobilizationCommitStatus? commitStatus = null;
             try
             {
-                RunShadowDryRun(
-                    leader,
-                    site.Settlement,
-                    token,
-                    attemptId);
-                if (leader.GovernorOf != null)
-                    ChangeGovernorAction.RemoveGovernorOf(leader);
+                if (leader.GovernorOf != null) ChangeGovernorAction.RemoveGovernorOf(leader);
                 using (PartyCreationScope.Begin(leader))
-                    party = MobilePartyHelper.SpawnLordParty(
-                        leader, site.Settlement);
+                    party = MobilePartyHelper.SpawnLordParty(leader, selectedSite.Settlement);
                 if (party == null)
-                {
-                    PartyCreationDiagnostics.Log(leader, null,
-                        site.Settlement.StringId, "Failed",
-                        "SpawnReturnedNull", site.EstimatedGarrisonRegulars,
-                        site.EstimatedFiefRegulars,
-                        site.EstimatedCombinedRegulars,
-                        site.PreferredInitialSource.ToString(), attemptId);
-                    return null;
-                }
-                if (party.Party.PartySizeLimit < 51)
-                    return FailAfterCreation(bindings, planning, leader, party,
-                        site, "PartyCapacityBelowFiftyRegulars", attemptId);
-                if (!bindings.TryCommitCreation(token, party))
-                    return FailAfterCreation(bindings, planning, leader, party, site,
-                        "BindingCommitRejected", attemptId);
-                committed = true;
-                if (!planning.TryRegisterInitialRecruitTask(
-                        party, site.Settlement, site.PreferredInitialSource,
-                        attemptId))
-                    return FailAfterCreation(bindings, planning, leader, party, site,
-                        "InitialRecruitTaskRejected", attemptId);
+                    return Fail(bindings, planning, leader, party, selectedToken,
+                        selectedSite, selectedPreview, attemptId, "SpawnReturnedNull", false);
 
-                PartyForceTask initialTask = planning
-                    .GetLatestTaskForCreation(party);
-                int beforeArrivalRegulars = party.MemberRoster.TotalRegulars;
-                EnterSettlementAction.ApplyForParty(party, site.Settlement);
-                int afterArrivalRegulars = party.MemberRoster.TotalRegulars;
-                int fiefRecruited = initialTask?.SourceKind ==
-                        PartyForceSourceKind.Fief
-                    ? Math.Max(0, initialTask.Progress) : 0;
-                int professionalRecruited = initialTask?.SourceKind ==
-                        PartyForceSourceKind.Professional
-                    ? Math.Max(0, initialTask.Progress) : 0;
-                PartyForceTask fallback = null;
-                PartyExchangeExecutionResult fallbackResult = null;
-                bool fallbackAttempted = false;
-                if (party.MemberRoster.TotalRegulars <= 0 &&
-                    initialTask?.SourceKind == PartyForceSourceKind.Fief &&
-                    planning.TryRegisterInitialRecruitTask(
-                        party, site.Settlement,
-                        PartyForceSourceKind.Professional, attemptId, true))
-                {
-                    fallbackAttempted = true;
-                    fallback = planning
-                        .GetLatestTaskForCreation(party);
-                    fallbackResult = planning
-                        .ExecuteAtSettlement(party, site.Settlement);
-                    professionalRecruited = Math.Max(
-                        Math.Max(0, fallback?.Progress ?? 0),
-                        Math.Max(0, fallbackResult?.TransferredCount ?? 0));
-                }
+                party.SetWagePaymentLimit(selectedPreview.PaymentLimit);
+                if (party.Party.PartySizeLimit != selectedPreview.AssumedPartyLimit ||
+                    party.PaymentLimit != selectedPreview.PaymentLimit ||
+                    party.Party.NumberOfAllMembers != 1 || party.MemberRoster.TotalRegulars != 0)
+                    return Fail(bindings, planning, leader, party, selectedToken,
+                        selectedSite, selectedPreview, attemptId, "PartyInitializationMismatch", false);
+                if (!bindings.TryCommitCreation(selectedToken, party))
+                    return Fail(bindings, planning, leader, party, selectedToken,
+                        selectedSite, selectedPreview, attemptId, "BindingCommitRejected", false);
+                bindingCommitted = true;
 
-                int finalRegulars = party.MemberRoster.TotalRegulars;
-                int recruited = fiefRecruited + professionalRecruited;
-                PartyForceTask finalTask = planning
-                    .GetLatestTaskForCreation(party);
-                if (finalTask?.Status == PartyForceTaskStatus.Suspended &&
-                    finalTask.ReasonCode?.StartsWith(
-                        "RecoveryRequired:", StringComparison.Ordinal) == true)
-                {
-                    PartyCreationDiagnostics.Log(leader, party,
-                        site.Settlement.StringId, "RecoveryRequired",
-                        finalTask.ReasonCode,
-                        site.EstimatedGarrisonRegulars,
-                        site.EstimatedFiefRegulars,
-                        site.EstimatedCombinedRegulars,
-                        site.PreferredInitialSource.ToString(), attemptId,
-                        site.MinimumRequired, site.MinimumFiefBatch,
-                        site.BindingEligible, finalTask.TaskId,
-                        PartyVisitExecutionService.BuildOperationId(
-                            party, finalTask), recruited, fiefRecruited,
-                        professionalRecruited, finalRegulars,
-                        "RecoveryRequired");
+                using (PartyCreationInitializationScope.Begin(party))
+                    EnterSettlementAction.ApplyForParty(party, selectedSite.Settlement);
+                // From this point an unexpected exception may follow an
+                // authoritative roster/Hearth write. Retain the party and its
+                // binding so recovery can inspect the exact live state.
+                resourceCommitStarted = true;
+                InitialMobilizationCommitResult result =
+                    new InitialPartyMobilizationCommitter().Commit(party, selectedPreview);
+                commitStatus = result.Status;
+                LogCommit(leader, party, selectedSite, selectedPreview, result, attemptId);
+                if (result.Status == InitialMobilizationCommitStatus.Committed ||
+                    result.Status == InitialMobilizationCommitStatus.RecoveryRequired)
                     return party;
-                }
-                if (finalRegulars <= 0)
-                    return FailAfterCreation(bindings, planning, leader, party,
-                        site, "InitialRecruitmentCommittedZeroTroops",
-                        attemptId, finalTask, fiefRecruited,
-                        professionalRecruited, initialTask, fallback,
-                        fallbackResult, beforeArrivalRegulars,
-                        afterArrivalRegulars, fallbackAttempted);
-                PartyCreationDiagnostics.Log(leader, party,
-                    site.Settlement.StringId, "Completed", site.ReasonCode,
-                    site.EstimatedGarrisonRegulars,
-                    site.EstimatedFiefRegulars,
-                    site.EstimatedCombinedRegulars,
-                    site.PreferredInitialSource.ToString(), attemptId,
-                    site.MinimumRequired, site.MinimumFiefBatch,
-                    site.BindingEligible, finalTask?.TaskId,
-                    finalTask == null ? null : PartyVisitExecutionService
-                        .BuildOperationId(party, finalTask),
-                    recruited, fiefRecruited, professionalRecruited,
-                    finalRegulars, "Completed");
-                return party;
+                return Fail(bindings, planning, leader, party, selectedToken,
+                    selectedSite, selectedPreview, attemptId, result.ReasonCode, true);
             }
             catch (Exception exception)
             {
+                string reason = "CreationTransactionException:" + exception.GetType().Name;
+                bool retain = resourceCommitStarted ||
+                    commitStatus == InitialMobilizationCommitStatus.Committed ||
+                    commitStatus == InitialMobilizationCommitStatus.RecoveryRequired;
+                LogException(leader, party, selectedSite, selectedPreview, attemptId, reason, retain);
+                if (retain) return party;
                 if (party?.IsActive == true)
                 {
-                    planning.CancelTask(party, "CreationTransactionException");
-                    bindings.ReleasePartyBindings(
-                        party, "CreationTransactionException");
+                    planning.CancelTask(party, reason);
+                    if (bindingCommitted) bindings.ReleasePartyBindings(party, reason);
                     DestroyPartyAction.Apply(null, party);
                 }
-                PartyCreationDiagnostics.Log(leader, party,
-                    site.Settlement.StringId, "Failed",
-                    "CreationTransactionException:" + exception.GetType().Name,
-                    site.EstimatedGarrisonRegulars,
-                    site.EstimatedFiefRegulars,
-                    site.EstimatedCombinedRegulars,
-                    attemptId: attemptId);
                 return null;
             }
             finally
             {
-                if (!committed) bindings.CancelCreationReservation(token);
+                if (!bindingCommitted) bindings.CancelCreationReservation(selectedToken);
             }
         }
 
         /// <summary>
-        /// Runs the creation preview twice before any governor, party, roster,
-        /// Hearth, or binding commit mutation. Failures are diagnostic-only and
-        /// deliberately preserve the established production creation path.
+        /// Runs one production preview and proves only that the preview did not
+        /// mutate authoritative resources. Determinism belongs to dedicated
+        /// tests and is deliberately not inferred from a single invocation.
         /// </summary>
-        private static void RunShadowDryRun(
-            Hero leader,
-            TaleWorlds.CampaignSystem.Settlements.Settlement settlement,
-            PendingPartyCreation token,
-            string attemptId)
+        private static InitialMobilizationPreview RunSingleDryRun(Hero leader,
+            Settlement settlement, PendingPartyCreation token, string attemptId)
         {
             PartyCreationDryRunDiagnostics.ResourceSnapshot before = null;
             PartyCreationDryRunDiagnostics.ResourceSnapshot after = null;
             InitialMobilizationPreview first = null;
-            bool deterministic = false;
             bool noMutation = false;
             string failure = null;
             string stage = "CaptureBefore";
             try
             {
-                before = PartyCreationDryRunDiagnostics.Capture(
-                    leader, settlement);
+                before = PartyCreationDryRunDiagnostics.Capture(leader, settlement);
                 var planner = new InitialPartyMobilizationPlanner();
-                stage = "FirstDryRun";
-                first = planner.DryRun(
-                    leader, leader.Clan, settlement, token, attemptId, 50);
-                stage = "CaptureMiddle";
-                PartyCreationDryRunDiagnostics.ResourceSnapshot middle =
-                    PartyCreationDryRunDiagnostics.Capture(
-                        leader, settlement);
-                stage = "SecondDryRun";
-                InitialMobilizationPreview second = planner.DryRun(
-                    leader, leader.Clan, settlement, token, attemptId, 50);
+                stage = "DryRun";
+                first = planner.DryRun(leader, leader.Clan, settlement, token, attemptId, 50);
                 stage = "CaptureAfter";
-                after = PartyCreationDryRunDiagnostics.Capture(
-                    leader, settlement);
-                stage = "Compare";
-                deterministic = PartyCreationDryRunDiagnostics
-                    .GetPlanFingerprint(first) ==
-                    PartyCreationDryRunDiagnostics.GetPlanFingerprint(second);
-                noMutation = before.SameAs(middle) && before.SameAs(after);
+                after = PartyCreationDryRunDiagnostics.Capture(leader, settlement);
+                noMutation = before.SameAs(after);
             }
             catch (Exception exception)
             {
-                failure = stage + ":" + exception.ToString()
-                    .Replace('\r', ' ').Replace('\n', ' ');
-                after = PartyCreationDryRunDiagnostics.Capture(
-                    leader, settlement);
+                failure = stage + ":" + exception.ToString().Replace('\r', ' ').Replace('\n', ' ');
+                after = PartyCreationDryRunDiagnostics.Capture(leader, settlement);
                 noMutation = before?.SameAs(after) == true;
             }
-            PartyCreationDryRunDiagnostics.Log(
-                leader, settlement, attemptId, first, deterministic,
-                noMutation, before, after, failure);
+            PartyCreationDryRunDiagnostics.Log(leader, settlement, attemptId,
+                first, null, noMutation, before, after, failure);
+            return noMutation && string.IsNullOrEmpty(failure) ? first : null;
         }
 
-        private static MobileParty FailAfterCreation(
-            PartySettlementBindingBehavior bindings,
-            AiForcePlanningBehavior planning, Hero leader,
-            MobileParty party, PartyCreationSiteResult site, string reason,
-            string attemptId, PartyForceTask task = null,
-            int fiefRecruited = 0, int professionalRecruited = 0,
-            PartyForceTask initialTask = null,
-            PartyForceTask fallbackTask = null,
-            PartyExchangeExecutionResult fallbackResult = null,
-            int beforeArrivalRegulars = 0,
-            int afterArrivalRegulars = 0,
-            bool fallbackAttempted = false)
+        private static bool IsBetter(InitialMobilizationPreview candidate,
+            PartyCreationSiteResult candidateSite, InitialMobilizationPreview current,
+            PartyCreationSiteResult currentSite) =>
+            candidate.ApprovedTotal > current.ApprovedTotal ||
+            candidate.ApprovedTotal == current.ApprovedTotal &&
+            (candidateSite.Distance < currentSite.Distance ||
+             candidateSite.Distance.Equals(currentSite.Distance) &&
+             string.Compare(candidateSite.Settlement.StringId,
+                 currentSite.Settlement.StringId, StringComparison.Ordinal) < 0);
+
+        private static MobileParty Fail(PartySettlementBindingBehavior bindings,
+            AiForcePlanningBehavior planning, Hero leader, MobileParty party,
+            PendingPartyCreation token, PartyCreationSiteResult site,
+            InitialMobilizationPreview preview, string attemptId, string reason,
+            bool bindingCommitted)
         {
-            int beforeDestroyRegulars =
-                party?.MemberRoster?.TotalRegulars ?? 0;
-            string details = string.Format(
-                "path=InitialFief initialTaskId={0} initialStatus={1} " +
-                "initialReason={2} initialProgress={3} beforeArrivalRegulars={4} " +
-                "afterArrivalRegulars={5} fallbackAttempted={6} " +
-                "fallbackTaskId={7} fallbackStatus={8} fallbackReason={9} " +
-                "fallbackProgress={10} fallbackExecutorReason={11} " +
-                "fallbackApproved={12} fallbackTransferred={13} " +
-                "beforeDestroyRegulars={14} finalFailureStage={15}",
-                initialTask?.TaskId ?? "none",
-                initialTask?.Status.ToString() ?? "NotRegistered",
-                initialTask?.ReasonCode ?? "Unavailable",
-                initialTask?.Progress ?? 0, beforeArrivalRegulars,
-                afterArrivalRegulars, fallbackAttempted,
-                fallbackTask?.TaskId ?? "none",
-                fallbackTask?.Status.ToString() ?? "NotRegistered",
-                fallbackTask?.ReasonCode ?? "Unavailable",
-                fallbackTask?.Progress ?? 0,
-                fallbackResult?.ReasonCode ?? "Unavailable",
-                fallbackResult?.ApprovedCount ?? 0,
-                fallbackResult?.TransferredCount ?? 0,
-                beforeDestroyRegulars, reason);
-            PartyCreationDiagnostics.Log(leader, party,
-                site.Settlement.StringId, "Failed", reason,
-                site.EstimatedGarrisonRegulars,
-                site.EstimatedFiefRegulars,
-                site.EstimatedCombinedRegulars,
-                attemptId: attemptId,
-                taskId: task?.TaskId,
-                operationId: task == null ? null :
-                    PartyVisitExecutionService.BuildOperationId(party, task),
-                actualRecruited: fiefRecruited + professionalRecruited,
-                actualFief: fiefRecruited,
-                actualProfessional: professionalRecruited,
-                finalRegulars: beforeDestroyRegulars,
-                finalState: "Failed",
-                diagnosticDetails: details);
-            planning.CancelTask(party, reason);
-            bindings.ReleasePartyBindings(party, reason);
-            if (party?.IsActive == true) DestroyPartyAction.Apply(null, party);
+            PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
+                "Failed", reason, preview.ApprovedGarrisonCount,
+                preview.ApprovedFiefCount, preview.ApprovedTotal,
+                attemptId: attemptId, minimumRequired: preview.RequiredRegulars,
+                bindingEligible: true,
+                actualRecruited: party?.MemberRoster.TotalRegulars ?? 0,
+                finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalState: "RolledBack");
+            if (party?.IsActive == true)
+            {
+                planning.CancelTask(party, reason);
+                if (bindingCommitted) bindings.ReleasePartyBindings(party, reason);
+                DestroyPartyAction.Apply(null, party);
+            }
+            else bindings.CancelCreationReservation(token);
             return null;
         }
 
+        private static void LogCommit(Hero leader, MobileParty party,
+            PartyCreationSiteResult site, InitialMobilizationPreview preview,
+            InitialMobilizationCommitResult result, string attemptId)
+        {
+            string phase = result.Status == InitialMobilizationCommitStatus.Committed
+                ? "Completed" : result.Status == InitialMobilizationCommitStatus.RecoveryRequired
+                    ? "RecoveryRequired" : "Failed";
+            PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
+                phase, result.ReasonCode, preview.ApprovedGarrisonCount,
+                preview.ApprovedFiefCount, preview.ApprovedTotal,
+                attemptId: attemptId, minimumRequired: preview.RequiredRegulars,
+                bindingEligible: true,
+                actualRecruited: result.CommittedFiefCount + result.CommittedGarrisonCount,
+                actualFief: result.CommittedFiefCount,
+                actualProfessional: result.CommittedGarrisonCount,
+                finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalState: result.Status.ToString(),
+                diagnosticDetails: string.Format(
+                    "[PartyCreationCommit] approvedFief={0} approvedGarrison={1} " +
+                    "committedFief={2} committedGarrison={3} status={4}",
+                    preview.ApprovedFiefCount, preview.ApprovedGarrisonCount,
+                    result.CommittedFiefCount, result.CommittedGarrisonCount, result.Status));
+        }
+
+        private static void LogException(Hero leader, MobileParty party,
+            PartyCreationSiteResult site, InitialMobilizationPreview preview,
+            string attemptId, string reason, bool retained) =>
+            PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
+                retained ? "RecoveryRequired" : "Failed", reason,
+                preview.ApprovedGarrisonCount, preview.ApprovedFiefCount,
+                preview.ApprovedTotal, attemptId: attemptId,
+                minimumRequired: preview.RequiredRegulars, bindingEligible: true,
+                finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalState: retained ? "Retained" : "Failed",
+                diagnosticDetails: "[PartyCreationCommit] exception=true");
+
+        private static void LogSite(Hero leader, PartyCreationSiteResult site,
+            string attemptId, string phase, string reason) =>
+            PartyCreationDiagnostics.Log(leader, null, site.Settlement?.StringId,
+                phase, reason, site.EstimatedGarrisonRegulars,
+                site.EstimatedFiefRegulars, site.EstimatedCombinedRegulars,
+                site.PreferredInitialSource.ToString(), attemptId,
+                site.MinimumRequired, site.MinimumFiefBatch, site.BindingEligible);
+
+        private static void LogNoCandidate(Hero leader,
+            PartyCreationSiteResult representative,
+            IReadOnlyCollection<PartyCreationSiteResult> evaluations,
+            string attemptId, string reason) =>
+            PartyCreationDiagnostics.Log(leader, null, null, "Rejected", reason,
+                representative?.EstimatedGarrisonRegulars ?? 0,
+                representative?.EstimatedFiefRegulars ?? 0,
+                representative?.EstimatedCombinedRegulars ?? 0,
+                representative?.PreferredInitialSource.ToString() ?? "None",
+                attemptId: attemptId,
+                minimumRequired: representative?.MinimumRequired ?? 50,
+                minimumFiefBatch: representative?.MinimumFiefBatch ?? 0,
+                bindingEligible: representative?.BindingEligible ?? false,
+                diagnosticDetails: string.Format(
+                    "evaluatedSiteCount={0} rejectionReasonCounts=\"{1}\"",
+                    evaluations.Count, string.Join(",", evaluations
+                        .GroupBy(item => item.RejectionReason ?? "Unknown")
+                        .Select(group => group.Key + ":" + group.Count()))));
     }
 }

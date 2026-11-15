@@ -1061,14 +1061,91 @@ namespace ModifiedArmy.Models.Fief
             Rollback
         }
 
+        /// <summary>
+        /// Commits the exact village/troop manifest approved before party
+        /// creation. Every live source is re-read; budget accounting occurs
+        /// only after the authoritative village transaction commits.
+        /// </summary>
+        internal bool CommitPlannedFiefRecruitment(
+            MobileParty targetParty,
+            IReadOnlyList<PlannedVillageWithdrawal> withdrawals,
+            string operationId,
+            out int committedCount,
+            out bool recoveryRequired,
+            out string reason)
+        {
+            committedCount = 0;
+            recoveryRequired = false;
+            reason = "Rejected";
+            if (withdrawals == null || withdrawals.Count == 0)
+            {
+                reason = "EmptyFiefManifest";
+                return true;
+            }
+            Dictionary<CharacterObject, int> approvals = withdrawals
+                .Where(item => item?.Troop != null && item.Count > 0)
+                .GroupBy(item => item.Troop)
+                .ToDictionary(group => group.Key,
+                    group => group.Sum(item => item.Count));
+            bool committed = TryCommitVillageRecruitment(
+                targetParty, approvals, true, null,
+                out Dictionary<CharacterObject, int> actual,
+                withdrawals, operationId);
+            committedCount = actual.Values.Sum();
+            recoveryRequired = withdrawals.Select(item =>
+                    GetVillageData(item?.Village))
+                .Any(village => village?.RecoveryRequired == true);
+            if (!committed)
+            {
+                reason = recoveryRequired
+                    ? "FiefCommitRecoveryRequired"
+                    : "FiefCommitRejectedOrRolledBack";
+                return false;
+            }
+            try
+            {
+                foreach (var item in actual)
+                    ClanRecruitmentBudgetManager.CommitRecruitment(
+                        targetParty, item.Value, 0f,
+                        AiRecruitmentFinancialModel.EstimateUnitDailyWage(
+                            targetParty, item.Key));
+            }
+            catch (Exception exception)
+            {
+                // The village transaction is already authoritative here.
+                // Freeze every participating source instead of pretending the
+                // budget ledger and mobilized resources are reconciled.
+                foreach (VillageFiefData village in withdrawals
+                    .Select(item => GetVillageData(item?.Village))
+                    .Where(item => item != null).Distinct())
+                    village.RequireRecovery(
+                        "CreationRecruitmentBudgetCommitFailed", operationId);
+                recoveryRequired = true;
+                reason = "FiefBudgetCommitRecoveryRequired:" +
+                    exception.GetType().Name;
+                ModLogger.Error(string.Format(
+                    "Creation fief budget commit failed: operation={0}, " +
+                    "party={1}, committed={2}, exception={3}",
+                    operationId, targetParty?.StringId ?? "unknown",
+                    committedCount, exception));
+                return false;
+            }
+            reason = "Committed";
+            return true;
+        }
+
         private bool TryCommitVillageRecruitment(MobileParty targetParty,
             IReadOnlyDictionary<CharacterObject, int> approvals,
             bool healthyOnly,
             Settlement villageFilter,
-            out Dictionary<CharacterObject, int> committed)
+            out Dictionary<CharacterObject, int> committed,
+            IReadOnlyList<PlannedVillageWithdrawal> exactPlan = null,
+            string plannedOperationId = null)
         {
             committed = new Dictionary<CharacterObject, int>();
-            string operationId = Guid.NewGuid().ToString("N");
+            string operationId = string.IsNullOrWhiteSpace(plannedOperationId)
+                ? Guid.NewGuid().ToString("N")
+                : plannedOperationId;
             FiefRecruitmentStage stage = FiefRecruitmentStage.Prepare;
             List<VillageRecruitmentSource> plan = new();
             Dictionary<CharacterObject, (int Count, int Wounded)> targetBefore =
@@ -1099,7 +1176,51 @@ namespace ModifiedArmy.Models.Fief
                     .GetDoctrine(_settlement);
 
                 stage = FiefRecruitmentStage.ValidateSource;
-                foreach (var approval in approvals
+                if (exactPlan != null)
+                {
+                    if (exactPlan.Any(item => item?.Village == null ||
+                        item.Troop == null || item.Count <= 0 ||
+                        item.WoundedCount != 0 || item.HearthCost != item.Count))
+                        return RejectRecruitmentTransaction(operationId,
+                            targetParty, approvals, "InvalidExactManifest");
+                    foreach (PlannedVillageWithdrawal item in exactPlan
+                        .OrderBy(item => item.Village.StringId,
+                            StringComparer.Ordinal)
+                        .ThenBy(item => item.Troop.StringId,
+                            StringComparer.Ordinal))
+                    {
+                        VillageFiefData village = GetVillageData(item.Village);
+                        TroopRoster roster = village?.GetReadyRoster();
+                        if (village == null || village.RecoveryRequired ||
+                            !IsCurrentVillage(item.Village) || roster == null)
+                            return RejectRecruitmentTransaction(operationId,
+                                targetParty, approvals,
+                                "ExactVillageSourceChanged");
+                        var counts = GetRosterCounts(roster, item.Troop);
+                        if (counts.Count - counts.Wounded < item.Count)
+                            return RejectRecruitmentTransaction(operationId,
+                                targetParty, approvals,
+                                "ExactVillageRosterChanged");
+                        plan.Add(new VillageRecruitmentSource
+                        {
+                            Village = village,
+                            Troop = item.Troop,
+                            Count = item.Count,
+                            Wounded = 0,
+                            SourceRoster = roster,
+                            BeforeCount = counts.Count,
+                            BeforeWounded = counts.Wounded
+                        });
+                    }
+                    Dictionary<CharacterObject, int> exactTotals = plan
+                        .GroupBy(item => item.Troop)
+                        .ToDictionary(group => group.Key,
+                            group => group.Sum(item => item.Count));
+                    if (!RecruitmentManifestEquals(exactTotals, approvals))
+                        return RejectRecruitmentTransaction(operationId,
+                            targetParty, approvals, "ExactManifestMismatch");
+                }
+                else foreach (var approval in approvals
                     .Where(p => p.Key != null && p.Value > 0)
                     .OrderBy(p => p.Key.StringId))
                 {

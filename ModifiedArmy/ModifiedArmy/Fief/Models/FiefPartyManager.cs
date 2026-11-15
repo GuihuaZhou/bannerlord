@@ -1732,6 +1732,27 @@ namespace ModifiedArmy.Models.Fief
             return 0;
         }
 
+        /// <summary>Commits a creation preview's exact village manifest.</summary>
+        internal bool CommitPlannedCreationRecruitment(
+            Settlement settlement,
+            MobileParty targetParty,
+            IReadOnlyList<PlannedVillageWithdrawal> withdrawals,
+            string operationId,
+            out int committedCount,
+            out bool recoveryRequired,
+            out string reason)
+        {
+            committedCount = 0;
+            recoveryRequired = false;
+            reason = "InvalidFiefScope";
+            FiefPartyData data = GetFiefData(settlement);
+            if (data == null || settlement?.OwnerClan != targetParty?.ActualClan)
+                return false;
+            return data.CommitPlannedFiefRecruitment(
+                targetParty, withdrawals, operationId,
+                out committedCount, out recoveryRequired, out reason);
+        }
+
         /// <summary>
         /// Returns template-weighted fief offers for a pure exchange preview.
         /// </summary>

@@ -1,4 +1,3 @@
-using ModifiedArmy.Recruitment.Diagnostics;
 using ModifiedArmy.Tool;
 using System.Linq;
 using TaleWorlds.CampaignSystem;
@@ -20,12 +19,6 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             int actualProfessional = 0, int finalRegulars = 0,
             string finalState = null, string diagnosticDetails = null)
         {
-            bool playerContext = RecruitmentLogFilter.ShouldLog(leader?.Clan);
-            bool significantFailure = phase == "RecoveryRequired" ||
-                phase == "Failed" || phase == "Rejected" ||
-                phase == "Completed" && finalRegulars > 0 &&
-                finalRegulars < 50;
-            if (!playerContext && !significantFailure) return;
             var message = GameTexts.FindText(
                 "str_modifiedarmy_party_creation_transaction");
             Settlement settlement = Settlement.All.FirstOrDefault(item =>

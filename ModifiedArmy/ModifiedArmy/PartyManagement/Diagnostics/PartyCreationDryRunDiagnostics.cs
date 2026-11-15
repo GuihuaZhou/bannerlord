@@ -109,7 +109,7 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             Settlement settlement,
             string attemptId,
             InitialMobilizationPreview preview,
-            bool deterministic,
+            bool? deterministic,
             bool noMutation,
             ResourceSnapshot before,
             ResourceSnapshot after,
@@ -139,7 +139,9 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
                 preview?.ApprovedGarrisonCount ?? 0,
                 preview?.ApprovedTotal ?? 0,
                 preview?.RequiredRegulars ?? 0,
-                deterministic,
+                deterministic.HasValue
+                    ? deterministic.Value.ToString()
+                    : "NotChecked",
                 noMutation,
                 before?.PurchaseBudget ?? 0f,
                 before?.CommitmentBudget ?? 0f,
