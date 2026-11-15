@@ -1,12 +1,16 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using Bannerlord.UIExtenderEx.Attributes;
 using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.TroopSelection;
+using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
+using TaleWorlds.TwoDimension;
 
 namespace ModifiedArmy.Models.Fief.Presentation
 {
@@ -38,6 +42,10 @@ namespace ModifiedArmy.Models.Fief.Presentation
         private bool _readySelected;
         private bool _servingSelected;
         private bool _coolingSelected;
+        private MBBindingList<FiefManagementBatchGroupVM> _groups;
+        private readonly Dictionary<string, bool> _expandedGroups =
+            new Dictionary<string, bool>(StringComparer.Ordinal);
+        private SpriteCategory _partySpriteCategory;
 
         public FiefManagementTroopSelectionVMMixin(
             GameMenuTroopSelectionVM vm) : base(vm)
@@ -47,6 +55,9 @@ namespace ModifiedArmy.Models.Fief.Presentation
             Sources = new MBBindingList<FiefManagementSourceVM>();
             if (IsFiefManagement)
             {
+                _partySpriteCategory = UIResourceManager.GetSpriteCategory(
+                    "ui_partyscreen");
+                _partySpriteCategory?.Load();
                 BuildSources();
                 RefreshManagementView(false);
             }
@@ -57,6 +68,26 @@ namespace ModifiedArmy.Models.Fief.Presentation
 
         [DataSourceProperty]
         public bool IsNotFiefManagement => _context == null;
+
+        [DataSourceProperty]
+        public bool IsReadyListVisible => IsFiefManagement &&
+            _context.State == FiefManagementState.Ready;
+
+        [DataSourceProperty]
+        public bool IsBatchListVisible => IsFiefManagement &&
+            (_context.State == FiefManagementState.Cooling ||
+             _context.State == FiefManagementState.Serving);
+
+        [DataSourceProperty]
+        public MBBindingList<FiefManagementBatchGroupVM> Groups
+        {
+            get => _groups;
+            private set
+            {
+                _groups = value;
+                _vm.OnPropertyChangedWithValue(value, nameof(Groups));
+            }
+        }
 
         [DataSourceProperty]
         public MBBindingList<FiefManagementSourceVM> Sources
@@ -127,6 +158,7 @@ namespace ModifiedArmy.Models.Fief.Presentation
         {
             if (_context.State == state) return;
             _context.SelectState(state);
+            NotifyPresentationMode();
             RefreshManagementView(true);
         }
 
@@ -136,7 +168,9 @@ namespace ModifiedArmy.Models.Fief.Presentation
             foreach (FiefManagementSourceVM source in Sources)
                 source.SetCount(_context.GetSourceCount(
                     _context.State, source.Village));
-            if (!rebuildNativeList) return;
+            RefreshBatchGroups();
+            NotifyPresentationMode();
+            if (!rebuildNativeList || !IsReadyListVisible) return;
 
             _vm.ExecuteClearSelection();
             FullRosterField?.SetValue(_vm, _context.GetFullRoster());
@@ -147,6 +181,47 @@ namespace ModifiedArmy.Models.Fief.Presentation
             UpdateMaximumMethod?.Invoke(_vm,
                 new object[] { _context.GetMaximumSelection() });
             InitListMethod?.Invoke(_vm, null);
+        }
+
+        /// <summary>
+        /// Rebuilds detached serving/return groups while retaining expansion
+        /// state by stable group key within this open window.
+        /// </summary>
+        private void RefreshBatchGroups()
+        {
+            if (Groups != null)
+                foreach (FiefManagementBatchGroupVM group in Groups)
+                    _expandedGroups[group.GroupKey] = group.IsExpanded;
+
+            var rebuilt = new MBBindingList<FiefManagementBatchGroupVM>();
+            if (IsBatchListVisible)
+            {
+                IReadOnlyList<FiefManagementBatchSnapshot> snapshots =
+                    _context.State == FiefManagementState.Serving
+                        ? FiefManagementBatchQuery.Serving(
+                            _context.GetFiefData(), _context.Village)
+                        : FiefManagementBatchQuery.Cooling(
+                            _context.GetFiefData(), _context.Village);
+                foreach (FiefManagementBatchSnapshot snapshot in snapshots)
+                {
+                    bool expanded = !_expandedGroups.TryGetValue(
+                        snapshot.GroupKey, out bool previous) || previous;
+                    rebuilt.Add(new FiefManagementBatchGroupVM(
+                        snapshot.GroupKey, snapshot.HeaderText,
+                        snapshot.TotalCount, snapshot.Troops.Select(pair =>
+                            new FiefManagementTroopRowVM(
+                                pair.Key, pair.Value)), expanded));
+                }
+            }
+            Groups = rebuilt;
+        }
+
+        private void NotifyPresentationMode()
+        {
+            _vm.OnPropertyChangedWithValue(IsReadyListVisible,
+                nameof(IsReadyListVisible));
+            _vm.OnPropertyChangedWithValue(IsBatchListVisible,
+                nameof(IsBatchListVisible));
         }
 
         private void RefreshLabels()
@@ -191,6 +266,13 @@ namespace ModifiedArmy.Models.Fief.Presentation
             if (field == value) return;
             field = value;
             _vm.OnPropertyChangedWithValue(value, name);
+        }
+
+        public override void OnFinalize()
+        {
+            _partySpriteCategory?.Unload();
+            _partySpriteCategory = null;
+            base.OnFinalize();
         }
     }
 }

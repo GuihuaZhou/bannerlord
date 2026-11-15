@@ -511,4 +511,8 @@
     <string id="str_modifiedarmy_manpower_forecast" text="{=ModifiedArmy_Manpower_Forecast}Production forecast" />
     <string id="str_modifiedarmy_manpower_supply" text="{=ModifiedArmy_Manpower_Supply}Support Hearth" />
     <string id="str_modifiedarmy_manpower_open_failed" text="{=ModifiedArmy_Manpower_OpenFailed}The manpower overview could not be opened. Check the module installation and log." />
+    <string id="str_modifiedarmy_fief_batch_unknown_party" text="{=ModifiedArmy_FiefBatch_UnknownParty}Unknown serving party ({PARTY_ID})" />
+    <string id="str_modifiedarmy_fief_batch_service_remaining" text="{=ModifiedArmy_FiefBatch_ServiceRemaining}{PARTY} · service time remaining: {DAYS} days" />
+    <string id="str_modifiedarmy_fief_batch_cooling" text="{=ModifiedArmy_FiefBatch_Cooling}{WEEKS} weeks remaining" />
+    <string id="str_modifiedarmy_fief_batch_cooling_pending" text="{=ModifiedArmy_FiefBatch_CoolingPending}Pending (0 weeks)" />
 </strings>

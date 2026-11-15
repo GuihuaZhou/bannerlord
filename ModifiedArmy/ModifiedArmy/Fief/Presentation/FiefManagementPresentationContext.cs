@@ -33,6 +33,18 @@ namespace ModifiedArmy.Models.Fief.Presentation
         internal FiefManagementState State { get; private set; }
         internal bool CanModify { get; }
 
+        /// <summary>
+        /// Exposes the authoritative fief aggregate for detached presentation
+        /// queries without advancing or reconciling any batch lifecycle.
+        /// </summary>
+        internal FiefPartyData GetFiefData()
+        {
+            Settlement fief = Interaction?.IsVillage == true
+                ? Interaction.Village?.Bound
+                : Interaction;
+            return _manager.GetFiefData(fief);
+        }
+
         internal static FiefManagementPresentationContext Begin(
             Settlement interaction, FiefPartyManager manager,
             MobileParty party, bool canModify)
