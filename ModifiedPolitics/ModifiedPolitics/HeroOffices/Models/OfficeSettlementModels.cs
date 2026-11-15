@@ -98,6 +98,20 @@ namespace ModifiedPolitics.HeroOffices.Models
             Town town,
             bool includeDescriptions = false)
         {
+            SettlementTaxLevel level = SettlementTaxPolicyRegistry.Current?
+                .GetLevel(town?.Settlement) ?? SettlementTaxLevel.Normal;
+            return CalculateLoyaltyChangeForTaxLevel(town, level, includeDescriptions);
+        }
+
+        /// <summary>
+        /// Evaluates the complete loyalty path for a candidate tax level
+        /// without changing the persisted policy or any campaign resource.
+        /// </summary>
+        public ExplainedNumber CalculateLoyaltyChangeForTaxLevel(
+            Town town,
+            SettlementTaxLevel candidate,
+            bool includeDescriptions = false)
+        {
             ExplainedNumber result = base.CalculateLoyaltyChange(
                 town,
                 includeDescriptions);
@@ -110,8 +124,7 @@ namespace ModifiedPolitics.HeroOffices.Models
             {
                 result.Add(value, SecurityOfficeText, null);
             }
-            float tax = SettlementTaxPolicyRegistry.Current?
-                .GetEffects(town?.Settlement).Loyalty ?? 0f;
+            float tax = SettlementTaxPolicyBehavior.Effects(candidate).Loyalty;
             if (Math.Abs(tax) > 0.0001f)
                 result.Add(tax, TaxPolicyText, null);
 

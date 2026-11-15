@@ -44,10 +44,14 @@ namespace ModifiedPolitics.SettlementEconomy.Config
         public float ExcessProsperityDecayDays { get; private set; }
         public int TaxProtectionSafeDays { get; private set; }
         public float TaxSwitchThreshold { get; private set; }
-        public float TaxFiscalWeight { get; private set; }
-        public float TaxEconomyWeight { get; private set; }
-        public float TaxRecruitmentWeight { get; private set; }
-        public float TaxRebellionWeight { get; private set; }
+        public float TaxLoyaltySlowRecovery { get; private set; }
+        public float TaxLoyaltySevereRecovery { get; private set; }
+        public float TaxProsperityMinBenefit { get; private set; }
+        public float TaxProsperityHealthyGrowth { get; private set; }
+        public float TaxProsperityDecline { get; private set; }
+        public float TaxProsperitySevereDecline { get; private set; }
+        public float TaxProsperityCapacityGapRatio { get; private set; }
+        public float TaxProsperityStalledGrowth { get; private set; }
         public IReadOnlyDictionary<string, CulturePopulationCapacityConfig> CultureCapacities => _cultureCapacities;
 
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
@@ -104,10 +108,20 @@ namespace ModifiedPolitics.SettlementEconomy.Config
             XmlNode tax = Required(node, "TaxPolicy/Ai");
             TaxProtectionSafeDays = PositiveInt(tax, "safeDays");
             TaxSwitchThreshold = NonNegative(tax, "switchThreshold");
-            TaxFiscalWeight = NonNegative(tax, "fiscalWeight");
-            TaxEconomyWeight = NonNegative(tax, "economyWeight");
-            TaxRecruitmentWeight = NonNegative(tax, "recruitmentWeight");
-            TaxRebellionWeight = NonNegative(tax, "rebellionWeight");
+            TaxLoyaltySlowRecovery = NonNegative(tax, "loyaltySlowRecovery");
+            TaxLoyaltySevereRecovery = NonNegative(tax, "loyaltySevereRecovery");
+            TaxProsperityMinBenefit = NonNegative(tax, "prosperityMinTaxBenefit");
+            TaxProsperityHealthyGrowth = NonNegative(tax, "prosperityHealthyGrowth");
+            TaxProsperityDecline = Number(tax, "prosperityDecline");
+            TaxProsperitySevereDecline = Number(tax, "prosperitySevereDecline");
+            TaxProsperityCapacityGapRatio = NonNegative(tax, "prosperityCapacityGapRatio");
+            TaxProsperityStalledGrowth = NonNegative(tax, "prosperityStalledGrowth");
+            if (TaxLoyaltySevereRecovery < TaxLoyaltySlowRecovery)
+                throw Error(tax, "loyaltySevereRecovery cannot be below loyaltySlowRecovery");
+            if (TaxProsperitySevereDecline > TaxProsperityDecline)
+                throw Error(tax, "prosperitySevereDecline cannot exceed prosperityDecline");
+            if (TaxProsperityCapacityGapRatio > 1f)
+                throw Error(tax, "prosperityCapacityGapRatio cannot exceed 1");
             SettlementEconomyConfigManager.Instance.Register(this);
         }
 

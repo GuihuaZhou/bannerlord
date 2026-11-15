@@ -13,8 +13,6 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
     /// </summary>
     public static class MobilePartyWageLimitCalculator
     {
-        private const int PoorClanGold = 30000;
-        private const int RichClanGold = 90000;
         private const float VanillaTier5Wage = 12f;
 
         /// <summary>
@@ -52,7 +50,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
 
             int leaderGold = Math.Max(0, clan.Leader.Gold);
 
-            if (leaderGold > RichClanGold)
+            if (leaderGold > ClanFiscalStateModel.RichClanGold)
             {
                 return Campaign.Current.Models.PartyWageModel
                     .MaxWagePaymentLimit;
@@ -62,16 +60,16 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
             // linear progression for established clans.
             float vanillaLimit;
 
-            if (leaderGold > PoorClanGold)
+            if (leaderGold > ClanFiscalStateModel.PoorClanGold)
             {
                 vanillaLimit = 600f
-                    + (leaderGold - PoorClanGold)
-                    / (float)(RichClanGold - PoorClanGold)
+                    + (leaderGold - ClanFiscalStateModel.PoorClanGold)
+                    / (float)(ClanFiscalStateModel.RichClanGold - ClanFiscalStateModel.PoorClanGold)
                     * 600f;
             }
             else
             {
-                float wealthRatio = leaderGold / (float)PoorClanGold;
+                float wealthRatio = leaderGold / (float)ClanFiscalStateModel.PoorClanGold;
                 vanillaLimit = 200f
                     + wealthRatio * wealthRatio * 400f;
             }

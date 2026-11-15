@@ -37,10 +37,24 @@ namespace ModifiedPolitics.SettlementEconomy.Models
 
         public override ExplainedNumber CalculateProsperityChange(Town fortification, bool includeDescriptions = false)
         {
+            SettlementTaxLevel level = SettlementTaxPolicyRegistry.Current?
+                .GetLevel(fortification?.Settlement) ?? SettlementTaxLevel.Normal;
+            return CalculateProsperityChangeForTaxLevel(fortification, level, includeDescriptions);
+        }
+
+        /// <summary>
+        /// Evaluates a candidate through the same base calculation and Hearth
+        /// support constraint as live settlement processing, without changing
+        /// policy, prosperity, Hearth, or persistence.
+        /// </summary>
+        public ExplainedNumber CalculateProsperityChangeForTaxLevel(
+            Town fortification,
+            SettlementTaxLevel candidate,
+            bool includeDescriptions = false)
+        {
             ExplainedNumber result = base.CalculateProsperityChange(fortification, includeDescriptions);
             Settlement settlement = fortification?.Settlement;
-            float tax = SettlementTaxPolicyRegistry.Current?
-                .GetEffects(settlement).Prosperity ?? 0f;
+            float tax = SettlementTaxPolicyBehavior.Effects(candidate).Prosperity;
             if (Math.Abs(tax) > 0.0001f) result.Add(tax, TaxPolicyText, null);
             ISettlementPopulationService service = SettlementPopulationServiceRegistry.Current;
             if (settlement == null || service == null) return result;

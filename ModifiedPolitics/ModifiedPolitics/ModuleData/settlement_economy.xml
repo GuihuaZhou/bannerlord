@@ -22,7 +22,11 @@
       <ProsperitySupport townPerHearth="5" castlePerHearth="3" excessDecayDays="84" />
     </Population>
     <TaxPolicy>
-      <Ai safeDays="7" switchThreshold="0.08" fiscalWeight="1.20" economyWeight="0.75" recruitmentWeight="0.65" rebellionWeight="1.50" />
+      <Ai safeDays="7" switchThreshold="0.08"
+          loyaltySlowRecovery="0.25" loyaltySevereRecovery="0.50"
+          prosperityMinTaxBenefit="0.10" prosperityHealthyGrowth="0.25"
+          prosperityDecline="-0.25" prosperitySevereDecline="-1.50"
+          prosperityCapacityGapRatio="0.10" prosperityStalledGrowth="0.10" />
     </TaxPolicy>
   </SettlementEconomyConfig>
 </SettlementEconomyConfigs>

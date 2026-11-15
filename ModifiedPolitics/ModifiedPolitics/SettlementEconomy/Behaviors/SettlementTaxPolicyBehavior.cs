@@ -3,9 +3,11 @@
 // prosperity models remain the only writers of their respective game effects.
 using System;
 using System.Collections.Generic;
+using ModifiedArmy.PartyManagement.Finance.Models;
 using ModifiedArmy.Population.Contracts;
-using ModifiedArmy.Recruitment.Pools.Behaviors;
+using ModifiedPolitics.HeroOffices.Models;
 using ModifiedPolitics.SettlementEconomy.Config;
+using ModifiedPolitics.SettlementEconomy.Models;
 using ModifiedPolitics.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
@@ -155,73 +157,114 @@ namespace ModifiedPolitics.SettlementEconomy.Behaviors
                 if (safe >= SettlementEconomyConfigManager.Instance.RequireActive().TaxProtectionSafeDays) protection = false;
             }
             _protection[settlement] = protection;
-            SettlementTaxLevel current = GetLevel(settlement);
-            SettlementTaxLevel best = current;
-            float currentScore = Score(settlement, current, danger);
-            float bestScore = currentScore;
-            foreach (SettlementTaxLevel candidate in Enum.GetValues(typeof(SettlementTaxLevel)))
+            if (!ClanFiscalStateModel.TryGetState(settlement.OwnerClan, out ClanFiscalState fiscal))
             {
-                float score = Score(settlement, candidate, danger);
-                if (score > bestScore) { bestScore = score; best = candidate; }
-            }
-            float threshold = SettlementEconomyConfigManager.Instance.RequireActive().TaxSwitchThreshold;
-            bool emergencyReduction = danger && best < current;
-            if (!emergencyReduction && bestScore - currentScore < threshold)
+                LogDecisionDebug(settlement, "UnavailableFiscalState", day);
                 return;
-            // Reductions may be immediate during danger. Increases are always
-            // one step, forbidden during protection, and require score margin.
+            }
+
+            if (!(Campaign.Current.Models.SettlementLoyaltyModel is OfficeSettlementLoyaltyModel officeLoyalty) ||
+                !(Campaign.Current.Models.SettlementProsperityModel is SettlementEconomyProsperityModel economyProsperity))
+            {
+                LogDecisionDebug(settlement, "CandidateModelUnavailable", day);
+                return;
+            }
+
+            SettlementEconomyConfig config = SettlementEconomyConfigManager.Instance.RequireActive();
+            float loyaltyNormal = officeLoyalty.CalculateLoyaltyChangeForTaxLevel(
+                settlement.Town, SettlementTaxLevel.Normal).ResultNumber;
+            ExplainedNumber prosperityNormalResult = economyProsperity.CalculateProsperityChangeForTaxLevel(
+                settlement.Town, SettlementTaxLevel.Normal);
+            ExplainedNumber prosperityLowResult = economyProsperity.CalculateProsperityChangeForTaxLevel(
+                settlement.Town, SettlementTaxLevel.Low);
+            ExplainedNumber prosperityVeryLowResult = economyProsperity.CalculateProsperityChangeForTaxLevel(
+                settlement.Town, SettlementTaxLevel.VeryLow);
+            ISettlementPopulationService population = SettlementPopulationServiceRegistry.Current;
+            float supported = population == null ? 0f : population.GetHearth(settlement) *
+                (settlement.IsCastle ? config.CastleProsperityPerHearth : config.TownProsperityPerHearth);
+            CivilRecoveryNeed loyaltyNeed = SettlementTaxDecisionModel.EvaluateLoyalty(
+                loyalty, r, m, loyaltyNormal, danger, config, out string loyaltyReason);
+            CivilRecoveryNeed prosperityNeed = SettlementTaxDecisionModel.EvaluateProsperity(
+                settlement.Town.Prosperity, supported, prosperityNormalResult.ResultNumber,
+                prosperityLowResult.ResultNumber, prosperityVeryLowResult.ResultNumber,
+                config, out string prosperityReason);
+            CivilRecoveryNeed civil = loyaltyNeed > prosperityNeed ? loyaltyNeed : prosperityNeed;
+            var snapshot = new TaxPolicyDecisionSnapshot
+            {
+                FiscalState = fiscal,
+                CivilNeed = civil,
+                RebellionDanger = danger,
+                CurrentLoyalty = loyalty,
+                NormalLoyaltyDailyChange = loyaltyNormal,
+                CurrentProsperity = settlement.Town.Prosperity,
+                SupportedProsperity = supported,
+                NormalProsperityDailyChange = prosperityNormalResult.ResultNumber,
+                LowProsperityDailyChange = prosperityLowResult.ResultNumber,
+                VeryLowProsperityDailyChange = prosperityVeryLowResult.ResultNumber,
+                CivilReasonCode = loyaltyReason + "+" + prosperityReason
+            };
+            SettlementTaxLevel current = GetLevel(settlement);
+            SettlementTaxLevel target = SettlementTaxDecisionModel.ResolveTarget(fiscal, civil, danger);
+            if (target == current)
+            {
+                LogDecisionDebug(settlement, civil == CivilRecoveryNeed.None
+                    ? "AlreadyAtTarget" : "CivilRecoveryStillNeeded", day);
+                return;
+            }
+            if (target > current && protection)
+            {
+                LogDecisionDebug(settlement, "RebellionProtection", day);
+                return;
+            }
+
+            // Rebellion danger alone may cross bands immediately. Every other
+            // correction moves one band so old saves normalize without jumps.
             SettlementTaxLevel next = current;
-            if (best < current) next = danger ? best : (SettlementTaxLevel)((int)current - 1);
-            else if (!protection && best > current) next = (SettlementTaxLevel)((int)current + 1);
+            if (target < current) next = danger ? target : (SettlementTaxLevel)((int)current - 1);
+            else next = (SettlementTaxLevel)((int)current + 1);
+            float nextStepAdvantage = 0.25f *
+                (Math.Abs((int)current - (int)target) - Math.Abs((int)next - (int)target));
+            if (!danger && nextStepAdvantage < config.TaxSwitchThreshold)
+            {
+                LogDecisionDebug(settlement, "SwitchThresholdNotMet", day);
+                return;
+            }
             if (next != current && TrySetLevel(settlement, next, false, out _))
                 ModLogger.FileInfo(string.Format(
-                    "[TaxPolicy] AI tax level changed: settlement={0}, id={1}, ownerClan={2}, " +
-                    "from={3}, to={4}, currentScore={5:F3}, candidateScore={6:F3}, " +
-                    "protection={7}, rebellionDanger={8}, day={9}.",
+                    "[TaxPolicy] changed settlement={0}, settlementId={1}, ownerClan={2}, " +
+                    "day={3}, gold={4}, fiscalState={5}, loyalty={6:F2}, loyaltyNormalDaily={7:F2}, " +
+                    "prosperity={8:F2}, prosperitySupported={9:F2}, prosperityNormalDaily={10:F2}, " +
+                    "prosperityLowDaily={11:F2}, prosperityVeryLowDaily={12:F2}, civilNeed={13}, " +
+                    "civilReason={14}, danger={15}, protection={16}, from={17}, target={18}, to={19}, reason={20}.",
                     settlement.Name, settlement.StringId, ClanName(settlement),
-                    current, next, currentScore, bestScore, protection, danger, day));
+                    day, Math.Max(0, settlement.OwnerClan.Leader.Gold), snapshot.FiscalState,
+                    snapshot.CurrentLoyalty, snapshot.NormalLoyaltyDailyChange,
+                    snapshot.CurrentProsperity, snapshot.SupportedProsperity,
+                    snapshot.NormalProsperityDailyChange, snapshot.LowProsperityDailyChange,
+                    snapshot.VeryLowProsperityDailyChange, snapshot.CivilNeed,
+                    snapshot.CivilReasonCode, snapshot.RebellionDanger, protection,
+                    current, target, next, ChangeReason(snapshot, target)));
         }
 
         /// <summary>
-        /// Scores one candidate from current, side-effect-free finance and
-        /// settlement snapshots. Components are normalized before weighting;
-        /// this method never changes the real tax level to probe a candidate.
+        /// Categorizes a successful change for stable, reconstructable logs.
         /// </summary>
-        private static float Score(Settlement settlement, SettlementTaxLevel level, bool danger)
+        private static string ChangeReason(TaxPolicyDecisionSnapshot snapshot, SettlementTaxLevel target)
         {
-            SettlementTaxEffects effects = Effects(level);
-            Clan clan = settlement.OwnerClan;
-            var finance = Campaign.Current.Models.ClanFinanceModel;
-            float income = Math.Max(1f, finance.CalculateClanIncome(clan, false, false, true).ResultNumber);
-            float expenses = Math.Max(1f, Math.Abs(finance.CalculateClanExpenses(clan, false, false, true).ResultNumber));
-            float deficit = Math.Max(0f, expenses - income);
-            float lossRatio = Math.Min(1f, deficit / expenses);
-            float runwayPressure = deficit <= 0f ? 0f : 1f - Math.Min(1f, clan.Gold / Math.Max(1f, deficit * 30f));
-            float fiscalPressure = Math.Min(1f, 0.6f * lossRatio + 0.4f * runwayPressure);
-            float currentMultiplier = Math.Max(0.01f,
-                SettlementTaxPolicyRegistry.Current?.GetEffects(settlement).Multiplier ?? 1f);
-            float currentTax = Math.Max(0f, Campaign.Current.Models
-                .SettlementTaxModel.CalculateTownTax(settlement.Town, false).ResultNumber);
-            float normalTaxBase = currentTax / currentMultiplier;
-            float localTaxShare = Math.Min(1f, normalTaxBase / income);
-            ISettlementPopulationService population = SettlementPopulationServiceRegistry.Current;
-            float populationRatio = population == null ? 0f : Math.Min(1f,
-                population.GetHearth(settlement) / Math.Max(1f, population.GetNaturalCapacity(settlement)));
-            float garrisonNeed = settlement.Town.GarrisonParty == null ? 1f :
-                Math.Max(0f, 1f - settlement.Town.GarrisonParty.Party.NumberOfAllMembers /
-                    Math.Max(1f, settlement.Town.GarrisonParty.Party.PartySizeLimit));
-            float loyaltyEfficiency = SettlementManpowerProductionBehavior
-                .CalculateLoyaltyRecruitmentEfficiency(settlement) / 1.15f;
-            SettlementEconomyConfig config = SettlementEconomyConfigManager.Instance.RequireActive();
-            float fiscal = config.TaxFiscalWeight *
-                ((effects.Multiplier - 0.5f) / 1f) * fiscalPressure *
-                (0.25f + 0.75f * localTaxShare);
-            float economy = config.TaxEconomyWeight * effects.Prosperity / 3f * (1f - fiscalPressure);
-            float recruitment = config.TaxRecruitmentWeight * effects.Loyalty /
-                3f * garrisonNeed * (1f - populationRatio) *
-                (1f - Math.Min(1f, loyaltyEfficiency));
-            float rebellion = config.TaxRebellionWeight * (danger ? Math.Max(0f, -effects.Loyalty) / 3f : 0f);
-            return fiscal + economy + recruitment - rebellion;
+            if (snapshot.RebellionDanger) return "RebellionEmergency";
+            if (snapshot.FiscalState != ClanFiscalState.Normal && snapshot.CivilNeed != CivilRecoveryNeed.None)
+                return "ConflictCompromise";
+            if (snapshot.CivilNeed != CivilRecoveryNeed.None) return "CivilRecovery";
+            if (target == SettlementTaxLevel.Normal) return "ReturnToNormal";
+            return "FiscalNeed";
+        }
+
+        private static void LogDecisionDebug(Settlement settlement, string reason, int day)
+        {
+            if (settlement?.OwnerClan?.Kingdom != Clan.PlayerClan?.Kingdom) return;
+            ModLogger.FileDebug(string.Format(
+                "[TaxPolicy] unchanged settlement={0}, settlementId={1}, ownerClan={2}, day={3}, reason={4}.",
+                settlement.Name, settlement.StringId, ClanName(settlement), day, reason));
         }
 
         private static string ClanName(Settlement settlement) =>
