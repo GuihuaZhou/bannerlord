@@ -96,7 +96,10 @@ namespace ModifiedArmy.PartyManagement.Services
                     party.PaymentLimit != selectedPreview.PaymentLimit ||
                     party.Party.NumberOfAllMembers != 1 || party.MemberRoster.TotalRegulars != 0)
                     return Fail(bindings, planning, leader, party, selectedToken,
-                        selectedSite, selectedPreview, attemptId, "PartyInitializationMismatch", false);
+                        selectedSite, selectedPreview, attemptId,
+                        "PartyInitializationMismatch", false,
+                        BuildInitializationMismatchDetails(
+                            party, selectedPreview));
                 if (!bindings.TryCommitCreation(selectedToken, party))
                     return Fail(bindings, planning, leader, party, selectedToken,
                         selectedSite, selectedPreview, attemptId, "BindingCommitRejected", false);
@@ -189,7 +192,7 @@ namespace ModifiedArmy.PartyManagement.Services
             AiForcePlanningBehavior planning, Hero leader, MobileParty party,
             PendingPartyCreation token, PartyCreationSiteResult site,
             InitialMobilizationPreview preview, string attemptId, string reason,
-            bool bindingCommitted)
+            bool bindingCommitted, string diagnosticDetails = null)
         {
             PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
                 "Failed", reason, preview.ApprovedGarrisonCount,
@@ -198,7 +201,8 @@ namespace ModifiedArmy.PartyManagement.Services
                 bindingEligible: true,
                 actualRecruited: party?.MemberRoster.TotalRegulars ?? 0,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
-                finalState: "RolledBack");
+                finalState: "RolledBack",
+                diagnosticDetails: diagnosticDetails);
             if (party?.IsActive == true)
             {
                 planning.CancelTask(party, reason);
@@ -207,6 +211,40 @@ namespace ModifiedArmy.PartyManagement.Services
             }
             else bindings.CancelCreationReservation(token);
             return null;
+        }
+
+        /// <summary>
+        /// Records every creation invariant independently so a rejected party
+        /// can be diagnosed without weakening the pre-mobilization guard.
+        /// </summary>
+        private static string BuildInitializationMismatchDetails(
+            MobileParty party,
+            InitialMobilizationPreview preview)
+        {
+            int actualLimit = party?.Party?.PartySizeLimit ?? -1;
+            int actualPayment = party?.PaymentLimit ?? -1;
+            int actualMembers = party?.Party?.NumberOfAllMembers ?? -1;
+            int actualRegulars = party?.MemberRoster?.TotalRegulars ?? -1;
+            int actualHeroes = party?.MemberRoster?.GetTroopRoster()
+                .Where(item => item.Character?.IsHero == true)
+                .Sum(item => item.Number) ?? -1;
+            return string.Format(
+                "[PartyCreationInitializationMismatch] " +
+                "expectedLimit={0} actualLimit={1} limitMatch={2} " +
+                "expectedPayment={3} actualPayment={4} paymentMatch={5} " +
+                "expectedMembers=1 actualMembers={6} membersMatch={7} " +
+                "expectedRegulars=0 actualRegulars={8} regularsMatch={9} " +
+                "actualHeroes={10} isActive={11} currentSettlement={12} " +
+                "actualClan={13}",
+                preview?.AssumedPartyLimit ?? -1, actualLimit,
+                actualLimit == preview?.AssumedPartyLimit,
+                preview?.PaymentLimit ?? -1, actualPayment,
+                actualPayment == preview?.PaymentLimit,
+                actualMembers, actualMembers == 1,
+                actualRegulars, actualRegulars == 0,
+                actualHeroes, party?.IsActive == true,
+                party?.CurrentSettlement?.StringId ?? "none",
+                party?.ActualClan?.StringId ?? "none");
         }
 
         private static void LogCommit(Hero leader, MobileParty party,

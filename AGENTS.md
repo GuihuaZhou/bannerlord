@@ -68,3 +68,13 @@ Read `ModifiedArmy/AGENTS.md` and `ModifiedArmy/CODE_ORGANIZATION_RULES.md` befo
 - Add function-level XML documentation to public/internal business APIs and to private methods whose transaction, persistence, AI, Harmony, or recovery semantics are not obvious from the signature.
 - Comments must explain intent, invariants, mutation order, failure/compensation behavior, dynamic game-model assumptions, and save compatibility where relevant. Do not merely restate the code or add noisy comments to trivial accessors.
 - When changing an existing complex workflow, update nearby comments so they describe the active implementation rather than historical behavior.
+
+## 9. Local build and deployment script
+
+- Use the repository-level `tools/Deploy-Mods.ps1` for local Bannerlord deployment. Run it from the repository root; it targets `D:\Steam\steamapps\common\Mount & Blade II Bannerlord` by default and never deletes extra files from installed modules.
+- `tools\Deploy-Mods.ps1` deploys existing Debug outputs for all modules without compiling. Add `-Build` to run `dotnet build --no-restore` before deployment; add `-Configuration Release` for Release outputs.
+- Limit work with `-Modules`, for example `tools\Deploy-Mods.ps1 -Build -Modules ModifiedArmy` or `tools\Deploy-Mods.ps1 -Build -Modules ModifiedArmy,ModifiedPolitics`.
+- Compiled modules deploy their own DLL/PDB/deps plus generated resource directories from `bin\<Configuration>\netstandard2.0`; CopyLocal TaleWorlds/framework DLLs are deliberately excluded. Each `SubModule.xml` is copied separately from source.
+- `ModifiedTroops` is XML-only: the script skips compilation and deploys its source `SubModule.xml` and `ModuleData` directly to the runtime module ID `ModifiedTroop`.
+- The script verifies every copied file with SHA-256 and stops on build, module-ID, path, or hash failures. Use `-WhatIf` to inspect destinations without copying; note that `-Build -WhatIf` still performs the requested build because `-WhatIf` only suppresses deployment writes.
+- Compiling or checking source does not by itself authorize deployment. Run the deployment script only when the user explicitly requests copying/installing runtime artifacts or when deployment is an explicit step of the requested workflow.
