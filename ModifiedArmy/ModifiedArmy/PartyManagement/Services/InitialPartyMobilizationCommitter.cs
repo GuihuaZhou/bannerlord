@@ -1,17 +1,21 @@
-// Initial mobilization transaction coordinator. Existing roster, Hearth,
-// service-batch, budget, and journal owners perform every authoritative write.
+// Live initial mobilization for newly created AI lord parties. The real party,
+// normal source owners, and unified recruitment executor remain authoritative;
+// creation-time previews are never replayed or treated as resource reservations.
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Services;
-using ModifiedArmy.Models.Fief;
 using System;
 using System.Linq;
-using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 
 namespace ModifiedArmy.PartyManagement.Services
 {
     internal sealed class InitialPartyMobilizationCommitter
     {
+        /// <summary>
+        /// Rebuilds feasible sources from live state and keeps every legal
+        /// partial result. A changed source or lower count is not a creation
+        /// failure and remaining source categories are still attempted.
+        /// </summary>
         internal InitialMobilizationCommitResult Commit(
             MobileParty party,
             InitialMobilizationPreview preview)
@@ -20,138 +24,57 @@ namespace ModifiedArmy.PartyManagement.Services
                 party.ActualClan != preview.Clan ||
                 party.CurrentSettlement != preview.BaseSettlement)
                 return Reject("PartyInitializationMismatch");
-            if (party.Party.PartySizeLimit != preview.AssumedPartyLimit ||
-                party.PaymentLimit != preview.PaymentLimit ||
-                party.Party.NumberOfAllMembers != 1 ||
-                party.MemberRoster.TotalRegulars != 0)
-                return Reject("PartyInitializationMismatch");
-            string liveFingerprint = InitialPartyMobilizationPlanner
-                .BuildSourceFingerprint(
-                    preview.BaseSettlement, preview.FiefByVillage);
-            if (liveFingerprint != preview.SourceFingerprint)
-                return Reject("SourceSnapshotChanged");
 
-            string prefix = "party-create:" + preview.AttemptId;
-            PartyExchangeService exchange = ForceManagementFacade.Current
-                .PartyExchangeRunner;
-            MobileParty garrison = preview.BaseSettlement?.Town?.GarrisonParty;
-            PartyExchangeExecutionResult garrisonResult = null;
-            PartyRosterSnapshot garrisonBefore = null;
-            PartyRosterSnapshot partyBefore = null;
-            if (preview.ApprovedGarrisonCount > 0)
+            PartyForcePlanningContext context =
+                new PartyForceCandidateService().BuildContext(
+                    party, null, true);
+            var sources = (context?.Candidates ??
+                    Array.Empty<PartyForceCandidate>())
+                .Where(item => item?.Settlement == preview.BaseSettlement)
+                .OrderByDescending(item => item.Score)
+                .ThenBy(item => item.SourceKind)
+                .ToList();
+            var executor = new UnifiedRecruitmentExecutionService();
+            int fief = 0;
+            int professional = 0;
+            int mercenary = 0;
+            int sequence = 0;
+            foreach (PartyForceCandidate source in sources)
             {
-                var source = new PartyTroopSource
+                if (party.Party.NumberOfAllMembers >=
+                    party.Party.PartySizeLimit)
+                    break;
+                PartyExchangeExecutionResult result = executor.Execute(
+                    party,
+                    preview.BaseSettlement,
+                    source.SourceKind,
+                    "party-create:" + preview.AttemptId + ":live:" +
+                        sequence++,
+                    attemptId: preview.AttemptId);
+                int moved = Math.Max(0, result?.TransferredCount ?? 0);
+                switch (source.SourceKind)
                 {
-                    Kind = PartyTroopSourceKind.Garrison,
-                    Party = garrison,
-                    Settlement = preview.BaseSettlement
-                };
-                var destination = new PartyTroopSource
-                {
-                    Kind = PartyTroopSourceKind.Mobile,
-                    Party = party,
-                    Settlement = preview.BaseSettlement
-                };
-                garrisonBefore = exchange.CaptureSnapshot(source);
-                partyBefore = exchange.CaptureSnapshot(destination);
-                var plan = new PartyExchangePlan
-                {
-                    Initiator = party,
-                    AttemptId = preview.AttemptId,
-                    OperationId = prefix + ":garrison",
-                    ShouldExecute = true,
-                    ReasonCode = "Approved",
-                    Operation = PartyExchangeOperation.GarrisonToField,
-                    Purpose = PartyExchangePurpose.NaturalVisit,
-                    Executor = PartyExchangeExecutorKind.MobileRosterTransfer,
-                    RequestedCount = preview.ApprovedGarrisonCount,
-                    Source = source,
-                    Destination = destination,
-                    TargetSettlement = preview.BaseSettlement,
-                    ExpectedSource = garrisonBefore,
-                    ExpectedDestination = partyBefore,
-                    ExpectedSourceFinalCount = Math.Max(0,
-                        garrisonBefore.RegularCount -
-                        preview.ApprovedGarrisonCount),
-                    ExpectedDestinationFinalCount =
-                        partyBefore.RegularCount +
-                        preview.ApprovedGarrisonCount
-                };
-                foreach (var item in preview.GarrisonManifest.Troops)
-                    plan.SourceToDestination.Troops[item.Key] =
-                        new TroopExchangeAmount
-                        {
-                            Count = item.Value.Count,
-                            WoundedCount = item.Value.WoundedCount
-                        };
-                garrisonResult = exchange.Execute(plan);
-                if (garrisonResult.Status != TransferCommitStatus.Committed)
-                    return new InitialMobilizationCommitResult
-                    {
-                        Status = garrisonResult.Status ==
-                            TransferCommitStatus.RecoveryRequired
-                            ? InitialMobilizationCommitStatus.RecoveryRequired
-                            : InitialMobilizationCommitStatus.Rejected,
-                        ReasonCode = garrisonResult.ReasonCode
-                    };
+                    case PartyForceSourceKind.Fief:
+                        fief += moved;
+                        break;
+                    case PartyForceSourceKind.Professional:
+                        professional += moved;
+                        break;
+                    case PartyForceSourceKind.Mercenary:
+                        mercenary += moved;
+                        break;
+                }
             }
 
-            FiefPartyManager manager = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>();
-            int fiefCount = 0;
-            bool fiefRecovery = false;
-            string fiefReason = "FiefManagerUnavailable";
-            bool fiefCommitted = manager?.CommitPlannedCreationRecruitment(
-                preview.BaseSettlement, party, preview.FiefByVillage,
-                prefix + ":fief", out fiefCount,
-                out fiefRecovery, out fiefReason) == true;
-            if (!fiefCommitted)
-            {
-                if (preview.ApprovedGarrisonCount <= 0)
-                    return new InitialMobilizationCommitResult
-                    {
-                        Status = fiefRecovery
-                            ? InitialMobilizationCommitStatus.RecoveryRequired
-                            : InitialMobilizationCommitStatus.RolledBack,
-                        ReasonCode = fiefReason
-                    };
-                PartyExchangeExecutionResult compensation = exchange
-                    .CompensateCreationGarrisonWithdrawal(
-                        garrison, party, preview.GarrisonManifest,
-                        prefix + ":garrison-compensation",
-                        garrisonBefore.Fingerprint, partyBefore.Fingerprint);
-                return new InitialMobilizationCommitResult
-                {
-                    Status = fiefRecovery || compensation.Status ==
-                        TransferCommitStatus.RecoveryRequired
-                        ? InitialMobilizationCommitStatus.RecoveryRequired
-                        : InitialMobilizationCommitStatus.RolledBack,
-                    ReasonCode = fiefReason + ":" + compensation.ReasonCode,
-                    CommittedGarrisonCount = compensation.Status ==
-                        TransferCommitStatus.RolledBack ? 0 :
-                        preview.ApprovedGarrisonCount
-                };
-            }
-
-            int finalRegulars = party.MemberRoster.TotalRegulars;
-            if (fiefCount != preview.ApprovedFiefCount ||
-                finalRegulars != preview.ApprovedTotal ||
-                finalRegulars < preview.RequiredRegulars)
-                return new InitialMobilizationCommitResult
-                {
-                    Status = InitialMobilizationCommitStatus.RecoveryRequired,
-                    ReasonCode = "FinalConsistencyMismatch",
-                    CommittedFiefCount = fiefCount,
-                    CommittedGarrisonCount =
-                        garrisonResult?.TransferredCount ?? 0
-                };
             return new InitialMobilizationCommitResult
             {
                 Status = InitialMobilizationCommitStatus.Committed,
-                ReasonCode = "Committed",
-                CommittedFiefCount = fiefCount,
-                CommittedGarrisonCount =
-                    garrisonResult?.TransferredCount ?? 0
+                ReasonCode = sources.Count == 0
+                    ? "CompletedWithoutLiveSource"
+                    : "CompletedFromLiveSources",
+                CommittedFiefCount = fief,
+                CommittedGarrisonCount = professional,
+                CommittedMercenaryCount = mercenary
             };
         }
 

@@ -9,14 +9,13 @@ using ModifiedArmy.Recruitment.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.Settlements;
 
 namespace ModifiedArmy.PartyManagement.Services
 {
-    /// <summary>Produces deterministic manifests without creating a party.</summary>
+    /// <summary>Evaluates creation eligibility without reserving resources.</summary>
     public sealed class InitialPartyMobilizationPlanner
     {
         private readonly PlannedLordPartySubjectFactory _subjects =
@@ -89,52 +88,12 @@ namespace ModifiedArmy.PartyManagement.Services
             }
             result.ApprovedGarrisonCount =
                 result.GarrisonManifest.TotalCount;
-            result.SourceFingerprint = BuildSourceFingerprint(
-                settlement, result.FiefByVillage);
             if (result.ApprovedTotal < result.RequiredRegulars)
                 return Reject(result, result.ApprovedTotal == 0 &&
                     !string.IsNullOrEmpty(fiefReason)
                     ? fiefReason
                     : "InsufficientApprovedRegulars");
             return result;
-        }
-
-        internal static string BuildSourceFingerprint(
-            Settlement settlement,
-            IEnumerable<PlannedVillageWithdrawal> villages)
-        {
-            var builder = new StringBuilder();
-            AppendRoster(builder, "g", settlement?.Town?.GarrisonParty?
-                .MemberRoster);
-            foreach (Settlement village in (villages ??
-                Enumerable.Empty<PlannedVillageWithdrawal>())
-                .Select(item => item.Village).Where(item => item != null)
-                .Distinct().OrderBy(item => item.StringId,
-                    StringComparer.Ordinal))
-            {
-                builder.Append("|v:").Append(village.StringId)
-                    .Append(':').Append((int)Math.Floor(
-                        village.Village?.Hearth ?? 0f)).Append(':');
-                AppendRoster(builder, "r", village.MilitiaPartyComponent?
-                    .MobileParty?.MemberRoster);
-            }
-            return builder.ToString();
-        }
-
-        private static void AppendRoster(
-            StringBuilder builder,
-            string prefix,
-            TroopRoster roster)
-        {
-            builder.Append('|').Append(prefix).Append(':');
-            if (roster == null) return;
-            foreach (TroopRosterElement item in roster.GetTroopRoster()
-                .Where(item => item.Character != null)
-                .OrderBy(item => item.Character.StringId,
-                    StringComparer.Ordinal))
-                builder.Append(item.Character.StringId).Append('=')
-                    .Append(item.Number).Append('/')
-                    .Append(item.WoundedNumber).Append(';');
         }
 
         private static InitialMobilizationPreview Reject(

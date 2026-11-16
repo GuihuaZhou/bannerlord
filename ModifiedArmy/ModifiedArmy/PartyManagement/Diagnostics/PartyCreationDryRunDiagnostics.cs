@@ -100,7 +100,6 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
                 builder.Append(item.Key?.StringId ?? "none").Append('=')
                     .Append(item.Value?.Count ?? 0).Append('/')
                     .Append(item.Value?.WoundedCount ?? 0).Append(';');
-            builder.Append("|source=").Append(preview.SourceFingerprint ?? "none");
             return builder.ToString();
         }
 

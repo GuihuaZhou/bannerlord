@@ -1,5 +1,5 @@
-// Initial AI lord-party mobilization contracts. These runtime-only values hold
-// plans and fingerprints; they never replace roster, Hearth, budget, or journals.
+// Initial AI lord-party qualification contracts. Runtime-only previews rank
+// sites and prove the minimum is feasible; they never reserve live resources.
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -31,7 +31,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public int ApprovedTotal => ApprovedFiefCount + ApprovedGarrisonCount;
         public IReadOnlyList<PlannedVillageWithdrawal> FiefByVillage { get; set; }
         public TroopExchangeManifest GarrisonManifest { get; set; }
-        public string SourceFingerprint { get; set; }
         public string RejectReason { get; set; }
         public bool Approved => string.IsNullOrEmpty(RejectReason) &&
             ApprovedTotal >= RequiredRegulars;
@@ -40,9 +39,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
     public enum InitialMobilizationCommitStatus
     {
         Rejected,
-        RolledBack,
-        Committed,
-        RecoveryRequired
+        Committed
     }
 
     public sealed class InitialMobilizationCommitResult
@@ -51,5 +48,6 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public string ReasonCode { get; set; }
         public int CommittedFiefCount { get; set; }
         public int CommittedGarrisonCount { get; set; }
+        public int CommittedMercenaryCount { get; set; }
     }
 }

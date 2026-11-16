@@ -411,7 +411,8 @@ namespace ModifiedArmy.ForceManagement.Models
                     selected.Troop,
                     1,
                     selected.Evaluation.UnitDailyWage,
-                    selected.Evaluation.UnitRecruitmentCost);
+                    selected.Evaluation.UnitRecruitmentCost,
+                    RecruitmentSource.Transfer);
                 remaining--;
             }
         }

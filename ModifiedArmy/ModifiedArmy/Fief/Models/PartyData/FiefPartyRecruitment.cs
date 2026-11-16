@@ -192,7 +192,8 @@ namespace ModifiedArmy.Models.Fief
                     ClanRecruitmentBudgetManager.CommitRecruitment(targetParty,
                         recruited.Value, 0f,
                         AiRecruitmentFinancialModel.EstimateUnitDailyWage(
-                            targetParty, recruited.Key));
+                            targetParty, recruited.Key),
+                        RecruitmentSource.Fief);
 
             TextObject msg =
                 GameTexts.FindText(
@@ -1108,7 +1109,8 @@ namespace ModifiedArmy.Models.Fief
                     ClanRecruitmentBudgetManager.CommitRecruitment(
                         targetParty, item.Value, 0f,
                         AiRecruitmentFinancialModel.EstimateUnitDailyWage(
-                            targetParty, item.Key));
+                            targetParty, item.Key),
+                        RecruitmentSource.Fief);
             }
             catch (Exception exception)
             {

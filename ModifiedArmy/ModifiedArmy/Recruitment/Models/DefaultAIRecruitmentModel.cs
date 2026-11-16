@@ -12,10 +12,9 @@ using TaleWorlds.Core;
 namespace ModifiedArmy.Recruitment.Models
 {
     /// <summary>
-    /// Builds recruitment plans constrained by party capacity, wage limits
-    /// and combined thirty-day affordability. Troop composition is deliberately
-    /// not decided here: available legal troops compete on their own cost and
-    /// tier, without a hidden role or quality quota.
+    /// Builds recruitment plans constrained by party capacity and the shared
+    /// source-aware finance policy. Fief mobilization grows projected strength
+    /// without creating a purchase or thirty-day recruitment commitment.
     /// </summary>
     public class DefaultAiTroopRecruitmentModel : AiTroopRecruitmentModel
     {
@@ -91,7 +90,8 @@ namespace ModifiedArmy.Recruitment.Models
                         evaluation.Troop,
                         evaluation.RecruitableCount,
                         evaluation.UnitDailyWage,
-                        evaluation.UnitRecruitmentCost);
+                        evaluation.UnitRecruitmentCost,
+                        evaluation.Source);
                 }
             }
 
@@ -184,7 +184,9 @@ namespace ModifiedArmy.Recruitment.Models
             // Fief troops and transferred soldiers require no purchase.
             // Converted prisoners use the discounted cost defined by the
             // active prisoner recruitment model. Every source still reserves
-            // its future wages in the shared clan commitment budget.
+            // its future wages in the shared clan commitment budget. Fief
+            // mobilization alone is exempt from this recruitment-time finance
+            // decision; its live wages remain owned by the party wage model.
             int unitCost;
 
             if (source == RecruitmentSource.Fief ||
@@ -222,17 +224,20 @@ namespace ModifiedArmy.Recruitment.Models
             result.AllowedByPartySize = Math.Max(
                 0,
                 capacityApproval.ApprovedCount);
-            result.AllowedByWageLimit = GetAllowedByWageLimit(
-                state,
-                unitWage);
+            bool isFinanceExempt = source == RecruitmentSource.Fief;
+            result.AllowedByWageLimit = isFinanceExempt
+                ? int.MaxValue
+                : GetAllowedByWageLimit(state, unitWage);
             bool isExistingTroopTransfer =
                 source == RecruitmentSource.Transfer;
-            result.AllowedByRecruitmentCost = isExistingTroopTransfer
+            result.AllowedByRecruitmentCost =
+                isExistingTroopTransfer || isFinanceExempt
                 ? int.MaxValue
                 : GetAllowedByRecruitmentCost(
                     state,
                     result.UnitRecruitmentCost);
-            result.AllowedByMaintenance = isExistingTroopTransfer
+            result.AllowedByMaintenance =
+                isExistingTroopTransfer || isFinanceExempt
                 ? int.MaxValue
                 : GetAllowedByMaintenance(
                     state,
@@ -246,7 +251,8 @@ namespace ModifiedArmy.Recruitment.Models
                 result.AllowedByRecruitmentCost,
                 result.AllowedByMaintenance);
             result.PrimaryLimit = FindPrimaryLimit(result);
-            result.SustainableDays = isExistingTroopTransfer
+            result.SustainableDays =
+                isExistingTroopTransfer || isFinanceExempt
                 ? int.MaxValue
                 : GetSustainableDays(
                     state,
@@ -339,12 +345,9 @@ namespace ModifiedArmy.Recruitment.Models
             float unitWage,
             int unitCost)
         {
-            float addedDailyWage = Math.Max(
-                0f,
-                state.ProjectedDailyWage
-                    - state.Budget.CurrentLongTermWage);
             float existingCommitment = state.CommittedRecruitmentCost
-                + addedDailyWage * state.Budget.MaintenanceDays;
+                + state.CommittedRecruitmentDailyWage *
+                    state.Budget.MaintenanceDays;
             float remaining = state.Budget.SpendableFunds
                 - existingCommitment;
             float unitCommitment = unitCost
@@ -373,11 +376,9 @@ namespace ModifiedArmy.Recruitment.Models
             float remainingFunds = state.Budget.SpendableFunds
                 - state.CommittedRecruitmentCost
                 - approvedCount * unitCost;
-            float projectedWage = Math.Max(
-                0f,
-                state.ProjectedDailyWage
-                    - state.Budget.CurrentLongTermWage
-                    + approvedCount * unitWage);
+            float projectedWage = Math.Max(0f,
+                state.CommittedRecruitmentDailyWage +
+                approvedCount * unitWage);
 
             if (projectedWage <= 0f)
             {

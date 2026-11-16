@@ -6,8 +6,9 @@ using TaleWorlds.CampaignSystem.Party;
 namespace ModifiedArmy.Recruitment.Models
 {
     /// <summary>
-    /// Mutable projected party state. Approved candidates update this state so
-    /// later candidates cannot reuse already committed space or money.
+    /// Mutable projected party state. Troop growth and recruitment-finance
+    /// commitments are tracked separately so source-specific exemptions do
+    /// not hide occupied party capacity or create a second money ledger.
     /// </summary>
     public sealed class RecruitmentSimulationState
     {
@@ -27,6 +28,8 @@ namespace ModifiedArmy.Recruitment.Models
             ProjectedMemberCount + ReservedReturningMembers;
 
         public float ProjectedDailyWage { get; private set; }
+
+        public float CommittedRecruitmentDailyWage { get; private set; }
 
         public float CommittedRecruitmentCost { get; private set; }
 
@@ -91,6 +94,8 @@ namespace ModifiedArmy.Recruitment.Models
                 ProjectedRegularCount = ProjectedRegularCount,
                 ReservedReturningMembers = ReservedReturningMembers,
                 ProjectedDailyWage = ProjectedDailyWage,
+                CommittedRecruitmentDailyWage =
+                    CommittedRecruitmentDailyWage,
                 CommittedRecruitmentCost = CommittedRecruitmentCost,
                 Budget = Budget
             };
@@ -104,7 +109,8 @@ namespace ModifiedArmy.Recruitment.Models
             CharacterObject troop,
             int count,
             float unitDailyWage,
-            int unitRecruitmentCost)
+            int unitRecruitmentCost,
+            RecruitmentSource source = RecruitmentSource.Special)
         {
             if (troop == null || count <= 0)
             {
@@ -113,8 +119,14 @@ namespace ModifiedArmy.Recruitment.Models
 
             ProjectedMemberCount += count;
             ProjectedRegularCount += count;
-            ProjectedDailyWage += count * unitDailyWage;
-            CommittedRecruitmentCost += count * unitRecruitmentCost;
+            if (source != RecruitmentSource.Fief)
+            {
+                float committedWage = Math.Max(0f, unitDailyWage) * count;
+                ProjectedDailyWage += committedWage;
+                CommittedRecruitmentDailyWage += committedWage;
+                CommittedRecruitmentCost +=
+                    Math.Max(0, unitRecruitmentCost) * count;
+            }
         }
     }
 }

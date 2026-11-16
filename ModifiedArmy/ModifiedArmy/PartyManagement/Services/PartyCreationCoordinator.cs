@@ -1,5 +1,5 @@
-// Lord-party creation transaction coordinator. Binding, fief, garrison, Hearth,
-// budget, and recovery journals remain owned by their established domains.
+// AI lord-party creation coordinator. The preview proves only site eligibility;
+// the spawned party and normal live recruitment paths own all final decisions.
 using Helpers;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Contracts;
@@ -80,8 +80,7 @@ namespace ModifiedArmy.PartyManagement.Services
 
             MobileParty party = null;
             bool bindingCommitted = false;
-            bool resourceCommitStarted = false;
-            InitialMobilizationCommitStatus? commitStatus = null;
+            bool liveRecruitmentStarted = false;
             try
             {
                 if (leader.GovernorOf != null) ChangeGovernorAction.RemoveGovernorOf(leader);
@@ -91,15 +90,6 @@ namespace ModifiedArmy.PartyManagement.Services
                     return Fail(bindings, planning, leader, party, selectedToken,
                         selectedSite, selectedPreview, attemptId, "SpawnReturnedNull", false);
 
-                party.SetWagePaymentLimit(selectedPreview.PaymentLimit);
-                if (party.Party.PartySizeLimit != selectedPreview.AssumedPartyLimit ||
-                    party.PaymentLimit != selectedPreview.PaymentLimit ||
-                    party.Party.NumberOfAllMembers != 1 || party.MemberRoster.TotalRegulars != 0)
-                    return Fail(bindings, planning, leader, party, selectedToken,
-                        selectedSite, selectedPreview, attemptId,
-                        "PartyInitializationMismatch", false,
-                        BuildInitializationMismatchDetails(
-                            party, selectedPreview));
                 if (!bindings.TryCommitCreation(selectedToken, party))
                     return Fail(bindings, planning, leader, party, selectedToken,
                         selectedSite, selectedPreview, attemptId, "BindingCommitRejected", false);
@@ -107,26 +97,19 @@ namespace ModifiedArmy.PartyManagement.Services
 
                 using (PartyCreationInitializationScope.Begin(party))
                     EnterSettlementAction.ApplyForParty(party, selectedSite.Settlement);
-                // From this point an unexpected exception may follow an
-                // authoritative roster/Hearth write. Retain the party and its
-                // binding so recovery can inspect the exact live state.
-                resourceCommitStarted = true;
+                liveRecruitmentStarted = true;
                 InitialMobilizationCommitResult result =
                     new InitialPartyMobilizationCommitter().Commit(party, selectedPreview);
-                commitStatus = result.Status;
                 LogCommit(leader, party, selectedSite, selectedPreview, result, attemptId);
-                if (result.Status == InitialMobilizationCommitStatus.Committed ||
-                    result.Status == InitialMobilizationCommitStatus.RecoveryRequired)
-                    return party;
-                return Fail(bindings, planning, leader, party, selectedToken,
-                    selectedSite, selectedPreview, attemptId, result.ReasonCode, true);
+                // A live shortfall is ordinary replenishment work. Once the
+                // party is validly spawned and bound, keep it regardless of
+                // how much the current sources can provide.
+                return party;
             }
             catch (Exception exception)
             {
                 string reason = "CreationTransactionException:" + exception.GetType().Name;
-                bool retain = resourceCommitStarted ||
-                    commitStatus == InitialMobilizationCommitStatus.Committed ||
-                    commitStatus == InitialMobilizationCommitStatus.RecoveryRequired;
+                bool retain = liveRecruitmentStarted;
                 LogException(leader, party, selectedSite, selectedPreview, attemptId, reason, retain);
                 if (retain) return party;
                 if (party?.IsActive == true)
@@ -213,74 +196,45 @@ namespace ModifiedArmy.PartyManagement.Services
             return null;
         }
 
-        /// <summary>
-        /// Records every creation invariant independently so a rejected party
-        /// can be diagnosed without weakening the pre-mobilization guard.
-        /// </summary>
-        private static string BuildInitializationMismatchDetails(
-            MobileParty party,
-            InitialMobilizationPreview preview)
-        {
-            int actualLimit = party?.Party?.PartySizeLimit ?? -1;
-            int actualPayment = party?.PaymentLimit ?? -1;
-            int actualMembers = party?.Party?.NumberOfAllMembers ?? -1;
-            int actualRegulars = party?.MemberRoster?.TotalRegulars ?? -1;
-            int actualHeroes = party?.MemberRoster?.GetTroopRoster()
-                .Where(item => item.Character?.IsHero == true)
-                .Sum(item => item.Number) ?? -1;
-            return string.Format(
-                "[PartyCreationInitializationMismatch] " +
-                "expectedLimit={0} actualLimit={1} limitMatch={2} " +
-                "expectedPayment={3} actualPayment={4} paymentMatch={5} " +
-                "expectedMembers=1 actualMembers={6} membersMatch={7} " +
-                "expectedRegulars=0 actualRegulars={8} regularsMatch={9} " +
-                "actualHeroes={10} isActive={11} currentSettlement={12} " +
-                "actualClan={13}",
-                preview?.AssumedPartyLimit ?? -1, actualLimit,
-                actualLimit == preview?.AssumedPartyLimit,
-                preview?.PaymentLimit ?? -1, actualPayment,
-                actualPayment == preview?.PaymentLimit,
-                actualMembers, actualMembers == 1,
-                actualRegulars, actualRegulars == 0,
-                actualHeroes, party?.IsActive == true,
-                party?.CurrentSettlement?.StringId ?? "none",
-                party?.ActualClan?.StringId ?? "none");
-        }
-
         private static void LogCommit(Hero leader, MobileParty party,
             PartyCreationSiteResult site, InitialMobilizationPreview preview,
             InitialMobilizationCommitResult result, string attemptId)
         {
             string phase = result.Status == InitialMobilizationCommitStatus.Committed
-                ? "Completed" : result.Status == InitialMobilizationCommitStatus.RecoveryRequired
-                    ? "RecoveryRequired" : "Failed";
+                ? "Completed" : "Failed";
             PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
                 phase, result.ReasonCode, preview.ApprovedGarrisonCount,
                 preview.ApprovedFiefCount, preview.ApprovedTotal,
                 attemptId: attemptId, minimumRequired: preview.RequiredRegulars,
                 bindingEligible: true,
-                actualRecruited: result.CommittedFiefCount + result.CommittedGarrisonCount,
+                actualRecruited: result.CommittedFiefCount +
+                    result.CommittedGarrisonCount +
+                    result.CommittedMercenaryCount,
                 actualFief: result.CommittedFiefCount,
                 actualProfessional: result.CommittedGarrisonCount,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
                 finalState: result.Status.ToString(),
                 diagnosticDetails: string.Format(
                     "[PartyCreationCommit] approvedFief={0} approvedGarrison={1} " +
-                    "committedFief={2} committedGarrison={3} status={4}",
+                    "committedFief={2} committedGarrison={3} " +
+                    "committedMercenary={4} status={5}",
                     preview.ApprovedFiefCount, preview.ApprovedGarrisonCount,
-                    result.CommittedFiefCount, result.CommittedGarrisonCount, result.Status));
+                    result.CommittedFiefCount, result.CommittedGarrisonCount,
+                    result.CommittedMercenaryCount, result.Status));
         }
 
         private static void LogException(Hero leader, MobileParty party,
             PartyCreationSiteResult site, InitialMobilizationPreview preview,
             string attemptId, string reason, bool retained) =>
             PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
-                retained ? "RecoveryRequired" : "Failed", reason,
+                retained ? "Completed" : "Failed", reason,
                 preview.ApprovedGarrisonCount, preview.ApprovedFiefCount,
                 preview.ApprovedTotal, attemptId: attemptId,
                 minimumRequired: preview.RequiredRegulars, bindingEligible: true,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
-                finalState: retained ? "Retained" : "Failed",
+                finalState: retained
+                    ? "RetainedAfterRecruitmentException"
+                    : "Failed",
                 diagnosticDetails: "[PartyCreationCommit] exception=true");
 
         private static void LogSite(Hero leader, PartyCreationSiteResult site,

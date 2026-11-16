@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
+using ModifiedArmy.Recruitment.Models;
 
 namespace ModifiedArmy.Recruitment.Finance
 {
@@ -140,8 +141,16 @@ namespace ModifiedArmy.Recruitment.Finance
             MobileParty party,
             int count,
             float unitRecruitmentCost,
-            float unitDailyWage)
+            float unitDailyWage,
+            RecruitmentSource source = RecruitmentSource.Special)
         {
+            // Mobilized fief soldiers remain subject to normal live wage and
+            // FreeWageDays rules, but this recruitment operation makes no new
+            // purchase or maintenance commitment against the clan daily pool.
+            if (source == RecruitmentSource.Fief)
+            {
+                return;
+            }
             Clan clan = GetSupportingClan(party);
 
             if (clan == null || count <= 0)
