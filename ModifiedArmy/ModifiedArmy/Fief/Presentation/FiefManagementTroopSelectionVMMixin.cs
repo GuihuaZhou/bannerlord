@@ -7,6 +7,7 @@ using Bannerlord.UIExtenderEx.ViewModels;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Roster;
 using TaleWorlds.CampaignSystem.ViewModelCollection.GameMenu.TroopSelection;
+using TaleWorlds.Core.ViewModelCollection.Selector;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.Library;
 using TaleWorlds.Localization;
@@ -35,6 +36,9 @@ namespace ModifiedArmy.Models.Fief.Presentation
 
         private readonly GameMenuTroopSelectionVM _vm;
         private readonly FiefManagementPresentationContext _context;
+        private readonly SelectorVM<SelectorItemVM> _villageSelector;
+        private readonly SelectorVM<SelectorItemVM> _stateSelector;
+        private bool _isSynchronizingSelectors;
         private MBBindingList<FiefManagementSourceVM> _sources;
         private string _readyText;
         private string _servingText;
@@ -52,12 +56,17 @@ namespace ModifiedArmy.Models.Fief.Presentation
         {
             _vm = vm;
             _context = FiefManagementPresentationContext.Claim();
+            _villageSelector = new SelectorVM<SelectorItemVM>(0,
+                OnVillageSelectionChanged);
+            _stateSelector = new SelectorVM<SelectorItemVM>(0,
+                OnStateSelectionChanged);
             Sources = new MBBindingList<FiefManagementSourceVM>();
             if (IsFiefManagement)
             {
                 _partySpriteCategory = UIResourceManager.GetSpriteCategory(
                     "ui_partyscreen");
                 _partySpriteCategory?.Load();
+                BuildStateSelector();
                 BuildSources();
                 RefreshManagementView(false);
             }
@@ -101,8 +110,22 @@ namespace ModifiedArmy.Models.Fief.Presentation
         }
 
         [DataSourceProperty]
+        public SelectorVM<SelectorItemVM> VillageSelector => _villageSelector;
+
+        [DataSourceProperty]
+        public SelectorVM<SelectorItemVM> StateSelector => _stateSelector;
+
+        [DataSourceProperty]
         public string SourceTitle => new TextObject(
             "{=ModifiedArmy_FiefManagement_Source}Source").ToString();
+
+        [DataSourceProperty]
+        public string VillageLabel => new TextObject(
+            "{=ModifiedArmy_FiefManagement_VillageLabel}Village:").ToString();
+
+        [DataSourceProperty]
+        public string TypeLabel => new TextObject(
+            "{=ModifiedArmy_FiefManagement_TypeLabel}Type:").ToString();
 
         [DataSourceProperty]
         public string ReadyText { get => _readyText; private set => SetText(ref _readyText, value, nameof(ReadyText)); }
@@ -144,7 +167,45 @@ namespace ModifiedArmy.Models.Fief.Presentation
                     village.Name.ToString(),
                     _context.GetSourceCount(_context.State, village), SelectSource));
             }
+            foreach (FiefManagementSourceVM source in Sources)
+                _villageSelector.AddItem(new SelectorItemVM(
+                    new TextObject(source.Name)));
             MarkSelectedSource();
+            SynchronizeSelectors();
+        }
+
+        private void BuildStateSelector()
+        {
+            _stateSelector.AddItem(CreateSelectorItem(
+                "ModifiedArmy_FiefManagement_Ready", "Ready"));
+            _stateSelector.AddItem(CreateSelectorItem(
+                "ModifiedArmy_FiefManagement_Serving", "Serving"));
+            _stateSelector.AddItem(CreateSelectorItem(
+                "ModifiedArmy_FiefManagement_Cooling", "Returning"));
+        }
+
+        private static SelectorItemVM CreateSelectorItem(string id,
+            string english) => new SelectorItemVM(
+                new TextObject("{=" + id + "}" + english));
+
+        private void OnVillageSelectionChanged(
+            SelectorVM<SelectorItemVM> selector)
+        {
+            if (_isSynchronizingSelectors || selector.SelectedIndex < 0 ||
+                selector.SelectedIndex >= Sources.Count) return;
+            SelectSource(Sources[selector.SelectedIndex]);
+        }
+
+        private void OnStateSelectionChanged(
+            SelectorVM<SelectorItemVM> selector)
+        {
+            if (_isSynchronizingSelectors) return;
+            switch (selector.SelectedIndex)
+            {
+                case 0: SelectState(FiefManagementState.Ready); break;
+                case 1: SelectState(FiefManagementState.Serving); break;
+                case 2: SelectState(FiefManagementState.Cooling); break;
+            }
         }
 
         private void SelectSource(FiefManagementSourceVM source)
@@ -165,6 +226,7 @@ namespace ModifiedArmy.Models.Fief.Presentation
         private void RefreshManagementView(bool rebuildNativeList)
         {
             RefreshLabels();
+            SynchronizeSelectors();
             foreach (FiefManagementSourceVM source in Sources)
                 source.SetCount(_context.GetSourceCount(
                     _context.State, source.Village));
@@ -252,6 +314,23 @@ namespace ModifiedArmy.Models.Fief.Presentation
         {
             foreach (FiefManagementSourceVM source in Sources)
                 source.IsSelected = source.Village == _context.Village;
+        }
+
+        private void SynchronizeSelectors()
+        {
+            _isSynchronizingSelectors = true;
+            int villageIndex = 0;
+            for (int i = 0; i < Sources.Count; i++)
+            {
+                if (Sources[i].Village != _context.Village) continue;
+                villageIndex = i;
+                break;
+            }
+            _villageSelector.SelectedIndex = villageIndex;
+            _stateSelector.SelectedIndex = _context.State ==
+                FiefManagementState.Ready ? 0 : _context.State ==
+                FiefManagementState.Serving ? 1 : 2;
+            _isSynchronizingSelectors = false;
         }
 
         private void SetText(ref string field, string value, string name)

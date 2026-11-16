@@ -1,56 +1,27 @@
-<BrushWidget Id="ModifiedArmyFiefTroopPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1240" SuggestedHeight="720" HorizontalAlignment="Center" MarginBottom="105" PositionYOffset="75" VerticalAlignment="Center" Brush="Recruitment.Frame" IsVisible="@IsFiefManagement">
+<BrushWidget Id="ModifiedArmyFiefTroopPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="1040" SuggestedHeight="720" HorizontalAlignment="Center" MarginBottom="105" PositionYOffset="75" VerticalAlignment="Center" Brush="Recruitment.Frame" IsVisible="@IsFiefManagement">
   <Children>
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="161" HorizontalAlignment="Center" PositionYOffset="-3" Sprite="StdAssets\tabbar_popup" IsDisabled="true">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="592" SuggestedHeight="129" HorizontalAlignment="Center" PositionYOffset="-3" Sprite="StdAssets\tabbar_popup" IsDisabled="true">
       <Children>
         <RichTextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="35" VerticalAlignment="Top" Brush="Recruitment.Popup.Title.Text" Brush.FontSize="40" IsDisabled="true" Text="@TitleText" />
       </Children>
     </Widget>
     <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="55" SuggestedHeight="55" HorizontalAlignment="Right" VerticalAlignment="Top" PositionXOffset="10" PositionYOffset="-10" Brush="Popup.CloseButton" Command.Click="ExecuteCancel" RenderLate="true" />
 
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="204" SuggestedHeight="460" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="35" MarginTop="165" Sprite="SPGeneral\SPRecruitment\right_dent" SaturationFactor="20">
+    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="590" SuggestedHeight="42" HorizontalAlignment="Left" VerticalAlignment="Top" MarginLeft="40" MarginTop="103" StackLayout.LayoutMethod="HorizontalLeftToRight">
       <Children>
-        <ListPanel DataSource="{Sources}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="22" MarginLeft="14" MarginRight="14" StackLayout.LayoutMethod="VerticalTopToBottom">
-          <ItemTemplate>
-            <ButtonWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="52" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@IsSelected" Command.Click="ExecuteSelect" UpdateChildrenStates="true" MarginBottom="6">
-              <Children>
-                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.28" IsVisible="@IsSelected" DoNotAcceptEvents="true" />
-                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="12" MarginRight="12" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="21" Brush.TextHorizontalAlignment="Left" Text="@Name" DoNotAcceptEvents="true" />
-              </Children>
-            </ButtonWidget>
-          </ItemTemplate>
-        </ListPanel>
-      </Children>
-    </Widget>
-
-    <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="920" SuggestedHeight="58" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="35" MarginTop="110" StackLayout.LayoutMethod="HorizontalLeftToRight">
-      <Children>
-        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="300" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ServingSelected" Command.Click="ExecuteSelectServing" UpdateChildrenStates="true">
-          <Children>
-            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.28" IsVisible="@ServingSelected" DoNotAcceptEvents="true" />
-            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ServingText" DoNotAcceptEvents="true" />
-          </Children>
-        </ButtonWidget>
-        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="300" MarginLeft="10" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@ReadySelected" Command.Click="ExecuteSelectReady" UpdateChildrenStates="true">
-          <Children>
-            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.28" IsVisible="@ReadySelected" DoNotAcceptEvents="true" />
-            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@ReadyText" DoNotAcceptEvents="true" />
-          </Children>
-        </ButtonWidget>
-        <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="300" MarginLeft="10" Brush="CustomBattle.Menu.PopUp.SelectAll.Button" IsSelected="@CoolingSelected" Command.Click="ExecuteSelectCooling" UpdateChildrenStates="true">
-          <Children>
-            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#D6A85CFF" AlphaFactor="0.28" IsVisible="@CoolingSelected" DoNotAcceptEvents="true" />
-            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.PopUp.Buttons.Text" Brush.FontSize="25" Text="@CoolingText" DoNotAcceptEvents="true" />
-          </Children>
-        </ButtonWidget>
+        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="80" Brush="Kingdom.TitleSmall.Text" Brush.FontSize="20" Brush.TextHorizontalAlignment="Left" Text="@VillageLabel" DoNotAcceptEvents="true" />
+        <Standard.DropdownWithHorizontalControl Id="VillageDropdown" Parameter.SelectorDataSource="{VillageSelector}" Parameter.ShowNextAndPrevious="false" Parameter.IsCustomWidth="true" Parameter.CustomWidth="200" HorizontalAlignment="Left" />
+        <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="80" MarginLeft="30" Brush="Kingdom.TitleSmall.Text" Brush.FontSize="20" Brush.TextHorizontalAlignment="Left" Text="@TypeLabel" DoNotAcceptEvents="true" />
+        <Standard.DropdownWithHorizontalControl Id="StateDropdown" Parameter.SelectorDataSource="{StateSelector}" Parameter.ShowNextAndPrevious="false" Parameter.IsCustomWidth="true" Parameter.CustomWidth="200" HorizontalAlignment="Left" />
       </Children>
     </ListPanel>
 
-    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="960" SuggestedHeight="465" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="25" MarginTop="165" Sprite="SPGeneral\SPRecruitment\left_dent" SaturationFactor="20" DoNotAcceptEvents="true" />
-    <ScrollablePanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="920" SuggestedHeight="395" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="45" MarginTop="195" AutoHideScrollBars="true" ClipRect="FiefClipRect" InnerPanel="FiefClipRect\FiefTroopsGrid" VerticalScrollbar="..\FiefTroopsScrollbar\Scrollbar" IsVisible="@IsReadyListVisible">
+    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="960" SuggestedHeight="465" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="165" Sprite="SPGeneral\SPRecruitment\left_dent" SaturationFactor="20" DoNotAcceptEvents="true" />
+    <ScrollablePanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="880" SuggestedHeight="395" HorizontalAlignment="Center" VerticalAlignment="Top" PositionXOffset="-10" MarginTop="195" AutoHideScrollBars="true" ClipRect="FiefClipRect" InnerPanel="FiefClipRect\FiefTroopsGrid" VerticalScrollbar="..\FiefTroopsScrollbar\Scrollbar" IsVisible="@IsReadyListVisible">
       <Children>
         <Widget Id="FiefClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
           <Children>
-            <GridWidget Id="FiefTroopsGrid" DataSource="{Troops}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" ColumnCount="4" DefaultCellHeight="145" DefaultCellWidth="225" LayoutImp="GridLayout" MarginTop="8" MarginLeft="5" StepSize="2">
+            <GridWidget Id="FiefTroopsGrid" DataSource="{Troops}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" ColumnCount="4" DefaultCellHeight="145" DefaultCellWidth="220" LayoutImp="GridLayout" MarginTop="8" StepSize="2">
               <ItemTemplate>
                 <ButtonWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="220" SuggestedHeight="140" HorizontalAlignment="Center" Command.AlternateClick="ExecuteLink" HoveredCursorState="RightClickLink">
                   <Children>
@@ -90,9 +61,9 @@
         </Widget>
       </Children>
     </ScrollablePanel>
-    <Standard.VerticalScrollbar Id="FiefTroopsScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="395" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="30" MarginTop="195" IsVisible="@IsReadyListVisible" />
+    <Standard.VerticalScrollbar Id="FiefTroopsScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="395" HorizontalAlignment="Center" VerticalAlignment="Top" PositionXOffset="445" MarginTop="195" IsVisible="@IsReadyListVisible" />
 
-    <ScrollablePanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="920" SuggestedHeight="395" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="45" MarginTop="195" AutoHideScrollBars="true" ClipRect="FiefBatchClipRect" InnerPanel="FiefBatchClipRect\FiefBatchGroups" VerticalScrollbar="..\FiefBatchScrollbar\Scrollbar" MouseScrollAxis="Vertical" IsVisible="@IsBatchListVisible">
+    <ScrollablePanel WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="880" SuggestedHeight="395" HorizontalAlignment="Center" VerticalAlignment="Top" PositionXOffset="-10" MarginTop="195" AutoHideScrollBars="true" ClipRect="FiefBatchClipRect" InnerPanel="FiefBatchClipRect\FiefBatchGroups" VerticalScrollbar="..\FiefBatchScrollbar\Scrollbar" MouseScrollAxis="Vertical" IsVisible="@IsBatchListVisible">
       <Children>
         <Widget Id="FiefBatchClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" ClipContents="true">
           <Children>
@@ -140,13 +111,13 @@
         </Widget>
       </Children>
     </ScrollablePanel>
-    <Standard.VerticalScrollbar Id="FiefBatchScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="395" HorizontalAlignment="Right" VerticalAlignment="Top" MarginRight="30" MarginTop="195" IsVisible="@IsBatchListVisible" />
-    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="30" MarginLeft="200">
+    <Standard.VerticalScrollbar Id="FiefBatchScrollbar" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="395" HorizontalAlignment="Center" VerticalAlignment="Top" PositionXOffset="445" MarginTop="195" IsVisible="@IsBatchListVisible" />
+    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="30">
       <Children>
         <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren">
           <Children>
-            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="20" Text="@CurrentSelectedAmountTitle" MarginRight="5" />
-            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="30" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="20" Text="@CurrentSelectedAmountText" MarginLeft="5" />
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="26" Text="@CurrentSelectedAmountTitle" MarginRight="5" />
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" Brush="GameMenu.ManageHideoutTroops.HideoutCrewText" Brush.FontSize="26" Text="@CurrentSelectedAmountText" MarginLeft="5" />
           </Children>
         </ListPanel>
       </Children>
