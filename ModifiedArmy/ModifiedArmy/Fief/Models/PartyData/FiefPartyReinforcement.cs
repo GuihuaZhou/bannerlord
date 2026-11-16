@@ -1,3 +1,6 @@
+// Feudal reinforcement domain. Daily production and weekly upgrades mutate
+// native Ready rosters only through branch-aware admission; saved service and
+// cooling batches remain authoritative for troops away from the village.
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.common;
@@ -29,13 +32,6 @@ namespace ModifiedArmy.Models.Fief
 {
     public partial class FiefPartyData
     {
-        private sealed class InitialFiefTroopQuota
-        {
-            public TroopProductionEntry Entry;
-            public int Count;
-            public long Remainder;
-        }
-
         /// <summary>
         /// Builds a new-game composition from the complete template. Locked
         /// entries retain their proportional share as intentionally unused
@@ -56,64 +52,22 @@ namespace ModifiedArmy.Models.Fief
 
             CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
                 .RequireActiveConfig().GetDoctrine(_settlement);
-            long totalWeight = templateEntries.Sum(entry =>
-                (long)entry.Weight);
-            long weightedSupplyCost = templateEntries.Sum(entry =>
-                (long)entry.Weight *
-                doctrine.GetFeudalSupplyCost(entry.Troop));
-            if (totalWeight <= 0 || weightedSupplyCost <= 0) return 0;
-
-            int barracksLevel = SettlementManpowerProductionBehavior
-                .GetBarracksLevel(_settlement);
             int produced = 0;
             foreach (VillageFiefData village in OrderedVillages(null)
                 .Where(village => !village.RecoveryRequired &&
                     village.GetReadyRoster() != null))
             {
-                int budget = Math.Max(0,
-                    village.GetFeudalBudgetRemainingHearth(
-                        _fiefPartyTemplate, doctrine));
-                int targetCount = (int)Math.Min(int.MaxValue,
-                    (long)budget * totalWeight / weightedSupplyCost);
-                if (targetCount <= 0) continue;
-
-                List<InitialFiefTroopQuota> quotas = templateEntries
-                    .Select(entry =>
-                    {
-                        long weighted = (long)targetCount * entry.Weight;
-                        return new InitialFiefTroopQuota
-                        {
-                            Entry = entry,
-                            Count = (int)(weighted / totalWeight),
-                            Remainder = weighted % totalWeight
-                        };
-                    })
-                    .ToList();
-                int undistributed = targetCount - quotas.Sum(item =>
-                    item.Count);
-                foreach (InitialFiefTroopQuota quota in quotas
-                    .OrderByDescending(item => item.Remainder)
-                    .ThenBy(item => item.Entry.Troop.StringId,
-                        StringComparer.Ordinal)
-                    .Take(undistributed))
-                    quota.Count++;
-
-                TroopRoster roster = village.GetReadyRoster();
-                foreach (InitialFiefTroopQuota quota in quotas
-                    .Where(item => item.Count > 0 &&
-                        item.Entry.RequiredBarracksLevel <= barracksLevel)
-                    .OrderBy(item => item.Entry.Troop.StringId,
-                        StringComparer.Ordinal))
+                foreach (TroopProductionEntry entry in templateEntries)
                 {
-                    for (int i = 0; i < quota.Count; i++)
-                    {
-                        if (!village.CanIncreaseSupply(_fiefPartyTemplate,
-                            doctrine, quota.Entry.Troop, 1))
-                            break;
-                        roster.AddToCounts(quota.Entry.Troop, 1, false,
-                            0, 0, true, -1);
-                        produced++;
-                    }
+                    int cost = doctrine.GetFeudalSupplyCost(entry.Troop);
+                    if (cost <= 0) continue;
+                    int requested = Math.Max(0, village
+                        .GetSupplyBranchRemainingHearth(_fiefPartyTemplate,
+                            doctrine, entry) / cost);
+                    if (requested <= 0) continue;
+                    produced += TryAddFeudalTroops(
+                        village.VillageSettlement, entry.Troop, requested,
+                        FiefTroopAdmissionDestination.Ready).AddedCount;
                 }
             }
             SyncManpowerCounters();
@@ -196,8 +150,6 @@ namespace ModifiedArmy.Models.Fief
             var produced = new List<FiefTroopProductionResult>();
             int allowed = Math.Max(0, maxReinforcements);
             if (allowed <= 0) return produced;
-            var tmpNewTroops = WithdrawFiefTroopEntries(allowed);
-
             List<VillageFiefData> targets = OrderedVillages(null)
                 .Where(v => !v.RecoveryRequired && v.GetReadyRoster() != null)
                 .ToList();
@@ -225,19 +177,35 @@ namespace ModifiedArmy.Models.Fief
                 }
             }
             int recruited = 0;
-            foreach (var kvp in tmpNewTroops.OrderBy(p => p.Key.StringId))
-            for (int i = 0; i < kvp.Value; i++)
+            while (recruited < allowed)
             {
-                VillageFiefData target;
+                (VillageFiefData Village, TroopProductionEntry Entry,
+                    double Gap) candidate;
                 try
                 {
-                    target = targets
-                        .Where(village => village.CanIncreaseSupply(
-                            _fiefPartyTemplate, doctrine, kvp.Key, 1))
-                        .OrderByDescending(village => village
-                            .GetFeudalBudgetRemainingHearth(
-                                _fiefPartyTemplate, doctrine))
-                        .ThenBy(village => village.VillageSettlement.StringId)
+                    int barracks = SettlementManpowerProductionBehavior
+                        .GetBarracksLevel(_settlement);
+                    candidate = targets.SelectMany(village =>
+                        _fiefPartyTemplate.SupplyBranches
+                            .Where(entry => entry.RequiredBarracksLevel <= barracks &&
+                                village.CanIncreaseSupply(_fiefPartyTemplate,
+                                    doctrine, entry.Troop, 1))
+                            .Select(entry =>
+                            {
+                                int quota = village.GetSupplyBranchQuotas(
+                                    _fiefPartyTemplate, doctrine)[entry];
+                                int remaining = village
+                                    .GetSupplyBranchRemainingHearth(
+                                        _fiefPartyTemplate, doctrine, entry);
+                                return (village, entry,
+                                    quota <= 0 ? 0d :
+                                        (double)remaining / quota);
+                            }))
+                        .OrderByDescending(item => item.Item3)
+                        .ThenBy(item => item.village.VillageSettlement.StringId,
+                            StringComparer.Ordinal)
+                        .ThenBy(item => item.entry.Troop.StringId,
+                            StringComparer.Ordinal)
                         .FirstOrDefault();
                 }
                 catch (Exception exception)
@@ -245,21 +213,29 @@ namespace ModifiedArmy.Models.Fief
                     ModLogger.Error(string.Format(
                         "Fief production rejected: fief={0}, troop={1}, tier={2}, reason={3}.",
                         _settlement?.StringId ?? "unknown",
-                        kvp.Key?.StringId ?? "unknown", kvp.Key?.Tier ?? -1,
+                        "unknown", -1,
                         exception.Message));
                     break;
                 }
-                if (target == null) break;
-                target.GetReadyRoster().AddToCounts(
-                    kvp.Key, 1, false, 0, 0, true, -1);
+                if (candidate.Village == null || candidate.Entry == null) break;
+                FiefTroopAdmissionResult admission = TryAddFeudalTroops(
+                    candidate.Village.VillageSettlement,
+                    candidate.Entry.Troop, 1,
+                    FiefTroopAdmissionDestination.Ready);
+                if (admission.AddedCount <= 0)
+                {
+                    targets.Remove(candidate.Village);
+                    continue;
+                }
                 FiefTroopProductionResult entry = produced.FirstOrDefault(
-                    item => item.Village == target.VillageSettlement &&
-                        item.Troop == kvp.Key);
+                    item => item.Village == candidate.Village.VillageSettlement &&
+                        item.Troop == candidate.Entry.Troop);
                 if (entry == null)
                     produced.Add(new FiefTroopProductionResult(
-                        target.VillageSettlement, kvp.Key, 1));
+                        candidate.Village.VillageSettlement,
+                        candidate.Entry.Troop, admission.AddedCount));
                 else entry.Add(1);
-                recruited++;
+                recruited += admission.AddedCount;
             }
             SyncManpowerCounters();
 
@@ -487,6 +463,10 @@ namespace ModifiedArmy.Models.Fief
             int upgradedCount = 0;
             var upgraded = new Dictionary<
                 (CharacterObject From, CharacterObject To), int>();
+            var skipped = new Dictionary<string, int>(StringComparer.Ordinal);
+            void RecordSkip(string reason) => skipped[reason] =
+                skipped.TryGetValue(reason, out int current)
+                    ? current + 1 : 1;
 
             foreach (VillageFiefData village in OrderedVillages(null))
             {
@@ -536,20 +516,49 @@ namespace ModifiedArmy.Models.Fief
                         {
                             delta = doctrine.GetFeudalSupplyCost(newTroop) -
                                 doctrine.GetFeudalSupplyCost(troop);
+                            if (!_fiefPartyTemplate.TryGetSupplyBranch(troop,
+                                    out var oldBranch) ||
+                                !_fiefPartyTemplate.TryGetSupplyBranch(newTroop,
+                                    out var newBranch) || oldBranch != newBranch)
+                            {
+                                RecordSkip("BranchMismatch");
+                                continue;
+                            }
+                            if (delta > 0 && village
+                                .GetSupplyBranchRemainingHearth(
+                                    _fiefPartyTemplate, doctrine,
+                                    oldBranch) < delta)
+                            {
+                                RecordSkip("BranchHearthInsufficient");
+                                continue;
+                            }
                             if (delta > 0 &&
                                 (village.GetFreeSupplyHearth(
-                                    _fiefPartyTemplate, doctrine) < delta ||
+                                     _fiefPartyTemplate, doctrine) < delta ||
                                  village.GetFeudalBudgetRemainingHearth(
-                                    _fiefPartyTemplate, doctrine) < delta))
+                                     _fiefPartyTemplate, doctrine) < delta))
+                            {
+                                RecordSkip("TotalHearthInsufficient");
                                 continue;
+                            }
                         }
                         catch (Exception exception)
                         {
-                            ModLogger.Error(string.Format(
-                                "Fief upgrade rejected: village={0}, from={1}, to={2}, reason={3}.",
-                                village.VillageSettlement?.StringId ?? "unknown",
-                                troop.StringId, newTroop.StringId,
-                                exception.Message));
+                            RecordSkip("SupplyCheckException");
+                            if (RecruitmentLogFilter.ShouldLog(
+                                    _settlement?.OwnerClan))
+                            {
+                                TextObject error = GameTexts.FindText(
+                                    "str_modifiedarmy_fief_upgrade_error");
+                                error.SetTextVariable("VILLAGE_NAME",
+                                    village.VillageSettlement.Name);
+                                error.SetTextVariable("FROM_NAME", troop.Name);
+                                error.SetTextVariable("TO_NAME",
+                                    newTroop.Name);
+                                error.SetTextVariable("EXCEPTION",
+                                    exception.GetType().Name);
+                                ModLogger.Error(error.ToString());
+                            }
                             continue;
                         }
 
@@ -567,13 +576,27 @@ namespace ModifiedArmy.Models.Fief
               }
             }
 
-            if (upgradedCount > 0)
+            if (upgradedCount > 0 && RecruitmentLogFilter.ShouldLog(
+                    _settlement?.OwnerClan))
             {
                 TextObject message = GameTexts.FindText(
                     "str_modifiedarmy_fief_auto_upgrade");
                 message.SetTextVariable("MANIFEST",
                     FormatUpgradeManifest(upgraded));
                 ModLogger.Debug(message.ToString());
+            }
+            if (skipped.Count > 0 && RecruitmentLogFilter.ShouldLog(
+                    _settlement?.OwnerClan))
+            {
+                TextObject summary = GameTexts.FindText(
+                    "str_modifiedarmy_fief_upgrade_skipped");
+                summary.SetTextVariable("FIEF_NAME", _settlement.Name);
+                summary.SetTextVariable("COUNT", skipped.Values.Sum());
+                summary.SetTextVariable("REASONS", string.Join(
+                    GameTexts.FindText("str_modifiedarmy_log_list_separator")
+                        .ToString(), skipped.OrderBy(pair => pair.Key)
+                        .Select(pair => pair.Key + "=" + pair.Value)));
+                ModLogger.Debug(summary.ToString());
             }
         }
 

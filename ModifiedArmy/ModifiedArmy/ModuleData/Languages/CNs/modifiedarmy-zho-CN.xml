@@ -14,6 +14,14 @@
     <string id="FiefPartyData_WeeklyUpdate_0" text="[封邑兵生产] {SETTLEMENT_NAME}实际产出{MANIFEST}。登记兵力={TROOP_COUNT}，总供养占用={OCCUPIED_HEARTH}/{FEUDAL_BUDGET_HEARTH}。村庄明细：{VILLAGE_DETAILS}。" />
     <string id="ModifiedArmy_FiefProductionVillageDetail" text="{VILLAGE_NAME}（{VILLAGE_ID}）：产出={PRODUCED} [{MANIFEST}]，有效Hearth={EFFECTIVE_HEARTH}，占用前={OCCUPIED_BEFORE}，占用后={OCCUPIED_AFTER}，预算={BUDGET}，剩余={REMAINING}，恢复冻结={RECOVERY}" />
     <string id="ModifiedArmy_FiefProductionNoCommit" text="[封邑兵生产] 封邑={SETTLEMENT_ID}，批准={APPROVED}，实际产出=0，原因={REASON}。" />
+    <string id="ModifiedArmy_FiefSupplyQuotaDaily" text="[封建供养] 隶属于{FIEF_NAME}的{VILLAGE_NAME}今日有{EFFECTIVE_HEARTH}点有效Hearth，其中{FEUDAL_BUDGET}点分配给封建兵。各兵种分配如下：{BRANCHES}。" />
+    <string id="ModifiedArmy_FiefSupplyQuotaEntry" text="{TROOP_NAME}：权重{WEIGHT}，配额{QUOTA}，当前占用{OCCUPIED}，尚可使用{REMAINING}" />
+    <string id="ModifiedArmy_FiefAdmissionResult" text="[封建供养] {FIEF_NAME}的{VILLAGE_NAME}尝试将{REQUESTED}名{TROOP_NAME}加入{DESTINATION}，实际接收{ACCEPTED}名。{BRANCH_NAME}分支配额为{QUOTA}，当前占用{OCCUPIED}，每人需要{UNIT_COST}点Hearth，目前最多可接收{CAPACITY}名。结果代码：{REASON_CODE}。" />
+    <string id="ModifiedArmy_FiefAdmissionReady" text="待役队列" />
+    <string id="ModifiedArmy_FiefAdmissionCooling" text="返乡冷却队列" />
+    <string id="ModifiedArmy_FiefSupplyBranchAmbiguous" text="[封建供养] {TROOP_NAME}同时可以从{FIRST_ROOT_NAME}和{SECOND_ROOT_NAME}升级得到。修正模板{TEMPLATE_ID}前，该兵种不能新增或升级。诊断兵种ID：{TROOP_ID}。" />
+    <string id="ModifiedArmy_FiefUpgradeSkipped" text="[封建兵升级] {FIEF_NAME}本周有{COUNT}次可能的升级因供养检查未通过而保持原兵种。明细：{REASONS}。" />
+    <string id="ModifiedArmy_FiefUpgradeError" text="[封建兵升级] {VILLAGE_NAME}检查{FROM_NAME}升级为{TO_NAME}的供养成本时遇到异常。异常类型：{EXCEPTION}。" />
     <string id="ModifiedArmy_ForceDiagGarrisonCandidate" text="[AI Party驻军征调候选] {SETTLEMENT_NAME}城内驻军{RESIDENT}人，外出征粮护卫预留{RESERVED}人，有效守军{EFFECTIVE}人。驻军警戒下限为{MINIMUM}人，本次征调的绝对留守底线为{HARD_FLOOR}人；SAFE={SAFE}按绝对底线计算，不直接按警戒线计算。在役封邑兵保护{PROTECTED}人，普通士兵候选{OFFERED}人；{PARTY_NAME}仍缺{GAP}人，本次招募审批{APPROVED}人。" />
     <string id="ModifiedArmy_FiefAutoUpgrade" text="[士兵升级] {MANIFEST}。" />
     <string id="ModifiedArmy_FiefAutoUpgradeEntry" text="{COUNT}名{FROM_NAME}升级为{TO_NAME}" />
@@ -444,6 +452,8 @@
     <string id="ModifiedArmy_FiefBatch_ServiceRemaining" text="{PARTY} · 剩余服役时间 {DAYS} 天" />
     <string id="ModifiedArmy_FiefBatch_Cooling" text="剩余 {WEEKS} 周" />
     <string id="ModifiedArmy_FiefBatch_CoolingPending" text="待处理（0 周）" />
+    <string id="ModifiedArmy_FiefManagement_VillageLabel" text="村庄：" />
+    <string id="ModifiedArmy_FiefManagement_TypeLabel" text="类型：" />
     <string id="MP_ArmyEligibilityModelPrefix" text="[军事优化][军团创建资格模型]" />
     <string id="MP_ArmyEligibilityFieldMap" text="phase=阶段|traceId=追踪编号|model=模型|kingdom=王国|hero=英雄|party=部队|candidate=候选部队|leader=领队|clan=家族|result=结果|reasonCode=原因码|influence=影响力|foodDays=粮食天数|threshold=阈值|partyRatio=部队规模比例|distance=距离|maximum=最大值|influenceCost=影响力成本|estimatedStrength=预估战力|score=评分|candidateCountBeforeStrengthCheck=战力检查前候选数|leaderSiegeStrength=领队攻城战力|candidatesSiegeStrength=候选攻城战力|totalSiegeStrength=总攻城战力|strengthThreshold=战力阈值|candidatesBeforeClear=清空前候选数|candidatesReturned=返回候选数|eligibleBeforeSort=排序前合格数|kingdomWarPartyCount=王国战团数|existingArmyPartyCount=现有军团部队数|maxNewMembers=最大新增成员数|afterTruncationCount=截断后数量|removedCandidateIds=被移除候选|sortedCandidates=升序候选|omitted=省略数|omittedCandidateDetails=省略候选明细数" />
   </strings>

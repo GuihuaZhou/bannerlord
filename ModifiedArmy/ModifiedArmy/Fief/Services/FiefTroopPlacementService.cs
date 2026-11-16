@@ -1,5 +1,9 @@
+// Feudal troop placement domain. Reconciled, previously unregistered party
+// troops enter village cooling only through the shared live admission API;
+// normal registered home returns retain their established state transition.
 using ModifiedArmy.common;
 using ModifiedArmy.Recruitment.Diagnostics;
+using ModifiedArmy.Recruitment.Pools.Models;
 using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
@@ -36,7 +40,8 @@ namespace ModifiedArmy.Models.Fief
 
     /// <summary>
     /// Places reconciled surplus feudal troops into existing village cooling
-    /// queues. It never changes Hearth, mobilization, or service identities.
+    /// queues. New unregistered placements create supply obligations through
+    /// FiefPartyData admission; registered home returns use the return workflow.
     /// </summary>
     internal static class FiefTroopPlacementService
     {
@@ -51,6 +56,7 @@ namespace ModifiedArmy.Models.Fief
             public VillageFiefData Village;
             public Dictionary<CharacterObject, PlacementAmount> Troops = new();
             public int PlannedHearth;
+            public Dictionary<TroopProductionEntry, int> PlannedByBranch = new();
         }
 
         internal static FiefPlacementResult TryPlaceAfterReturn(
@@ -130,6 +136,7 @@ namespace ModifiedArmy.Models.Fief
             {
                 CharacterObject troop = pair.Key;
                 if (!template.IsEnableTroop(troop) ||
+                    !template.TryGetSupplyBranch(troop, out var branch) ||
                     !doctrine.TryGetFeudalSupplyCost(troop, out int cost) ||
                     cost <= 0) continue;
                 int approved = Math.Min(pair.Value.Total, remainingLimit);
@@ -140,7 +147,7 @@ namespace ModifiedArmy.Models.Fief
                 {
                     VillagePlan selected = plans
                         .Where(plan => CanPlanOne(plan, template, doctrine,
-                            troop, cost))
+                            troop, branch, cost))
                         .OrderByDescending(plan => EffectiveRemaining(
                             plan, template, doctrine))
                         .ThenBy(plan => plan.Village.VillageSettlement.StringId,
@@ -157,6 +164,9 @@ namespace ModifiedArmy.Models.Fief
                     if (wounded) amount.Wounded++;
                     selected.PlannedHearth = checked(
                         selected.PlannedHearth + cost);
+                    selected.PlannedByBranch[branch] = checked(
+                        (selected.PlannedByBranch.TryGetValue(branch,
+                            out int planned) ? planned : 0) + cost);
                     remainingLimit--;
                     if (remainingLimit <= 0) break;
                 }
@@ -408,37 +418,25 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
-            int cooldown = Math.Max(0, doctrine.Service.ReturnCooldownWeeks);
-            FiefReturnBatch cooling = plan.Village.ReturnBatches
-                .FirstOrDefault(batch => batch != null &&
-                    batch.WaitWeeks == cooldown);
-            bool created = cooling == null;
-            if (created) cooling = new FiefReturnBatch(cooldown);
             int requested = plan.Troops.Values.Sum(value => value.Count);
             int partyBefore = plan.Troops.Keys.Sum(troop =>
                 party.MemberRoster.GetTroopCount(troop));
-            int coolingBefore = cooling.GetTotalCount();
-            if (created) plan.Village.ReturnBatches.Add(cooling);
+            int coolingBefore = plan.Village.GetCoolingFiefTroopCount(template);
+            int written = 0;
             foreach (var pair in plan.Troops.OrderBy(item =>
                 item.Key.StringId, StringComparer.Ordinal))
             {
-                int accepted = cooling.AddTroops(
-                    new Dictionary<CharacterObject, int>
-                {
-                    [pair.Key] = pair.Value.Count
-                });
-                if (accepted <= 0) continue;
-
-                party.MemberRoster.AddToCounts(pair.Key,
-                    -accepted, false,
-                    -Math.Min(pair.Value.Wounded, accepted),
-                    0, true, -1);
+                FiefTroopAdmissionResult admission = liveScope.FiefData
+                    .TryAddFeudalTroops(plan.Village.VillageSettlement,
+                        pair.Key, pair.Value.Count,
+                        FiefTroopAdmissionDestination.Cooling, party,
+                        pair.Value.Wounded);
+                written += admission.AddedCount;
             }
 
             int partyAfter = plan.Troops.Keys.Sum(troop =>
                 party.MemberRoster.GetTroopCount(troop));
-            int coolingAfter = cooling.GetTotalCount();
-            int written = Math.Max(0, coolingAfter - coolingBefore);
+            int coolingAfter = plan.Village.GetCoolingFiefTroopCount(template);
             bool countsMatch = written == requested &&
                 partyBefore - partyAfter == written &&
                 coolingAfter - coolingBefore == written;
@@ -480,9 +478,12 @@ namespace ModifiedArmy.Models.Fief
 
         private static bool CanPlanOne(VillagePlan plan,
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine,
-            CharacterObject troop, int cost) =>
+            CharacterObject troop, TroopProductionEntry branch, int cost) =>
             plan.Village.CanIncreaseSupply(template, doctrine, troop, 1) &&
-            EffectiveRemaining(plan, template, doctrine) >= cost;
+            EffectiveRemaining(plan, template, doctrine) >= cost &&
+            plan.Village.GetSupplyBranchRemainingHearth(template, doctrine,
+                branch) - (plan.PlannedByBranch.TryGetValue(branch,
+                    out int planned) ? planned : 0) >= cost;
 
         private static int EffectiveRemaining(VillagePlan plan,
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine) =>

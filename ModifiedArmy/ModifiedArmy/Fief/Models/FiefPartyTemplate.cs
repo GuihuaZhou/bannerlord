@@ -1,8 +1,12 @@
+// Feudal template domain. XML roots define immutable supply branches while
+// CharacterObject upgrade trees provide runtime membership; ambiguous trees
+// are rejected rather than inventing historical soldier origins.
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Recruitment.Pools.Models;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Xml;
 using TaleWorlds.CampaignSystem;
@@ -40,6 +44,9 @@ namespace ModifiedArmy.Models.Fief
         /// 所有基础兵种
         /// </summary>
         private readonly HashSet<CharacterObject> _allEnableTroops = new();
+        private readonly Dictionary<CharacterObject, TroopProductionEntry>
+            _supplyBranches = new();
+        private readonly HashSet<CharacterObject> _ambiguousSupplyTroops = new();
 
         public CultureObject culture { get; private set; }
 
@@ -53,6 +60,24 @@ namespace ModifiedArmy.Models.Fief
         {
             return troop != null && _allEnableTroops.Contains(troop);
         }
+
+        /// <summary>
+        /// Resolves a troop to its unique positive-weight XML root. A troop
+        /// reachable from multiple roots is deliberately rejected because its
+        /// historical supply branch cannot be inferred from its current type.
+        /// </summary>
+        public bool TryGetSupplyBranch(CharacterObject troop,
+            out TroopProductionEntry branch)
+        {
+            branch = null;
+            return troop != null && !_ambiguousSupplyTroops.Contains(troop) &&
+                _supplyBranches.TryGetValue(troop, out branch);
+        }
+
+        /// <summary>Positive-weight XML roots in configured template order.</summary>
+        public IReadOnlyList<TroopProductionEntry> SupplyBranches =>
+            _troopEntries.Where(entry => entry?.Troop != null &&
+                entry.Weight > 0).ToList();
 
         /// <summary>
         /// 递归获取兵种升级树上的全部士兵
@@ -129,9 +154,49 @@ namespace ModifiedArmy.Models.Fief
         /// 
         public void InitAllEnableTroops()
         {
-            // 遍历士兵升级树，获取所有使能的士兵
+            _allEnableTroops.Clear();
+            _supplyBranches.Clear();
+            _ambiguousSupplyTroops.Clear();
             foreach (TroopProductionEntry entry in _troopEntries)
+            {
                 AddUpgradeTree(entry.Troop);
+                if (entry?.Troop == null || entry.Weight <= 0) continue;
+                RegisterSupplyTree(entry.Troop, entry,
+                    new HashSet<CharacterObject>());
+            }
+        }
+
+        /// <summary>
+        /// Assigns one upgrade tree to one XML root. Cross-root reachability is
+        /// reported once and removed from admission eligibility.
+        /// </summary>
+        private void RegisterSupplyTree(CharacterObject troop,
+            TroopProductionEntry root, HashSet<CharacterObject> visited)
+        {
+            if (troop == null || !visited.Add(troop)) return;
+            if (_supplyBranches.TryGetValue(troop,
+                    out TroopProductionEntry existing) && existing != root)
+            {
+                _supplyBranches.Remove(troop);
+                if (_ambiguousSupplyTroops.Add(troop))
+                {
+                    TextObject message = GameTexts.FindText(
+                        "str_modifiedarmy_fief_supply_branch_ambiguous");
+                    message.SetTextVariable("TROOP_NAME", troop.Name);
+                    message.SetTextVariable("FIRST_ROOT_NAME",
+                        existing.Troop.Name);
+                    message.SetTextVariable("SECOND_ROOT_NAME",
+                        root.Troop.Name);
+                    message.SetTextVariable("TEMPLATE_ID", TemplateId);
+                    message.SetTextVariable("TROOP_ID", troop.StringId);
+                    ModLogger.Error(message.ToString());
+                }
+            }
+            else if (!_ambiguousSupplyTroops.Contains(troop))
+                _supplyBranches[troop] = root;
+            foreach (CharacterObject target in troop.UpgradeTargets ??
+                Array.Empty<CharacterObject>())
+                RegisterSupplyTree(target, root, visited);
         }
     }
 

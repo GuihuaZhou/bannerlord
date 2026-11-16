@@ -1,3 +1,6 @@
+// Feudal economy lifecycle. This partial owns daily quota refresh scheduling
+// and established prosperity/Hearth mutations; quota snapshots are derived and
+// do not alter save contracts or population transaction ownership.
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.common;
@@ -62,18 +65,23 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// 每天调用一次，处理封邑军队征召期间的每日 Prosperity 损失。
+        /// 每天调用一次，建立各村庄当天唯一的兵种 Hearth 配额快照。
         ///
         /// 规则：
-        /// - Only counts soldiers in the current service batches.
-        /// - 玩家和 AI 暂时使用相同的每日损失。
-        /// - Prosperity 可以产生小数。
-        /// - Hearth 不受 Daily Debuff 影响。
+        /// - 先从最新有效 Hearth 计算封建兵总预算，再按 XML 权重分配。
+        /// - 当日重复查询不会重新分配；下一日或读档修复后重建。
+        /// - 不写入存档，也不改变人口资源的权威所有者。
         /// </summary>
         public void DailyUpdate()
         {
             // Mobilization now affects village production capacity instead of
             // applying a second, unrelated prosperity penalty every day.
+            if (!IsRuntimeReady || _fiefPartyTemplate == null) return;
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            foreach (VillageFiefData village in OrderedVillages())
+                village.RefreshDailySupplyBranchQuotas(
+                    _fiefPartyTemplate, doctrine);
         }
 
         /// <summary>

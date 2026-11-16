@@ -58,6 +58,22 @@
         text="{=ModifiedArmy_FiefProductionVillageDetail}{VILLAGE_NAME} ({VILLAGE_ID}): produced={PRODUCED} [{MANIFEST}], effectiveHearth={EFFECTIVE_HEARTH}, occupiedBefore={OCCUPIED_BEFORE}, occupiedAfter={OCCUPIED_AFTER}, budget={BUDGET}, remaining={REMAINING}, recovery={RECOVERY}" />
     <string id="str_modifiedarmy_fief_production_no_commit"
         text="{=ModifiedArmy_FiefProductionNoCommit}[Fief production] fief={SETTLEMENT_ID}, approved={APPROVED}, produced=0, reason={REASON}." />
+    <string id="str_modifiedarmy_fief_supply_quota_daily"
+        text="{=ModifiedArmy_FiefSupplyQuotaDaily}[Feudal supply] {VILLAGE_NAME}, attached to {FIEF_NAME}, has {EFFECTIVE_HEARTH} effective Hearth today. {FEUDAL_BUDGET} Hearth is assigned to feudal troops: {BRANCHES}." />
+    <string id="str_modifiedarmy_fief_supply_quota_entry"
+        text="{=ModifiedArmy_FiefSupplyQuotaEntry}{TROOP_NAME}: weight {WEIGHT}, quota {QUOTA}, currently used {OCCUPIED}, available {REMAINING}" />
+    <string id="str_modifiedarmy_fief_admission_result"
+        text="{=ModifiedArmy_FiefAdmissionResult}[Feudal supply] {VILLAGE_NAME} in {FIEF_NAME} considered adding {REQUESTED} {TROOP_NAME} to {DESTINATION}, and accepted {ACCEPTED}. The {BRANCH_NAME} branch has quota {QUOTA}, currently uses {OCCUPIED}, unit cost {UNIT_COST}, and can accept {CAPACITY}. Result: {REASON_CODE}." />
+    <string id="str_modifiedarmy_fief_admission_ready"
+        text="{=ModifiedArmy_FiefAdmissionReady}the ready roster" />
+    <string id="str_modifiedarmy_fief_admission_cooling"
+        text="{=ModifiedArmy_FiefAdmissionCooling}the returning roster" />
+    <string id="str_modifiedarmy_fief_supply_branch_ambiguous"
+        text="{=ModifiedArmy_FiefSupplyBranchAmbiguous}[Feudal supply] {TROOP_NAME} can be reached from both {FIRST_ROOT_NAME} and {SECOND_ROOT_NAME}. New admission and upgrades for this troop are disabled until template {TEMPLATE_ID} is corrected. Diagnostic troop ID: {TROOP_ID}." />
+    <string id="str_modifiedarmy_fief_upgrade_skipped"
+        text="{=ModifiedArmy_FiefUpgradeSkipped}[Feudal upgrade] {FIEF_NAME} left {COUNT} possible upgrades unchanged this week because their supply checks did not pass. Details: {REASONS}." />
+    <string id="str_modifiedarmy_fief_upgrade_error"
+        text="{=ModifiedArmy_FiefUpgradeError}[Feudal upgrade] {VILLAGE_NAME} could not check the supply cost for upgrading {FROM_NAME} to {TO_NAME}. Exception: {EXCEPTION}." />
     <string id="str_modifiedarmy_fief_auto_upgrade"
         text="{=ModifiedArmy_FiefAutoUpgrade}[Soldier upgrade] {MANIFEST}." />
     <string id="str_modifiedarmy_fief_auto_upgrade_entry"
@@ -527,4 +543,6 @@
     <string id="str_modifiedarmy_fief_batch_service_remaining" text="{=ModifiedArmy_FiefBatch_ServiceRemaining}{PARTY} · service time remaining: {DAYS} days" />
     <string id="str_modifiedarmy_fief_batch_cooling" text="{=ModifiedArmy_FiefBatch_Cooling}{WEEKS} weeks remaining" />
     <string id="str_modifiedarmy_fief_batch_cooling_pending" text="{=ModifiedArmy_FiefBatch_CoolingPending}Pending (0 weeks)" />
+    <string id="str_modifiedarmy_fief_management_village_label" text="{=ModifiedArmy_FiefManagement_VillageLabel}Village:" />
+    <string id="str_modifiedarmy_fief_management_type_label" text="{=ModifiedArmy_FiefManagement_TypeLabel}Type:" />
 </strings>

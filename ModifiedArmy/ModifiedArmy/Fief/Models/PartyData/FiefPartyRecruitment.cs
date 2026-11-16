@@ -1661,8 +1661,10 @@ namespace ModifiedArmy.Models.Fief
                     v.CanIncreaseSupply(_fiefPartyTemplate, doctrine,
                         troop, count));
             if (target == null) return false;
-            target.GetReadyRoster().AddToCounts(
-                troop, count, false, 0, 0, true, -1);
+            FiefTroopAdmissionResult admission = TryAddFeudalTroops(
+                target.VillageSettlement, troop, count,
+                FiefTroopAdmissionDestination.Ready);
+            if (admission.AddedCount != count) return false;
 
             // 消耗的繁荣度
             float prosperityCost = 0;
