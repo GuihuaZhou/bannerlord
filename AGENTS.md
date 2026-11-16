@@ -33,7 +33,7 @@ Before any repository edit or code audit:
 
 - Preserve existing `SaveableTypeDefiner` IDs, registered class IDs, field/property IDs, `SyncData` keys, record formats and serialized type identities unless an explicit, tested migration is approved.
 - Preserve troop counts (including wounded), source ownership, fief service batches, Hearth, goods, money, recruitment budgets and cooldowns across operations, failures and reloads. No silent duplication/loss.
-- Persistent transaction identity and failure recovery must survive save/load. `RecoveryRequired` freezes the affected domain until explicitly reconciled; merely cancelling or rescheduling a task is not recovery.
+- Do not introduce rollback, compensation, or domain-freeze behavior by default. If a concrete failure scenario appears to require any of them, explain the trigger, affected state, data-loss risk, and alternatives to the user, then proceed only after the user confirms the intended handling.
 - Harmony target, Prefix/Postfix return semantics and subscription uniqueness are compatibility contracts. Verify native execution is neither accidentally skipped nor doubled.
 - Do not silently change military doctrine, AI planning scores, recruitment odds, economic formulae, XML data, localization keys, logging levels or user-facing gameplay during an architecture-only change.
 - Never casually change `Main.cs` startup/new-game rewards, historical SaveId 8/9 compatibility or retired reinforcement loading behavior. Inspect these boundaries before touching them.
@@ -41,7 +41,7 @@ Before any repository edit or code audit:
 ## 5. Implementation and verification contract
 
 - Use narrow changes. For architecture work, separate mechanical extraction from behavior/rule changes; fix unrelated defects in a separately described task.
-- Before editing a resource-mutating path, record its preconditions, authoritative owner, mutation sequence, rollback/compensation sequence and downstream events. Treat callbacks/events as potentially throwing.
+- Before editing a resource-mutating path, record its preconditions, authoritative owner, mutation sequence and downstream events. Treat callbacks/events as potentially throwing.
 - After editing, inspect `git diff`, run applicable builds/static checks and report **observed** results: `PASS`, `FAIL`, or `BLOCKED` (with reason). A compile pass is not a runtime or save-compatibility pass.
 - For ModifiedArmy, prefer existing `ModifiedArmy/tools/Invoke-ReleaseValidation.ps1`, `Test-ArchitectureReleaseGate.ps1`, and `Test-RuntimeAcceptanceEvidence.ps1` when available and applicable. Inspect script parameters before running; the full T01–T24 runtime matrix still requires game/save evidence.
 - Record relevant file paths, tests, risks, any unverified constraints, and the final HEAD SHA in the handoff. Do not announce complete acceptance if required critical tests remain `BLOCKED`.
@@ -54,7 +54,7 @@ Read `ModifiedArmy/AGENTS.md` and `ModifiedArmy/CODE_ORGANIZATION_RULES.md` befo
 
 ## 7. Diagnostic logging and localization
 
-- Add enough structured diagnostics to reconstruct important decisions, state transitions, transaction boundaries, rejection reasons and recovery outcomes. Log identifiers and before/after values that help isolate faults, but never let logging perform or repeat business mutations.
+- Add enough structured diagnostics to reconstruct important decisions, state transitions, transaction boundaries and rejection reasons. Log identifiers and before/after values that help isolate faults, but never let logging perform or repeat business mutations.
 - Choose severity deliberately: `Debug` for high-frequency probes and detailed scoring, `Info` for successful routine lifecycle transitions, `Notice` for important player-relevant outcomes, `Warn` for rejected operations, conflicts and recoverable degradation, and `Error` for exceptions or states that require intervention. Do not promote routine events merely to make them visible.
 - Prevent log flooding. High-frequency or per-party diagnostics should normally be restricted to the player's current kingdom by the module's shared log filter. Global summaries are acceptable when emitted once per lifecycle boundary and when they do not enumerate the whole map.
 - Author base log text and technical reason codes in English. Every player-visible or screen-eligible message must use the localization system and provide the required Chinese translation; do not hardcode Chinese in C# or concatenate unlocalizable player-facing sentences.
@@ -65,8 +65,8 @@ Read `ModifiedArmy/AGENTS.md` and `ModifiedArmy/CODE_ORGANIZATION_RULES.md` befo
 ## 8. Code comments and documentation
 
 - New or materially refactored runtime files must start with a concise file-level comment describing the business domain, authoritative state owner, and important integration or compatibility boundaries.
-- Add function-level XML documentation to public/internal business APIs and to private methods whose transaction, persistence, AI, Harmony, or recovery semantics are not obvious from the signature.
-- Comments must explain intent, invariants, mutation order, failure/compensation behavior, dynamic game-model assumptions, and save compatibility where relevant. Do not merely restate the code or add noisy comments to trivial accessors.
+- Add function-level XML documentation to public/internal business APIs and to private methods whose transaction, persistence, AI, or Harmony semantics are not obvious from the signature.
+- Comments must explain intent, invariants, mutation order, failure behavior, dynamic game-model assumptions, and save compatibility where relevant. Do not merely restate the code or add noisy comments to trivial accessors.
 - When changing an existing complex workflow, update nearby comments so they describe the active implementation rather than historical behavior.
 
 ## 9. Local build and deployment script
