@@ -162,16 +162,12 @@ namespace ModifiedArmy.Population.Patches
 
         private static void Compensate(Reservation item, string reason)
         {
-            PopulationTransactionResult result =
-                SettlementPopulationServiceRegistry.Current?.TryCompensate(
-                    item.Settlement, item.OperationId);
             ModLogger.FileError(string.Format(
-                "Recruitment screen population compensated: settlement={0}, " +
+                "Recruitment screen population mismatch kept for forward reconciliation: settlement={0}, " +
                 "settlementId={1}, troop={2}, count={3}, operationId={4}, " +
-                "reason={5}, status={6}, compensationReason={7}.",
+                "reason={5}.",
                 item.Settlement.Name, item.Settlement.StringId,
-                item.Troop.Name, item.Count, item.OperationId, reason,
-                result?.Status, result?.ReasonCode ?? "none"));
+                item.Troop.Name, item.Count, item.OperationId, reason));
         }
     }
 }

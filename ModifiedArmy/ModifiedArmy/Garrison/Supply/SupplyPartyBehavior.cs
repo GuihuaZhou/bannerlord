@@ -179,9 +179,7 @@ namespace ModifiedArmy.Garrison.Supply
             }
             catch (Exception exception)
             {
-                Cargo.RollbackDeparture(source, garrison, party, escort,
-                    packAnimals.Purchased, packAnimals.GoldCost,
-                    LogSupplyEscortCapacity);
+                PreserveFailedDeparture(source, garrison, party, escort);
                 ModLogger.Error("Supply aid creation failed: " +
                     exception.Message);
                 return null;
@@ -1017,9 +1015,8 @@ namespace ModifiedArmy.Garrison.Supply
                 LogProvisionPlan(home, source.Settlement, provisionPlan);
                 if (!provisionPlan.CanDepart)
                 {
-                    RollbackSupplyDeparture(home, garrison, supplyParty,
-                        escortRoster, packAnimals.Purchased,
-                        packAnimals.GoldCost);
+                    PreserveFailedDeparture(home, garrison, supplyParty,
+                        escortRoster);
                     SetDispatchCooldown(home, 1f);
                     LogProvisionRejected(home, source.Settlement,
                         provisionPlan);
@@ -1030,9 +1027,8 @@ namespace ModifiedArmy.Garrison.Supply
             }
             catch (Exception exception)
             {
-                RollbackSupplyDeparture(home, garrison, supplyParty,
-                    escortRoster, packAnimals.Purchased,
-                    packAnimals.GoldCost);
+                PreserveFailedDeparture(home, garrison, supplyParty,
+                    escortRoster);
                 SetDispatchCooldown(home, 1f);
                 TextObject message = GameTexts.FindText(
                     "str_modifiedarmy_supply_party_creation_failed");

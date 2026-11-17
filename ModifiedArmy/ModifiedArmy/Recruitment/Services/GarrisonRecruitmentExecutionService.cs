@@ -1,6 +1,6 @@
 // Executes approved garrison recruitment candidates. Population affordability,
-// roster capacity, clan budget, and compensation remain separate gates so a
-// failure cannot silently consume Hearth, gold, or an offer twice.
+// roster capacity, and clan finance are validated before each small commit.
+// Once a source or roster mutation succeeds it is retained and reported.
 using System;
 using ModifiedArmy.Garrison.Models;
 using ModifiedArmy.Recruitment.Finance;
@@ -133,15 +133,13 @@ namespace ModifiedArmy.Recruitment.Services
                     }
                 }
 
-                ProfessionalRecruitmentCommit professionalCommit = null;
-                PrisonerRecruitmentCommit prisonerCommit = null;
                 try
                 {
                     if (evaluation.Source == RecruitmentSource.ProfessionalProduction)
                     {
                         if (!ProfessionalRecruitmentService.TryCommit(
                             settlement, garrison, evaluation.Troop, count, pools,
-                            out professionalCommit, out string commitReason))
+                            out _, out string commitReason))
                         {
                             result.Reject("SourceCommit", commitReason);
                             continue;
@@ -151,15 +149,14 @@ namespace ModifiedArmy.Recruitment.Services
                     {
                         if (!PrisonerGarrisonRecruitmentService.TryCommit(
                             settlement, garrison, evaluation, count,
-                            out int committed, out prisonerCommit)) continue;
+                            out int committed, out _)) continue;
                         count = committed;
                     }
                     else continue;
                 }
                 catch (Exception exception)
                 {
-                    result.FailureReason = "SourceCommitRecoveryRequired";
-                    result.RecoveryRequired = true;
+                    result.FailureReason = "SourceCommitFailed";
                     TextObject sourceFailure = GameTexts.FindText(
                         "str_modifiedarmy_garrison_order_source_failure");
                     sourceFailure.SetTextVariable("OPERATION_ID", result.OperationId);
@@ -168,17 +165,11 @@ namespace ModifiedArmy.Recruitment.Services
                     sourceFailure.SetTextVariable("COUNT", count);
                     sourceFailure.SetTextVariable("ERROR", exception.ToString());
                     ModLogger.Error(sourceFailure.ToString());
-                    break;
+                    continue;
                 }
 
                 result.OfferConsumed = true;
                 result.RosterChanged = true;
-                ClanRecruitmentBudgetSnapshot budget =
-                    ClanRecruitmentBudgetManager.GetSnapshot(
-                        settlement.OwnerClan);
-                float purchaseBefore = budget.RemainingPurchaseBudget;
-                float commitmentBefore = budget.RemainingCommitmentBudget;
-                int expenseBefore = settlement.OwnerClan.AutoRecruitmentExpenses;
                 try
                 {
                     settlement.OwnerClan.AutoRecruitmentExpenses +=
@@ -191,17 +182,7 @@ namespace ModifiedArmy.Recruitment.Services
                 }
                 catch (Exception exception)
                 {
-                    settlement.OwnerClan.AutoRecruitmentExpenses = expenseBefore;
-                    ClanRecruitmentBudgetManager.RestoreRemainingBudget(
-                        budget, purchaseBefore, commitmentBefore);
-                    Exception rollbackFailure;
-                    bool rolledBack = professionalCommit != null
-                        ? ProfessionalRecruitmentService.TryRollback(
-                            professionalCommit, pools, out rollbackFailure)
-                        : PrisonerGarrisonRecruitmentService.TryRollback(
-                            prisonerCommit, out rollbackFailure);
                     result.FailureReason = "FinanceCommitFailed";
-                    result.RecoveryRequired = !rolledBack;
                     TextObject financeFailure = GameTexts.FindText(
                         "str_modifiedarmy_garrison_order_finance_failure");
                     financeFailure.SetTextVariable("OPERATION_ID", result.OperationId);
@@ -209,15 +190,11 @@ namespace ModifiedArmy.Recruitment.Services
                     financeFailure.SetTextVariable("TROOP_ID", evaluation.Troop.StringId ?? "");
                     financeFailure.SetTextVariable("COUNT", count);
                     financeFailure.SetTextVariable("ROLLBACK", GameTexts.FindText(
-                        rolledBack
-                            ? "str_modifiedarmy_common_yes"
-                            : "str_modifiedarmy_common_no"));
+                        "str_modifiedarmy_common_no"));
                     financeFailure.SetTextVariable("ERROR", exception.ToString());
                     financeFailure.SetTextVariable("ROLLBACK_ERROR",
-                        rollbackFailure?.ToString() ?? "None");
+                        "DisabledByForwardOnlyPolicy");
                     ModLogger.Error(financeFailure.ToString());
-                    if (result.RecoveryRequired) break;
-                    continue;
                 }
 
                 if (evaluation.Source == RecruitmentSource.ProfessionalProduction)

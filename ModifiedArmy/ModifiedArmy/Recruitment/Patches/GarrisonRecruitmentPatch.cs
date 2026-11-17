@@ -69,29 +69,21 @@ namespace ModifiedArmy.Recruitment.Patches
                     population.TryRecruitProfessional(settlement, troop,
                         approved, operationId);
                 if (!result.IsCommitted) return false;
-                try
-                {
-                    if (town.GarrisonParty == null)
-                        town.Owner.Settlement.AddGarrisonParty();
-                    town.GarrisonParty.MemberRoster.AddToCounts(troop,
-                        approved, false, 0, 0, true, -1);
-                    if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
-                        ModLogger.FileInfo(string.Format(
-                            "Native garrison growth committed: settlement={0}, " +
-                            "settlementId={1}, troop={2}, tier={3}, " +
-                            "requested={4}, approved={5}, hearthCostPerTroop={6:F2}, " +
-                            "operationId={7}.", settlement.Name,
-                            settlement.StringId, troop.Name, troop.Tier,
-                            requested, approved,
-                            MilitaryConfigManager.Instance.RequireActiveConfig()
-                                .HearthEconomy.GetProfessionalHearthCost(troop),
-                            operationId));
-                }
-                catch
-                {
-                    population.TryCompensate(settlement, operationId);
-                    throw;
-                }
+                if (town.GarrisonParty == null)
+                    town.Owner.Settlement.AddGarrisonParty();
+                town.GarrisonParty.MemberRoster.AddToCounts(troop,
+                    approved, false, 0, 0, true, -1);
+                if (RecruitmentLogFilter.ShouldLog(settlement.OwnerClan))
+                    ModLogger.FileInfo(string.Format(
+                        "Native garrison growth committed: settlement={0}, " +
+                        "settlementId={1}, troop={2}, tier={3}, " +
+                        "requested={4}, approved={5}, hearthCostPerTroop={6:F2}, " +
+                        "operationId={7}.", settlement.Name,
+                        settlement.StringId, troop.Name, troop.Tier,
+                        requested, approved,
+                        MilitaryConfigManager.Instance.RequireActiveConfig()
+                            .HearthEconomy.GetProfessionalHearthCost(troop),
+                        operationId));
             }
             catch (Exception exception)
             {

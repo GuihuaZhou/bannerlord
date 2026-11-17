@@ -124,20 +124,27 @@ namespace ModifiedArmy.Garrison.Supply
         }
 
         /// <summary>
-        /// Restores every reversible resource from a failed departure exactly
-        /// once: escort troops, all inventory, and pack-animal purchase gold.
+        /// Keeps already committed cargo, purchases, and escort mutations. If
+        /// a party exists it follows the normal return journey; if creation
+        /// never produced a party, the detached roster is returned because no
+        /// persistent mission owns it.
         /// </summary>
-        private static void RollbackSupplyDeparture(
+        private void PreserveFailedDeparture(
             Settlement home,
             MobileParty garrison,
             MobileParty supplyParty,
-            TroopRoster detachedEscort,
-            int purchasedPackAnimals,
-            int refundableGold)
+            TroopRoster detachedEscort)
         {
-            Cargo.RollbackDeparture(home, garrison, supplyParty,
-                detachedEscort, purchasedPackAnimals, refundableGold,
-                LogSupplyEscortCapacity);
+            if (supplyParty?.IsActive == true)
+            {
+                if (supplyParty.PartyComponent is SupplyPartyComponent component)
+                    component.BeginReturnJourney();
+                MoveToSettlement(supplyParty, home,
+                    "FailedDepartureForwardReturn");
+                return;
+            }
+            if (detachedEscort != null && garrison?.MemberRoster != null)
+                Cargo.RestoreTroops(detachedEscort, garrison.MemberRoster);
         }
 
         /// <summary>

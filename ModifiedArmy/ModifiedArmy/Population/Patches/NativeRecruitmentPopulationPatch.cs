@@ -135,19 +135,15 @@ namespace ModifiedArmy.Population.Patches
         private static void Compensate(RecruitmentPopulationState state,
             string reason, int actualAdded)
         {
-            PopulationTransactionResult result =
-                SettlementPopulationServiceRegistry.Current?.TryCompensate(
-                    state.Settlement, state.OperationId);
             ModLogger.FileError(string.Format(
-                "Native recruitment population compensation: settlement={0}, " +
+                "Native recruitment population mismatch kept for forward reconciliation: settlement={0}, " +
                 "settlementId={1}, party={2}, partyId={3}, troop={4}, " +
                 "expected={5}, actualAdded={6}, source={7}, operationId={8}, " +
-                "reason={9}, compensationStatus={10}, compensationReason={11}.",
+                "reason={9}.",
                 state.Settlement?.Name, state.Settlement?.StringId,
                 state.Party?.Name, state.Party?.StringId, state.Troop?.Name,
                 state.ExpectedCount, actualAdded, state.SourceKind,
-                state.OperationId, reason, result?.Status,
-                result?.ReasonCode ?? "none"));
+                state.OperationId, reason));
             state.Reserved = false;
         }
 

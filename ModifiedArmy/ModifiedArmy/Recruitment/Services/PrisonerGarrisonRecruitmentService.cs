@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Tool;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Actions;
 using TaleWorlds.CampaignSystem.CharacterDevelopment;
@@ -33,7 +34,10 @@ namespace ModifiedArmy.Recruitment.Services
         public int ConformityCost { get; }
     }
 
-    /// <summary>Owns prisoner retention/conformity preparation and roster commit.</summary>
+    /// <summary>
+    /// Owns prisoner retention/conformity preparation and small-unit roster
+    /// commits. Completed source mutations are not reversed on later failure.
+    /// </summary>
     internal static class PrisonerGarrisonRecruitmentService
     {
         public static List<RecruitmentCandidate> SelectAndPrepare(
@@ -120,41 +124,19 @@ namespace ModifiedArmy.Recruitment.Services
                 };
                 return true;
             }
-            catch
-            {
-                prison.AddToCounts(evaluation.Troop, committed, false, wounded,
-                    offer.ConformityCost * committed, true, -1);
-                committed = 0;
-                throw;
-            }
-        }
-
-        public static bool TryRollback(
-            PrisonerRecruitmentCommit commit,
-            out Exception failure)
-        {
-            failure = null;
-            if (commit?.Settlement?.Party?.PrisonRoster == null ||
-                commit.Garrison == null || commit.Troop == null) return false;
-            try
-            {
-                int added = Math.Max(0,
-                    commit.Garrison.MemberRoster.GetElementNumber(commit.Troop) -
-                    commit.GarrisonCountBefore);
-                if (added > 0)
-                    commit.Garrison.MemberRoster.AddToCounts(
-                        commit.Troop, -added, false,
-                        -Math.Min(added, commit.Wounded), 0, true, -1);
-                commit.Settlement.Party.PrisonRoster.AddToCounts(
-                    commit.Troop, commit.Count, false, commit.Wounded,
-                    commit.ConformitySpent, true, -1);
-                return commit.Garrison.MemberRoster.GetElementNumber(
-                    commit.Troop) == commit.GarrisonCountBefore;
-            }
             catch (Exception exception)
             {
-                failure = exception;
-                return false;
+                int observedAdded = Math.Max(0,
+                    garrison.MemberRoster.GetElementNumber(evaluation.Troop) -
+                    garrisonCountBefore);
+                ModLogger.FileError(string.Format(
+                    "Prisoner recruitment stopped after removing the source " +
+                    "troops: settlement={0}, settlementId={1}, troop={2}, " +
+                    "troopId={3}, removed={4}, rosterAdded={5}, error={6}.",
+                    settlement.Name, settlement.StringId, evaluation.Troop.Name,
+                    evaluation.Troop.StringId, committed, observedAdded,
+                    exception.Message));
+                throw;
             }
         }
 

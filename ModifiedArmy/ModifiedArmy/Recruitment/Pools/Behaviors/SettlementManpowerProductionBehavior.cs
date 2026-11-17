@@ -232,11 +232,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                     .ProfessionalReserveRatio;
                 diagnostic.EffectiveCapacityBefore = Math.Max(0f,
                     diagnostic.HearthBefore - diagnostic.ReserveHearth);
-                if (population.IsRecoveryRequired(settlement))
-                {
-                    diagnostic.ReasonCode = "SettlementRecoveryRequired";
-                    return 0;
-                }
                 diagnostic.AffordableCount = population
                     .GetMaxAffordableProfessionalCount(
                         settlement, troop, requested);
@@ -482,35 +477,6 @@ namespace ModifiedArmy.Recruitment.Pools.Behaviors
                 PopulationOperationId = populationOperationId
             };
             return true;
-        }
-
-        internal void RollbackProfessionalOffer(
-            ProfessionalOfferConsumption consumption)
-        {
-            if (consumption?.Settlement == null || consumption.Troop == null ||
-                consumption.Count <= 0) return;
-            int day = (int)CampaignTime.Now.ToDays;
-            if (!_professionalOfferDays.TryGetValue(
-                    consumption.Settlement, out int offerDay) ||
-                offerDay != day) return;
-            if (!_dailyProfessionalOffers.TryGetValue(
-                    consumption.Settlement, out var offers))
-            {
-                offers = new Dictionary<CharacterObject, int>();
-                _dailyProfessionalOffers[consumption.Settlement] = offers;
-            }
-            offers[consumption.Troop] = offers.TryGetValue(
-                consumption.Troop, out int current)
-                    ? current + consumption.Count
-                    : consumption.Count;
-            bool populationRestored = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .RollbackProfessionalHearth(
-                    consumption.Settlement,
-                    consumption.PopulationOperationId) == true;
-            if (!populationRestored)
-                throw new InvalidOperationException(
-                    "ProfessionalPopulationRollbackFailed");
         }
 
         private static void LogOfferConsumption(

@@ -208,8 +208,6 @@ namespace ModifiedArmy.Models.Fief
                     actualHearthCost));
                 return 0;
             }
-            var committedOperations =
-                new List<(Settlement Settlement, string OperationId)>();
             float committedAmount = 0f;
 
             // ============================================================
@@ -273,13 +271,9 @@ namespace ModifiedArmy.Models.Fief
                         population,
                         village.Settlement,
                         applied,
-                        committedOperations,
                         ref committedAmount))
                 {
-                    RollbackPopulationChanges(
-                        population,
-                        committedOperations);
-                    return 0f;
+                    return committedAmount;
                 }
             }
 
@@ -324,13 +318,9 @@ namespace ModifiedArmy.Models.Fief
                         population,
                         village.Settlement,
                         applied,
-                        committedOperations,
                         ref committedAmount))
                 {
-                    RollbackPopulationChanges(
-                        population,
-                        committedOperations);
-                    return 0f;
+                    return committedAmount;
                 }
             }
 
@@ -341,7 +331,6 @@ namespace ModifiedArmy.Models.Fief
             ISettlementPopulationService population,
             Settlement village,
             float change,
-            ICollection<(Settlement Settlement, string OperationId)> commits,
             ref float committedAmount)
         {
             if (Math.Abs(change) <= 0.0001f) return true;
@@ -352,7 +341,6 @@ namespace ModifiedArmy.Models.Fief
                 : population.TryConsume(village, -change, operationId);
             if (result?.IsCommitted == true)
             {
-                commits.Add((village, operationId));
                 committedAmount += Math.Abs(change);
                 return true;
             }
@@ -368,38 +356,5 @@ namespace ModifiedArmy.Models.Fief
             return false;
         }
 
-        private void RollbackPopulationChanges(
-            ISettlementPopulationService population,
-            IEnumerable<(Settlement Settlement, string OperationId)> commits)
-        {
-            foreach (var commit in commits.Reverse())
-            {
-                PopulationTransactionResult result = population.TryCompensate(
-                    commit.Settlement,
-                    commit.OperationId);
-                if (result?.Status ==
-                    PopulationTransactionStatus.Compensated)
-                {
-                    continue;
-                }
-
-                if (Villages != null &&
-                    Villages.TryGetValue(
-                        commit.Settlement,
-                        out VillageFiefData village))
-                {
-                    village.RequireRecovery(
-                        "PopulationCompensationFailed",
-                        commit.OperationId);
-                }
-                ModLogger.FileError(string.Format(
-                    "Fief Hearth rollback failed: fief={0}, village={1}, " +
-                    "operation={2}, reason={3}.",
-                    _settlement.Name,
-                    commit.Settlement?.Name,
-                    commit.OperationId,
-                    result?.ReasonCode ?? "Unknown"));
-            }
-        }
     }
 }

@@ -167,54 +167,6 @@ namespace ModifiedArmy.Garrison.Supply.Services
             return requested - remaining;
         }
 
-        public void RollbackDeparture(
-            Settlement home,
-            MobileParty garrison,
-            MobileParty supplyParty,
-            TroopRoster detachedEscort,
-            int purchasedPackAnimals,
-            int refundableGold,
-            Action<Settlement, MobileParty, int, int, int, int, int>
-                logCapacity)
-        {
-            if (supplyParty?.IsActive == true)
-            {
-                SupplyPartyComponent component = supplyParty.PartyComponent as
-                    SupplyPartyComponent;
-                int garrisonBefore = garrison.Party.NumberOfAllMembers;
-                int returning = supplyParty.Party.NumberOfAllMembers;
-                int reservedBefore = GarrisonRecruitmentCapacity
-                    .GetActiveSupplyEscortCount(home);
-                int limit = garrison.Party.PartySizeLimit;
-                int state = component?.MissionStateValue ?? -1;
-                TransferTroopsLimited(supplyParty.MemberRoster,
-                    garrison.MemberRoster,
-                    supplyParty.MemberRoster.TotalManCount);
-                RemovePurchasedPackAnimalsForRecovery(supplyParty.ItemRoster,
-                    purchasedPackAnimals);
-                TransferAllItems(supplyParty.ItemRoster,
-                    garrison.ItemRoster);
-                logCapacity?.Invoke(home, supplyParty, garrisonBefore,
-                    returning, reservedBefore, limit, state);
-                if (supplyParty.MemberRoster.TotalManCount == 0 &&
-                    supplyParty.ItemRoster.Count == 0)
-                {
-                    component?.CompleteMission();
-                    DestroyPartyAction.Apply(null, supplyParty);
-                }
-                else
-                    component?.RequireRecovery("RollbackIncomplete", home);
-            }
-            else if (detachedEscort != null)
-            {
-                RestoreTroops(detachedEscort, garrison.MemberRoster);
-            }
-
-            if (refundableGold > 0 && home?.OwnerClan?.Leader != null)
-                GiveGoldAction.ApplyBetweenCharacters(null,
-                    home.OwnerClan.Leader, refundableGold, true);
-        }
-
         public void RemovePurchasedPackAnimalsForRecovery(
             ItemRoster roster,
             int requested)
