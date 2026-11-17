@@ -3,13 +3,13 @@
 	<!-- #endregion -->
 	<!-- #region Troops -->
 	<!-- #region Empire Troops -->
-	
+
 	<!-- 设置为basic_troop -->
 	<NPCCharacter
 		id="imperial_infantryman"
 		default_group="Infantry"
 		level="11"
-		name="{=IfjWyWjc}Imperial Infantryman"
+		name="{=IfjWyWjc}Imperial Thematic Light Infantry"
 		occupation="Soldier"
 		is_basic_troop="true"
 		culture="Culture.empire">
@@ -61,18 +61,29 @@
 				<equipment
 					slot="Head"
 					id="Item.roundkettle_over_laced_cloth" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_warrior_padded_armor_b" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.tv_empire_armor_q" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
 				<equipment
 					slot="Gloves"
 					id="Item.buttoned_leather_bracers" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -87,15 +98,26 @@
 				<equipment
 					slot="Head"
 					id="Item.leatherlame_roundkettle_over_imperial_leather" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_warrior_padded_armor_g" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.tv_empire_armor_q" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -110,18 +132,29 @@
 				<equipment
 					slot="Head"
 					id="Item.leatherlame_roundkettle_over_imperial_leather" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_warrior_padded_armor_c" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.tv_empire_armor_q" />
 				<equipment
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
 				<equipment
 					slot="Gloves"
 					id="Item.buttoned_leather_bracers" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t1"
@@ -133,7 +166,7 @@
 		id="imperial_trained_infantryman"
 		default_group="Infantry"
 		level="16"
-		name="{=IZ8OmByJ}Imperial Trained Infantryman"
+		name="{=IZ8OmByJ}Imperial Thematic Infantry"
 		occupation="Soldier"
 		culture="Culture.empire">
 		<face>
@@ -166,12 +199,10 @@
 				id="Throwing"
 				value="70" />
 		</skills>
-		<!-- <upgrade_targets>
+		<upgrade_targets>
 			<upgrade_target
-				id="NPCCharacter.imperial_veteran_infantryman" />
-			<upgrade_target
-				id="NPCCharacter.imperial_menavliaton" />
-		</upgrade_targets> -->
+				id="NPCCharacter.imperial_thematic_heavy_infantry" />
+		</upgrade_targets>
 		<Equipments>
 			<EquipmentRoster>
 				<equipment
@@ -185,13 +216,24 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.southern_spear_4_t3" />
+					id="Item.eastern_spear_2_t3" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_q2" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.empire_plate_armor_shoulder_b" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -214,13 +256,24 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.southern_spear_4_t3" />
+					id="Item.eastern_spear_2_t3" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_q2" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.empire_plate_armor_shoulder_b" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -243,13 +296,24 @@
 					id="Item.western_javelin_1_t2" />
 				<equipment
 					slot="Item3"
-					id="Item.southern_spear_4_t3" />
+					id="Item.eastern_spear_2_t3" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_over_leather" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_r" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.empire_plate_armor_shoulder_a" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_mitten" />
@@ -270,7 +334,7 @@
 		id="imperial_archer"
 		default_group="Ranged"
 		level="11"
-		name="{=LbjxH9yp}Imperial Archer"
+		name="{=LbjxH9yp}Imperial Thematic Light Archer"
 		occupation="Soldier"
 		is_basic_troop="true"
 		culture="Culture.empire">
@@ -322,15 +386,60 @@
 				<equipment
 					slot="Head"
 					id="Item.roundkettle_over_imperial_leather" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_warrior_padded_armor_a" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.tv_empire_armor_q" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_leather_boots" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.hunting_bow" />
+				<equipment
+					slot="Item1"
+					id="Item.range_arrows" />
+				<equipment
+					slot="Item2"
+					id="Item.empire_mace_1_t2" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_imperial_leather" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_warrior_padded_armor_a" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.tv_empire_armor_q" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_leather_boots" />
+				<!-- Original cape retained for rollback:
+				<equipment
+					slot="Cape"
+					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t1"
@@ -341,7 +450,7 @@
 		id="imperial_trained_archer"
 		default_group="Ranged"
 		level="16"
-		name="{=fHQ8ifKM}Imperial Trained Archer"
+		name="{=fHQ8ifKM}Imperial Thematic Archer"
 		occupation="Soldier"
 		culture="Culture.empire">
 		<face>
@@ -391,9 +500,15 @@
 				<equipment
 					slot="Item2"
 					id="Item.empire_sword_1_t2" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_vest" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_q2" />
 				<equipment
 					slot="Gloves"
 					id="Item.guarded_padded_vambrace" />
@@ -403,9 +518,14 @@
 				<equipment
 					slot="Head"
 					id="Item.ironlame_roundkettle_over_imperial_mail" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -417,9 +537,15 @@
 				<equipment
 					slot="Item2"
 					id="Item.empire_sword_1_t2" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_mail_over_leather" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_r" />
 				<equipment
 					slot="Gloves"
 					id="Item.padded_vambrace" />
@@ -429,17 +555,170 @@
 				<equipment
 					slot="Head"
 					id="Item.leatherlame_roundkettle_over_imperial_leather" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
-	
+	<!-- 新增帝国军区重步兵；技能、升级与装备暂沿用 imperial_menavliaton，后续再调整。 -->
+	<NPCCharacter
+		id="imperial_thematic_heavy_infantry"
+		default_group="Infantry"
+		level="21"
+		name="{=imperial_thematic_heavy_infantry}Imperial Thematic Heavy Infantry"
+		occupation="Soldier"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="15" />
+			<skill
+				id="OneHanded"
+				value="100" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="100" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="45" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.reinforced_kite_shield" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_javelin_1_t2" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_plate_vest_armor" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_o" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.reinforced_kite_shield" />
+				<equipment
+					slot="Item3"
+					id="Item.eastern_javelin_1_t2" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_legion_b" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_p" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.highland_spear_4_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.reinforced_kite_shield" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_plate_vest_armor" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_p2" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.leatherlame_roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+
 	<NPCCharacter
 		id="imperial_equite"
 		default_group="Cavalry"
@@ -843,7 +1122,7 @@
 				id="Item.stripped_leather_harness" />
 		</Equipments>
 	</NPCCharacter>
-	
+
 	
 	<!-- 设置为elite_basic_troop -->
 	<!-- 修改装备 -->
@@ -1119,7 +1398,7 @@
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
 					slot="Body"
-					id="Item.AR_vlandia_armor_o" />
+					id="Item.AR_empire_scale_armor_b" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -1178,47 +1457,12 @@
 				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
-					id="Item.empire_legion_b" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_vlandia_armor_p" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_padded_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_sword_5_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.reinforced_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
 					id="Item.empire_plate_vest_armor" />
 				-->
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
 					slot="Body"
-					id="Item.AR_vlandia_armor_p2" />
+					id="Item.AR_empire_scale_armor_a" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -1306,7 +1550,7 @@
 					id="Item.plated_strip_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_helmet_with_metal_strips" />
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
 				<equipment
 					slot="Cape"
 					id="Item.imperial_studded_strip_shoulders" />
@@ -1341,7 +1585,7 @@
 					id="Item.plated_strip_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_helmet_with_metal_strips" />
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
 				<equipment
 					slot="Cape"
 					id="Item.imperial_studded_strip_shoulders" />
@@ -1376,285 +1620,7 @@
 					id="Item.plated_strip_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_jewelled_helmet" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="imperial_menavliaton"
-		default_group="Infantry"
-		level="21"
-		name="{=e8qbF7Ey}Imperial Menavliaton"
-		occupation="Soldier"
-		is_basic_troop="true"
-		culture="Culture.empire">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="100" />
-			<skill
-				id="Riding"
-				value="15" />
-			<skill
-				id="OneHanded"
-				value="100" />
-			<skill
-				id="TwoHanded"
-				value="60" />
-			<skill
-				id="Polearm"
-				value="100" />
-			<skill
-				id="Bow"
-				value="45" />
-			<skill
-				id="Crossbow"
-				value="45" />
-			<skill
-				id="Throwing"
-				value="60" />
-		</skills>
-		<upgrade_targets>
-			<upgrade_target
-				id="NPCCharacter.imperial_elite_menavliaton" />
-		</upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.empire_plate_vest_armor" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_vlandia_armor_o" />
-				<equipment
-					slot="Gloves"
-					id="Item.mail_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.imperial_nasal_helm" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.empire_legion_b" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_vlandia_armor_p" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.empire_warrior_padded_armor_shoulder" />
-				<equipment
-					slot="Gloves"
-					id="Item.mail_mitten" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.empire_plate_vest_armor" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_vlandia_armor_p2" />
-				<equipment
-					slot="Gloves"
-					id="Item.mail_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.leather_cavalier_boots" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t2"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
-	<NPCCharacter
-		id="imperial_elite_menavliaton"
-		default_group="Infantry"
-		level="26"
-		name="{=qAsnj7vU}Imperial Veteran Menavliaton"
-		occupation="Soldier"
-		culture="Culture.empire">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="130" />
-			<skill
-				id="Riding"
-				value="20" />
-			<skill
-				id="OneHanded"
-				value="130" />
-			<skill
-				id="TwoHanded"
-				value="80" />
-			<skill
-				id="Polearm"
-				value="130" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="40" />
-			<skill
-				id="Throwing"
-				value="80" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_empire_scale_armor_e2" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_mail_mitten" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_empire_scale_armor_e2" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_mail_mitten" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_polearm_1_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.empire_sword_4_t4" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.AR_empire_scale_armor_b" />
-				<equipment
-					slot="Leg"
-					id="Item.strapped_mail_chausses" />
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_mail" />
-				<equipment
-					slot="Gloves"
-					id="Item.reinforced_mail_mitten" />
+					id="Item.heavy_nasalhelm_over_imperial_leather" />
 				<equipment
 					slot="Cape"
 					id="Item.imperial_studded_strip_shoulders" />
@@ -1717,9 +1683,15 @@
 				<equipment
 					slot="Item3"
 					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_t2" />
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
@@ -1728,10 +1700,10 @@
 					id="Item.decorated_imperial_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_battle_crown_west" />
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
 				<equipment
 					slot="Cape"
-					id="Item.varangian_bra_scale" />
+					id="Item.imperial_studded_strip_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1746,9 +1718,15 @@
 				<equipment
 					slot="Item3"
 					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_t" />
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
@@ -1757,10 +1735,10 @@
 					id="Item.decorated_imperial_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_battle_crown_west" />
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
 				<equipment
 					slot="Cape"
-					id="Item.varangian_bra_scale" />
+					id="Item.imperial_studded_strip_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1775,9 +1753,15 @@
 				<equipment
 					slot="Item3"
 					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_sturgia_armor_c" />
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
@@ -1786,19 +1770,19 @@
 					id="Item.decorated_imperial_boots" />
 				<equipment
 					slot="Head"
-					id="Item.empire_battle_crown_west" />
+					id="Item.empire_jewelled_helmet" />
 				<equipment
 					slot="Cape"
-					id="Item.varangian_bra_scale" />
+					id="Item.imperial_studded_strip_shoulders" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t3"
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	
 
-	
+
+
 	<NPCCharacter
 		id="imperial_veteran_archer"
 		default_group="Ranged"
@@ -3159,6 +3143,286 @@
 					slot="Leg"
 					id="Item.empire_horseman_boots" />
 			</EquipmentRoster>
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="imperial_menavliaton"
+		default_group="Infantry"
+		level="21"
+		name="{=e8qbF7Ey}Imperial Menavliaton"
+		occupation="Soldier"
+		is_basic_troop="true"
+		is_hidden_encyclopedia="true"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="100" />
+			<skill
+				id="Riding"
+				value="15" />
+			<skill
+				id="OneHanded"
+				value="100" />
+			<skill
+				id="TwoHanded"
+				value="60" />
+			<skill
+				id="Polearm"
+				value="100" />
+			<skill
+				id="Bow"
+				value="45" />
+			<skill
+				id="Crossbow"
+				value="45" />
+			<skill
+				id="Throwing"
+				value="60" />
+		</skills>
+		<upgrade_targets>
+			<upgrade_target
+				id="NPCCharacter.imperial_elite_menavliaton" />
+		</upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_plate_vest_armor" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_o" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.imperial_nasal_helm" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_legion_b" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_p" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.empire_plate_vest_armor" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_p2" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.leather_cavalier_boots" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t2"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<NPCCharacter
+		id="imperial_elite_menavliaton"
+		default_group="Infantry"
+		level="26"
+		name="{=qAsnj7vU}Imperial Veteran Menavliaton"
+		occupation="Soldier"
+		is_hidden_encyclopedia="true"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="20" />
+			<skill
+				id="OneHanded"
+				value="130" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="40" />
+			<skill
+				id="Throwing"
+				value="80" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_e2" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_mail_mitten" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_e2" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_mail_mitten" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_polearm_1_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.empire_sword_4_t4" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_b" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_mail" />
+				<equipment
+					slot="Gloves"
+					id="Item.reinforced_mail_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t3"
+				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
 	<!-- #endregion -->
