@@ -7,7 +7,10 @@ using TaleWorlds.CampaignSystem;
 
 namespace ModifiedArmy.ForceManagement.Behaviors
 {
-    /// <summary>Persists terminal operation ids and recovery freezes.</summary>
+    /// <summary>
+    /// Persists terminal operation ids for replay protection. Legacy recovery
+    /// records remain readable but never freeze a party or domain.
+    /// </summary>
     public sealed class TransferOperationJournalBehavior : CampaignBehaviorBase
     {
         private const int MaximumCompletedRecords = 2048;
@@ -28,22 +31,11 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             !string.IsNullOrWhiteSpace(operationId) &&
             _records.ContainsKey(operationId);
 
-        public bool IsDomainFrozen(string domain)
-        {
-            if (string.IsNullOrWhiteSpace(domain)) return false;
-            return _records.Values.Any(value =>
-                Parse(value, out TransferCommitStatus status, out _, out _,
-                    out string frozenDomain, out _) &&
-                status == TransferCommitStatus.RecoveryRequired &&
-                string.Equals(frozenDomain, domain, StringComparison.Ordinal));
-        }
-
         public void Record(PartyExchangeExecutionResult result, int today)
         {
             if (result == null || string.IsNullOrWhiteSpace(result.OperationId) ||
                 (result.Status != TransferCommitStatus.Committed &&
-                 result.Status != TransferCommitStatus.PartiallyCommitted &&
-                 result.Status != TransferCommitStatus.RecoveryRequired))
+                 result.Status != TransferCommitStatus.PartiallyCommitted))
                 return;
             _records[result.OperationId] = string.Join("\u001f", new[]
             {
@@ -64,8 +56,7 @@ namespace ModifiedArmy.ForceManagement.Behaviors
             if (removable <= 0) return;
             foreach (string id in _records
                 .Where(pair => Parse(pair.Value,
-                    out TransferCommitStatus status, out _, out _, out _,
-                    out _) && status != TransferCommitStatus.RecoveryRequired)
+                    out _, out _, out _, out _, out _))
                 .OrderBy(pair => ReadDay(pair.Value)).Take(removable)
                 .Select(pair => pair.Key).ToList())
                 _records.Remove(id);

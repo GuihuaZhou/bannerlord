@@ -146,13 +146,10 @@ namespace ModifiedArmy.ForceManagement.Services
         {
             TransferOperationJournalBehavior journal = Campaign.Current?
                 .GetCampaignBehavior<TransferOperationJournalBehavior>();
-            string domain = party?.StringId ?? string.Empty;
             if (string.IsNullOrWhiteSpace(operationId))
                 return Failed("MissingApprovedPlan");
             if (journal?.Contains(operationId) == true)
                 return Failed("OperationAlreadyCompleted", operationId);
-            if (journal?.IsDomainFrozen(domain) == true)
-                return Failed("TransferDomainFrozenForRecovery", operationId);
             RecruitmentCampaignBehavior behavior = Campaign.Current?
                 .GetCampaignBehavior<RecruitmentCampaignBehavior>();
             if (behavior == null || settlement?.Town == null)
@@ -180,69 +177,50 @@ namespace ModifiedArmy.ForceManagement.Services
             int marketBefore = market.Number;
             int rosterBefore = party.MemberRoster.GetTroopRoster()
                 .FirstOrDefault(item => item.Character == troop).Number;
-            Clan clan = ClanRecruitmentBudgetManager.GetSupportingClan(party);
-            ClanRecruitmentBudgetSnapshot budgetBefore =
-                ClanRecruitmentBudgetManager.GetSnapshot(clan);
-            float purchaseBudgetBefore = budgetBefore.RemainingPurchaseBudget;
-            float commitmentBudgetBefore =
-                budgetBefore.RemainingCommitmentBudget;
-            bool goldChanged = false;
-            bool marketChanged = false;
-            bool rosterChanged = false;
+            int totalCost;
+            try { totalCost = checked(count * cost); }
+            catch (OverflowException) { return Failed("MercenaryCostOverflow"); }
+            if (party.LeaderHero == null || goldBefore < totalCost ||
+                marketBefore < count)
+                return Failed("MercenaryResourcesChanged", operationId);
             try
             {
                 GiveGoldAction.ApplyBetweenCharacters(
-                    party.LeaderHero, null, count * cost, true);
-                goldChanged = true;
+                    party.LeaderHero, null, totalCost, true);
                 market.ChangeMercenaryCount(-count);
-                marketChanged = true;
                 party.AddElementToMemberRoster(troop, count, false);
-                rosterChanged = true;
                 ClanRecruitmentBudgetManager.CommitRecruitment(
                     party, count, cost, approval.UnitDailyWage);
             }
             catch (Exception exception)
             {
-                bool restored = TryRollbackMercenaryPurchase(
-                    party,
-                    market,
-                    troop,
-                    count,
-                    count * cost,
-                    goldBefore,
-                    marketBefore,
-                    rosterBefore,
-                    budgetBefore,
-                    purchaseBudgetBefore,
-                    commitmentBudgetBefore,
-                    goldChanged,
-                    marketChanged,
-                    rosterChanged);
+                int observed = Math.Max(0, party.MemberRoster.GetTroopRoster()
+                    .FirstOrDefault(item => item.Character == troop).Number -
+                    rosterBefore);
                 PartyExchangeExecutionResult failure = new PartyExchangeExecutionResult
                 {
-                    Status = restored
-                        ? TransferCommitStatus.RolledBack
-                        : TransferCommitStatus.RecoveryRequired,
-                    ReasonCode = restored
-                        ? "MercenaryPurchaseRolledBack:" +
-                            exception.GetType().Name
-                        : "MercenaryPurchaseRecoveryRequired:" +
-                            exception.GetType().Name,
+                    Status = observed > 0
+                        ? TransferCommitStatus.PartiallyCommitted
+                        : TransferCommitStatus.Rejected,
+                    ReasonCode = "MercenaryPurchaseStopped:" +
+                        exception.GetType().Name,
                     RequestedCount = requested,
                     ApprovedCount = count,
-                    TransferredCount = restored ? 0 : Math.Max(
-                        0,
-                        party.MemberRoster.GetTroopRoster()
-                            .FirstOrDefault(item => item.Character == troop)
-                            .Number - rosterBefore),
+                    TransferredCount = observed,
                     OperationId = operationId,
                     SourceFingerprint = "market:" + market.Number,
                     DestinationFingerprint =
-                        TroopTransferService.GetRosterFingerprint(party),
-                    FreezeDomain = domain
+                        TroopTransferService.GetRosterFingerprint(party)
                 };
-                if (failure.Status == TransferCommitStatus.RecoveryRequired)
+                if (failure.HasCommittedChanges)
                     journal?.Record(failure, CurrentDay());
+                ModLogger.FileError(string.Format(
+                    "Mercenary purchase stopped without reversing completed " +
+                    "changes: party={0}, troop={1}, approved={2}, observed={3}, " +
+                    "goldDelta={4}, marketDelta={5}, stage=Commit, exception={6}.",
+                    PartyLogFormatter.GetDisplayName(party), troop.Name, count,
+                    observed, goldBefore - (party.LeaderHero?.Gold ?? 0),
+                    marketBefore - market.Number, exception));
                 return failure;
             }
             PartyExchangeExecutionResult result = new PartyExchangeExecutionResult
@@ -255,8 +233,7 @@ namespace ModifiedArmy.ForceManagement.Services
                 OperationId = operationId,
                 SourceFingerprint = "market:" + market.Number,
                 DestinationFingerprint =
-                    TroopTransferService.GetRosterFingerprint(party),
-                FreezeDomain = domain
+                    TroopTransferService.GetRosterFingerprint(party)
             };
             journal?.Record(result, CurrentDay());
             try
@@ -291,49 +268,6 @@ namespace ModifiedArmy.ForceManagement.Services
             return result;
         }
 
-        private static bool TryRollbackMercenaryPurchase(
-            MobileParty party,
-            RecruitmentCampaignBehavior.TownMercenaryData market,
-            CharacterObject troop,
-            int count,
-            int totalCost,
-            int goldBefore,
-            int marketBefore,
-            int rosterBefore,
-            ClanRecruitmentBudgetSnapshot budgetBefore,
-            float purchaseBudgetBefore,
-            float commitmentBudgetBefore,
-            bool goldChanged,
-            bool marketChanged,
-            bool rosterChanged)
-        {
-            try
-            {
-                if (rosterChanged)
-                    party.MemberRoster.AddToCounts(troop, -count);
-                if (marketChanged)
-                    market.ChangeMercenaryCount(count);
-                if (goldChanged)
-                    GiveGoldAction.ApplyBetweenCharacters(
-                        null, party.LeaderHero, totalCost, true);
-                ClanRecruitmentBudgetManager.RestoreRemainingBudget(
-                    budgetBefore,
-                    purchaseBudgetBefore,
-                    commitmentBudgetBefore);
-            }
-            catch (Exception rollbackException)
-            {
-                ModLogger.Error("Mercenary rollback failed: " +
-                    rollbackException);
-                return false;
-            }
-            int rosterAfter = party.MemberRoster.GetTroopRoster()
-                .FirstOrDefault(item => item.Character == troop).Number;
-            return (party.LeaderHero?.Gold ?? 0) == goldBefore &&
-                market.Number == marketBefore && rosterAfter == rosterBefore &&
-                budgetBefore.RemainingPurchaseBudget == purchaseBudgetBefore &&
-                budgetBefore.RemainingCommitmentBudget == commitmentBudgetBefore;
-        }
 
         /// <summary>Submits the request through the pure model and guarded executor.</summary>
         private static PartyExchangeExecutionResult BuildAndExecute(

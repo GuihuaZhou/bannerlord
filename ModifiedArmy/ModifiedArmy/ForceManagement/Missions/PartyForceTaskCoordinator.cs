@@ -34,11 +34,7 @@ namespace ModifiedArmy.ForceManagement.Missions
             bool randomGateOpen)
         {
             PartyForceTask current = FindTask(party);
-            TransferOperationJournalBehavior journal = Campaign.Current?
-                .GetCampaignBehavior<TransferOperationJournalBehavior>();
-            bool frozen = journal?.IsDomainFrozen(
-                party?.StringId ?? current?.PartyId) == true;
-            if (current?.Status == PartyForceTaskStatus.Suspended || frozen)
+            if (current?.Status == PartyForceTaskStatus.Suspended)
             {
                 if (current != null)
                 {
@@ -46,21 +42,16 @@ namespace ModifiedArmy.ForceManagement.Missions
                         party,
                         current,
                         false,
-                        frozen
-                            ? "Transfer recovery domain is frozen"
-                            : "Task is currently suspended");
+                        "Task is currently suspended");
                     ReleaseOwnedMovementOrder(party, current);
                     current.Status = PartyForceTaskStatus.Suspended;
-                    current.ReasonCode = frozen
-                        ? "TransferDomainFrozenForRecovery"
-                        : current.ReasonCode ?? "TaskSuspended";
+                    current.ReasonCode = current.ReasonCode ?? "TaskSuspended";
                     current.LastValidatedDay = (int)CampaignTime.Now.ToDays;
                 }
                 return new PartyForcePlan
                 {
                     Task = current,
-                    ReasonCode = current?.ReasonCode ??
-                        "TransferDomainFrozenForRecovery"
+                    ReasonCode = current?.ReasonCode ?? "TaskSuspended"
                 };
             }
             PartyForcePlanningContext context = _candidates.BuildContext(

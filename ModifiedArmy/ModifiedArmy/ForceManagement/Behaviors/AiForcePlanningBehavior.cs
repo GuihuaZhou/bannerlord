@@ -305,16 +305,10 @@ namespace ModifiedArmy.ForceManagement.Behaviors
         private void RevalidateLoadedTask(PartyForceTask task)
         {
                 MobileParty party = task.Party;
-                TransferOperationJournalBehavior journal = Campaign.Current?
-                    .GetCampaignBehavior<TransferOperationJournalBehavior>();
-                bool frozen = journal?.IsDomainFrozen(
-                    party?.StringId ?? task.PartyId) == true;
-                if (task.Status == PartyForceTaskStatus.Suspended || frozen)
+                if (task.Status == PartyForceTaskStatus.Suspended)
                 {
                     task.Status = PartyForceTaskStatus.Suspended;
-                    task.ReasonCode = frozen
-                        ? "TransferDomainFrozenForRecovery"
-                        : task.ReasonCode ?? "SavedTaskSuspended";
+                    task.ReasonCode = task.ReasonCode ?? "SavedTaskSuspended";
                     task.LastValidatedDay = (int)CampaignTime.Now.ToDays;
                     task.OwnsMovementOrder = false;
                     return;

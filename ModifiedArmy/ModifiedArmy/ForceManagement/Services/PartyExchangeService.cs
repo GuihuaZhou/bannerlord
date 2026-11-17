@@ -119,84 +119,6 @@ namespace ModifiedArmy.ForceManagement.Services
             return result;
         }
 
-        /// <summary>
-        /// Reverses only the exact garrison manifest moved by the same creation
-        /// attempt. Normal field-surplus policy is intentionally not used for
-        /// this transaction compensation.
-        /// </summary>
-        internal PartyExchangeExecutionResult
-            CompensateCreationGarrisonWithdrawal(
-                MobileParty garrison,
-                MobileParty createdParty,
-                TroopExchangeManifest manifest,
-                string operationId,
-                string expectedGarrisonFingerprint,
-                string expectedPartyFingerprint)
-        {
-            PartyExchangeExecutionResult result;
-            if (garrison == null || createdParty == null || manifest == null ||
-                manifest.TotalCount <= 0 || !garrison.IsActive ||
-                !createdParty.IsActive ||
-                !ManifestAvailable(createdParty.MemberRoster, manifest,
-                    new Dictionary<CharacterObject, int>()))
-            {
-                result = Result(TransferCommitStatus.RecoveryRequired,
-                    "CreationCompensationPreconditionFailed", 0);
-            }
-            else
-            {
-                var rollback = new List<Action>();
-                try
-                {
-                    foreach (var pair in manifest.Troops)
-                    {
-                        CharacterObject troop = pair.Key;
-                        int count = pair.Value.Count;
-                        int wounded = pair.Value.WoundedCount;
-                        createdParty.MemberRoster.AddToCounts(troop, -count,
-                            false, -wounded, 0, true, -1);
-                        rollback.Add(() => createdParty.MemberRoster.AddToCounts(
-                            troop, count, false, wounded, 0, true, -1));
-                        garrison.MemberRoster.AddToCounts(troop, count,
-                            false, wounded, 0, true, -1);
-                        rollback.Add(() => garrison.MemberRoster.AddToCounts(
-                            troop, -count, false, -wounded, 0, true, -1));
-                    }
-                    bool restored = GetFingerprint(garrison.MemberRoster) ==
-                            expectedGarrisonFingerprint &&
-                        GetFingerprint(createdParty.MemberRoster) ==
-                            expectedPartyFingerprint;
-                    result = restored
-                        ? Result(TransferCommitStatus.RolledBack,
-                            "CreationGarrisonWithdrawalCompensated",
-                            manifest.TotalCount)
-                        : Result(TransferCommitStatus.RecoveryRequired,
-                            "CreationCompensationFingerprintMismatch", 0);
-                }
-                catch (Exception exception)
-                {
-                    bool rollbackFailed = false;
-                    for (int index = rollback.Count - 1; index >= 0; index--)
-                    {
-                        try { rollback[index](); }
-                        catch { rollbackFailed = true; }
-                    }
-                    result = Result(TransferCommitStatus.RecoveryRequired,
-                        "CreationCompensationFailed:" +
-                        exception.GetType().Name +
-                        (rollbackFailed ? ":RollbackFailed" : string.Empty), 0);
-                }
-            }
-            result.OperationId = operationId;
-            result.FreezeDomain = "party-create:" +
-                (createdParty?.StringId ?? "unknown");
-            if (result.Status == TransferCommitStatus.RecoveryRequired)
-                Campaign.Current?.GetCampaignBehavior<
-                    TransferOperationJournalBehavior>()?.Record(
-                        result, (int)CampaignTime.Now.ToDays);
-            return result;
-        }
-
         /// <summary>Rejects replayed, empty, or stale plans before any mutation.</summary>
         private string Validate(PartyExchangePlan plan)
         {
@@ -213,15 +135,10 @@ namespace ModifiedArmy.ForceManagement.Services
             if (_completedOperationIds.Contains(plan.OperationId) ||
                 journal?.Contains(plan.OperationId) == true)
                 return "OperationAlreadyCompleted";
-            if (journal?.IsDomainFrozen(GetFreezeDomain(plan)) == true)
-                return "TransferDomainFrozenForRecovery";
             if (plan.Operation == PartyExchangeOperation.BidirectionalSwap)
                 return "BidirectionalSwapDisabled";
             if (plan.SourceToDestination.TotalCount <= 0)
                 return "EmptyManifest";
-            if (!MatchesSnapshot(plan.Source, plan.ExpectedSource) ||
-                !MatchesSnapshot(plan.Destination, plan.ExpectedDestination))
-                return "RosterChanged";
             string boundary = ValidateRosterBoundaries(plan);
             if (boundary != "Valid") return boundary;
             return "Valid";
@@ -276,7 +193,10 @@ namespace ModifiedArmy.ForceManagement.Services
             return "Valid";
         }
 
-        /// <summary>Moves the exact manifest and reverses all mutations on failure.</summary>
+        /// <summary>
+        /// Moves stable troop units after live validation. Completed units are
+        /// retained when a later unit fails; no reverse roster mutation occurs.
+        /// </summary>
         private static PartyExchangeExecutionResult ExecuteRosterTransfer(
             PartyExchangePlan plan)
         {
@@ -293,92 +213,81 @@ namespace ModifiedArmy.ForceManagement.Services
                 .GetCampaignBehavior<FiefPartyManager>();
             Dictionary<CharacterObject, int> protectedCounts = manager?
                 .GetServingTroopCounts(source) ?? new Dictionary<CharacterObject, int>();
-            if (!ManifestAvailable(source.MemberRoster,
-                    plan.SourceToDestination,
-                    protectedCounts))
-                return Result(false, "ManifestNoLongerAvailable", 0);
-
-            var rollback = new List<Action>();
-            int sourceBefore = source.MemberRoster.TotalRegulars;
-            int destinationBefore = destination.MemberRoster.TotalRegulars;
-            string sourceFingerprintBefore = GetFingerprint(source.MemberRoster);
-            string destinationFingerprintBefore =
-                GetFingerprint(destination.MemberRoster);
-            try
+            int capacity = plan.Operation ==
+                    PartyExchangeOperation.FieldToGarrison
+                ? GarrisonRecruitmentCapacity.GetTransferFreeSlots(destination)
+                : Math.Max(0, destination.Party.PartySizeLimit -
+                    destination.Party.NumberOfAllMembers);
+            int moved = 0;
+            string failure = null;
+            foreach (var pair in plan.SourceToDestination.Troops
+                .OrderBy(item => item.Key.StringId, StringComparer.Ordinal))
             {
-                foreach (var pair in plan.SourceToDestination.Troops)
+                CharacterObject troop = pair.Key;
+                TroopRosterElement current = source.MemberRoster
+                    .GetTroopRoster().FirstOrDefault(item =>
+                        item.Character == troop);
+                int protectedCount = protectedCounts.TryGetValue(troop,
+                    out int protectedTroops) ? protectedTroops : 0;
+                int available = Math.Max(0, current.Number - protectedCount);
+                int count = Math.Min(pair.Value.Count,
+                    Math.Min(available, capacity - moved));
+                int wounded = Math.Min(pair.Value.WoundedCount,
+                    Math.Min(current.WoundedNumber, count));
+                if (count <= 0)
                 {
-                    CharacterObject troop = pair.Key;
-                    int count = pair.Value.Count;
-                    int wounded = pair.Value.WoundedCount;
+                    failure = "LiveCapacityOrSourceInsufficient";
+                    break;
+                }
+                int sourceBefore = current.Number;
+                int destinationBefore = destination.MemberRoster
+                    .GetTroopRoster().FirstOrDefault(item =>
+                        item.Character == troop).Number;
+                try
+                {
                     source.MemberRoster.AddToCounts(
                         troop, -count, false, -wounded, 0, true, -1);
-                    rollback.Add(() => source.MemberRoster.AddToCounts(
-                        troop, count, false, wounded, 0, true, -1));
                     destination.MemberRoster.AddToCounts(
                         troop, count, false, wounded, 0, true, -1);
-                    rollback.Add(() => destination.MemberRoster.AddToCounts(
-                        troop, -count, false, -wounded, 0, true, -1));
-                }
-                int moved = plan.SourceToDestination.TotalCount;
-                if (source.MemberRoster.TotalRegulars != sourceBefore - moved ||
-                    destination.MemberRoster.TotalRegulars !=
-                        destinationBefore + moved)
-                {
-                    throw new InvalidOperationException(
-                        "RosterConservationCheckFailed");
-                }
-                return Result(
-                    TransferCommitStatus.Committed,
-                    "Executed",
-                    plan.SourceToDestination.TotalCount);
-            }
-            catch (Exception exception)
-            {
-                bool rollbackFailed = false;
-                for (int index = rollback.Count - 1; index >= 0; index--)
-                {
-                    try
+                    int sourceAfter = source.MemberRoster.GetTroopRoster()
+                        .FirstOrDefault(item => item.Character == troop).Number;
+                    int destinationAfter = destination.MemberRoster
+                        .GetTroopRoster().FirstOrDefault(item =>
+                            item.Character == troop).Number;
+                    if (sourceBefore - sourceAfter != count ||
+                        destinationAfter - destinationBefore != count)
                     {
-                        rollback[index]();
+                        failure = "RosterConservationMismatch";
+                        ModLogger.FileError(string.Format(
+                            "Party transfer stopped after an inconsistent " +
+                            "unit: troop={0}, requested={1}, sourceDelta={2}, " +
+                            "destinationDelta={3}, operation={4}.", troop.Name,
+                            count, sourceBefore - sourceAfter,
+                            destinationAfter - destinationBefore,
+                            plan.OperationId));
+                        break;
                     }
-                    catch (Exception rollbackException)
-                    {
-                        rollbackFailed = true;
-                        ModLogger.Error(
-                            "Party exchange rollback action failed: " +
-                            rollbackException);
-                    }
+                    moved += count;
                 }
-                bool restored = !rollbackFailed &&
-                    source.MemberRoster.TotalRegulars == sourceBefore &&
-                    destination.MemberRoster.TotalRegulars == destinationBefore &&
-                    GetFingerprint(source.MemberRoster) ==
-                        sourceFingerprintBefore &&
-                    GetFingerprint(destination.MemberRoster) ==
-                        destinationFingerprintBefore;
-                if (!restored)
+                catch (Exception exception)
                 {
-                    ModLogger.Error(
-                        "Party exchange rollback could not restore roster " +
-                        "counts. Manual recovery is required. Operation=" +
-                        (plan.OperationId ?? "unknown"));
-                    int observedChange = Math.Max(
-                        Math.Abs(sourceBefore - source.MemberRoster.TotalRegulars),
-                        Math.Abs(destinationBefore -
-                            destination.MemberRoster.TotalRegulars));
-                    return Result(
-                        TransferCommitStatus.RecoveryRequired,
-                        "ExecutionRecoveryRequired:" +
-                            exception.GetType().Name,
-                        observedChange);
+                    failure = "UnexpectedTransferException:" +
+                        exception.GetType().Name;
+                    ModLogger.FileError(string.Format(
+                        "Party transfer stopped after an exception: troop={0}, " +
+                        "completed={1}, operation={2}, stage=RosterWrite, " +
+                        "exception={3}.", troop.Name, moved,
+                        plan.OperationId, exception));
+                    break;
                 }
-                string reason = exception.Message ==
-                        "RosterConservationCheckFailed"
-                    ? "RosterConservationCheckFailedRolledBack"
-                    : "ExecutionRolledBack:" + exception.GetType().Name;
-                return Result(TransferCommitStatus.RolledBack, reason, 0);
             }
+            return moved <= 0
+                ? Result(TransferCommitStatus.Rejected,
+                    failure ?? "NoLiveTransferCapacity", 0)
+                : Result(moved == plan.SourceToDestination.TotalCount
+                        ? TransferCommitStatus.Committed
+                        : TransferCommitStatus.PartiallyCommitted,
+                    failure ?? "Executed", moved);
         }
 
         /// <summary>Rechecks the narrow ownership exception for captured fiefs.</summary>
@@ -578,7 +487,7 @@ namespace ModifiedArmy.ForceManagement.Services
             result.SourceFingerprint = CaptureFingerprint(plan.Source);
             result.DestinationFingerprint = CaptureFingerprint(
                 plan.Destination);
-            result.FreezeDomain = GetFreezeDomain(plan);
+            result.FreezeDomain = null;
         }
 
         private static string CaptureFingerprint(PartyTroopSource source)
@@ -586,10 +495,6 @@ namespace ModifiedArmy.ForceManagement.Services
             TroopRoster roster = source?.Party?.MemberRoster ?? source?.Roster;
             return roster == null ? string.Empty : GetFingerprint(roster);
         }
-
-        private static string GetFreezeDomain(PartyExchangePlan plan) =>
-            plan?.Initiator?.StringId ?? plan?.Destination?.Party?.StringId ??
-            plan?.Source?.Party?.StringId ?? string.Empty;
 
         /// <summary>Writes one audit record without exposing raw roster contents.</summary>
         private static void Log(
