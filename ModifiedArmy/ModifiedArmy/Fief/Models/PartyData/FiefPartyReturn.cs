@@ -71,11 +71,10 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// Commits one partial return as a transaction across the live party
-        /// roster, the original service batch, tracked Hearth mobilization and
-        /// the source fief's cooling batch. Any later failure rolls back every
-        /// mutation made by this method; reconciliation performed beforehand
-        /// represents confirmed game state and is not rolled back.
+        /// Commits one partial return across the live party roster, service
+        /// batch, mobilized Hearth, and cooling roster. Each completed mutation
+        /// is authoritative; a later failure is reported and reconciled
+        /// forward instead of reversing earlier game-state writes.
         /// </summary>
         internal FiefReturnResult TryCommitFiefReturn(
             FiefPartyManager manager,
@@ -96,7 +95,7 @@ namespace ModifiedArmy.Models.Fief
             if (manager == null || sourceParty == null || batch == null ||
                 maximumCount <= 0 || trackedMobilization <= 0 ||
                 batch.ServingParty != sourceParty || batch.IsEmpty() ||
-                village == null || village.RecoveryRequired ||
+                village == null ||
                 !village.ServiceBatches.Contains(batch))
             {
                 return result;
@@ -169,8 +168,6 @@ namespace ModifiedArmy.Models.Fief
             Dictionary<Settlement, int> releasedByVillage = null;
             FiefReturnBatch cooling = null;
             Dictionary<CharacterObject, int> coolingBefore = null;
-            bool createdCooling = false;
-            bool batchRemoved = false;
             try
             {
                 foreach (var pair in returned)
@@ -208,7 +205,6 @@ namespace ModifiedArmy.Models.Fief
                     village.ServiceBatches.Remove(batch);
                     manager.UnregisterServingDetachment(_settlement,
                         village.VillageSettlement, batch);
-                    batchRemoved = true;
                 }
 
                 if (!manager.TryReleaseMobilizationExact(
@@ -229,7 +225,6 @@ namespace ModifiedArmy.Models.Fief
                 {
                     cooling = new FiefReturnBatch(cooldown);
                     village.ReturnBatches.Add(cooling);
-                    createdCooling = true;
                 }
                 else
                 {
@@ -252,68 +247,34 @@ namespace ModifiedArmy.Models.Fief
             }
             catch (Exception exception)
             {
-                bool restored = true;
-                try
+                int released = releasedByVillage?.Values.Sum() ?? 0;
+                result.Succeeded = released > 0;
+                result.ReasonCode = "PartialStatePreserved:" +
+                    exception.GetType().Name;
+                result.ActualReturnedCount = released;
+                result.ActualRestoredHearth = released;
+                if (released == returningCount)
+                    result.ReturnedTroops = new Dictionary<CharacterObject, int>(
+                        returned);
+                ModLogger.FileError(string.Format(
+                    "Fief return stopped after a committed step: operation={0}, " +
+                    "fief={1}, fiefId={2}, village={3}, villageId={4}, " +
+                    "party={5}, partyId={6}, requested={7}, releasedHearth={8}, " +
+                    "error={9}. Existing mutations were kept for forward " +
+                    "reconciliation.", operationId, _settlement?.Name,
+                    _settlement?.StringId, village.VillageSettlement?.Name,
+                    village.VillageSettlement?.StringId, sourceParty.Name,
+                    sourceParty.StringId, returningCount, released,
+                    exception.Message));
+                try { SyncManpowerCounters(); }
+                catch (Exception syncException)
                 {
-                    if (cooling != null)
-                    {
-                        if (createdCooling)
-                            village.ReturnBatches.Remove(cooling);
-                        else
-                            cooling.ReplaceTroops(coolingBefore);
-                    }
+                    ModLogger.FileError(string.Format(
+                        "Fief return counter refresh failed: operation={0}, " +
+                        "fief={1}, fiefId={2}, error={3}.", operationId,
+                        _settlement?.Name, _settlement?.StringId,
+                        syncException.Message));
                 }
-                catch { restored = false; }
-                try
-                {
-                    if (releasedByVillage != null)
-                        manager.RollbackMobilizationRelease(
-                            village.VillageSettlement,
-                            releasedByVillage);
-                }
-                catch { restored = false; }
-                try { batch.ReplaceTroops(batchBefore); }
-                catch { restored = false; }
-                try
-                {
-                    if (batchRemoved &&
-                        !village.ServiceBatches.Contains(batch))
-                    {
-                        village.ServiceBatches.Add(batch);
-                        manager.RegisterServingDetachment(_settlement,
-                            village.VillageSettlement, batch);
-                    }
-                }
-                catch { restored = false; }
-                foreach (var pair in rosterBefore)
-                {
-                    try { RestoreRosterEntry(sourceParty.MemberRoster,
-                        pair.Key, pair.Value); }
-                    catch { restored = false; }
-                }
-                restored = restored && batchBefore.Count == batch.Troops.Count &&
-                    batchBefore.All(pair => batch.Troops.TryGetValue(
-                        pair.Key, out int count) && count == pair.Value) &&
-                    rosterBefore.All(pair => GetRosterCounts(
-                        sourceParty.MemberRoster, pair.Key) == pair.Value) &&
-                    village.MobilizedHearth == mobilizedBefore &&
-                    Math.Abs(village.VillageSettlement.Village.Hearth -
-                        hearthBefore) <= 0.01f &&
-                    village.ServiceBatches.Contains(batch) &&
-                    (cooling == null || createdCooling
-                        ? cooling == null ||
-                            !village.ReturnBatches.Contains(cooling)
-                        : coolingBefore.Count == cooling.Troops.Count &&
-                            coolingBefore.All(pair => cooling.Troops
-                                .TryGetValue(pair.Key, out int count) &&
-                                count == pair.Value));
-                if (!restored)
-                    village.RequireRecovery(
-                        "ReturnRollbackUnverified", operationId);
-                SyncManpowerCounters();
-                result.ReasonCode = restored
-                    ? "RolledBackVerified:" + exception.GetType().Name
-                    : "RecoveryRequired:" + exception.GetType().Name;
                 return result;
             }
         }

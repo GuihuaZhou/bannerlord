@@ -812,22 +812,6 @@ namespace ModifiedArmy.Models.Fief
             return true;
         }
 
-        internal bool RollbackProfessionalHearth(
-            Settlement source, string operationId)
-        {
-            if (source == null || string.IsNullOrEmpty(operationId)) return false;
-            PopulationTransactionResult result = SettlementPopulationServiceRegistry
-                .Current?.TryCompensate(source, operationId);
-            if (result?.Status == PopulationTransactionStatus.RecoveryRequired)
-            {
-                GetVillageFiefData(source)?.RequireRecovery(
-                    result.ReasonCode ?? "PopulationCompensationFailed",
-                    operationId);
-            }
-            return result?.Status ==
-                PopulationTransactionStatus.Compensated;
-        }
-
         /// <summary>
         /// Releases an exact amount of mobilized capacity. Returning soldiers restore
         /// hearth; expired, captured, or reconciled records only release the marker.
@@ -865,19 +849,6 @@ namespace ModifiedArmy.Models.Fief
             if (data?.TryReleaseMobilization(count, true) != true) return false;
             releasedByVillage[village] = count;
             return true;
-        }
-
-        /// <summary>
-        /// Reverses a successful exact mobilization release after a later step
-        /// in the same return transaction fails.
-        /// </summary>
-        internal void RollbackMobilizationRelease(
-            Settlement village,
-            IReadOnlyDictionary<Settlement, int> releasedByVillage)
-        {
-            if (releasedByVillage != null &&
-                releasedByVillage.TryGetValue(village, out int count))
-                GetVillageFiefData(village)?.RollbackMobilization(count, true);
         }
 
         public void RebuildServingDetachmentIndex()
@@ -1121,23 +1092,17 @@ namespace ModifiedArmy.Models.Fief
                 reason = "InvalidTransferRequest";
                 return false;
             }
-            if (IsServicePartyBlocked(sourceParty))
-            {
-                reason = "ServicePartyBlocked";
-                return false;
-            }
             List<ServingDetachmentRef> refs = GetServingDetachments(sourceParty);
             foreach (ServingDetachmentRef item in refs)
             {
                 VillageFiefData owner = GetVillageFiefData(item.SourceVillage);
-                if (owner == null || owner.RecoveryRequired ||
+                if (owner == null ||
                     item.Detachment == null || item.Detachment.IsEmpty() ||
                     item.Detachment.ServingParty != sourceParty ||
                     item.Detachment.SourceFief != item.SourceFief ||
                     item.Detachment.SourceVillage != item.SourceVillage ||
                     !owner.ServiceBatches.Contains(item.Detachment))
                 {
-                    owner?.RequireRecovery("ServiceTransferPrecheckFailed");
                     reason = "InvalidServiceIdentity";
                     return false;
                 }
@@ -1204,19 +1169,13 @@ namespace ModifiedArmy.Models.Fief
             List<ServingDetachmentRef> sourceRefs = GetServingDetachments(
                 sourceParty).OrderBy(p => p.Detachment.BatchId,
                     StringComparer.Ordinal).ToList();
-            Dictionary<FiefServiceBatch, Dictionary<CharacterObject, int>>
-                snapshots = sourceRefs.ToDictionary(
-                    item => item.Detachment,
-                    item => item.Detachment.Troops.ToDictionary(
-                        pair => pair.Key, pair => pair.Value));
-            List<(VillageFiefData Owner, FiefServiceBatch Batch)> added = new();
             try
             {
                 foreach (ServingDetachmentRef item in sourceRefs)
                 {
                     VillageFiefData owner = GetVillageFiefData(
                         item.SourceVillage);
-                    if (owner == null || owner.RecoveryRequired)
+                    if (owner == null)
                         throw new InvalidOperationException(
                             "ServiceIdentityChanged");
                     Dictionary<CharacterObject, int> moved = new();
@@ -1239,7 +1198,6 @@ namespace ModifiedArmy.Models.Fief
                         FiefServiceBatch split = item.Detachment.SplitTo(
                             targetParty, moved);
                         owner.ServiceBatches.Add(split);
-                        added.Add((owner, split));
                         RegisterServingDetachment(item.SourceFief,
                             item.SourceVillage, split);
                     }
@@ -1259,43 +1217,15 @@ namespace ModifiedArmy.Models.Fief
             }
             catch (Exception exception)
             {
-                bool restored = true;
-                foreach (var item in added)
-                {
-                    try { item.Owner.ServiceBatches.Remove(item.Batch); }
-                    catch { restored = false; }
-                }
-                foreach (ServingDetachmentRef item in sourceRefs)
-                {
-                    try
-                    {
-                        VillageFiefData owner = GetVillageFiefData(
-                            item.SourceVillage);
-                        if (!owner.ServiceBatches.Contains(item.Detachment))
-                            owner.ServiceBatches.Add(item.Detachment);
-                        item.Detachment.ReplaceTroops(
-                            snapshots[item.Detachment]);
-                    }
-                    catch { restored = false; }
-                }
                 RebuildServingDetachmentIndex();
-                restored = restored && sourceRefs.All(item =>
-                    snapshots[item.Detachment].Count ==
-                        item.Detachment.Troops.Count &&
-                    snapshots[item.Detachment].All(pair =>
-                        item.Detachment.Troops.TryGetValue(pair.Key,
-                            out int count) && count == pair.Value));
-                if (!restored)
-                    foreach (ServingDetachmentRef item in sourceRefs)
-                        GetVillageFiefData(item.SourceVillage)?
-                            .RequireRecovery(
-                                "ServiceTransferRollbackUnverified");
-                ModLogger.Error(string.Format(
-                    "Fief service transfer failed: source={0}, target={1}, reason={2}, rollback={3}.",
-                    sourceParty.StringId, targetParty.StringId,
-                    exception.GetType().Name,
-                    restored ? "Verified" : "RecoveryRequired"));
-                return false;
+                ModLogger.FileError(string.Format(
+                    "Fief service transfer stopped after a committed step: " +
+                    "source={0}, sourceId={1}, target={2}, targetId={3}, " +
+                    "remaining={4}, reason={5}. Existing service records were kept.",
+                    sourceParty.Name, sourceParty.StringId, targetParty.Name,
+                    targetParty.StringId, remaining.Values.Sum(),
+                    exception.GetType().Name));
+                return remaining.All(pair => pair.Value <= 0);
             }
         }
 

@@ -1,4 +1,5 @@
 using ModifiedArmy.Recruitment.Models;
+using ModifiedArmy.Tool;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -146,38 +147,27 @@ namespace ModifiedArmy.Models.Fief
                     group => group.Sum(item => Math.Max(0,
                         item.Detachment.GetTotalCount() -
                         plans[item.Detachment].Values.Sum())));
-            Dictionary<Settlement, int> mobilizationSnapshots =
-                lossesByVillage.Keys.ToDictionary(
-                    village => village,
-                    village => manager.GetVillageFiefData(village)?
-                        .MobilizedHearth ?? -1);
             Dictionary<Settlement, int> releasesByVillage = new();
             foreach (var loss in lossesByVillage)
             {
                 VillageFiefData village = manager.GetVillageFiefData(loss.Key);
                 string rawReason = null;
-                if (village == null || village.RecoveryRequired ||
+                if (village == null ||
                     !village.TryGetRawServingCount(out int rawBefore,
                         out rawReason))
                 {
-                    village?.RequireRecovery(rawReason ??
-                        "ReconciliationPrecheckFailed");
-                    result.BlockedByRecovery = true;
                     result.ReasonCode = rawReason ??
                         "ReconciliationPrecheckFailed";
                     return result;
                 }
                 int rawAfter = rawBefore - loss.Value;
-                if (rawAfter < 0 || village.MobilizedHearth < rawAfter)
+                if (rawAfter < 0)
                 {
-                    village.RequireRecovery(
-                        "UnverifiedMobilizationDeficit");
-                    result.BlockedByRecovery = true;
-                    result.ReasonCode = "UnverifiedMobilizationDeficit";
+                    result.ReasonCode = "InvalidServingCount";
                     return result;
                 }
                 releasesByVillage[loss.Key] =
-                    village.MobilizedHearth - rawAfter;
+                    Math.Max(0, village.MobilizedHearth - rawAfter);
             }
 
             Dictionary<Settlement, int> released = new();
@@ -195,39 +185,16 @@ namespace ModifiedArmy.Models.Fief
                     released[release.Key] = release.Value;
                 }
             }
-            catch
+            catch (Exception exception)
             {
-                bool restored = true;
-                foreach (ServingDetachmentRef item in refs)
-                {
-                    try { item.Detachment.ReplaceTroops(
-                        snapshots[item.Detachment]); }
-                    catch { restored = false; }
-                }
-                foreach (var release in released)
-                {
-                    try
-                    {
-                        manager.GetVillageFiefData(release.Key)?
-                            .RollbackMobilization(release.Value, false);
-                    }
-                    catch { restored = false; }
-                }
-                restored = restored && refs.All(item =>
-                    DictionaryEquals(item.Detachment.Troops,
-                        snapshots[item.Detachment])) &&
-                    mobilizationSnapshots.All(item =>
-                        manager.GetVillageFiefData(item.Key)?
-                            .MobilizedHearth == item.Value);
-                if (!restored)
-                    foreach (ServingDetachmentRef item in refs)
-                        manager.GetVillageFiefData(item.SourceVillage)?
-                            .RequireRecovery(
-                                "ReconciliationRollbackUnverified");
-                result.BlockedByRecovery = !restored;
-                result.ReasonCode = restored
-                    ? "ReconciliationRolledBackVerified"
-                    : "ReconciliationRollbackUnverified";
+                result.ReasonCode = "PartialReconciliation:" +
+                    exception.GetType().Name;
+                ModLogger.FileError(string.Format(
+                    "Fief service reconciliation stopped after a committed " +
+                    "step: party={0}, partyId={1}, releasedHearth={2}, " +
+                    "error={3}. Existing batch and Hearth changes were kept.",
+                    party.Name, party.StringId, released.Values.Sum(),
+                    exception.Message));
                 return result;
             }
 
@@ -289,7 +256,7 @@ namespace ModifiedArmy.Models.Fief
                 VillageFiefData village = manager.GetVillageFiefData(
                     item.SourceVillage);
                 FiefServiceBatch batch = item.Detachment;
-                if (village == null || village.RecoveryRequired ||
+                if (village == null ||
                     batch == null || batch.IsEmpty() ||
                     string.IsNullOrEmpty(batch.BatchId) ||
                     !ids.Add(batch.BatchId) ||
@@ -298,7 +265,6 @@ namespace ModifiedArmy.Models.Fief
                     batch.ServingParty != party ||
                     !village.ServiceBatches.Contains(batch))
                 {
-                    village?.RequireRecovery("ServicePartyValidationFailed");
                     reason = "ServicePartyValidationFailed";
                     return false;
                 }

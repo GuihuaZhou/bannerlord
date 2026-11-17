@@ -72,11 +72,6 @@ namespace ModifiedArmy.Models.Fief
                     .GetEligibility(fief, sourceTroop).IsProfessional)
                 return false;
             manager.ReconcilePartyFiefTroops(garrison);
-            if (manager.IsServicePartyBlocked(garrison))
-            {
-                reason = "RecoveryRequired";
-                return false;
-            }
             (int Count, int Wounded) source = GetCounts(garrison.MemberRoster,
                 sourceTroop);
             int protectedCount = manager.GetServingTroopCounts(garrison)
@@ -109,14 +104,13 @@ namespace ModifiedArmy.Models.Fief
                     throw new InvalidOperationException(
                         "ProfessionalSourceCommitMismatch");
             }
-            catch
+            catch (Exception exception)
             {
-                bool restoredSource = TryRestore(garrison.MemberRoster,
-                    sourceTroop, source.Count, source.Wounded);
-                bool restoredTargets = RollbackProduced(data, produced);
-                reason = restoredSource && restoredTargets
-                    ? "RolledBack" : "RecoveryRequired";
-                return false;
+                converted = actual;
+                reason = "PartialStatePreserved:" +
+                    exception.GetType().Name;
+                data.RefreshManpowerCounters();
+                return converted > 0;
             }
             data.RefreshManpowerCounters();
             converted = actual;
@@ -138,7 +132,7 @@ namespace ModifiedArmy.Models.Fief
             SettlementManpowerProductionBehavior pools = Campaign.Current?
                 .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             if (data == null || village == null || sourceRoster == null ||
-                garrison == null || pools == null || village.RecoveryRequired ||
+                garrison == null || pools == null ||
                 !data.IsCurrentVillage(sourceVillage) ||
                 data.GetFiefPartyTemplate()?.IsEnableTroop(sourceTroop) != true)
                 return false;
@@ -167,7 +161,6 @@ namespace ModifiedArmy.Models.Fief
                 return false;
             }
 
-            var hearthCommits = new List<string>();
             var targetSnapshots = targets.ToDictionary(pair => pair.Key,
                 pair => GetCounts(garrison.MemberRoster, pair.Key));
             try
@@ -188,7 +181,6 @@ namespace ModifiedArmy.Models.Fief
                         out string hearthOperationId))
                         throw new InvalidOperationException(
                             "InsufficientProfessionalHearth");
-                    hearthCommits.Add(hearthOperationId);
                     garrison.MemberRoster.AddToCounts(target.Key,
                         target.Value, false, 0, 0, true, -1);
                     (int Count, int Wounded) after = GetCounts(
@@ -200,26 +192,17 @@ namespace ModifiedArmy.Models.Fief
                         after.Wounded != before.Wounded)
                         throw new InvalidOperationException(
                             "ProfessionalTargetCommitMismatch");
+                    converted += target.Value;
                 }
             }
             catch (Exception exception)
             {
-                bool restored = TryRestore(sourceRoster, sourceTroop,
-                    source.Count, source.Wounded);
-                foreach (KeyValuePair<CharacterObject,
-                    (int Count, int Wounded)>
-                    target in targetSnapshots)
-                    restored &= TryRestore(garrison.MemberRoster, target.Key,
-                        target.Value.Count, target.Value.Wounded);
-                foreach (string hearthOperationId in hearthCommits)
-                    restored &= manager.RollbackProfessionalHearth(
-                        fief,
-                        hearthOperationId);
-                if (!restored)
-                    village.RequireRecovery("ConversionRollbackFailed");
-                reason = !restored ? "RecoveryRequired" :
-                    exception.Message;
-                return false;
+                if (converted > 0)
+                    pools.AllocateProfessionalConversionTroops(
+                        fief, converted, true);
+                data.RefreshManpowerCounters();
+                reason = "PartialStatePreserved:" + exception.GetType().Name;
+                return converted > 0;
             }
 
             pools.AllocateProfessionalConversionTroops(
@@ -230,28 +213,6 @@ namespace ModifiedArmy.Models.Fief
             return true;
         }
 
-        private static bool RollbackProduced(FiefPartyData data,
-            IReadOnlyList<FiefTroopProductionResult> produced)
-        {
-            bool restored = true;
-            foreach (FiefTroopProductionResult item in produced)
-            {
-                VillageFiefData village = data.GetVillageData(item.Village);
-                TroopRoster roster = village?.GetReadyRoster();
-                (int Count, int Wounded) current = GetCounts(roster,
-                    item.Troop);
-                if (roster == null || current.Count < item.Count ||
-                    !TryRestore(roster, item.Troop,
-                        current.Count - item.Count, current.Wounded))
-                {
-                    village?.RequireRecovery("ConversionRollbackFailed");
-                    restored = false;
-                }
-            }
-            data.RefreshManpowerCounters();
-            return restored;
-        }
-
         private static (int Count, int Wounded) GetCounts(
             TroopRoster roster, CharacterObject troop)
         {
@@ -260,23 +221,5 @@ namespace ModifiedArmy.Models.Fief
             return (count, wounded);
         }
 
-        private static bool TryRestore(TroopRoster roster,
-            CharacterObject troop, int count, int wounded)
-        {
-            if (roster == null || troop == null) return false;
-            try
-            {
-                (int Count, int Wounded) current = GetCounts(roster, troop);
-                roster.AddToCounts(troop, count - current.Count, false,
-                    wounded - current.Wounded, 0, true, -1);
-                current = GetCounts(roster, troop);
-                return current.Count == count &&
-                    current.Wounded == wounded;
-            }
-            catch
-            {
-                return false;
-            }
-        }
     }
 }

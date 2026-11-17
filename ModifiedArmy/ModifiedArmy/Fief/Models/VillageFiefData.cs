@@ -60,6 +60,17 @@ namespace ModifiedArmy.Models.Fief
             ServiceBatches ??= new List<FiefServiceBatch>();
             ReturnBatches ??= new List<FiefReturnBatch>();
             MobilizedHearth = Math.Max(0, MobilizedHearth);
+            if (RecoveryRequired)
+                ModLogger.FileWarn(string.Format(
+                    "Legacy fief recovery marker ignored after load: " +
+                    "village={0}, villageId={1}, previousReason={2}, " +
+                    "operation={3}. Current resources will be validated live.",
+                    VillageSettlement?.Name, VillageSettlement?.StringId,
+                    RecoveryReason ?? "missing",
+                    RecoveryOperationId ?? "missing"));
+            RecoveryRequired = false;
+            RecoveryReason = null;
+            RecoveryOperationId = null;
             InvalidateDailySupplyBranchQuotas();
         }
 
@@ -357,7 +368,7 @@ namespace ModifiedArmy.Models.Fief
             Village village = VillageSettlement?.Village;
             // Mobilization may consume all current Hearth, but never more
             // than the village actually has at commit time.
-            if (RecoveryRequired || village == null || count <= 0 ||
+            if (village == null || count <= 0 ||
                 Math.Max(0, (int)Math.Floor(village.Hearth)) < count)
                 return false;
             string operationId =
@@ -373,7 +384,7 @@ namespace ModifiedArmy.Models.Fief
 
         internal bool TryReleaseMobilization(int count, bool restoreHearth)
         {
-            if (RecoveryRequired || count <= 0 || MobilizedHearth < count)
+            if (count <= 0 || MobilizedHearth < count)
                 return false;
             if (restoreHearth)
             {
@@ -402,77 +413,21 @@ namespace ModifiedArmy.Models.Fief
             return released;
         }
 
-        internal void RollbackMobilization(int count, bool hearthWasRestored)
-        {
-            if (count <= 0) return;
-            if (hearthWasRestored)
-            {
-                PopulationTransactionResult result =
-                    LastReturnOperationAmount == count &&
-                    !string.IsNullOrEmpty(LastReturnOperationId)
-                        ? SettlementPopulationServiceRegistry.Current?
-                            .TryCompensate(
-                                VillageSettlement,
-                                LastReturnOperationId)
-                        : null;
-                if (result?.Status !=
-                    PopulationTransactionStatus.Compensated)
-                {
-                    RequireRecovery(
-                        "PopulationRollbackFailed",
-                        LastReturnOperationId);
-                    return;
-                }
-                LastReturnOperationId = null;
-                LastReturnOperationAmount = 0;
-            }
-            MobilizedHearth += count;
-        }
-
-        internal bool RollbackMobilizationReservation(int count)
-        {
-            if (count <= 0 || MobilizedHearth < count ||
-                VillageSettlement?.Village == null) return false;
-            PopulationTransactionResult result =
-                LastMobilizationOperationAmount == count &&
-                !string.IsNullOrEmpty(LastMobilizationOperationId)
-                    ? SettlementPopulationServiceRegistry.Current?
-                        .TryCompensate(
-                            VillageSettlement,
-                            LastMobilizationOperationId)
-                    : null;
-            if (result?.Status != PopulationTransactionStatus.Compensated)
-            {
-                RequireRecovery(
-                    "PopulationRollbackFailed",
-                    LastMobilizationOperationId);
-                return false;
-            }
-            MobilizedHearth -= count;
-            LastMobilizationOperationId = null;
-            LastMobilizationOperationAmount = 0;
-            return true;
-        }
-
         internal void RequireRecovery(string reason = "InvariantMismatch",
             string operationId = null)
         {
-            bool stateChanged = !RecoveryRequired ||
-                RecoveryReason != reason ||
-                RecoveryOperationId != operationId;
-            RecoveryRequired = true;
-            RecoveryReason = string.IsNullOrEmpty(reason)
-                ? "InvariantMismatch" : reason;
-            RecoveryOperationId = operationId;
-            if (stateChanged)
-                ModLogger.FileError(string.Format(
-                    "Fief population workflow frozen: village={0}, id={1}, " +
-                    "operation={2}, mobilizedHearth={3}, reason={4}.",
-                    VillageSettlement?.Name,
-                    VillageSettlement?.StringId,
-                    operationId ?? "missing",
-                    MobilizedHearth,
-                    RecoveryReason));
+            // Save properties 5-7 remain for binary compatibility, but new
+            // runtime failures must never create a permanent domain freeze.
+            RecoveryRequired = false;
+            RecoveryReason = null;
+            RecoveryOperationId = null;
+            ModLogger.FileWarn(string.Format(
+                "Fief state needs local reconciliation: village={0}, id={1}, " +
+                "operation={2}, mobilizedHearth={3}, reason={4}. The village " +
+                "was not frozen.", VillageSettlement?.Name,
+                VillageSettlement?.StringId, operationId ?? "missing",
+                MobilizedHearth, string.IsNullOrEmpty(reason)
+                    ? "InvariantMismatch" : reason));
         }
 
         internal void CompleteRecovery(bool writeLog = true)

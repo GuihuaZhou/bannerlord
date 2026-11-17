@@ -1058,8 +1058,7 @@ namespace ModifiedArmy.Models.Fief
             AddPartyTroops,
             ValidateCommit,
             SyncCounters,
-            CommitCompleted,
-            Rollback
+            CommitCompleted
         }
 
         /// <summary>
@@ -1093,14 +1092,10 @@ namespace ModifiedArmy.Models.Fief
                 out Dictionary<CharacterObject, int> actual,
                 withdrawals, operationId);
             committedCount = actual.Values.Sum();
-            recoveryRequired = withdrawals.Select(item =>
-                    GetVillageData(item?.Village))
-                .Any(village => village?.RecoveryRequired == true);
+            recoveryRequired = false;
             if (!committed)
             {
-                reason = recoveryRequired
-                    ? "FiefCommitRecoveryRequired"
-                    : "FiefCommitRejectedOrRolledBack";
+                reason = "FiefCommitRejected";
                 return false;
             }
             try
@@ -1114,23 +1109,18 @@ namespace ModifiedArmy.Models.Fief
             }
             catch (Exception exception)
             {
-                // The village transaction is already authoritative here.
-                // Freeze every participating source instead of pretending the
-                // budget ledger and mobilized resources are reconciled.
-                foreach (VillageFiefData village in withdrawals
-                    .Select(item => GetVillageData(item?.Village))
-                    .Where(item => item != null).Distinct())
-                    village.RequireRecovery(
-                        "CreationRecruitmentBudgetCommitFailed", operationId);
-                recoveryRequired = true;
-                reason = "FiefBudgetCommitRecoveryRequired:" +
+                // Troops and their Hearth reservations are already
+                // authoritative. Keep them and report the finance failure.
+                reason = "FiefBudgetCommitFailedAfterRecruitment:" +
                     exception.GetType().Name;
-                ModLogger.Error(string.Format(
+                ModLogger.FileError(string.Format(
                     "Creation fief budget commit failed: operation={0}, " +
-                    "party={1}, committed={2}, exception={3}",
-                    operationId, targetParty?.StringId ?? "unknown",
-                    committedCount, exception));
-                return false;
+                    "party={1}, partyId={2}, committed={3}, error={4}. " +
+                    "The committed troops and Hearth reservations were kept.",
+                    operationId, targetParty?.Name,
+                    targetParty?.StringId ?? "unknown", committedCount,
+                    exception.Message));
+                return committedCount > 0;
             }
             reason = "Committed";
             return true;
@@ -1150,14 +1140,6 @@ namespace ModifiedArmy.Models.Fief
                 : plannedOperationId;
             FiefRecruitmentStage stage = FiefRecruitmentStage.Prepare;
             List<VillageRecruitmentSource> plan = new();
-            Dictionary<CharacterObject, (int Count, int Wounded)> targetBefore =
-                new();
-            Dictionary<VillageFiefData, (float Hearth, int Mobilized)>
-                villageBefore = new();
-            Dictionary<VillageFiefData, HashSet<FiefServiceBatch>>
-                serviceBefore = new();
-            List<(VillageFiefData Village, FiefServiceBatch Batch)> created = new();
-            List<(VillageFiefData Village, int Count)> mobilized = new();
             FiefPartyManager manager = null;
             try
             {
@@ -1282,167 +1264,90 @@ namespace ModifiedArmy.Models.Fief
                             "VillageHearthInsufficient");
                 }
 
-                stage = FiefRecruitmentStage.Snapshot;
-                targetBefore = plan.Select(p => p.Troop).Distinct()
-                    .ToDictionary(troop => troop, troop =>
-                        GetRosterCounts(targetParty.MemberRoster, troop));
-                villageBefore = plan.Select(p => p.Village).Distinct()
-                    .ToDictionary(village => village, village =>
-                        (village.VillageSettlement.Village.Hearth,
-                            village.MobilizedHearth));
-                serviceBefore = plan.Select(p => p.Village).Distinct()
-                    .ToDictionary(village => village, village =>
-                        new HashSet<FiefServiceBatch>(
-                            village.ServiceBatches ??
-                            Enumerable.Empty<FiefServiceBatch>()));
+                // Each village is an independent forward-only commit unit.
+                // This preserves completed villages if a later source changes
+                // between approval and mutation.
+                foreach (IGrouping<VillageFiefData, VillageRecruitmentSource>
+                    group in plan.GroupBy(p => p.Village)
+                        .OrderBy(g => g.Key.VillageSettlement.StringId,
+                            StringComparer.Ordinal))
+                {
+                    List<VillageRecruitmentSource> entries = group
+                        .OrderBy(p => p.Troop.StringId, StringComparer.Ordinal)
+                        .ToList();
+                    int count = entries.Sum(p => p.Count);
+                    try
+                    {
+                        stage = FiefRecruitmentStage.ValidateSource;
+                        if (targetParty.Party.PartySizeLimit -
+                            targetParty.Party.NumberOfAllMembers < count ||
+                            group.Key.GetReadyRoster() == null ||
+                            entries.Any(entry =>
+                                group.Key.GetReadyRoster() != entry.SourceRoster ||
+                                GetRosterCounts(entry.SourceRoster, entry.Troop)
+                                    .Count < entry.Count))
+                            throw new InvalidOperationException(
+                                "VillageStateChangedBeforeCommit");
 
-                stage = FiefRecruitmentStage.RemoveReadyTroops;
-                foreach (var entry in plan)
-                {
-                    if (entry.Village.GetReadyRoster() != entry.SourceRoster)
-                        throw new InvalidOperationException(
-                            "VillageRosterReferenceChanged");
-                    entry.SourceRoster.AddToCounts(entry.Troop,
-                        -entry.Count, false, -entry.Wounded, 0, true, -1);
+                        stage = FiefRecruitmentStage.MobilizeHearth;
+                        if (!group.Key.TryMobilize(count))
+                            throw new InvalidOperationException(
+                                "VillageHearthChanged");
+
+                        stage = FiefRecruitmentStage.RemoveReadyTroops;
+                        foreach (VillageRecruitmentSource entry in entries)
+                            entry.SourceRoster.AddToCounts(entry.Troop,
+                                -entry.Count, false, -entry.Wounded, 0, true, -1);
+
+                        Dictionary<CharacterObject, int> troops = entries
+                            .GroupBy(p => p.Troop)
+                            .ToDictionary(g => g.Key,
+                                g => g.Sum(p => p.Count));
+                        stage = FiefRecruitmentStage.CreateServiceBatch;
+                        FiefServiceBatch batch = CreateServingDetachment(
+                            group.Key, targetParty, troops);
+                        if (batch == null || !manager.IsServingDetachmentRegistered(
+                            _settlement, group.Key.VillageSettlement, batch))
+                            throw new InvalidOperationException(
+                                "ServiceBatchCommitFailed");
+
+                        stage = FiefRecruitmentStage.AddPartyTroops;
+                        foreach (VillageRecruitmentSource entry in entries)
+                        {
+                            targetParty.MemberRoster.AddToCounts(entry.Troop,
+                                entry.Count, false, entry.Wounded, 0, true, -1);
+                            committed[entry.Troop] = committed.TryGetValue(
+                                entry.Troop, out int old)
+                                ? old + entry.Count : entry.Count;
+                        }
+                    }
+                    catch (Exception exception)
+                    {
+                        ModLogger.FileError(string.Format(
+                            "Fief recruitment stopped after a committed step: " +
+                            "operation={0}, fief={1}, fiefId={2}, village={3}, " +
+                            "villageId={4}, stage={5}, committed={6}, error={7}.",
+                            operationId, _settlement.Name,
+                            _settlement.StringId,
+                            group.Key.VillageSettlement.Name,
+                            group.Key.VillageSettlement.StringId, stage,
+                            committed.Values.Sum(), exception.Message));
+                        break;
+                    }
                 }
-                foreach (var group in plan.GroupBy(p => p.Village))
-                {
-                    stage = FiefRecruitmentStage.MobilizeHearth;
-                    int count = group.Sum(p => p.Count);
-                    if (!group.Key.TryMobilize(count))
-                        throw new InvalidOperationException("VillageHearthChanged");
-                    mobilized.Add((group.Key, count));
-                    Dictionary<CharacterObject, int> troops = group
-                        .GroupBy(p => p.Troop)
-                        .ToDictionary(g => g.Key, g => g.Sum(p => p.Count));
-                    stage = FiefRecruitmentStage.CreateServiceBatch;
-                    FiefServiceBatch batch = CreateServingDetachment(
-                        group.Key, targetParty, troops);
-                    if (batch == null)
-                        throw new InvalidOperationException("BatchCreationFailed");
-                    created.Add((group.Key, batch));
-                    stage = FiefRecruitmentStage.RegisterServiceBatch;
-                    if (!manager.IsServingDetachmentRegistered(
-                        _settlement, group.Key.VillageSettlement, batch))
-                        throw new InvalidOperationException(
-                            "BatchRegistrationFailed");
-                }
-                stage = FiefRecruitmentStage.AddPartyTroops;
-                foreach (var entry in plan)
-                {
-                    targetParty.MemberRoster.AddToCounts(entry.Troop,
-                        entry.Count, false, entry.Wounded, 0, true, -1);
-                    committed[entry.Troop] = committed.TryGetValue(
-                        entry.Troop, out int old) ? old + entry.Count : entry.Count;
-                }
-                stage = FiefRecruitmentStage.ValidateCommit;
-                if (!ValidateRecruitmentCommit(plan, targetParty,
-                    targetBefore, villageBefore, created, manager,
-                    _settlement))
-                    throw new InvalidOperationException(
-                        "RecruitmentPostCommitValidationFailed");
                 stage = FiefRecruitmentStage.SyncCounters;
                 SyncManpowerCounters();
                 stage = FiefRecruitmentStage.CommitCompleted;
-                return true;
+                return committed.Values.Sum() > 0;
             }
             catch (Exception exception)
             {
-                FiefRecruitmentStage failedStage = stage;
-                stage = FiefRecruitmentStage.Rollback;
-                bool restored = true;
-                var rollbackFailures = new List<string>();
-                foreach (CharacterObject troop in targetBefore.Keys)
-                {
-                    try
-                    {
-                        RestoreRosterEntry(targetParty.MemberRoster, troop,
-                            targetBefore[troop]);
-                    }
-                    catch (Exception rollbackException)
-                    {
-                        restored = false;
-                        rollbackFailures.Add("TargetRoster:" +
-                            rollbackException);
-                    }
-                }
-                foreach (var entry in plan)
-                {
-                    try
-                    {
-                        if (entry.Village.GetReadyRoster() != entry.SourceRoster)
-                            throw new InvalidOperationException(
-                                "VillageRosterReferenceChanged");
-                        RestoreRosterEntry(entry.SourceRoster, entry.Troop,
-                            (entry.BeforeCount, entry.BeforeWounded));
-                    }
-                    catch (Exception rollbackException)
-                    {
-                        restored = false;
-                        rollbackFailures.Add("SourceRoster:" +
-                            (entry.Village?.VillageSettlement?.StringId ??
-                                "unknown") + ":" + rollbackException);
-                    }
-                }
-                foreach (var pair in serviceBefore)
-                {
-                    foreach (FiefServiceBatch batch in
-                        (pair.Key.ServiceBatches ??
-                            new List<FiefServiceBatch>()).Where(batch =>
-                                !pair.Value.Contains(batch)).ToList())
-                    {
-                        try
-                        {
-                            pair.Key.ServiceBatches.Remove(batch);
-                            manager?.UnregisterServingDetachment(_settlement,
-                                pair.Key.VillageSettlement, batch);
-                        }
-                        catch (Exception rollbackException)
-                        {
-                            restored = false;
-                            rollbackFailures.Add("ServiceBatch:" +
-                                (pair.Key.VillageSettlement?.StringId ??
-                                    "unknown") + ":" + rollbackException);
-                        }
-                    }
-                }
-                foreach (var item in mobilized)
-                {
-                    try
-                    {
-                        if (!item.Village.RollbackMobilizationReservation(
-                            item.Count)) restored = false;
-                    }
-                    catch (Exception rollbackException)
-                    {
-                        restored = false;
-                        rollbackFailures.Add("Mobilization:" +
-                            (item.Village?.VillageSettlement?.StringId ??
-                                "unknown") + ":" + rollbackException);
-                    }
-                }
-                try
-                {
-                    manager?.RebuildServingDetachmentIndex();
-                }
-                catch (Exception rollbackException)
-                {
-                    restored = false;
-                    rollbackFailures.Add("LedgerRebuild:" +
-                        rollbackException);
-                }
-                restored = restored && VerifyRecruitmentRollback(plan,
-                    targetParty, targetBefore, villageBefore, serviceBefore,
-                    manager, _settlement);
-                if (!restored)
-                    foreach (VillageFiefData village in plan
-                        .Select(p => p.Village).Distinct())
-                        village.RequireRecovery(
-                            "RecruitmentRollbackUnverified", operationId);
-                LogRecruitmentTransactionFailure(operationId, failedStage,
-                    targetParty, plan, exception, restored,
-                    rollbackFailures);
-                committed.Clear();
+                ModLogger.FileError(string.Format(
+                    "Fief recruitment ended with partial state preserved: " +
+                    "operation={0}, fief={1}, fiefId={2}, stage={3}, " +
+                    "committed={4}, error={5}.", operationId,
+                    _settlement?.Name, _settlement?.StringId, stage,
+                    committed.Values.Sum(), exception.Message));
                 try { SyncManpowerCounters(); }
                 catch (Exception counterException)
                 {
@@ -1450,7 +1355,7 @@ namespace ModifiedArmy.Models.Fief
                         "Fief recruitment counter recovery failed: operation={0}, exception={1}",
                         operationId, counterException));
                 }
-                return false;
+                return committed.Values.Sum() > 0;
             }
         }
 

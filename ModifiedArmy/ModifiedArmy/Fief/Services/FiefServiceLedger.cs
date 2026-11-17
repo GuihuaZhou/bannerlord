@@ -49,14 +49,6 @@ namespace ModifiedArmy.Models.Fief
                     string.IsNullOrEmpty(batch.BatchId) ||
                     duplicate)
                 {
-                    village?.RequireRecovery();
-                    if (duplicate) existingOwner?.RequireRecovery();
-                    if (batch?.ServingParty != null)
-                        _blockedParties.Add(batch.ServingParty);
-                    if (duplicate && batchParties.TryGetValue(
-                        batch.BatchId, out MobileParty existingParty) &&
-                        existingParty != null)
-                        _blockedParties.Add(existingParty);
                     ModLogger.Error(string.Format(
                         "Fief service source mismatch: holderFief={0}, holderVillage={1}, batch={2}, sourceFief={3}, sourceVillage={4}, duplicate={5}.",
                         pair.Key?.StringId ?? "unknown",
@@ -73,9 +65,8 @@ namespace ModifiedArmy.Models.Fief
                 {
                     string reason = batch.ServingParty == null
                         ? "MissingServingParty" : "EmptyServiceBatch";
-                    village.RequireRecovery(reason);
                     ModLogger.FileError(string.Format(
-                        "Invalid fief service batch retained for recovery: " +
+                        "Invalid fief service batch skipped during index rebuild: " +
                         "sourceFief={0}, sourceFiefId={1}, sourceVillage={2}, " +
                         "sourceVillageId={3}, batchId={4}, reason={5}.",
                         pair.Key?.Name, pair.Key?.StringId,
@@ -94,21 +85,10 @@ namespace ModifiedArmy.Models.Fief
                             new HashSet<MobileParty>();
                     sourceParties.Add(batch.ServingParty);
                 }
-                if (village.RecoveryRequired)
-                    _blockedParties.Add(batch.ServingParty);
             }
             foreach (var conflict in partiesBySource.Where(item =>
                 item.Value.Count > 1))
             {
-                foreach (MobileParty party in conflict.Value)
-                    _blockedParties.Add(party);
-                foreach (VillageFiefData village in data.TryGetValue(
-                    conflict.Key, out FiefPartyData fief)
-                        ? fief?.Villages?.Values ??
-                            Enumerable.Empty<VillageFiefData>()
-                        : Enumerable.Empty<VillageFiefData>())
-                    village?.RequireRecovery(
-                        "FiefSourceMultipleServingParties");
                 ModLogger.FileError(string.Format(
                     "Fief source has conflicting serving parties: " +
                     "sourceFief={0}, sourceFiefId={1}, parties={2}, " +
