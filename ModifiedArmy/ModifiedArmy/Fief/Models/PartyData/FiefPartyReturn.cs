@@ -1,3 +1,6 @@
+// Feudal return domain. The serving batch, party roster, mobilized Hearth, and
+// cooling batch advance forward in small commits; save identities and batch
+// registration remain compatible with existing campaigns.
 using ModifiedArmy.common;
 using ModifiedArmy.Tool;
 using ModifiedArmy.Utils;

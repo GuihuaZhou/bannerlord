@@ -1,3 +1,6 @@
+// Feudal recruitment domain. Village ready rosters and saved service batches
+// are authoritative; recruitment commits per village and never reverses a
+// completed Hearth, roster, or batch mutation after a later failure.
 using Bannerlord.UIExtenderEx;
 using HarmonyLib;
 using ModifiedArmy.PartyManagement.Finance.Models;

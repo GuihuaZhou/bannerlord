@@ -1,3 +1,6 @@
+// Party transfer execution domain. Live rosters remain authoritative and each
+// stable troop unit is committed once; Harmony/planning callers receive a
+// truthful partial result instead of reverse roster compensation.
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.Garrison.Models;

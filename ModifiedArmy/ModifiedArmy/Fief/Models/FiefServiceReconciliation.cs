@@ -1,3 +1,6 @@
+// Feudal service reconciliation domain. Saved service batches are matched to
+// live party rosters; battle losses release one mobilized Hearth marker per
+// soldier without restoring village Hearth or freezing the whole domain.
 using ModifiedArmy.Recruitment.Models;
 using ModifiedArmy.Tool;
 using System;

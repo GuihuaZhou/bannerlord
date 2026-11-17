@@ -1,3 +1,6 @@
+// Unified recruitment execution domain. Approved source, roster, gold, market,
+// and budget mutations are forward-only and journaled by operation id so a
+// retry cannot duplicate a completed purchase.
 using ModifiedArmy.ForceManagement.Contracts;
 using ModifiedArmy.ForceManagement.Behaviors;
 using ModifiedArmy.ForceManagement.Diagnostics;

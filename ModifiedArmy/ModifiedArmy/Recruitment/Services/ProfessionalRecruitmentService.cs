@@ -1,3 +1,6 @@
+// Professional garrison recruitment domain. Daily offers and the settlement
+// population provider own supply; this adapter commits an approved offer to
+// the live garrison roster without recreating a compensation ledger.
 using System;
 using ModifiedArmy.Recruitment.Pools.Behaviors;
 using ModifiedArmy.Tool;

@@ -1,3 +1,6 @@
+// Prisoner garrison recruitment domain. The settlement prison roster owns the
+// source and the garrison roster owns accepted troops; commits are accumulated
+// by troop without reverse source writes on later failures.
 using System;
 using System.Collections.Generic;
 using ModifiedArmy.Recruitment.Models;

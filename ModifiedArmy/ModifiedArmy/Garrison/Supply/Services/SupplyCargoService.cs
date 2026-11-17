@@ -1,3 +1,6 @@
+// Garrison supply cargo domain. Live troop and item rosters are authoritative;
+// transfers report their actual amount and failed departures keep completed
+// purchases/loading for the normal mission-return workflow.
 using System;
 using System.Collections.Generic;
 using ModifiedArmy.Garrison.Models;
