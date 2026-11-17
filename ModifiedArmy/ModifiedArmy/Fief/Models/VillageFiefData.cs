@@ -28,6 +28,9 @@ namespace ModifiedArmy.Models.Fief
         // weights and the XML template, and the snapshot is rebuilt on load.
         private int _supplyQuotaCampaignDay = int.MinValue;
         private FiefPartyTemplate _supplyQuotaTemplate;
+        private int _supplyQuotaEffectiveHearth = int.MinValue;
+        private int _supplyQuotaFiefWeight = int.MinValue;
+        private int _supplyQuotaProfessionalWeight = int.MinValue;
         private IReadOnlyDictionary<TroopProductionEntry, int>
             _dailySupplyBranchQuotas;
 
@@ -61,8 +64,8 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// Ensures the village has one deterministic branch-quota snapshot for
-        /// the current campaign day. Repeated calls on the same day are reads.
+        /// Ensures the village has a deterministic branch-quota snapshot for
+        /// the current inputs. Same-day Hearth or doctrine changes invalidate it.
         /// </summary>
         internal void RefreshDailySupplyBranchQuotas(
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine) =>
@@ -222,9 +225,9 @@ namespace ModifiedArmy.Models.Fief
         }
 
         /// <summary>
-        /// Builds the non-persistent daily quota view once. Locked branches
-        /// remain in the denominator, and allocation never borrows across
-        /// branches or villages.
+        /// Builds the non-persistent quota view from current effective Hearth.
+        /// Locked branches remain in the denominator, allocation never borrows
+        /// across branches or villages, and same-input reads reuse the snapshot.
         /// </summary>
         private void EnsureDailySupplyBranchQuotas(
             FiefPartyTemplate template, CulturalMilitaryDoctrine doctrine)
@@ -233,9 +236,13 @@ namespace ModifiedArmy.Models.Fief
                 throw new InvalidOperationException(
                     "Branch quota calculation requires template and doctrine.");
             int campaignDay = (int)CampaignTime.Now.ToDays;
+            int effectiveHearth = GetEffectiveSupplyHearth();
             if (_dailySupplyBranchQuotas != null &&
                 _supplyQuotaCampaignDay == campaignDay &&
-                _supplyQuotaTemplate == template)
+                _supplyQuotaTemplate == template &&
+                _supplyQuotaEffectiveHearth == effectiveHearth &&
+                _supplyQuotaFiefWeight == doctrine.FiefWeight &&
+                _supplyQuotaProfessionalWeight == doctrine.ProfessionalWeight)
                 return;
             List<TroopProductionEntry> branches = template.SupplyBranches
                 .OrderBy(entry => entry.Troop.StringId,
@@ -258,6 +265,9 @@ namespace ModifiedArmy.Models.Fief
                 TroopProductionEntry, int>(quotas);
             _supplyQuotaCampaignDay = campaignDay;
             _supplyQuotaTemplate = template;
+            _supplyQuotaEffectiveHearth = effectiveHearth;
+            _supplyQuotaFiefWeight = doctrine.FiefWeight;
+            _supplyQuotaProfessionalWeight = doctrine.ProfessionalWeight;
             LogDailySupplyBranchQuotas(template, doctrine, budget, quotas);
         }
 
@@ -266,6 +276,9 @@ namespace ModifiedArmy.Models.Fief
         {
             _supplyQuotaCampaignDay = int.MinValue;
             _supplyQuotaTemplate = null;
+            _supplyQuotaEffectiveHearth = int.MinValue;
+            _supplyQuotaFiefWeight = int.MinValue;
+            _supplyQuotaProfessionalWeight = int.MinValue;
             _dailySupplyBranchQuotas = null;
         }
 
