@@ -12,8 +12,7 @@
 
 - Maintain one authoritative owner for every roster, manpower pool, Hearth balance, item inventory, gold balance, budget, task, and mission state.
 - Campaign runtime caches must be campaign-scoped and rebuilt or cleared at a proven lifecycle boundary.
-- Resource-changing workflows must define validation, mutation order, compensation, downstream event handling, and save/load recovery.
-- `RecoveryRequired` state freezes the affected workflow until reconciliation; cancellation or rescheduling is not recovery.
+- Resource-changing workflows use approval, small-unit commits, truthful partial-success results, diagnostics, and authoritative reconciliation. Business rollback, reverse compensation, and failure-triggered domain freezes are forbidden by default; save/load rebuilding and idempotency remain required.
 
 ## Compatibility and integration
 
