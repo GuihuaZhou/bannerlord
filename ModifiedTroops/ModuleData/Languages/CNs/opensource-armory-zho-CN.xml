@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
+  <tags>
+    <tag language="简体中文"/>
+  </tags>
+  <strings>
+    <!-- Open Source Armory armor names used by the imperial troop line. -->
+    <string id="osa_ar_empire_scale_armor_a" text="帝国黄铜鳞甲罩皮甲"/>
+    <string id="osa_ar_empire_scale_armor_b" text="帝国钢鳞甲罩皮甲"/>
+    <string id="osa_ar_empire_scale_armor_e2" text="西式鳞甲罩棉甲"/>
+    <string id="osa_ar_empire_scale_armor_e3" text="西式双层鳞甲"/>
+    <string id="osa_ar_vlandia_armor_o" text="西式衬垫背心罩锁甲"/>
+    <string id="osa_ar_vlandia_armor_p" text="西式衬垫背心罩钢鳞甲"/>
+    <string id="osa_ar_vlandia_armor_p2" text="西式衬垫背心罩黄铜鳞甲"/>
+    <string id="osa_ar_vlandia_armor_q2" text="西式棉衬皮甲"/>
+    <string id="osa_ar_vlandia_armor_r" text="西式皮甲罩棉甲"/>
+    <string id="osa_tv_empire_armor_q" text="达西棉衬皮甲"/>
+    <string id="osa_tv_sturgia_armor_c" text="北方黄铜鳞甲罩锁甲"/>
+    <string id="osa_tv_vlandia_armor_t" text="西式长钢鳞甲罩锁甲"/>
+    <string id="osa_tv_vlandia_armor_t2" text="西式长青铜鳞甲罩锁甲"/>
+  </strings>
+</base>
