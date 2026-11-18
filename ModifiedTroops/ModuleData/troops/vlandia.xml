@@ -1276,7 +1276,7 @@
 					id="Item.bolt_b" />
 				<equipment
 					slot="Body"
-					id="Item.leather_scale_armor" />
+					id="Item.mail_shirt" />
 				<equipment
 					slot="Leg"
 					id="Item.leather_cavalier_boots" />
@@ -1286,9 +1286,14 @@
 				<equipment
 					slot="Gloves"
 					id="Item.guarded_padded_vambrace" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.padded_leather_shoulders" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1305,7 +1310,7 @@
 					id="Item.bolt_b" />
 				<equipment
 					slot="Body"
-					id="Item.leather_scale_armor" />
+					id="Item.mail_shirt" />
 				<equipment
 					slot="Leg"
 					id="Item.leather_cavalier_boots" />
@@ -1315,6 +1320,9 @@
 				<equipment
 					slot="Gloves"
 					id="Item.guarded_padded_vambrace" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1331,7 +1339,7 @@
 					id="Item.bolt_b" />
 				<equipment
 					slot="Body"
-					id="Item.leather_scale_armor" />
+					id="Item.mail_shirt" />
 				<equipment
 					slot="Leg"
 					id="Item.leather_cavalier_boots" />
@@ -1341,9 +1349,14 @@
 				<equipment
 					slot="Gloves"
 					id="Item.guarded_padded_vambrace" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.padded_leather_shoulders" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="vlandia_troop_civilian_template_t2"
@@ -1401,9 +1414,15 @@
 				<equipment
 					slot="Item3"
 					id="Item.bolt_c" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.mail_shirt" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_c" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -1415,7 +1434,77 @@
 					id="Item.mail_mitten" />
 				<equipment
 					slot="Cape"
-					id="Item.hood" />
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_f" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_c" />
+				<equipment
+					slot="Item2"
+					id="Item.vlandia_sword_4_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_c" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.mail_shirt" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_c" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Head"
+					id="Item.kettle_hat_over_mail_coif" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.crossbow_f" />
+				<equipment
+					slot="Item1"
+					id="Item.bolt_c" />
+				<equipment
+					slot="Item2"
+					id="Item.vlandia_sword_4_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.bolt_c" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.mail_shirt" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.LE_vlandia_armor_a" />
+				<equipment
+					slot="Leg"
+					id="Item.strapped_mail_chausses" />
+				<equipment
+					slot="Head"
+					id="Item.kettle_hat_over_mail_coif" />
+				<equipment
+					slot="Gloves"
+					id="Item.mail_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.mail_shoulders" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="vlandia_troop_civilian_template_t3"

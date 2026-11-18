@@ -1692,9 +1692,14 @@
 				<equipment
 					slot="Body"
 					id="Item.TV_vlandia_armor_t2" />
+				<!-- Original gloves retained for rollback:
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
 				<equipment
 					slot="Leg"
 					id="Item.decorated_imperial_boots" />
@@ -1727,9 +1732,14 @@
 				<equipment
 					slot="Body"
 					id="Item.TV_vlandia_armor_t" />
+				<!-- Original gloves retained for rollback:
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
 				<equipment
 					slot="Leg"
 					id="Item.decorated_imperial_boots" />
@@ -1762,9 +1772,14 @@
 				<equipment
 					slot="Body"
 					id="Item.TV_sturgia_armor_c" />
+				<!-- Original gloves retained for rollback:
 				<equipment
 					slot="Gloves"
 					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
 				<equipment
 					slot="Leg"
 					id="Item.decorated_imperial_boots" />
@@ -1848,6 +1863,9 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1871,6 +1889,9 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1894,6 +1915,9 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
@@ -1968,9 +1992,14 @@
 				<equipment
 					slot="Gloves"
 					id="Item.leather_gloves" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -1997,6 +2026,9 @@
 				<equipment
 					slot="Gloves"
 					id="Item.leather_gloves" />
+				<equipment
+					slot="Cape"
+					id="Item.empire_warrior_padded_armor_shoulder" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -2023,9 +2055,14 @@
 				<equipment
 					slot="Gloves"
 					id="Item.leather_gloves" />
+				<!-- Original cape retained for rollback:
 				<equipment
 					slot="Cape"
 					id="Item.scarf" />
+				-->
+				<equipment
+					slot="Cape"
+					id="Item.a_empire_plated_shoulder_a" />
 			</EquipmentRoster>
 			<EquipmentSet
 				id="empire_troop_civilian_template_t2"
@@ -2224,9 +2261,17 @@
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
+				<!-- Original head armor retained for rollback:
 				<equipment
 					slot="Head"
 					id="Item.empire_lord_helmet" />
+				-->
+				<equipment
+					slot="Head"
+					id="Item.ironlame_roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
 			</EquipmentRoster>
 			<EquipmentRoster>
 				<equipment
@@ -2247,9 +2292,17 @@
 				<equipment
 					slot="Leg"
 					id="Item.leather_cavalier_boots" />
+				<!-- Original head armor retained for rollback:
 				<equipment
 					slot="Head"
 					id="Item.empire_lord_helmet" />
+				-->
+				<equipment
+					slot="Head"
+					id="Item.leatherlame_roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -2273,9 +2326,17 @@
 				<equipment
 					slot="Leg"
 					id="Item.leather_cavalier_boots" />
+				<!-- Original head armor retained for rollback:
 				<equipment
 					slot="Head"
 					id="Item.empire_lord_helmet" />
+				-->
+				<equipment
+					slot="Head"
+					id="Item.roundkettle_over_imperial_mail" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
