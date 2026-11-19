@@ -1,5 +1,6 @@
 // Initial AI lord-party qualification contracts. Runtime-only previews rank
 // sites and prove the minimum is feasible; they never reserve live resources.
+using System;
 using System.Collections.Generic;
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Settlements;
@@ -25,7 +26,10 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public int AssumedPartyLimit { get; set; }
         public int TargetCount { get; set; }
         public int PaymentLimit { get; set; }
-        public int RequiredRegulars { get; set; }
+        public int MinimumPartyMembers { get; set; }
+        public int InitialMemberCount { get; set; }
+        public int RequiredNewTroops => Math.Max(
+            0, MinimumPartyMembers - InitialMemberCount);
         public int ApprovedFiefCount { get; set; }
         public int ApprovedGarrisonCount { get; set; }
         public int ApprovedTotal => ApprovedFiefCount + ApprovedGarrisonCount;
@@ -33,7 +37,7 @@ namespace ModifiedArmy.ForceManagement.Contracts
         public TroopExchangeManifest GarrisonManifest { get; set; }
         public string RejectReason { get; set; }
         public bool Approved => string.IsNullOrEmpty(RejectReason) &&
-            ApprovedTotal >= RequiredRegulars;
+            ApprovedTotal >= RequiredNewTroops;
     }
 
     public enum InitialMobilizationCommitStatus

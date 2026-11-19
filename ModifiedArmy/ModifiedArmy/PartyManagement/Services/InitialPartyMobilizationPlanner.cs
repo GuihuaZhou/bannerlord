@@ -27,15 +27,17 @@ namespace ModifiedArmy.PartyManagement.Services
             Settlement settlement,
             PendingPartyCreation reservation,
             string attemptId,
-            int requiredRegulars)
+            int requestedMinimumPartyMembers)
         {
+            int minimumPartyMembers = Math.Max(
+                1, requestedMinimumPartyMembers);
             var result = new InitialMobilizationPreview
             {
                 AttemptId = attemptId,
                 Leader = leader,
                 Clan = clan,
                 BaseSettlement = settlement,
-                RequiredRegulars = Math.Max(1, requiredRegulars),
+                MinimumPartyMembers = minimumPartyMembers,
                 FiefByVillage = Array.Empty<PlannedVillageWithdrawal>(),
                 GarrisonManifest = new TroopExchangeManifest()
             };
@@ -48,14 +50,13 @@ namespace ModifiedArmy.PartyManagement.Services
                 leader, clan, settlement);
             if (subject == null)
                 return Reject(result, "InvalidPlannedParty");
+            result.InitialMemberCount = subject.CurrentMemberCount;
             result.AssumedPartyLimit = subject.PartySizeLimit;
             result.TargetCount = subject.TargetCount;
             result.PaymentLimit = subject.PaymentLimit;
-            if (subject.PartySizeLimit - subject.CurrentMemberCount <
-                result.RequiredRegulars)
+            if (subject.PartySizeLimit < minimumPartyMembers)
                 return Reject(result, "PartyLimitBelowMinimum");
-            if (subject.TargetCount - subject.CurrentMemberCount <
-                result.RequiredRegulars)
+            if (subject.TargetCount < minimumPartyMembers)
                 return Reject(result, "TargetBelowMinimum");
 
             FiefPartyData fief = Campaign.Current?
@@ -88,7 +89,7 @@ namespace ModifiedArmy.PartyManagement.Services
             }
             result.ApprovedGarrisonCount =
                 result.GarrisonManifest.TotalCount;
-            if (result.ApprovedTotal < result.RequiredRegulars)
+            if (result.ApprovedTotal < result.RequiredNewTroops)
                 return Reject(result, result.ApprovedTotal == 0 &&
                     !string.IsNullOrEmpty(fiefReason)
                     ? fiefReason

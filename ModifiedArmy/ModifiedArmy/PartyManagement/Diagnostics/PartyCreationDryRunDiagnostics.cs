@@ -81,6 +81,9 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
                 .Append("|reason=").Append(preview.RejectReason ?? "none")
                 .Append("|limit=").Append(preview.AssumedPartyLimit)
                 .Append("|target=").Append(preview.TargetCount)
+                .Append("|minimumMembers=").Append(preview.MinimumPartyMembers)
+                .Append("|initialMembers=").Append(preview.InitialMemberCount)
+                .Append("|requiredNew=").Append(preview.RequiredNewTroops)
                 .Append("|payment=").Append(preview.PaymentLimit)
                 .Append("|fief=");
             foreach (PlannedVillageWithdrawal item in
@@ -119,9 +122,11 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
                 "ClanId={3} Site={4} SiteId={5} AttemptId={6} " +
                 "Approved={7} RejectReason={8} AssumedLimit={9} " +
                 "TargetCount={10} PaymentLimit={11} PreviewFief={12} " +
-                "PreviewGarrison={13} PreviewTotal={14} MinimumRegulars={15} " +
-                "Deterministic={16} NoMutation={17} BudgetBefore={18}/{19} " +
-                "BudgetAfter={20}/{21} Failure={22} PlanFingerprint=\"{23}\"",
+                "PreviewGarrison={13} ApprovedNewTroops={14} " +
+                "MinimumPartyMembers={15} InitialMemberCount={16} " +
+                "RequiredNewTroops={17} ProjectedTotalMembers={18} " +
+                "Deterministic={19} NoMutation={20} BudgetBefore={21}/{22} " +
+                "BudgetAfter={23}/{24} Failure={25} PlanFingerprint=\"{26}\"",
                 leader?.Name?.ToString() ?? "unknown",
                 leader?.StringId ?? "none",
                 leader?.Clan?.Name?.ToString() ?? "unknown",
@@ -137,7 +142,11 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
                 preview?.ApprovedFiefCount ?? 0,
                 preview?.ApprovedGarrisonCount ?? 0,
                 preview?.ApprovedTotal ?? 0,
-                preview?.RequiredRegulars ?? 0,
+                preview?.MinimumPartyMembers ?? 0,
+                preview?.InitialMemberCount ?? 0,
+                preview?.RequiredNewTroops ?? 0,
+                (preview?.InitialMemberCount ?? 0) +
+                    (preview?.ApprovedTotal ?? 0),
                 deterministic.HasValue
                     ? deterministic.Value.ToString()
                     : "NotChecked",

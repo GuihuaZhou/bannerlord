@@ -4,7 +4,6 @@
     <troop id="NPCCharacter.imperial_cataphract" barracksLevel="3" />
     <troop id="NPCCharacter.imperial_equite" barracksLevel="1" />
     <troop id="NPCCharacter.imperial_veteran_infantryman" barracksLevel="2" />
-    <troop id="NPCCharacter.imperial_guard_infantry" barracksLevel="1" />
     <troop id="NPCCharacter.imperial_veteran_archer" barracksLevel="2" />
     <troop id="NPCCharacter.imperial_crossbowman" barracksLevel="2" />
     <troop id="NPCCharacter.empire_marine_t3" barracksLevel="2" />

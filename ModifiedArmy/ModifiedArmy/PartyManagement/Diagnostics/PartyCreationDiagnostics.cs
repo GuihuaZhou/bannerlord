@@ -12,11 +12,13 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
         public static void Log(Hero leader, MobileParty party,
             string settlementId, string phase, string reason,
             int garrison, int fief, int total, string source = "None",
-            string attemptId = null, int minimumRequired = 0,
+            string attemptId = null, int requiredNewTroops = 0,
+            int minimumPartyMembers = 0, int initialMemberCount = 0,
             int minimumFiefBatch = 0, bool bindingEligible = false,
             string taskId = null, string operationId = null,
             int actualRecruited = 0, int actualFief = 0,
             int actualProfessional = 0, int finalRegulars = 0,
+            int finalTotalMembers = 0,
             string finalState = null, string diagnosticDetails = null)
         {
             var message = GameTexts.FindText(
@@ -47,7 +49,16 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             message.SetTextVariable("SOURCE", source ?? "None");
             message.SetTextVariable("ATTEMPT_ID", attemptId ?? "none");
             message.SetTextVariable("PARTY_TYPE", "LordParty");
-            message.SetTextVariable("MINIMUM", minimumRequired);
+            message.SetTextVariable("MINIMUM", requiredNewTroops);
+            message.SetTextVariable("MINIMUM_PARTY_MEMBERS", minimumPartyMembers);
+            message.SetTextVariable("INITIAL_MEMBER_COUNT", initialMemberCount);
+            message.SetTextVariable("REQUIRED_NEW_TROOPS",
+                minimumPartyMembers > 0
+                    ? System.Math.Max(0,
+                        minimumPartyMembers - initialMemberCount)
+                    : requiredNewTroops);
+            message.SetTextVariable("PROJECTED_TOTAL_MEMBERS",
+                initialMemberCount + total);
             message.SetTextVariable("MINIMUM_FIEF_BATCH", minimumFiefBatch);
             message.SetTextVariable("BINDING_ELIGIBLE",
                 bindingEligible ? "true" : "false");
@@ -57,6 +68,7 @@ namespace ModifiedArmy.PartyManagement.Diagnostics
             message.SetTextVariable("ACTUAL_FIEF", actualFief);
             message.SetTextVariable("ACTUAL_PROFESSIONAL", actualProfessional);
             message.SetTextVariable("FINAL_REGULARS", finalRegulars);
+            message.SetTextVariable("FINAL_TOTAL_MEMBERS", finalTotalMembers);
             message.SetTextVariable("FINAL_STATE", finalState ?? phase ?? "Unknown");
             string rendered = message.ToString();
             if (!string.IsNullOrWhiteSpace(diagnosticDetails))

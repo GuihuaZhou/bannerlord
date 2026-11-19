@@ -21,6 +21,7 @@ namespace ModifiedArmy.PartyManagement.Services
     /// <summary>Selects by read-only approval, then synchronously mobilizes once.</summary>
     public sealed class PartyCreationCoordinator
     {
+        private const int MinimumPartyMembers = 50;
         private readonly PartyCreationSettlementModel _sites = new PartyCreationSettlementModel();
 
         public MobileParty TryCreateManagedLordParty(Hero leader, bool isNewGame)
@@ -30,7 +31,10 @@ namespace ModifiedArmy.PartyManagement.Services
             PartySettlementBindingBehavior bindings = Campaign.Current?.GetCampaignBehavior<PartySettlementBindingBehavior>();
             AiForcePlanningBehavior planning = Campaign.Current?.GetCampaignBehavior<AiForcePlanningBehavior>();
             var evaluations = new List<PartyCreationSiteResult>();
-            _sites.FindEligibleBase(leader, leader.Clan, 50, evaluations);
+            int requiredNewTroops = Math.Max(0, MinimumPartyMembers -
+                PlannedLordPartySubjectFactory.InitialMemberCount);
+            _sites.FindEligibleBase(
+                leader, leader.Clan, requiredNewTroops, evaluations);
             PartyCreationSiteResult representative = evaluations
                 .OrderByDescending(item => item.BindingEligible)
                 .ThenByDescending(item => item.EstimatedCombinedRegulars)
@@ -145,7 +149,8 @@ namespace ModifiedArmy.PartyManagement.Services
                 before = PartyCreationDryRunDiagnostics.Capture(leader, settlement);
                 var planner = new InitialPartyMobilizationPlanner();
                 stage = "DryRun";
-                first = planner.DryRun(leader, leader.Clan, settlement, token, attemptId, 50);
+                first = planner.DryRun(leader, leader.Clan, settlement, token,
+                    attemptId, MinimumPartyMembers);
                 stage = "CaptureAfter";
                 after = PartyCreationDryRunDiagnostics.Capture(leader, settlement);
                 noMutation = before.SameAs(after);
@@ -180,10 +185,14 @@ namespace ModifiedArmy.PartyManagement.Services
             PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
                 "Failed", reason, preview.ApprovedGarrisonCount,
                 preview.ApprovedFiefCount, preview.ApprovedTotal,
-                attemptId: attemptId, minimumRequired: preview.RequiredRegulars,
+                attemptId: attemptId,
+                requiredNewTroops: preview.RequiredNewTroops,
+                minimumPartyMembers: preview.MinimumPartyMembers,
+                initialMemberCount: preview.InitialMemberCount,
                 bindingEligible: true,
                 actualRecruited: party?.MemberRoster.TotalRegulars ?? 0,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalTotalMembers: party?.Party.NumberOfAllMembers ?? 0,
                 finalState: "RolledBack",
                 diagnosticDetails: diagnosticDetails);
             if (party?.IsActive == true)
@@ -205,7 +214,10 @@ namespace ModifiedArmy.PartyManagement.Services
             PartyCreationDiagnostics.Log(leader, party, site.Settlement.StringId,
                 phase, result.ReasonCode, preview.ApprovedGarrisonCount,
                 preview.ApprovedFiefCount, preview.ApprovedTotal,
-                attemptId: attemptId, minimumRequired: preview.RequiredRegulars,
+                attemptId: attemptId,
+                requiredNewTroops: preview.RequiredNewTroops,
+                minimumPartyMembers: preview.MinimumPartyMembers,
+                initialMemberCount: preview.InitialMemberCount,
                 bindingEligible: true,
                 actualRecruited: result.CommittedFiefCount +
                     result.CommittedGarrisonCount +
@@ -213,6 +225,7 @@ namespace ModifiedArmy.PartyManagement.Services
                 actualFief: result.CommittedFiefCount,
                 actualProfessional: result.CommittedGarrisonCount,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalTotalMembers: party?.Party.NumberOfAllMembers ?? 0,
                 finalState: result.Status.ToString(),
                 diagnosticDetails: string.Format(
                     "[PartyCreationCommit] approvedFief={0} approvedGarrison={1} " +
@@ -230,8 +243,12 @@ namespace ModifiedArmy.PartyManagement.Services
                 retained ? "Completed" : "Failed", reason,
                 preview.ApprovedGarrisonCount, preview.ApprovedFiefCount,
                 preview.ApprovedTotal, attemptId: attemptId,
-                minimumRequired: preview.RequiredRegulars, bindingEligible: true,
+                requiredNewTroops: preview.RequiredNewTroops,
+                minimumPartyMembers: preview.MinimumPartyMembers,
+                initialMemberCount: preview.InitialMemberCount,
+                bindingEligible: true,
                 finalRegulars: party?.MemberRoster.TotalRegulars ?? 0,
+                finalTotalMembers: party?.Party.NumberOfAllMembers ?? 0,
                 finalState: retained
                     ? "RetainedAfterRecruitmentException"
                     : "Failed",
@@ -243,7 +260,9 @@ namespace ModifiedArmy.PartyManagement.Services
                 phase, reason, site.EstimatedGarrisonRegulars,
                 site.EstimatedFiefRegulars, site.EstimatedCombinedRegulars,
                 site.PreferredInitialSource.ToString(), attemptId,
-                site.MinimumRequired, site.MinimumFiefBatch, site.BindingEligible);
+                requiredNewTroops: site.MinimumRequired,
+                minimumFiefBatch: site.MinimumFiefBatch,
+                bindingEligible: site.BindingEligible);
 
         private static void LogNoCandidate(Hero leader,
             PartyCreationSiteResult representative,
@@ -255,7 +274,9 @@ namespace ModifiedArmy.PartyManagement.Services
                 representative?.EstimatedCombinedRegulars ?? 0,
                 representative?.PreferredInitialSource.ToString() ?? "None",
                 attemptId: attemptId,
-                minimumRequired: representative?.MinimumRequired ?? 50,
+                requiredNewTroops: representative?.MinimumRequired ??
+                    Math.Max(0, MinimumPartyMembers -
+                        PlannedLordPartySubjectFactory.InitialMemberCount),
                 minimumFiefBatch: representative?.MinimumFiefBatch ?? 0,
                 bindingEligible: representative?.BindingEligible ?? false,
                 diagnosticDetails: string.Format(

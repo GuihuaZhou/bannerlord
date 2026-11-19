@@ -15,7 +15,6 @@
     <TroopComposition>
       <troop id="NPCCharacter.imperial_cataphract" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-      <troop id="NPCCharacter.imperial_guard_infantry" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
       <troop id="NPCCharacter.empire_marine_t3" weight="2" />
@@ -28,7 +27,6 @@
     <TroopComposition>
       <troop id="NPCCharacter.imperial_cataphract" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-      <troop id="NPCCharacter.imperial_guard_infantry" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
       <troop id="NPCCharacter.imperial_equite" weight="2" />
@@ -40,7 +38,6 @@
     <TroopComposition>
       <troop id="NPCCharacter.imperial_cataphract" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_infantryman" weight="3" />
-      <troop id="NPCCharacter.imperial_guard_infantry" weight="1" />
       <troop id="NPCCharacter.imperial_veteran_archer" weight="2" />
       <troop id="NPCCharacter.imperial_crossbowman" weight="2" />
       <troop id="NPCCharacter.imperial_equite" weight="2" />

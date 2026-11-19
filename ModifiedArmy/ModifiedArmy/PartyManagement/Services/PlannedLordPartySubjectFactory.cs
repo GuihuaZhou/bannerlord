@@ -13,6 +13,12 @@ namespace ModifiedArmy.PartyManagement.Services
     /// <summary>Builds the immutable facts used before a lord party exists.</summary>
     public sealed class PlannedLordPartySubjectFactory
     {
+        /// <summary>
+        /// A newly planned lord party already contains its leader. This shared
+        /// assumption keeps creation supply estimates aligned with the preview.
+        /// </summary>
+        public const int InitialMemberCount = 1;
+
         public RecruitmentSubject Create(
             Hero leader,
             Clan clan,
@@ -35,7 +41,7 @@ namespace ModifiedArmy.PartyManagement.Services
                 {
                     Clan = clan,
                     PartyLimit = assumedLimit,
-                    CurrentCount = 1,
+                    CurrentCount = InitialMemberCount,
                     IsActive = false
                 });
             return new RecruitmentSubject
@@ -53,7 +59,7 @@ namespace ModifiedArmy.PartyManagement.Services
                     clan,
                     leader,
                     atWar),
-                CurrentMemberCount = 1,
+                CurrentMemberCount = InitialMemberCount,
                 CurrentRegularCount = 0
             };
         }

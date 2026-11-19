@@ -31,7 +31,7 @@ namespace ModifiedArmy.PartyManagement.Models
     public sealed class PartyCreationSettlementModel
     {
         public PartyCreationSiteResult FindEligibleBase(
-            Hero leader, Clan clan, int minimumRegulars = 50,
+            Hero leader, Clan clan, int requiredNewTroops,
             ICollection<PartyCreationSiteResult> evaluations = null)
         {
             if (leader == null || clan == null || leader.Clan != clan)
@@ -49,14 +49,14 @@ namespace ModifiedArmy.PartyManagement.Models
 
             List<PartyCreationSiteResult> candidates = clan.Settlements
                 .Select(settlement => Evaluate(settlement, fiefs, bindings,
-                    leader, clan, origin, minimumRegulars, minimumFiefBatch))
+                    leader, clan, origin, requiredNewTroops, minimumFiefBatch))
                 .ToList();
             if (evaluations != null)
                 foreach (PartyCreationSiteResult result in candidates)
                     evaluations.Add(result);
             return candidates.Where(result => result != null &&
                     result.BindingEligible &&
-                    result.EstimatedCombinedRegulars >= minimumRegulars)
+                    result.EstimatedCombinedRegulars >= requiredNewTroops)
                 .OrderByDescending(result => result.EstimatedCombinedRegulars)
                 .ThenBy(result => result.Distance)
                 .ThenBy(result => result.Settlement.StringId, StringComparer.Ordinal)
