@@ -659,9 +659,14 @@
 				<equipment
 					slot="Item0"
 					id="Item.vlandia_2haxe_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.plated_leather_coat" />
+				-->
+				<equipment
+					slot="Body"
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.plated_strip_boots" />
@@ -676,9 +681,14 @@
 				<equipment
 					slot="Item0"
 					id="Item.vlandia_2haxe_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.plated_leather_coat" />
+				-->
+				<equipment
+					slot="Body"
+					id="Item.white_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.plated_strip_boots" />
@@ -696,9 +706,14 @@
 				<equipment
 					slot="Item0"
 					id="Item.vlandia_2haxe_1_t4" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.plated_leather_coat" />
+				-->
+				<equipment
+					slot="Body"
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.plated_strip_boots" />
@@ -1422,7 +1437,7 @@
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
 					slot="Body"
-					id="Item.AR_vlandia_armor_c" />
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -1457,7 +1472,7 @@
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
 					slot="Body"
-					id="Item.TV_vlandia_armor_c" />
+					id="Item.white_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
@@ -1492,7 +1507,7 @@
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
 					slot="Body"
-					id="Item.LE_vlandia_armor_a" />
+					id="Item.red_coat_over_mail" />
 				<equipment
 					slot="Leg"
 					id="Item.strapped_mail_chausses" />
