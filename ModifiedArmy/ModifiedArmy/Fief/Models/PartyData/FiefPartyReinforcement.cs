@@ -640,6 +640,144 @@ namespace ModifiedArmy.Models.Fief
 
 
         /// <summary>
+        /// Slowly reconciles AI villages whose legacy Ready rosters exceed
+        /// today's feudal Hearth or XML branch quotas. Serving and Cooling
+        /// counts are included in the usage calculation, but only healthy
+        /// Ready troops may be dismissed. No saved service or Hearth ledger
+        /// is edited by this maintenance pass.
+        /// </summary>
+        private int NormalizeWeeklyFeudalSurplus()
+        {
+            const int maximumDismissalsPerVillage = 25;
+            if (_fiefPartyTemplate == null || _settlement?.OwnerClan == null ||
+                _settlement.OwnerClan == Clan.PlayerClan)
+                return 0;
+
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            int totalDismissed = 0;
+            foreach (VillageFiefData village in OrderedVillages(null))
+            {
+                if (village.RecoveryRequired) continue;
+                TroopRoster roster = village.GetReadyRoster();
+                if (roster == null) continue;
+
+                IReadOnlyDictionary<TroopProductionEntry, int> quotas;
+                var excessByBranch = new Dictionary<TroopProductionEntry, int>();
+                try
+                {
+                    quotas = village.GetSupplyBranchQuotas(
+                        _fiefPartyTemplate, doctrine);
+                    foreach (TroopProductionEntry branch in
+                        _fiefPartyTemplate.SupplyBranches)
+                    {
+                        int quota = quotas[branch];
+                        int occupied = village.GetOccupiedSupplyBranchHearth(
+                            _fiefPartyTemplate, doctrine, branch);
+                        if (occupied > quota)
+                            excessByBranch[branch] = occupied - quota;
+                    }
+                }
+                catch (Exception exception)
+                {
+                    ModLogger.FileWarn(string.Format(
+                        "Weekly feudal normalization skipped: fief={0}, village={1}, reason={2}.",
+                        _settlement.StringId,
+                        village.VillageSettlement?.StringId ?? "unknown",
+                        exception.GetType().Name));
+                    continue;
+                }
+                if (excessByBranch.Count == 0) continue;
+
+                int eligibleReady = FiefTroopRosterFilter.GetEntries(
+                    roster, _fiefPartyTemplate)
+                    .Where(entry => _fiefPartyTemplate.TryGetSupplyBranch(
+                        entry.Character, out TroopProductionEntry branch) &&
+                        excessByBranch.ContainsKey(branch))
+                    .Sum(entry => Math.Max(0,
+                        entry.Number - entry.WoundedNumber));
+                if (eligibleReady == 0) continue;
+
+                // Remove no more than a quarter of eligible Ready troops,
+                // capped at 25 per village per week. Never trim a troop if
+                // its Hearth cost would overshoot the remaining excess.
+                int weeklyLimit = Math.Min(maximumDismissalsPerVillage,
+                    Math.Max(1, (eligibleReady + 3) / 4));
+                var removed = new Dictionary<CharacterObject, int>();
+                while (removed.Values.Sum() < weeklyLimit)
+                {
+                    CharacterObject selected = null;
+                    TroopProductionEntry selectedBranch = null;
+                    int selectedCost = 0;
+                    int selectedExcess = 0;
+                    int selectedQuota = 1;
+                    foreach (TroopRosterElement entry in
+                        FiefTroopRosterFilter.GetEntries(
+                            roster, _fiefPartyTemplate))
+                    {
+                        if (entry.Number <= entry.WoundedNumber ||
+                            !_fiefPartyTemplate.TryGetSupplyBranch(
+                                entry.Character, out TroopProductionEntry branch) ||
+                            !excessByBranch.TryGetValue(branch, out int excess) ||
+                            !doctrine.TryGetFeudalSupplyCost(
+                                entry.Character, out int cost) ||
+                            cost <= 0 || cost > excess)
+                            continue;
+
+                        int quota = Math.Max(1, quotas[branch]);
+                        long candidateRatio = (long)excess * selectedQuota;
+                        long selectedRatio = (long)selectedExcess * quota;
+                        if (selected != null &&
+                            (candidateRatio < selectedRatio ||
+                             (candidateRatio == selectedRatio &&
+                              (entry.Character.Tier > selected.Tier ||
+                               (entry.Character.Tier == selected.Tier &&
+                                StringComparer.Ordinal.Compare(
+                                    entry.Character.StringId,
+                                    selected.StringId) >= 0)))))
+                            continue;
+
+                        selected = entry.Character;
+                        selectedBranch = branch;
+                        selectedCost = cost;
+                        selectedExcess = excess;
+                        selectedQuota = quota;
+                    }
+                    if (selected == null) break;
+
+                    int before = roster.GetTroopCount(selected);
+                    roster.RemoveTroop(selected, 1,
+                        default(UniqueTroopDescriptor), 0);
+                    if (roster.GetTroopCount(selected) != before - 1)
+                    {
+                        ModLogger.FileWarn(string.Format(
+                            "Weekly feudal normalization removal failed: village={0}, troop={1}.",
+                            village.VillageSettlement?.StringId ?? "unknown",
+                            selected.StringId));
+                        break;
+                    }
+
+                    excessByBranch[selectedBranch] -= selectedCost;
+                    removed[selected] = removed.TryGetValue(selected,
+                        out int previous) ? previous + 1 : 1;
+                }
+
+                int dismissed = removed.Values.Sum();
+                if (dismissed == 0) continue;
+                totalDismissed += dismissed;
+                string troops = string.Join(",", removed
+                    .OrderBy(item => item.Key.StringId, StringComparer.Ordinal)
+                    .Select(item => item.Key.StringId + ":" + item.Value));
+                ModLogger.FileInfo(string.Format(
+                    "Weekly feudal surplus normalization: fief={0}, village={1}, dismissed={2}, eligibleReady={3}, weeklyLimit={4}, troops={5}, reasonCode=BranchHearthQuotaExceeded.",
+                    _settlement.StringId,
+                    village.VillageSettlement?.StringId ?? "unknown",
+                    dismissed, eligibleReady, weeklyLimit, troops));
+            }
+            return totalDismissed;
+        }
+
+        /// <summary>
         /// 每周调用一次，处理封邑军队的自动恢复与补员。
         /// </summary>
         public void WeeklyUpdate()
@@ -659,6 +797,10 @@ namespace ModifiedArmy.Models.Fief
                 readyTroops += ProcessVillageCooling(
                     village, true, "WeeklyTick");
             ShowReadyNotification(readyTroops);
+
+            // Legacy AI compositions are trimmed against the same live
+            // village/branch quotas used by daily feudal production.
+            NormalizeWeeklyFeudalSurplus();
 
             // Active service has no fixed expiry. Daily reconciliation owns
             // losses and wage eligibility; weekly processing only advances
