@@ -181,11 +181,27 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
 
                 if (!TryValidateTreaty(draft, term, out reason))
                 {
+                    EnsureRejectionReason(ref reason);
                     return false;
                 }
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Native decision and diplomacy models may reject an operation
+        /// without populating their optional explanation. Preserve the
+        /// rejection while keeping the validator's out-parameter contract
+        /// safe for UI, AI and deferred execution callers.
+        /// </summary>
+        private static void EnsureRejectionReason(ref TextObject reason)
+        {
+            if (reason == null || reason.IsEmpty())
+            {
+                reason = new TextObject(
+                    "{=MP_KingdomNegotiationValidationUnavailable}The proposal is not currently permitted by the campaign's diplomatic rules.");
+            }
         }
 
         private static bool IsParticipant(

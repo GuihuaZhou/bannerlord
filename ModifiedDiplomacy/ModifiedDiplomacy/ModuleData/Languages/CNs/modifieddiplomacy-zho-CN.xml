@@ -8,5 +8,7 @@
   <strings>
     <string id="ModifiedDiplomacy_SubjectAllianceForbidden"
             text="附庸国和傀儡国不能签订同盟条约。" />
+    <string id="MP_KingdomNegotiationValidationUnavailable"
+            text="当前战役的外交规则不允许提交这项提案。" />
   </strings>
 </base>

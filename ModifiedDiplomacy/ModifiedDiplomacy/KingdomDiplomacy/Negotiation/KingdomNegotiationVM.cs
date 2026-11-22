@@ -241,7 +241,7 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
                     out TextObject reason))
             {
                 InformationManager.DisplayMessage(
-                    new InformationMessage(reason.ToString()));
+                    new InformationMessage(GetRejectionText(reason)));
                 return;
             }
 
@@ -262,7 +262,7 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
                     out reason))
             {
                 InformationManager.DisplayMessage(
-                    new InformationMessage(reason.ToString()));
+                    new InformationMessage(GetRejectionText(reason)));
                 return;
             }
 
@@ -270,6 +270,19 @@ namespace ModifiedDiplomacy.KingdomDiplomacy.Negotiation
                 "{=MP_KingdomNegotiationSubmitted}The compound proposal has been submitted to your council.");
             InformationManager.DisplayMessage(
                 new InformationMessage(result.ToString()));
+        }
+
+        /// <summary>
+        /// Keeps the player action boundary safe when a downstream native or
+        /// integration service rejects a proposal without an explanation.
+        /// </summary>
+        private static string GetRejectionText(TextObject reason)
+        {
+            return (reason == null || reason.IsEmpty()
+                    ? new TextObject(
+                        "{=MP_KingdomNegotiationValidationUnavailable}The proposal is not currently permitted by the campaign's diplomatic rules.")
+                    : reason)
+                .ToString();
         }
 
         public void ExecuteReset()
