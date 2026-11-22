@@ -4,6 +4,10 @@
     <tag language="简体中文" />
   </tags>
   <strings>
+    <string id="ModifiedArmy_WeeklySurplusSkipped" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}未执行周裁减：配额数据不可用，原因={REASON_CODE}。" />
+    <string id="ModifiedArmy_WeeklySurplusNormalized" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}：{BRANCH_NAME}（ID={BRANCH_ID}）占用{OCCUPIED_BEFORE}，严格超过配额{QUOTA_HEARTH}的{TRIGGER_PERCENT}%。已裁{REMOVED_TOTAL}人（待命伤兵{READY_WOUNDED_REMOVED}、返乡冷却{COOLING_REMOVED}、待命健康兵{READY_HEALTHY_REMOVED}），现占用{OCCUPIED_AFTER}，已降至{TARGET_PERCENT}%目标内。" />
+    <string id="ModifiedArmy_WeeklySurplusRemaining" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}：{BRANCH_NAME}（ID={BRANCH_ID}）仍占用{OCCUPIED_AFTER}，配额{QUOTA_HEARTH}、目标{TARGET_PERCENT}%。本周已裁{REMOVED_TOTAL}人（待命伤兵{READY_WOUNDED_REMOVED}、返乡冷却{COOLING_REMOVED}、待命健康兵{READY_HEALTHY_REMOVED}）；在役兵未裁，结果={RESULT}。" />
+    <string id="ModifiedArmy_WeeklySurplusFailed" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}：{BRANCH_NAME}（ID={BRANCH_ID}）裁减未完成。占用{OCCUPIED_BEFORE}→{OCCUPIED_AFTER}，配额{QUOTA_HEARTH}；已记录裁减{REMOVED_TOTAL}人（待命伤兵{READY_WOUNDED_REMOVED}、返乡冷却{COOLING_REMOVED}、待命健康兵{READY_HEALTHY_REMOVED}），原因={RESULT}。" />
     <string id="ModifiedArmy_BarracksRecruitmentLimit" text="兵营招募容量" />
     <string id="ModConfig_Loaded" text="[配置] 已加载“{CONFIG_ID}”军事配置，其中包含{DOCTRINE_COUNT}套文化军事规则。" />
     <string id="ModifiedArmy_FiefWeeklyUpdate" text="[封邑补员] 本周已经检查了{COUNT}座定居点。" />

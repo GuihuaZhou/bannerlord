@@ -659,15 +659,204 @@ namespace ModifiedArmy.Models.Fief
                 readyTroops += ProcessVillageCooling(
                     village, true, "WeeklyTick");
             ShowReadyNotification(readyTroops);
+            NormalizeWeeklyFeudalSurplus();
 
             // Active service has no fixed expiry. Daily reconciliation owns
             // losses and wage eligibility; weekly processing only advances
-            // returned detachments and upgrades ready troops.
+            // returned detachments, upgrades ready troops and trims AI surplus.
 
             SyncManpowerCounters();
 
             // Daily manpower production is the only path that adds new fief
             // troops. Weekly updates retain expiry, cooldown and upgrades only.
+        }
+
+        /// <summary>
+        /// Trims only eligible AI Ready and Cooling troops after weekly returns.
+        /// The village roster and saved return batches remain the sole owners;
+        /// serving batches, Hearth and mobilization records are never written.
+        /// A missing Ready roster makes occupancy unknowable, so that village is skipped.
+        /// </summary>
+        private int NormalizeWeeklyFeudalSurplus()
+        {
+            if (!IsRuntimeReady || _fiefPartyTemplate == null ||
+                _settlement?.OwnerClan == null ||
+                _settlement.OwnerClan == Clan.PlayerClan) return 0;
+            var config = MilitaryConfigManager.Instance.RequireActiveConfig()
+                .WeeklyFeudalSurplusNormalization;
+            if (config?.Enabled != true) return 0;
+            bool shouldLog = config.LogEnabled &&
+                RecruitmentLogFilter.ShouldLog(_settlement.OwnerClan);
+            CulturalMilitaryDoctrine doctrine = MilitaryConfigManager.Instance
+                .RequireActiveConfig().GetDoctrine(_settlement);
+            if (doctrine == null) return 0;
+            int totalRemoved = 0;
+            foreach (VillageFiefData village in OrderedVillages())
+            {
+                if (village == null || village.RecoveryRequired ||
+                    village.GetReadyRoster() == null) continue;
+                IReadOnlyDictionary<TroopProductionEntry, int> quotas;
+                try { quotas = village.GetSupplyBranchQuotas(_fiefPartyTemplate, doctrine); }
+                catch (Exception ex)
+                {
+                    if (shouldLog)
+                    {
+                        TextObject message = GameTexts.FindText(
+                            "str_modifiedarmy_weekly_surplus_skipped");
+                        message.SetTextVariable("FIEF_NAME", _settlement.Name);
+                        message.SetTextVariable("VILLAGE_NAME",
+                            village.VillageSettlement?.Name);
+                        message.SetTextVariable("REASON_CODE", ex.GetType().Name);
+                        ModLogger.FileWarn(message.ToString());
+                    }
+                    continue;
+                }
+                foreach (var branchQuota in quotas.OrderBy(pair =>
+                    pair.Key?.Troop?.StringId, StringComparer.Ordinal))
+                {
+                    int readyWounded = 0, readyHealthy = 0, cooling = 0;
+                    int before = -1, after = -1;
+                    string result = "SkippedInvalidData";
+                    try
+                    {
+                        TroopProductionEntry branch = branchQuota.Key;
+                        int quota = branchQuota.Value;
+                        if (branch?.Troop == null || quota < 0)
+                            throw new InvalidOperationException("InvalidBranchQuota");
+                        before = village.GetOccupiedSupplyBranchHearth(
+                            _fiefPartyTemplate, doctrine, branch);
+                        after = before;
+                        if (100L * before <= (long)config.TriggerPercent * quota)
+                            continue;
+                        long target = (long)quota * config.TargetPercent / 100;
+                        // Snapshot candidates before mutating either authoritative collection.
+                        var candidates = new List<(CharacterObject Troop, int Kind,
+                            FiefReturnBatch Batch, int BatchIndex)>();
+                        foreach (var entry in FiefTroopRosterFilter.GetEntries(
+                            village.GetReadyRoster(), _fiefPartyTemplate))
+                        {
+                            if (entry.Character.IsHero ||
+                                !_fiefPartyTemplate.TryGetSupplyBranch(
+                                    entry.Character, out var owner) || owner != branch)
+                                continue;
+                            if (entry.WoundedNumber > 0)
+                                candidates.Add((entry.Character, 0, null, -1));
+                            if (entry.Number > entry.WoundedNumber)
+                                candidates.Add((entry.Character, 2, null, -1));
+                        }
+                        for (int i = 0; i < village.ReturnBatches.Count; i++)
+                        {
+                            var batch = village.ReturnBatches[i];
+                            if (batch?.Troops == null || batch.Troops.Any(pair =>
+                                pair.Key == null || pair.Value <= 0)) continue;
+                            foreach (var pair in batch.Troops)
+                                if (!pair.Key.IsHero && _fiefPartyTemplate
+                                    .TryGetSupplyBranch(pair.Key, out var owner) &&
+                                    owner == branch)
+                                    candidates.Add((pair.Key, 1, batch, i));
+                        }
+                        foreach (var candidate in candidates
+                            .OrderBy(item => item.Troop.Tier)
+                            .ThenBy(item => item.Kind)
+                            .ThenBy(item => item.Troop.StringId, StringComparer.Ordinal)
+                            .ThenBy(item => item.BatchIndex))
+                        {
+                            if (after <= target) break;
+                            int cost = doctrine.GetFeudalSupplyCost(candidate.Troop);
+                            if (cost <= 0) throw new InvalidOperationException("InvalidTroopCost");
+                            int available, wounded = 0, originalCount = 0;
+                            TroopRoster roster = village.GetReadyRoster();
+                            if (candidate.Kind == 1)
+                            {
+                                if (!candidate.Batch.Troops.TryGetValue(candidate.Troop,
+                                    out available)) continue;
+                            }
+                            else
+                            {
+                                if (roster == null || !FiefTroopRosterFilter.TryGetCounts(
+                                    roster, candidate.Troop, out int count,
+                                    out wounded) || count < 0 || wounded < 0 ||
+                                    wounded > count)
+                                    throw new InvalidOperationException("InvalidReadyRoster");
+                                available = candidate.Kind == 0 ? wounded : count - wounded;
+                                originalCount = count;
+                            }
+                            if (available <= 0) continue;
+                            int remove = (int)Math.Min(available,
+                                ((long)after - target + cost - 1) / cost);
+                            if (candidate.Kind == 1)
+                            {
+                                int remaining = available - remove;
+                                if (remaining == 0)
+                                    candidate.Batch.Troops.Remove(candidate.Troop);
+                                else candidate.Batch.Troops[candidate.Troop] = remaining;
+                                if (candidate.Batch.Troops.Count == 0)
+                                    village.ReturnBatches.Remove(candidate.Batch);
+                                cooling += remove;
+                            }
+                            else
+                            {
+                                roster.AddToCounts(candidate.Troop, -remove, false,
+                                    candidate.Kind == 0 ? -remove : 0, 0, true, -1);
+                                if (!FiefTroopRosterFilter.TryGetCounts(roster,
+                                    candidate.Troop, out int newCount, out int newWounded))
+                                { newCount = 0; newWounded = 0; }
+                                if (newCount != originalCount - remove ||
+                                    newWounded != wounded -
+                                        (candidate.Kind == 0 ? remove : 0))
+                                    throw new InvalidOperationException("ReadyPostconditionMismatch");
+                                if (candidate.Kind == 0) readyWounded += remove;
+                                else readyHealthy += remove;
+                            }
+                            int actual = village.GetOccupiedSupplyBranchHearth(
+                                _fiefPartyTemplate, doctrine, branch);
+                            if ((long)after - actual != (long)remove * cost)
+                                throw new InvalidOperationException("PostconditionMismatch");
+                            after = actual;
+                        }
+                        result = after <= target ? "Normalized" :
+                            readyWounded + readyHealthy + cooling == 0 ?
+                                "NoEligibleTroops" : "RemainingOverQuota";
+                    }
+                    catch (Exception ex)
+                    {
+                        result = "PostconditionMismatch:" + ex.GetType().Name +
+                            ":" + ex.Message;
+                        try { after = village.GetOccupiedSupplyBranchHearth(
+                            _fiefPartyTemplate, doctrine, branchQuota.Key); }
+                        catch { /* Preserve the recorded last known occupancy. */ }
+                    }
+                    totalRemoved += readyWounded + readyHealthy + cooling;
+                    if (shouldLog)
+                    {
+                        string key = result == "Normalized"
+                            ? "str_modifiedarmy_weekly_surplus_normalized"
+                            : result == "RemainingOverQuota" ||
+                                result == "NoEligibleTroops"
+                                ? "str_modifiedarmy_weekly_surplus_remaining"
+                                : "str_modifiedarmy_weekly_surplus_failed";
+                        TextObject message = GameTexts.FindText(key);
+                        message.SetTextVariable("FIEF_NAME", _settlement.Name);
+                        message.SetTextVariable("VILLAGE_NAME", village.VillageSettlement?.Name);
+                        message.SetTextVariable("BRANCH_NAME", branchQuota.Key?.Troop?.Name);
+                        message.SetTextVariable("BRANCH_ID", branchQuota.Key?.Troop?.StringId);
+                        message.SetTextVariable("QUOTA_HEARTH", branchQuota.Value);
+                        message.SetTextVariable("OCCUPIED_BEFORE", before);
+                        message.SetTextVariable("TRIGGER_PERCENT", config.TriggerPercent);
+                        message.SetTextVariable("TARGET_PERCENT", config.TargetPercent);
+                        message.SetTextVariable("OCCUPIED_AFTER", after);
+                        message.SetTextVariable("READY_WOUNDED_REMOVED", readyWounded);
+                        message.SetTextVariable("READY_HEALTHY_REMOVED", readyHealthy);
+                        message.SetTextVariable("COOLING_REMOVED", cooling);
+                        message.SetTextVariable("REMOVED_TOTAL", readyWounded + readyHealthy + cooling);
+                        message.SetTextVariable("RESULT", result);
+                        string summary = message.ToString();
+                        if (result == "Normalized") ModLogger.FileInfo(summary);
+                        else ModLogger.FileWarn(summary);
+                    }
+                }
+            }
+            return totalRemoved;
         }
 
         internal int ProcessVillageCooling(VillageFiefData village,

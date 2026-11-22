@@ -187,6 +187,15 @@ namespace ModifiedArmy.common
         public float ServiceWeight { get; internal set; } = 0.40f;
     }
 
+    /// <summary>Runtime-only global policy for weekly AI feudal surplus.</summary>
+    public sealed class WeeklyFeudalSurplusNormalizationConfig
+    {
+        public bool Enabled { get; internal set; }
+        public int TriggerPercent { get; internal set; }
+        public int TargetPercent { get; internal set; }
+        public bool LogEnabled { get; internal set; }
+    }
+
     public sealed class MilitaryConfig : MBObjectBase
     {
         private readonly Dictionary<string, CulturalMilitaryDoctrine> _doctrines =
@@ -195,6 +204,7 @@ namespace ModifiedArmy.common
         public string ConfigId => StringId;
         public AiRecruitmentConfig AiRecruitment { get; } = new AiRecruitmentConfig();
         public HearthEconomyConfig HearthEconomy { get; private set; }
+        public WeeklyFeudalSurplusNormalizationConfig WeeklyFeudalSurplusNormalization { get; private set; }
 
         // Compatibility-shaped accessors keep decision code focused on behavior.
         public float AiNeedManpowerWeight => AiRecruitment.ManpowerWeight;
@@ -218,6 +228,8 @@ namespace ModifiedArmy.common
             ParseAi(node.SelectSingleNode("AiRecruitment"));
             HearthEconomy = ParseHearthEconomy(Required(node,
                 "HearthEconomy"));
+            WeeklyFeudalSurplusNormalization = ParseWeeklyFeudalSurplus(
+                node.SelectSingleNode("WeeklyFeudalSurplusNormalization"));
             XmlNode cultures = Required(node, "Cultures");
             foreach (XmlNode cultureNode in cultures.SelectNodes("Culture"))
             {
@@ -572,6 +584,40 @@ namespace ModifiedArmy.common
             DailyRate = NonNegativeFloat(node, "dailyRate"),
             ProsperityCostPerTroop = NonNegativeInt(node, "prosperityCostPerTroop")
         };
+
+        private static WeeklyFeudalSurplusNormalizationConfig ParseWeeklyFeudalSurplus(XmlNode node)
+        {
+            // Older custom XML files deliberately retain their old behavior.
+            if (node == null)
+                return new WeeklyFeudalSurplusNormalizationConfig();
+            bool ReadBool(string name)
+            {
+                if (!bool.TryParse(Attr(node, name), out bool value))
+                    throw new InvalidOperationException(
+                        "WeeklyFeudalSurplusNormalization invalid " + name + ".");
+                return value;
+            }
+            int ReadPercent(string name)
+            {
+                if (!int.TryParse(Attr(node, name), NumberStyles.None,
+                    CultureInfo.InvariantCulture, out int value))
+                    throw new InvalidOperationException(
+                        "WeeklyFeudalSurplusNormalization invalid " + name + ".");
+                return value;
+            }
+            var config = new WeeklyFeudalSurplusNormalizationConfig
+            {
+                Enabled = ReadBool("enabled"),
+                TriggerPercent = ReadPercent("triggerPercent"),
+                TargetPercent = ReadPercent("targetPercent"),
+                LogEnabled = ReadBool("logEnabled")
+            };
+            if (config.TargetPercent <= 0 ||
+                config.TargetPercent >= config.TriggerPercent)
+                throw new InvalidOperationException(
+                    "WeeklyFeudalSurplusNormalization requires 0 < targetPercent < triggerPercent.");
+            return config;
+        }
 
         private static HearthEconomyConfig ParseHearthEconomy(XmlNode node)
         {

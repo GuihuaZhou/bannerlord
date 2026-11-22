@@ -6,6 +6,8 @@
   -->
   <!-- id：配置对象的唯一标识；当前固定使用 default。 -->
   <MilitaryConfig id="default">
+    <!-- Weekly AI feudal surplus: trigger strictly above 120%, trim to at most 105%. -->
+    <WeeklyFeudalSurplusNormalization enabled="true" triggerPercent="120" targetPercent="105" logEnabled="true" />
     <!-- AI 领主在封邑兵、驻军调拨和雇佣兵之间进行招募决策时使用的通用参数。 -->
     <AiRecruitment>
       <!--
