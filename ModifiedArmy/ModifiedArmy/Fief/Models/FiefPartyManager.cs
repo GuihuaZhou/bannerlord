@@ -918,7 +918,7 @@ namespace ModifiedArmy.Models.Fief
                 message.SetTextVariable("PARTY_NAME",
                     PartyLogFormatter.GetDisplayName(party));
                 message.SetTextVariable("DAYS", remainingDays);
-                MBInformationManager.AddQuickInformation(message);
+                MBInformationManager.AddQuickInformation(message, extraTimeInMs: 10000);
                 ModLogger.FileInfo(string.Format(
                     "Player fief service ending soon: fief={0}, fiefId={1}, " +
                     "party={2}, partyId={3}, troops={4}, remainingDays={5}.",
