@@ -4,6 +4,8 @@
     <tag language="简体中文" />
   </tags>
   <strings>
+    <string id="ModifiedArmy_CapturedServiceDetached" text="[封邑易主] {FIEF_NAME}的{VILLAGE_NAME}：旧领主部队中的{TROOPS}名封建兵已失去供养，留在原部队按普通工资计薪；解除{MARKERS}个动员标记，不返还村庄Hearth。结果={RESULT}。" />
+    <string id="ModifiedArmy_CapturedServiceSkipped" text="[封邑易主] {FIEF_NAME}的{VILLAGE_NAME}：旧服役记录或动员标记无法核实，本次保留记录以避免重复计兵；结果={RESULT}。" />
     <string id="ModifiedArmy_WeeklySurplusSkipped" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}未执行周裁减：配额数据不可用，原因={REASON_CODE}。" />
     <string id="ModifiedArmy_WeeklySurplusNormalized" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}：{BRANCH_NAME}（ID={BRANCH_ID}）占用{OCCUPIED_BEFORE}，严格超过配额{QUOTA_HEARTH}的{TRIGGER_PERCENT}%。已裁{REMOVED_TOTAL}人（待命伤兵{READY_WOUNDED_REMOVED}、返乡冷却{COOLING_REMOVED}、待命健康兵{READY_HEALTHY_REMOVED}），现占用{OCCUPIED_AFTER}，已降至{TARGET_PERCENT}%目标内。" />
     <string id="ModifiedArmy_WeeklySurplusRemaining" text="[封建裁减] {FIEF_NAME}的{VILLAGE_NAME}：{BRANCH_NAME}（ID={BRANCH_ID}）仍占用{OCCUPIED_AFTER}，配额{QUOTA_HEARTH}、目标{TARGET_PERCENT}%。本周已裁{REMOVED_TOTAL}人（待命伤兵{READY_WOUNDED_REMOVED}、返乡冷却{COOLING_REMOVED}、待命健康兵{READY_HEALTHY_REMOVED}）；在役兵未裁，结果={RESULT}。" />

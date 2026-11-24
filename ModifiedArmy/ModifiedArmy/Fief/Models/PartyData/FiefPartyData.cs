@@ -336,10 +336,9 @@ namespace ModifiedArmy.Models.Fief
         {
             if (settlementWasCaptured)
             {
-                // Serving detachments remain authoritative after a capture.
-                // They may still be alive in their serving parties and must
-                // continue to age and receive the correct wage treatment.
-                ModLogger.Info($"[Fief Service] {_settlement.Name} changed hands; active service batches were preserved.");
+                // Ownership change, not siege completion, determines whether
+                // an old service source is lost. The manager converts foreign
+                // service records when the owner change event is delivered.
 
                 //// 清除驻军的士气惩罚
                 //if (_settlement.Town != null && _settlement.Town.GarrisonParty != null)
@@ -353,9 +352,8 @@ namespace ModifiedArmy.Models.Fief
 
         public void OnSettlementOwnerChanged()
         {
-            // Ownership changes do not prove that serving soldiers died or
-            // returned. Preserve their records and forbid normal return by
-            // the ownership checks in the return flow.
+            // The manager has already converted foreign service batches into
+            // ordinary party troops; current-owner batches remain authoritative.
             SyncManpowerCounters();
         }
 

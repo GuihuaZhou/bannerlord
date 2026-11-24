@@ -103,10 +103,8 @@ namespace ModifiedArmy.PartyManagement.Bindings
             if (sourceFief == null || requestingParty?.StringId == null)
                 return FiefSourceAccessDecision.Reject(sourceFief,
                     "SourceBindingInvalid", null, null);
-            IReadOnlyList<MobileParty> servingParties = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .GetServingPartiesForFief(sourceFief) ??
-                Array.Empty<MobileParty>();
+            IReadOnlyList<MobileParty> servingParties =
+                GetCurrentOwnerServingParties(sourceFief);
             if (servingParties.Count > 1 ||
                 (servingParties.Count == 1 &&
                  servingParties[0] != requestingParty))
@@ -152,7 +150,7 @@ namespace ModifiedArmy.PartyManagement.Bindings
             leader != null && clan != null && primary != null &&
             leader.Clan == clan && IsLegalBase(clan, primary) &&
             IsAvailable(primary, null) &&
-            GetServingParties(primary).Count == 0;
+            GetCurrentOwnerServingParties(primary).Count == 0;
 
         public bool TryBindSecondary(MobileParty party, Settlement settlement)
         {
@@ -171,7 +169,7 @@ namespace ModifiedArmy.PartyManagement.Bindings
             if (leader == null || clan == null || primary == null ||
                 leader.Clan != clan || !IsLegalBase(clan, primary) ||
                 !IsAvailable(primary, null) ||
-                GetServingParties(primary).Count > 0)
+                GetCurrentOwnerServingParties(primary).Count > 0)
             {
                 PartyBindingDiagnostics.LogReservation(
                     leader,
@@ -226,10 +224,8 @@ namespace ModifiedArmy.PartyManagement.Bindings
                     primary, "CommitCreation", "SourceBoundToOtherParty");
                 return false;
             }
-            IReadOnlyList<MobileParty> servingParties = Campaign.Current?
-                .GetCampaignBehavior<FiefPartyManager>()?
-                .GetServingPartiesForFief(primary) ??
-                Array.Empty<MobileParty>();
+            IReadOnlyList<MobileParty> servingParties =
+                GetCurrentOwnerServingParties(primary);
             if (servingParties.Any(party => party != createdParty))
             {
                 PartyBindingDiagnostics.LogBindingRejected(createdParty,
@@ -268,7 +264,7 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 _reservations.TryGetValue(primary.StringId, out var current) &&
                 current.TokenId == token.TokenId &&
                 IsLegalBase(clan, primary) &&
-                GetServingParties(primary).Count == 0;
+                GetCurrentOwnerServingParties(primary).Count == 0;
         }
 
         public void CancelCreationReservation(PendingPartyCreation token)
@@ -424,11 +420,23 @@ namespace ModifiedArmy.PartyManagement.Bindings
                 settlement.StringId, out string owner) || owner == partyId;
         }
 
-        private static IReadOnlyList<MobileParty> GetServingParties(
-            Settlement sourceFief) => Campaign.Current?
+        /// <summary>
+        /// A captured fief retains historical service batches for reconciliation,
+        /// but only parties of its current owner clan can reserve or block its
+        /// present recruiting source. Old enemy detachments remain untouched.
+        /// </summary>
+        private static IReadOnlyList<MobileParty> GetCurrentOwnerServingParties(
+            Settlement sourceFief)
+        {
+            Clan owner = sourceFief?.OwnerClan;
+            if (owner == null) return Array.Empty<MobileParty>();
+            return (Campaign.Current?
                 .GetCampaignBehavior<FiefPartyManager>()?
                 .GetServingPartiesForFief(sourceFief) ??
-                Array.Empty<MobileParty>();
+                Array.Empty<MobileParty>())
+                .Where(party => party?.ActualClan == owner)
+                .ToList();
+        }
 
         private static bool IsEligibleParty(MobileParty party) =>
             party != null && party.IsActive && party.IsLordParty &&

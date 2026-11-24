@@ -138,6 +138,7 @@ namespace ModifiedArmy.Models.Fief
             if (CampaignState.IsNewGame)
                 InitializeNewGameFiefTroops();
             RebuildServingDetachmentIndex();
+            DetachForeignFiefServiceAfterCapture();
             PrepareLegacyMobilizationRecovery();
             foreach (MobileParty party in _servingDetachmentIndex.Keys.ToList())
                 ReconcilePartyFiefTroops(party);
@@ -854,6 +855,104 @@ namespace ModifiedArmy.Models.Fief
         public void RebuildServingDetachmentIndex()
         {
             ServiceLedger.Rebuild(_fiefDataMap);
+        }
+
+        /// <summary>
+        /// Converts troops still carried by a former owner's party into ordinary
+        /// paid party troops. The saved service ledger and mobilization marker
+        /// are reduced together; the party roster and consumed village Hearth
+        /// are not restored. Also repairs saves made after an earlier capture.
+        /// </summary>
+        private void DetachForeignFiefServiceAfterCapture(
+            Settlement sourceFief = null)
+        {
+            foreach (FiefPartyData fief in _fiefDataMap.Values.Where(item =>
+                item?.GetSettlement()?.IsFortification == true &&
+                (sourceFief == null || item.GetSettlement() == sourceFief)))
+            {
+                Settlement settlement = fief.GetSettlement();
+                Clan owner = settlement.OwnerClan;
+                if (owner == null) continue;
+                int detached = 0;
+                foreach (VillageFiefData village in fief.OrderedVillages())
+                {
+                    if (village?.ServiceBatches == null) continue;
+                    List<FiefServiceBatch> foreign = village.ServiceBatches
+                        .Where(batch =>
+                        {
+                            batch?.ResolveServingParty();
+                            return batch?.ServingParty?.ActualClan != null &&
+                                batch.ServingParty.ActualClan != owner;
+                        }).ToList();
+                    if (foreign.Count == 0) continue;
+                    int count;
+                    try
+                    {
+                        if (foreign.Any(batch => batch.Troops == null ||
+                            batch.Troops.Count == 0 || batch.Troops.Any(pair =>
+                                pair.Key == null || pair.Value <= 0)))
+                            throw new InvalidOperationException("InvalidServiceBatch");
+                        count = checked(foreign.Sum(batch =>
+                            batch.Troops.Values.Sum()));
+                        if (!village.TryGetRawServingCount(out int rawServing,
+                                out string reason) ||
+                            village.MobilizedHearth != rawServing ||
+                            rawServing < count)
+                            throw new InvalidOperationException(
+                                reason ?? "MobilizationMismatch");
+                    }
+                    catch (Exception exception)
+                    {
+                        LogCapturedServiceChange(settlement, village,
+                            0, 0, "Skipped:" + exception.GetType().Name +
+                                ":" + exception.Message, true);
+                        continue;
+                    }
+                    // Commit the marker first. If it cannot be released, keep
+                    // every service batch so wages and supply remain accounted.
+                    if (!village.TryReleaseMobilization(count, false))
+                    {
+                        LogCapturedServiceChange(settlement, village,
+                            0, 0, "MarkerReleaseFailed", true);
+                        continue;
+                    }
+                    foreach (FiefServiceBatch batch in foreign)
+                    {
+                        village.ServiceBatches.Remove(batch);
+                        UnregisterServingDetachment(settlement,
+                            village.VillageSettlement, batch);
+                    }
+                    detached += count;
+                    LogCapturedServiceChange(settlement, village,
+                        count, count, "ConvertedToPaidTroops", false);
+                }
+                if (detached > 0) fief.RefreshManpowerCounters();
+            }
+        }
+
+        private static void LogCapturedServiceChange(Settlement fief,
+            VillageFiefData village, int troops, int markers,
+            string result, bool rejected)
+        {
+            if (!RecruitmentLogFilter.ShouldLog(fief?.OwnerClan)) return;
+            try
+            {
+                TextObject message = GameTexts.FindText(rejected
+                    ? "str_modifiedarmy_captured_service_skipped"
+                    : "str_modifiedarmy_captured_service_detached");
+                message.SetTextVariable("FIEF_NAME", fief.Name);
+                message.SetTextVariable("VILLAGE_NAME",
+                    village.VillageSettlement?.Name);
+                message.SetTextVariable("TROOPS", troops);
+                message.SetTextVariable("MARKERS", markers);
+                message.SetTextVariable("RESULT", result);
+                if (rejected) ModLogger.FileWarn(message.ToString());
+                else ModLogger.FileInfo(message.ToString());
+            }
+            catch (Exception)
+            {
+                // Diagnostics must not interrupt later villages after a commit.
+            }
         }
 
         public void RegisterServingDetachment(
@@ -1849,6 +1948,7 @@ namespace ModifiedArmy.Models.Fief
             if (!_fiefDataMap.TryGetValue(settlement, out var fiefData) || fiefData == null)
                 return;
 
+            DetachForeignFiefServiceAfterCapture(settlement);
             fiefData.OnSettlementOwnerChanged();
         }
 
