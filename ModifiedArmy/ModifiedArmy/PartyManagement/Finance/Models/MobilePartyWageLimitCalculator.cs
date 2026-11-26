@@ -30,7 +30,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
             return Calculate(
                 clan,
                 party.LeaderHero,
-                NewPartyWageModel.GetWarWageMultiplier(party) > 1f);
+                NewPartyWageModel.IsFormalWarLordParty(party));
         }
 
         /// <summary>

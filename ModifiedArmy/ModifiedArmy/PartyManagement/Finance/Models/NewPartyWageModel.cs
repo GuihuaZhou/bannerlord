@@ -22,7 +22,8 @@ namespace ModifiedArmy.Models
 {
     public class NewPartyWageModel : DefaultPartyWageModel
     {
-        public const float WarWageMultiplier = 1.5f;
+        public static float WarWageMultiplier =>
+            MilitaryConfigManager.Instance.GetActiveConfig()?.WarWageMultiplier ?? 1.5f;
         public const int Tier4TroopWage = 16;
         public const int Tier5TroopWage = 24;
         public const int Tier6TroopWage = 34;
@@ -207,6 +208,10 @@ namespace ModifiedArmy.Models
                     WarWageText);
             }
         }
+
+        /// <summary>Checks the existing formal-war lord-party wage eligibility independently of the multiplier.</summary>
+        public static bool IsFormalWarLordParty(MobileParty party) =>
+            ShouldApplyWarWage(party);
 
         private static bool ShouldApplyWarWage(MobileParty mobileParty)
         {

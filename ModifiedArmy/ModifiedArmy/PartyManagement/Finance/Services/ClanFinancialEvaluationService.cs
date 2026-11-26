@@ -35,7 +35,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Services
             TextObject message = GameTexts.FindText(exceeded
                 ? "str_modifiedarmy_party_wage_limit_exceeded"
                 : "str_modifiedarmy_party_wage_limit_evaluated");
-            TextObject warState = NewPartyWageModel.GetWarWageMultiplier(party) > 1f
+            TextObject warState = NewPartyWageModel.IsFormalWarLordParty(party)
                 ? GameTexts.FindText("str_modifiedarmy_party_wage_state_war")
                 : GameTexts.FindText("str_modifiedarmy_party_wage_state_peace");
             message.SetTextVariable("PARTY_NAME",

@@ -204,6 +204,7 @@ namespace ModifiedArmy.common
         public string ConfigId => StringId;
         public AiRecruitmentConfig AiRecruitment { get; } = new AiRecruitmentConfig();
         public HearthEconomyConfig HearthEconomy { get; private set; }
+        public float WarWageMultiplier { get; private set; } = 1.5f;
         public WeeklyFeudalSurplusNormalizationConfig WeeklyFeudalSurplusNormalization { get; private set; }
 
         // Compatibility-shaped accessors keep decision code focused on behavior.
@@ -225,6 +226,18 @@ namespace ModifiedArmy.common
         public override void Deserialize(MBObjectManager objectManager, XmlNode node)
         {
             base.Deserialize(objectManager, node);
+            XmlNode wageNode = node.SelectSingleNode("Finance/WarWageMultiplier");
+            if (wageNode != null)
+            {
+                string rawValue = Attr(wageNode, "value");
+                if (!float.TryParse(rawValue, NumberStyles.Float,
+                        CultureInfo.InvariantCulture, out float multiplier) ||
+                    float.IsNaN(multiplier) || float.IsInfinity(multiplier) ||
+                    multiplier < 1f)
+                    throw new InvalidOperationException(
+                        "MilitaryConfig Finance/WarWageMultiplier requires a finite value >= 1.0: " + rawValue);
+                WarWageMultiplier = multiplier;
+            }
             ParseAi(node.SelectSingleNode("AiRecruitment"));
             HearthEconomy = ParseHearthEconomy(Required(node,
                 "HearthEconomy"));

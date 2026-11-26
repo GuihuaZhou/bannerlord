@@ -82,7 +82,7 @@ namespace ModifiedArmy.PartyManagement.Finance.Models
         {
             return EstimateUnitDailyWage(
                 troop,
-                NewPartyWageModel.GetWarWageMultiplier(party) > 1f);
+                NewPartyWageModel.IsFormalWarLordParty(party));
         }
 
         /// <summary>Estimates unit wage for a live or planned lord party.</summary>
