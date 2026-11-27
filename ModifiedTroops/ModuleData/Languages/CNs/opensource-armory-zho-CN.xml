@@ -4,7 +4,7 @@
     <tag language="简体中文"/>
   </tags>
   <strings>
-    <!-- Open Source Armory armor names used by the imperial troop line. -->
+    <!-- Open Source Armory equipment names used by modified troop lines. -->
     <string id="osa_ar_empire_scale_armor_a" text="帝国黄铜鳞甲罩皮甲"/>
     <string id="osa_ar_empire_scale_armor_b" text="帝国钢鳞甲罩皮甲"/>
     <string id="osa_ar_empire_scale_armor_e2" text="西式鳞甲罩棉甲"/>
@@ -18,5 +18,13 @@
     <string id="osa_tv_sturgia_armor_c" text="北方黄铜鳞甲罩锁甲"/>
     <string id="osa_tv_vlandia_armor_t" text="西式长钢鳞甲罩锁甲"/>
     <string id="osa_tv_vlandia_armor_t2" text="西式长青铜鳞甲罩锁甲"/>
+    <string id="osa_tv_empire_lord_helmet_b" text="帝国镀银饰冠脊盔"/>
+    <string id="osa_tv_empire_armor_j" text="帝国骑兵札甲"/>
+    <string id="osa_ar_vlandia_armor_q" text="西式皮甲罩长锁甲"/>
+    <string id="osa_tv_khuzait_lord_helmet_e" text="装饰尖顶面甲盔"/>
+    <string id="osa_ar_vaegir_helmet_g" text="北方尖顶饰面甲盔"/>
+    <string id="osa_tv_vlandia_armor_c" text="西式纹饰罩袍锁甲"/>
+    <string id="osa_ar_vlandia_armor_c" text="西式罩袍锁甲"/>
+    <string id="osa_le_vlandia_armor_a" text="纹饰罩袍衬锁甲"/>
   </strings>
 </base>

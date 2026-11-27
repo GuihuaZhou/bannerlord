@@ -968,9 +968,15 @@
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_legion_b" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_empire_armor_j" />
 				<equipment
 					slot="Gloves"
 					id="Item.plated_strip_gauntlets" />
@@ -1020,9 +1026,20 @@
 				<equipment
 					slot="Cape"
 					id="Item.studded_imperial_neckguard" />
+				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.empire_legion_b" />
+				-->
+				<!-- Previous active armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.TV_empire_armor_j" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_vlandia_armor_q" />
 				<equipment
 					slot="Gloves"
 					id="Item.plated_strip_gauntlets" />
@@ -1693,6 +1710,229 @@
 				<equipment
 					slot="Head"
 					id="Item.empire_jewelled_helmet" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<!-- Additional equipment roster copied from the native imperial_legionary definition. -->
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_sword_5_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.stronger_reinforced_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.imperial_throwing_spear_1_t4_2" />
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.plated_strip_boots" />
+				<equipment
+					slot="Head"
+					id="Item.empire_helmet_with_metal_strips" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentSet
+				id="empire_troop_civilian_template_t3"
+				civilian="true" />
+		</Equipments>
+	</NPCCharacter>
+	<!-- 新增禁卫步兵, Imperial Guard Infantry -->
+	<NPCCharacter
+		id="imperial_guard_infantry"
+		default_group="Infantry"
+		level="26"
+		name="{=imperial_guard_infantry}Imperial Guard Infantry"
+		occupation="Soldier"
+		culture="Culture.empire">
+		<face>
+			<face_key_template
+				value="BodyProperty.fighter_empire_veteran" />
+		</face>
+		<skills>
+			<skill
+				id="Athletics"
+				value="130" />
+			<skill
+				id="Riding"
+				value="20" />
+			<skill
+				id="OneHanded"
+				value="160" />
+			<skill
+				id="TwoHanded"
+				value="80" />
+			<skill
+				id="Polearm"
+				value="130" />
+			<skill
+				id="Bow"
+				value="60" />
+			<skill
+				id="Crossbow"
+				value="60" />
+			<skill
+				id="Throwing"
+				value="100" />
+		</skills>
+		<upgrade_targets></upgrade_targets>
+		<Equipments>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_sword_5_t4" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_t2" />
+				<!-- Original gloves retained for rollback:
+				<equipment
+					slot="Gloves"
+					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.decorated_imperial_boots" />
+				<!-- Original helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
+				-->
+				<!-- Previous active helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.empire_helmet_with_metal_strips" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.TV_empire_lord_helmet_b" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_mace_4_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_vlandia_armor_t" />
+				<!-- Original gloves retained for rollback:
+				<equipment
+					slot="Gloves"
+					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.decorated_imperial_boots" />
+				<!-- Original helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.ironlame_nasalhelm_over_imperial_coif" />
+				-->
+				<!-- Previous active helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.empire_helmet_with_metal_strips" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.TV_empire_lord_helmet_b" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_mace_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.sturgia_infantry_shield_b" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.TV_sturgia_armor_c" />
+				<!-- Original gloves retained for rollback:
+				<equipment
+					slot="Gloves"
+					id="Item.decorated_imperial_gauntlets" />
+				-->
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.decorated_imperial_boots" />
+				<!-- Previous active helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.empire_jewelled_helmet" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.TV_empire_lord_helmet_b" />
 				<equipment
 					slot="Cape"
 					id="Item.imperial_studded_strip_shoulders" />
@@ -3391,182 +3631,7 @@
 				civilian="true" />
 		</Equipments>
 	</NPCCharacter>
-	<!-- 新增禁卫步兵, Imperial Guard Infantry -->
-	<NPCCharacter
-		id="imperial_guard_infantry"
-		default_group="Infantry"
-		level="26"
-		name="{=imperial_guard_infantry}Imperial Guard Infantry"
-		occupation="Soldier"
-		is_hidden_encyclopedia="true"
-		culture="Culture.empire">
-		<face>
-			<face_key_template
-				value="BodyProperty.fighter_empire_veteran" />
-		</face>
-		<skills>
-			<skill
-				id="Athletics"
-				value="130" />
-			<skill
-				id="Riding"
-				value="20" />
-			<skill
-				id="OneHanded"
-				value="160" />
-			<skill
-				id="TwoHanded"
-				value="80" />
-			<skill
-				id="Polearm"
-				value="130" />
-			<skill
-				id="Bow"
-				value="60" />
-			<skill
-				id="Crossbow"
-				value="60" />
-			<skill
-				id="Throwing"
-				value="100" />
-		</skills>
-		<upgrade_targets></upgrade_targets>
-		<Equipments>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_sword_5_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.TV_vlandia_armor_t2" />
-				<!-- Original gloves retained for rollback:
-				<equipment
-					slot="Gloves"
-					id="Item.decorated_imperial_gauntlets" />
-				-->
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-				<equipment
-					slot="Leg"
-					id="Item.decorated_imperial_boots" />
-				<!-- Original helmet retained for rollback:
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_coif" />
-				-->
-				<equipment
-					slot="Head"
-					id="Item.empire_helmet_with_metal_strips" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_mace_4_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.TV_vlandia_armor_t" />
-				<!-- Original gloves retained for rollback:
-				<equipment
-					slot="Gloves"
-					id="Item.decorated_imperial_gauntlets" />
-				-->
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-				<equipment
-					slot="Leg"
-					id="Item.decorated_imperial_boots" />
-				<!-- Original helmet retained for rollback:
-				<equipment
-					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_coif" />
-				-->
-				<equipment
-					slot="Head"
-					id="Item.empire_helmet_with_metal_strips" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_mace_5_t5" />
-				<equipment
-					slot="Item1"
-					id="Item.sturgia_infantry_shield_b" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
-				<equipment
-					slot="Body"
-					id="Item.TV_sturgia_armor_c" />
-				<!-- Original gloves retained for rollback:
-				<equipment
-					slot="Gloves"
-					id="Item.decorated_imperial_gauntlets" />
-				-->
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-				<equipment
-					slot="Leg"
-					id="Item.decorated_imperial_boots" />
-				<equipment
-					slot="Head"
-					id="Item.empire_jewelled_helmet" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentSet
-				id="empire_troop_civilian_template_t3"
-				civilian="true" />
-		</Equipments>
-	</NPCCharacter>
+
 	<!-- #endregion -->
 	<!-- #endregion -->
 </NPCCharacters>

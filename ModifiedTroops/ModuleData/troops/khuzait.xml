@@ -1292,9 +1292,15 @@
 				<equipment
 					slot="Body"
 					id="Item.northern_brass_lamellar_over_mail" />
+				<!-- Original helmet retained for rollback:
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.TV_khuzait_lord_helmet_e" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
@@ -1321,9 +1327,15 @@
 				<equipment
 					slot="Body"
 					id="Item.northern_brass_lamellar_over_mail" />
+				<!-- Original helmet retained for rollback:
 				<equipment
 					slot="Head"
 					id="Item.spiked_helmet" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.AR_vaegir_helmet_g" />
 				<equipment
 					slot="Leg"
 					id="Item.mail_chausses" />
