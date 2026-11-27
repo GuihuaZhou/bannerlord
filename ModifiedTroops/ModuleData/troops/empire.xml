@@ -611,7 +611,7 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.highland_spear_4_t4" />
+					id="Item.eastern_spear_2_t3" />
 				<equipment
 					slot="Item1"
 					id="Item.empire_sword_4_t4" />
@@ -646,7 +646,7 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.highland_spear_4_t4" />
+					id="Item.eastern_spear_2_t3" />
 				<equipment
 					slot="Item1"
 					id="Item.empire_sword_4_t4" />
@@ -684,7 +684,7 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.highland_spear_4_t4" />
+					id="Item.eastern_spear_2_t3" />
 				<equipment
 					slot="Item1"
 					id="Item.empire_sword_4_t4" />
@@ -1469,10 +1469,15 @@
 					slot="Body"
 					id="Item.empire_plate_vest_armor" />
 				-->
-				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<!-- Previous active body armor retained for rollback:
 				<equipment
 					slot="Body"
 					id="Item.AR_empire_scale_armor_b" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_e2" />
 				<equipment
 					slot="Gloves"
 					id="Item.reinforced_padded_mitten" />
@@ -1637,7 +1642,7 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.empire_mace_3_t4" />
+					id="Item.empire_mace_4_t5" />
 				<equipment
 					slot="Item1"
 					id="Item.stronger_reinforced_kite_shield" />
@@ -1647,6 +1652,58 @@
 				<equipment
 					slot="Item3"
 					id="Item.imperial_throwing_spear_1_t4" />
+				<!-- Original body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.imperial_lamellar" />
+				-->
+				<!-- Previous active body armor retained for rollback:
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_e2" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Body"
+					id="Item.AR_empire_scale_armor_e" />
+				<equipment
+					slot="Gloves"
+					id="Item.plated_strip_gauntlets" />
+				<equipment
+					slot="Leg"
+					id="Item.plated_strip_boots" />
+				<!-- Original helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.heavy_nasalhelm_over_imperial_leather" />
+				-->
+				<!-- Previous active helmet retained for rollback:
+				<equipment
+					slot="Head"
+					id="Item.empire_jewelled_helmet" />
+				-->
+				<!-- External item from Open Source Armory (OpenSourceArmory). -->
+				<equipment
+					slot="Head"
+					id="Item.AR_battania_lord_helmet_q" />
+				<equipment
+					slot="Cape"
+					id="Item.imperial_studded_strip_shoulders" />
+			</EquipmentRoster>
+			<!-- Additional equipment roster based on the native imperial_legionary definition. -->
+			<EquipmentRoster>
+				<equipment
+					slot="Item0"
+					id="Item.empire_mace_5_t5" />
+				<equipment
+					slot="Item1"
+					id="Item.stronger_reinforced_kite_shield" />
+				<equipment
+					slot="Item2"
+					id="Item.imperial_throwing_spear_1_t4" />
+				<equipment
+					slot="Item3"
+					id="Item.imperial_throwing_spear_1_t4_2" />
 				<!-- Original body armor retained for rollback:
 				<equipment
 					slot="Body"
@@ -1665,81 +1722,12 @@
 				<!-- Original helmet retained for rollback:
 				<equipment
 					slot="Head"
-					id="Item.ironlame_nasalhelm_over_imperial_coif" />
-				-->
-				<equipment
-					slot="Head"
 					id="Item.empire_helmet_with_metal_strips" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_mace_3_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.stronger_reinforced_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<!-- Original body armor retained for rollback:
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
 				-->
 				<!-- External item from Open Source Armory (OpenSourceArmory). -->
 				<equipment
-					slot="Body"
-					id="Item.AR_empire_scale_armor_e2" />
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-				<equipment
-					slot="Leg"
-					id="Item.plated_strip_boots" />
-				<!-- Original helmet retained for rollback:
-				<equipment
 					slot="Head"
-					id="Item.heavy_nasalhelm_over_imperial_leather" />
-				-->
-				<equipment
-					slot="Head"
-					id="Item.empire_jewelled_helmet" />
-				<equipment
-					slot="Cape"
-					id="Item.imperial_studded_strip_shoulders" />
-			</EquipmentRoster>
-			<!-- Additional equipment roster copied from the native imperial_legionary definition. -->
-			<EquipmentRoster>
-				<equipment
-					slot="Item0"
-					id="Item.empire_sword_5_t4" />
-				<equipment
-					slot="Item1"
-					id="Item.stronger_reinforced_kite_shield" />
-				<equipment
-					slot="Item2"
-					id="Item.imperial_throwing_spear_1_t4" />
-				<equipment
-					slot="Item3"
-					id="Item.imperial_throwing_spear_1_t4_2" />
-				<equipment
-					slot="Body"
-					id="Item.imperial_lamellar" />
-				<equipment
-					slot="Gloves"
-					id="Item.plated_strip_gauntlets" />
-				<equipment
-					slot="Leg"
-					id="Item.plated_strip_boots" />
-				<equipment
-					slot="Head"
-					id="Item.empire_helmet_with_metal_strips" />
+					id="Item.AR_battania_lord_helmet_p" />
 				<equipment
 					slot="Cape"
 					id="Item.imperial_studded_strip_shoulders" />
@@ -1843,7 +1831,7 @@
 			<EquipmentRoster>
 				<equipment
 					slot="Item0"
-					id="Item.empire_mace_4_t5" />
+					id="Item.empire_mace_5_t5" />
 				<equipment
 					slot="Item1"
 					id="Item.sturgia_infantry_shield_b" />
