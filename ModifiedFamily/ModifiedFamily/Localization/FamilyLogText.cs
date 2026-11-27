@@ -75,16 +75,23 @@ namespace ModifiedFamily.Localization
             t.SetTextVariable("TOTAL", (b?.Total ?? 0f).ToString("0.00"));
             return t.ToString();
         }
-        internal static string MarriageDecision(FamilyProposal p, string decision, FamilyReasonCode reason)
+        internal static string MarriageDecision(FamilyProposal p, string decision, FamilyReasonCode reason,
+            float? originalScore = null, float? resultingScore = null, float? scoreDelta = null,
+            float? otherScore = null, float? otherAcceptanceChance = null)
         {
             var t = T("MF_Log_MarriageDecision",
-                "[Marriage decision] Proposal {PROPOSAL_ID}, chain {CHAIN_ID}, decision {DECISION}, reason {REASON}.");
+                "[Marriage decision] Proposal {PROPOSAL_ID}, chain {CHAIN_ID}, decision {DECISION}, reason {REASON}; score {ORIGINAL_SCORE} -> {RESULT_SCORE} (delta {SCORE_DELTA}), other score {OTHER_SCORE}, acceptance {OTHER_CHANCE}.");
             t.SetTextVariable("PROPOSAL_ID", p?.ProposalId ?? "-");
             t.SetTextVariable("CHAIN_ID", p?.ChainId ?? "-");
             t.SetTextVariable("DECISION", DecisionText(decision));
             t.SetTextVariable("REASON", reason == FamilyReasonCode.None
                 ? T("MF_Reason_None", "none")
                 : Reason(reason));
+            t.SetTextVariable("ORIGINAL_SCORE", originalScore.HasValue ? originalScore.Value.ToString("0.00") : "n/a");
+            t.SetTextVariable("RESULT_SCORE", resultingScore.HasValue ? resultingScore.Value.ToString("0.00") : "n/a");
+            t.SetTextVariable("SCORE_DELTA", scoreDelta.HasValue ? scoreDelta.Value.ToString("0.00") : "n/a");
+            t.SetTextVariable("OTHER_SCORE", otherScore.HasValue ? otherScore.Value.ToString("0.00") : "n/a");
+            t.SetTextVariable("OTHER_CHANCE", otherAcceptanceChance.HasValue ? (otherAcceptanceChance.Value * 100f).ToString("0.0") + "%" : "n/a");
             return t.ToString();
         }
         internal static string ReasonText(FamilyReasonCode reason) => Reason(reason).ToString();

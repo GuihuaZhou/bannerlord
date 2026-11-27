@@ -12,8 +12,6 @@ namespace ModifiedFamily.Marriage.Models
         public const float AllianceBenefit = 55f;
         public const float SameCultureBenefit = 20f;
         public const float SameKingdomBenefit = 20f;
-        public const float FemaleOutflowMultiplier = 1f;
-        public const float MaleOutflowMultiplier = 1.5f;
         public const float SuccessionPenalty = 80f;
         public const float MaximumHeroInflow = 75f;
         public const float MaximumRelationBenefit = 30f;

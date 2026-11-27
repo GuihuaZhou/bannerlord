@@ -18,8 +18,8 @@ namespace ModifiedFamily.Marriage.Models
 
         public int CountAdultNobleHeroes(Clan clan) => clan?.Heroes.Count(h => h != null && !h.IsDead && h.IsLord && h.Clan == clan && h.Age >= 18f) ?? 0;
 
-        /// <summary>Scores the current terms; the original proposer clan determines voluntary outflow across counters.</summary>
-        public MarriageScoreBreakdown Evaluate(FamilyProposal proposal, Clan evaluatingClan, Clan voluntaryOutflowClan = null)
+        /// <summary>Scores current marriage terms with one clan independent outflow cost formula.</summary>
+        public MarriageScoreBreakdown Evaluate(FamilyProposal proposal, Clan evaluatingClan)
         {
             var result = new MarriageScoreBreakdown { EvaluatingClan = evaluatingClan };
             if (proposal == null || evaluatingClan == null) return result;
@@ -39,12 +39,8 @@ namespace ModifiedFamily.Marriage.Models
             else
             {
                 float scarcity = MarriageScoreTuning.CalculateScarcity(result.AdultHeroCount);
-                float direction = own.IsFemale ? MarriageScoreTuning.FemaleOutflowMultiplier : MarriageScoreTuning.MaleOutflowMultiplier;
                 result.ScarcityMultiplier = scarcity;
-                result.OutflowDirectionMultiplier = direction;
-                result.IsVoluntaryOutflow = (proposal.ParentProposalId == null
-                    ? proposal.ProposerClan : voluntaryOutflowClan) == evaluatingClan;
-                result.OutflowCost = result.IsVoluntaryOutflow ? 0f : result.BaseHeroValue * scarcity * direction;
+                result.OutflowCost = result.BaseHeroValue * scarcity;
                 if (result.AdultHeroCount - 1 <= 1) result.SuccessionPenalty = MarriageScoreTuning.SuccessionPenalty;
             }
 

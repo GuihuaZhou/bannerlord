@@ -87,20 +87,6 @@ namespace ModifiedFamily.Proposals
             };
         }
 
-        /// <summary>Resolves the original proposer's clan from a validated, single-counter chain.</summary>
-        public Clan ResolveVoluntaryOutflowClan(FamilyProposal proposal)
-        {
-            if (proposal == null) return null;
-            if (string.IsNullOrEmpty(proposal.ParentProposalId)) return proposal.ProposerClan;
-            FamilyProposal parent = GetProposal(proposal.ParentProposalId);
-            if (parent == null || !string.IsNullOrEmpty(parent.ParentProposalId) ||
-                parent.ChainId != proposal.ChainId || parent.ProposalType != FamilyProposalType.Marriage ||
-                parent.OriginClanA != proposal.OriginClanA || parent.OriginClanB != proposal.OriginClanB ||
-                parent.HeroA != proposal.HeroA || parent.HeroB != proposal.HeroB)
-                return null;
-            return parent.ProposerClan;
-        }
-
         private FamilyResult ValidateNewMarriageProposal(FamilyProposal proposal)
         {
             FamilyResult valid = _marriageModel.CanProposeMarriage(proposal); if (!valid.IsAllowed) return valid;

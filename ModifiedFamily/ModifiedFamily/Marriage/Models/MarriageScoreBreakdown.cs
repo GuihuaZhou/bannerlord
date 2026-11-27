@@ -15,9 +15,7 @@ namespace ModifiedFamily.Marriage.Models
         public float BaseHeroValue { get; internal set; }
         public float InflowValue { get; internal set; }
         public float OutflowCost { get; internal set; }
-        public bool IsVoluntaryOutflow { get; internal set; }
         public float ScarcityMultiplier { get; internal set; }
-        public float OutflowDirectionMultiplier { get; internal set; }
         public float SuccessionPenalty { get; internal set; }
         public float AllianceBenefit { get; internal set; }
         public float RelationValue { get; internal set; }
