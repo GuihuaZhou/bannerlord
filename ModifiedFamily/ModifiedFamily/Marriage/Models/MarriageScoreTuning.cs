@@ -22,14 +22,34 @@ namespace ModifiedFamily.Marriage.Models
             AllianceBenefit + MaximumRelationBenefit + SameCultureBenefit +
             SameKingdomBenefit + MaximumGiftBenefit;
 
+        /// <summary>Preserves small clan costs and eases the cost after the fourth adult noble.</summary>
+        public static float CalculateScarcity(int adultHeroCount)
+        {
+            float n = Math.Max(0, adultHeroCount) + 1f;
+            return adultHeroCount <= 3 ? 1f + 4f / n : 0.3f + 27.2f / (n * n);
+        }
+
         public static float CalculateAcceptanceChance(float score)
         {
-            if (float.IsNaN(score) || float.IsInfinity(score)) return 0f;
-            float ratio = Math.Max(0f, Math.Min(1f,
-                score / MaxPositiveScore));
-            MarriageAiConfig config = MarriageAiConfig.Current;
-            return config.AcceptanceMaxChance * (float)Math.Pow(
-                ratio, config.AcceptanceExponent);
+            return DecisionChances(score).Accept;
+        }
+
+        /// <summary>Interpolates one acceptance and counter probability from the authoritative curve.</summary>
+        public static (float Accept, float Counter) DecisionChances(float score)
+        {
+            if (float.IsNaN(score) || float.IsInfinity(score)) return (0f, 0f);
+            var points = MarriageAiConfig.Current.DecisionCurve;
+            if (score <= points[0].Score) return (points[0].Accept, points[0].Counter);
+            for (int index = 1; index < points.Count; index++)
+                if (score <= points[index].Score)
+                {
+                    var lo = points[index - 1]; var hi = points[index];
+                    float t = (score - lo.Score) / (hi.Score - lo.Score);
+                    return (lo.Accept + (hi.Accept - lo.Accept) * t,
+                        lo.Counter + (hi.Counter - lo.Counter) * t);
+                }
+            var last = points[points.Count - 1];
+            return (last.Accept, last.Counter);
         }
     }
 }

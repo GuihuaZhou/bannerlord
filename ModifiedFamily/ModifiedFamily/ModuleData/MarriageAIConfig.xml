@@ -9,11 +9,19 @@
   <!-- In-game days before a clan may create another original AI marriage proposal. -->
   <ClanProposalCooldownDays>14</ClanProposalCooldownDays>
 
-  <!-- Maximum NPC acceptance probability at or above the theoretical maximum positive score. Range: 0.0 to 1.0. -->
-  <AcceptanceMaxChance>0.50</AcceptanceMaxChance>
-
-  <!-- Exponent applied to the normalized acceptance score. Must be greater than zero. -->
-  <AcceptanceExponent>2.0</AcceptanceExponent>
+  <!-- Score, accept probability, and counter probability; the remaining chance rejects. -->
+  <DecisionCurve>
+    <Point score="-100" accept="0.00" counter="0.00" />
+    <Point score="-50" accept="0.00" counter="0.01" />
+    <Point score="0" accept="0.00" counter="0.05" />
+    <Point score="30" accept="0.22" counter="0.20" />
+    <Point score="60" accept="0.35" counter="0.35" />
+    <Point score="100" accept="0.45" counter="0.45" />
+    <Point score="150" accept="0.65" counter="0.30" />
+    <Point score="200" accept="0.80" counter="0.17" />
+    <Point score="250" accept="0.90" counter="0.08" />
+    <Point score="300" accept="0.95" counter="0.04" />
+  </DecisionCurve>
 
   <!-- Comma-separated denar amounts available to AI-generated offers and counteroffers. A zero-gift option is always considered separately. -->
   <GiftSteps>30000,50000,80000,100000</GiftSteps>

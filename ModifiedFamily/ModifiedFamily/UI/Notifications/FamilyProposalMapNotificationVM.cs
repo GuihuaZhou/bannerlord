@@ -19,7 +19,7 @@ namespace ModifiedFamily.UI.Notifications
             TitleText = data.TitleText.ToString();
             DescriptionText = new TaleWorlds.Localization.TextObject("{=MF_UI_IncomingDescription}Incoming Description").ToString();
             SoundId = data.SoundEventPath;
-            ForceInspection = true;
+            ForceInspection = false;
             _onInspect = InspectProposal;
         }
 

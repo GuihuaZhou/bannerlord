@@ -1,6 +1,8 @@
 // Owns the shared lifecycle for the independent marriage and adoption movies.
 using System;
 using ModifiedFamily.Diagnostics;
+using TaleWorlds.CampaignSystem;
+using GameCampaign = TaleWorlds.CampaignSystem.Campaign;
 using TaleWorlds.Engine.GauntletUI;
 using TaleWorlds.InputSystem;
 using TaleWorlds.Library;
@@ -16,6 +18,8 @@ namespace ModifiedFamily.UI
         private static GauntletMovieIdentifier _movie;
         private static SpriteCategory _spriteCategory;
         private static ViewModel _dataSource;
+        private static GameCampaign _pausedCampaign;
+        private static CampaignTimeControlMode _previousTimeMode;
 
         internal static bool Open(
             string movieName,
@@ -37,6 +41,7 @@ namespace ModifiedFamily.UI
                 if (_movie == null) throw new InvalidOperationException(movieName + " was not registered in ModifiedFamily/GUI/Prefabs.");
                 ScreenManager.OnPopScreen += OnScreenPopped;
                 ScreenManager.TrySetFocus(_layer);
+                AcquirePause();
                 return true;
             }
             catch (Exception exception)
@@ -57,6 +62,7 @@ namespace ModifiedFamily.UI
             _hostScreen = null; _layer = null; _movie = null;
             _spriteCategory = null; _dataSource = null;
             ScreenManager.OnPopScreen -= OnScreenPopped;
+            ReleasePause();
             if (layer != null)
             {
                 layer.IsFocusLayer = false;
@@ -66,6 +72,25 @@ namespace ModifiedFamily.UI
             }
             spriteCategory?.Unload();
             dataSource?.OnFinalize();
+        }
+
+        /// <summary>Pauses only the campaign opened by this host; restore its prior mode on every close path.</summary>
+        private static void AcquirePause()
+        {
+            GameCampaign campaign = GameCampaign.Current;
+            if (campaign == null) return;
+            _previousTimeMode = campaign.TimeControlMode;
+            _pausedCampaign = campaign;
+            campaign.TimeControlMode = CampaignTimeControlMode.Stop;
+        }
+
+        private static void ReleasePause()
+        {
+            GameCampaign campaign = _pausedCampaign;
+            _pausedCampaign = null;
+            if (campaign != null && campaign == GameCampaign.Current &&
+                campaign.TimeControlMode == CampaignTimeControlMode.Stop)
+                campaign.TimeControlMode = _previousTimeMode;
         }
 
         private static SpriteCategory LoadOptionalSpriteCategory(

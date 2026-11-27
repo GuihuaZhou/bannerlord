@@ -18,7 +18,8 @@ namespace ModifiedFamily.Marriage.Models
 
         public int CountAdultNobleHeroes(Clan clan) => clan?.Heroes.Count(h => h != null && !h.IsDead && h.IsLord && h.Clan == clan && h.Age >= 18f) ?? 0;
 
-        public MarriageScoreBreakdown Evaluate(FamilyProposal proposal, Clan evaluatingClan)
+        /// <summary>Scores the current terms; the original proposer clan determines voluntary outflow across counters.</summary>
+        public MarriageScoreBreakdown Evaluate(FamilyProposal proposal, Clan evaluatingClan, Clan voluntaryOutflowClan = null)
         {
             var result = new MarriageScoreBreakdown { EvaluatingClan = evaluatingClan };
             if (proposal == null || evaluatingClan == null) return result;
@@ -37,9 +38,13 @@ namespace ModifiedFamily.Marriage.Models
             if (receivesHero) result.InflowValue = result.BaseHeroValue;
             else
             {
-                float scarcity = 1f + 4f / (result.AdultHeroCount + 1f);
+                float scarcity = MarriageScoreTuning.CalculateScarcity(result.AdultHeroCount);
                 float direction = own.IsFemale ? MarriageScoreTuning.FemaleOutflowMultiplier : MarriageScoreTuning.MaleOutflowMultiplier;
-                result.OutflowCost = result.BaseHeroValue * scarcity * direction;
+                result.ScarcityMultiplier = scarcity;
+                result.OutflowDirectionMultiplier = direction;
+                result.IsVoluntaryOutflow = (proposal.ParentProposalId == null
+                    ? proposal.ProposerClan : voluntaryOutflowClan) == evaluatingClan;
+                result.OutflowCost = result.IsVoluntaryOutflow ? 0f : result.BaseHeroValue * scarcity * direction;
                 if (result.AdultHeroCount - 1 <= 1) result.SuccessionPenalty = MarriageScoreTuning.SuccessionPenalty;
             }
 
@@ -57,7 +62,8 @@ namespace ModifiedFamily.Marriage.Models
             if (ownHero == null || otherHero == null) return float.MinValue;
             var preview = new FamilyProposal
             {
-                ProposalType = FamilyProposalType.Marriage, HeroA = ownHero, HeroB = otherHero,
+                ProposalType = FamilyProposalType.Marriage, ProposerClan = evaluatingClan,
+                HeroA = ownHero, HeroB = otherHero,
                 OriginClanA = ownHero.Clan, OriginClanB = otherHero.Clan, DestinationClan = destination,
                 GiftAmount = giftDelta == int.MinValue ? int.MaxValue : Math.Abs(giftDelta), GoldReceiverClan = giftDelta > 0 ? evaluatingClan : null,
                 GoldPayerClan = giftDelta < 0 ? evaluatingClan : null

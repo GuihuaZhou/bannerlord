@@ -31,6 +31,8 @@ namespace ModifiedFamily.Proposals
         [SaveableProperty(22)] public FamilyExecutionStep ExecutionStep { get; set; }
         [SaveableProperty(23)] public FamilyReasonCode ReasonCode { get; set; }
         [SaveableProperty(24)] public bool PlayerNotified { get; set; }
+        [SaveableProperty(25)] public int PlayerResultNotificationFlags { get; set; }
+        [SaveableProperty(26)] public int PendingResultNotificationFlags { get; set; }
 
         public bool IsActive => Status == FamilyProposalStatus.PendingResponse || Status == FamilyProposalStatus.AcceptedPendingExecution || Status == FamilyProposalStatus.Executing || Status == FamilyProposalStatus.PaymentReconcileRequired;
     }

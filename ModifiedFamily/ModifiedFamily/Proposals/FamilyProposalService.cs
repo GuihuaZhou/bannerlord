@@ -61,6 +61,46 @@ namespace ModifiedFamily.Proposals
             return new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = Guid.NewGuid().ToString("N"), ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = draft.HeroA, HeroB = draft.HeroB, OriginClanA = draft.HeroA?.Clan, OriginClanB = draft.HeroB?.Clan, DestinationClan = destination, GoldPayerClan = draft.GoldPayerClan, GoldReceiverClan = draft.GiftAmount > 0 ? (draft.GoldPayerClan == draft.ProposerClan ? draft.ReceiverClan : draft.ProposerClan) : null, GiftAmount = draft.GiftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays), ExecutionStep = FamilyExecutionStep.NotStarted };
         }
 
+        /// <summary>Builds a counter with the original chain and origin clans without writing proposal state.</summary>
+        public FamilyProposal CreateCounterProposalPreview(FamilyProposal old, Clan responder,
+            MarriageDirection direction, Clan goldPayer, int giftAmount)
+        {
+            if (old == null || responder != old.ReceiverClan || old.HeroA == null || old.HeroB == null)
+                return null;
+            Clan femaleOrigin = old.HeroA.IsFemale ? old.OriginClanA : old.OriginClanB;
+            Clan maleOrigin = old.HeroA.IsFemale ? old.OriginClanB : old.OriginClanA;
+            return new FamilyProposal
+            {
+                ProposalId = Guid.NewGuid().ToString("N"), ChainId = old.ChainId,
+                ParentProposalId = old.ProposalId, CounterCount = old.CounterCount + 1,
+                ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse,
+                ProposerClan = responder, ReceiverClan = old.ProposerClan,
+                HeroA = old.HeroA, HeroB = old.HeroB,
+                OriginClanA = old.OriginClanA, OriginClanB = old.OriginClanB,
+                DestinationClan = direction == MarriageDirection.FemaleJoinsMaleClan ? maleOrigin : femaleOrigin,
+                GoldPayerClan = goldPayer,
+                GoldReceiverClan = giftAmount > 0 ?
+                    (goldPayer == old.OriginClanA ? old.OriginClanB : old.OriginClanA) : null,
+                GiftAmount = giftAmount, CreatedAt = CampaignTime.Now,
+                ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays),
+                ExecutionStep = FamilyExecutionStep.NotStarted
+            };
+        }
+
+        /// <summary>Resolves the original proposer's clan from a validated, single-counter chain.</summary>
+        public Clan ResolveVoluntaryOutflowClan(FamilyProposal proposal)
+        {
+            if (proposal == null) return null;
+            if (string.IsNullOrEmpty(proposal.ParentProposalId)) return proposal.ProposerClan;
+            FamilyProposal parent = GetProposal(proposal.ParentProposalId);
+            if (parent == null || !string.IsNullOrEmpty(parent.ParentProposalId) ||
+                parent.ChainId != proposal.ChainId || parent.ProposalType != FamilyProposalType.Marriage ||
+                parent.OriginClanA != proposal.OriginClanA || parent.OriginClanB != proposal.OriginClanB ||
+                parent.HeroA != proposal.HeroA || parent.HeroB != proposal.HeroB)
+                return null;
+            return parent.ProposerClan;
+        }
+
         private FamilyResult ValidateNewMarriageProposal(FamilyProposal proposal)
         {
             FamilyResult valid = _marriageModel.CanProposeMarriage(proposal); if (!valid.IsAllowed) return valid;
@@ -142,9 +182,7 @@ namespace ModifiedFamily.Proposals
             var current = _marriageModel.CanRespond(old); if (!current.IsAllowed) { TryInvalidateActive(old, current.ReasonCode); return current; }
             if (old.CounterCount >= 1) return FamilyResult.Deny(FamilyReasonCode.CounterLimitReached);
             if (giftAmount < 0) return FamilyResult.Deny(FamilyReasonCode.InvalidGift);
-            var draft = new MarriageProposalDraft { ProposerClan = old.ReceiverClan, ReceiverClan = old.ProposerClan, HeroA = old.HeroA, HeroB = old.HeroB, Direction = direction, GoldPayerClan = goldPayer, GiftAmount = giftAmount };
-            Clan destination = direction == MarriageDirection.FemaleJoinsMaleClan ? (old.HeroA.IsFemale ? old.HeroB.Clan : old.HeroA.Clan) : (old.HeroA.IsFemale ? old.HeroA.Clan : old.HeroB.Clan);
-            var p = new FamilyProposal { ProposalId = Guid.NewGuid().ToString("N"), ChainId = old.ChainId, ParentProposalId = old.ProposalId, CounterCount = 1, ProposalType = FamilyProposalType.Marriage, Status = FamilyProposalStatus.PendingResponse, ProposerClan = draft.ProposerClan, ReceiverClan = draft.ReceiverClan, HeroA = old.HeroA, HeroB = old.HeroB, OriginClanA = old.OriginClanA, OriginClanB = old.OriginClanB, DestinationClan = destination, GoldPayerClan = goldPayer, GoldReceiverClan = giftAmount > 0 ? (goldPayer == old.OriginClanA ? old.OriginClanB : old.OriginClanA) : null, GiftAmount = giftAmount, CreatedAt = CampaignTime.Now, ReplyDeadline = CampaignTime.DaysFromNow(FamilyConfig.ReplyDays) };
+            var p = CreateCounterProposalPreview(old, responder, direction, goldPayer, giftAmount);
             var valid = _marriageModel.CanProposeMarriage(p); if (!valid.IsAllowed) return valid;
             bool sameTerms = p.DestinationClan == old.DestinationClan && p.GoldPayerClan == old.GoldPayerClan && p.GiftAmount == old.GiftAmount;
             if (sameTerms) return FamilyResult.Deny(FamilyReasonCode.UnacceptableTerms);

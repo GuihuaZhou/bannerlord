@@ -67,7 +67,11 @@ namespace ModifiedFamily.Campaign
             MarriageAiConfig.Load();
             _lastAiCheckDay.Clear();
             BuildServices(); MigrateVanillaOffers();
-            foreach (FamilyProposal proposal in _proposals) _notificationService.Publish(proposal);
+            foreach (FamilyProposal proposal in _proposals)
+            {
+                _notificationService.Publish(proposal);
+                _notificationService.PublishPending(proposal);
+            }
             bool correctModel = TaleWorlds.CampaignSystem.Campaign.Current.Models.MarriageModel is ModifiedMarriageModel;
             FamilyDiagnostics.Notice(FamilyLogText.SessionReady(correctModel, _proposals.Count, _cooldowns.Count, _adoptions.Count));
             if (!correctModel) FamilyDiagnostics.Warn(FamilyLogText.Simple("MF_Log_ModelConflict", "Another mod replaced the marriage model; automatic execution is disabled."));
@@ -80,6 +84,7 @@ namespace ModifiedFamily.Campaign
             _notificationService = new FamilyProposalNotificationService();
             _service.ProposalCreated += _notificationService.Publish;
             _service.ProposalInvalidated += _notificationService.PublishInvalidated;
+            _service.ProposalResolved += _notificationService.PublishResolved;
             _marriageAi = new ClanMarriageDecisionService(_service, _marriageProposalModel); _execution = new MarriageExecutionService(_marriageProposalModel);
             _adoptionExecution = new AdoptionExecutionService(adoptionModel, new AdoptiveKinshipService(_adoptions));
         }
@@ -116,6 +121,8 @@ namespace ModifiedFamily.Campaign
         private void OnDaily()
         {
             if (_service == null) BuildServices();
+            foreach (FamilyProposal proposal in _proposals.Where(x => x != null && x.PendingResultNotificationFlags != 0))
+                _notificationService.PublishPending(proposal);
             // CampaignTime deadlines survive saves, so loading a save resumes the same seven-day window.
             foreach (var p in _proposals.Where(x => x != null && x.IsActive).ToList())
             {

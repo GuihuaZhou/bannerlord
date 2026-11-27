@@ -11,6 +11,7 @@ namespace ModifiedFamily.UI.Notifications
         private static void Register(MapNotificationVM __instance)
         {
             __instance.RegisterMapNotificationType(typeof(FamilyProposalMapNotification), typeof(FamilyProposalMapNotificationVM));
+            __instance.RegisterMapNotificationType(typeof(FamilyProposalResultMapNotification), typeof(FamilyProposalResultMapNotificationVM));
         }
     }
 }

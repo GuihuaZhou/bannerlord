@@ -206,10 +206,8 @@ namespace ModifiedFamily.UI
             if (proposal.ProposalType == FamilyProposalType.Marriage && proposal.CounterCount == 0)
                 choices.Add(new InquiryElement("counter", new TextObject("{=MF_UI_Counter}Counter").ToString(), null, true, string.Empty));
 
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
-                new TextObject("{=MF_UI_IncomingTitle}Incoming Title").ToString(), Describe(proposal), choices, true, 1, 1,
-                new TextObject("{=MF_UI_Confirm}Confirm").ToString(), new TextObject("{=MF_UI_Close}Close").ToString(),
-                selected => HandleDecision(proposal, selected), null, string.Empty, false), false, false);
+            ShowPausedProposalInquiry("{=MF_UI_IncomingTitle}Incoming Title", Describe(proposal),
+                choices, selected => HandleDecision(proposal, selected));
         }
 
         private static void HandleDecision(FamilyProposal proposal, List<InquiryElement> selected)
@@ -220,6 +218,30 @@ namespace ModifiedFamily.UI
             else if (action == "counter") ShowCounterOptions(proposal);
         }
 
+        /// <summary>Holds campaign time while the native fallback inquiry awaits a player response.</summary>
+        private static void ShowPausedProposalInquiry(string title, string description,
+            List<InquiryElement> choices, System.Action<List<InquiryElement>> done)
+        {
+            var campaign = TaleWorlds.CampaignSystem.Campaign.Current;
+            var previousMode = campaign?.TimeControlMode ?? CampaignTimeControlMode.Stop;
+            void Restore()
+            {
+                if (campaign != null && TaleWorlds.CampaignSystem.Campaign.Current == campaign &&
+                    campaign.TimeControlMode == CampaignTimeControlMode.Stop)
+                    campaign.TimeControlMode = previousMode;
+            }
+            try
+            {
+                if (campaign != null) campaign.TimeControlMode = CampaignTimeControlMode.Stop;
+                MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
+                    new TextObject(title).ToString(), description, choices, true, 1, 1,
+                    new TextObject("{=MF_UI_Confirm}Confirm").ToString(),
+                    new TextObject("{=MF_UI_Close}Close").ToString(),
+                    selected => { Restore(); done(selected); }, _ => Restore(), string.Empty, false), false, false);
+            }
+            catch { Restore(); throw; }
+        }
+
         private static void ShowCounterOptions(FamilyProposal proposal)
         {
             var options = new List<InquiryElement>();
@@ -227,11 +249,9 @@ namespace ModifiedFamily.UI
             AddCounterOption(options, proposal, MarriageDirection.MaleJoinsFemaleClan, null, 0, "{=MF_UI_CounterMatrilocal}Counter Matrilocal");
             AddGiftOptions(options, proposal, MarriageDirection.FemaleJoinsMaleClan);
             AddGiftOptions(options, proposal, MarriageDirection.MaleJoinsFemaleClan);
-            MBInformationManager.ShowMultiSelectionInquiry(new MultiSelectionInquiryData(
-                new TextObject("{=MF_UI_CounterTitle}Counter Title").ToString(),
+            ShowPausedProposalInquiry("{=MF_UI_CounterTitle}Counter Title",
                 new TextObject("{=MF_UI_CounterDescription}Counter Description").ToString(),
-                options, true, 1, 1, new TextObject("{=MF_UI_Confirm}Confirm").ToString(), new TextObject("{=MF_UI_Close}Close").ToString(),
-                selected => SubmitCounter(proposal, selected), null, string.Empty, false), false, false);
+                options, selected => SubmitCounter(proposal, selected));
         }
 
         private static void AddGiftOptions(List<InquiryElement> options, FamilyProposal p, MarriageDirection direction)

@@ -2,6 +2,12 @@
 <base xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" type="string">
   <tags><tag language="简体中文" /></tags>
   <strings>
+    <string id="MF_Result_Title" text="联姻提议有新结果" />
+    <string id="MF_Result_Accepted" text="你的联姻提议已被接受，正在等待执行。" />
+    <string id="MF_Result_Rejected" text="你的联姻提议被拒绝：{REASON}" />
+    <string id="MF_Result_Expired" text="你的联姻提议已超时。" />
+    <string id="MF_Result_Invalidated" text="你的联姻提议已失效：{REASON}" />
+    <string id="MF_Result_Details" text="{HERO_A} 与 {HERO_B}：{RESULT}" />
     <string id="MF_Settings_DisplayName" text="家族系统" />
     <string id="MF_Logging_Group" text="日志设置" />
     <string id="MF_MinLogLevel" text="屏幕日志级别" />
