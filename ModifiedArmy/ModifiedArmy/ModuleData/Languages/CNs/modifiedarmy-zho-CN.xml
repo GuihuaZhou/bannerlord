@@ -462,5 +462,7 @@
     <string id="ModifiedArmy_FiefManagement_TypeLabel" text="类型：" />
     <string id="MP_ArmyEligibilityModelPrefix" text="[军事优化][军团创建资格模型]" />
     <string id="MP_ArmyEligibilityFieldMap" text="phase=阶段|traceId=追踪编号|model=模型|kingdom=王国|hero=英雄|party=部队|candidate=候选部队|leader=领队|clan=家族|result=结果|reasonCode=原因码|influence=影响力|foodDays=粮食天数|threshold=阈值|partyRatio=部队规模比例|distance=距离|maximum=最大值|influenceCost=影响力成本|estimatedStrength=预估战力|score=评分|candidateCountBeforeStrengthCheck=战力检查前候选数|leaderSiegeStrength=领队攻城战力|candidatesSiegeStrength=候选攻城战力|totalSiegeStrength=总攻城战力|strengthThreshold=战力阈值|candidatesBeforeClear=清空前候选数|candidatesReturned=返回候选数|eligibleBeforeSort=排序前合格数|kingdomWarPartyCount=王国战团数|existingArmyPartyCount=现有军团部队数|maxNewMembers=最大新增成员数|afterTruncationCount=截断后数量|removedCandidateIds=被移除候选|sortedCandidates=升序候选|omitted=省略数|omittedCandidateDetails=省略候选明细数" />
+    <string id="ModifiedArmy_PrisonerRecruitment_Text" text="招募俘虏" />
+    <string id="ModifiedArmy_PrisonerRecruitment_Hint" text="开启后，驻军将自动招募符合条件且顺从度充足的俘虏。" />
   </strings>
 </base>

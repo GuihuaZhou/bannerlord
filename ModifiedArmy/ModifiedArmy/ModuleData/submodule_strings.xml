@@ -551,4 +551,6 @@
     <string id="str_modifiedarmy_fief_batch_cooling_pending" text="{=ModifiedArmy_FiefBatch_CoolingPending}Pending (0 weeks)" />
     <string id="str_modifiedarmy_fief_management_village_label" text="{=ModifiedArmy_FiefManagement_VillageLabel}Village:" />
     <string id="str_modifiedarmy_fief_management_type_label" text="{=ModifiedArmy_FiefManagement_TypeLabel}Type:" />
+    <string id="str_modifiedarmy_prisoner_recruitment_text" text="{=ModifiedArmy_PrisonerRecruitment_Text}Recruit prisoners" />
+    <string id="str_modifiedarmy_prisoner_recruitment_hint" text="{=ModifiedArmy_PrisonerRecruitment_Hint}Enable automatic recruitment of eligible prisoners into this garrison." />
 </strings>

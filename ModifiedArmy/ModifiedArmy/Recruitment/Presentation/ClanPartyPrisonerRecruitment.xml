@@ -1,0 +1,14 @@
+<ListPanel Id="ModifiedArmyPrisonerRecruitmentParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="335" SuggestedHeight="40" HorizontalAlignment="Center" MarginTop="2" UpdateChildrenStates="true" IsVisible="@IsPrisonerRecruitmentVisible">
+  <Children>
+    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="40" VerticalAlignment="Center" MarginLeft="10" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@PrisonerRecruitmentValue" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" Command.Click="ExecuteTogglePrisonerRecruitment" GamepadNavigationIndex="1">
+      <Children>
+        <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+      </Children>
+    </ButtonWidget>
+    <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="10" PositionYOffset="1" Brush="Clan.Party.Wage.Text" Text="@PrisonerRecruitmentText">
+      <Children>
+        <HintWidget DataSource="{PrisonerRecruitmentHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+      </Children>
+    </TextWidget>
+  </Children>
+</ListPanel>

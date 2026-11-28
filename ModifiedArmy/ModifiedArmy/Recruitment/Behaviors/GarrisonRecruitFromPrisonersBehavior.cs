@@ -30,6 +30,9 @@ namespace ModifiedArmy.Models
     /// </summary>
     public class GarrisonRecruitFromPrisonersBehavior : CampaignBehaviorBase
     {
+        private Dictionary<string, bool> _prisonerRecruitmentSettings =
+            new Dictionary<string, bool>();
+
         public override void RegisterEvents()
         {
             CampaignEvents.DailyTickSettlementEvent.AddNonSerializedListener(
@@ -42,6 +45,35 @@ namespace ModifiedArmy.Models
 
         public override void SyncData(IDataStore dataStore)
         {
+            dataStore.SyncData(
+                "_prisonerRecruitmentSettings",
+                ref _prisonerRecruitmentSettings);
+            _prisonerRecruitmentSettings ??=
+                new Dictionary<string, bool>();
+        }
+
+        public bool IsPrisonerRecruitmentEnabled(Settlement settlement)
+        {
+            if (settlement?.IsFortification != true)
+            {
+                return false;
+            }
+
+            return !_prisonerRecruitmentSettings.TryGetValue(
+                settlement.StringId,
+                out bool enabled) || enabled;
+        }
+
+        public void SetPrisonerRecruitmentEnabled(
+            Settlement settlement,
+            bool enabled)
+        {
+            if (settlement?.IsFortification != true)
+            {
+                return;
+            }
+
+            _prisonerRecruitmentSettings[settlement.StringId] = enabled;
         }
 
         private void OnDailySettlementTick(Settlement settlement)
@@ -59,19 +91,27 @@ namespace ModifiedArmy.Models
                 return;
             }
 
+            bool professionalEnabled =
+                town.GarrisonAutoRecruitmentIsEnabled;
+            bool prisonerEnabled =
+                IsPrisonerRecruitmentEnabled(settlement);
+            bool recruitmentEnabled =
+                professionalEnabled || prisonerEnabled;
+
             SettlementManpowerProductionBehavior pools = Campaign.Current
                 .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
             pools?.EnsureDailyProduction(settlement);
-            int availableProfessionalOffers = pools
-                ?.GetAvailableProfessionalOffers(settlement)
-                .Values.Sum() ?? 0;
+            int availableProfessionalOffers = professionalEnabled
+                ? pools?.GetAvailableProfessionalOffers(settlement)
+                    .Values.Sum() ?? 0
+                : 0;
             SettlementManpowerProductionData productionData = pools
                 ?.GetOrCreateProductionData(settlement);
             int day = (int)CampaignTime.Now.ToDays;
             productionData?.RecordProfessionalRecruitment(day, 0);
 
             if (town.GarrisonParty == null &&
-                town.GarrisonAutoRecruitmentIsEnabled &&
+                recruitmentEnabled &&
                 settlement.Party.MapEvent == null &&
                 settlement.Party.SiegeEvent == null)
             {
@@ -80,7 +120,7 @@ namespace ModifiedArmy.Models
 
             if (town.GarrisonParty == null ||
                 settlement.OwnerClan == null ||
-                !town.GarrisonAutoRecruitmentIsEnabled ||
+                !recruitmentEnabled ||
                 settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
@@ -123,24 +163,32 @@ namespace ModifiedArmy.Models
             TroopRoster prisonRoster = settlement.Party.PrisonRoster;
             int initialPrisonerCount = prisonRoster.TotalRegulars;
 
-            int targetCount;
-            int readyCount;
-            int sold;
+            int targetCount = 0;
+            int readyCount = 0;
+            int sold = 0;
             List<RecruitmentCandidate> prisonerCandidates =
-                SelectAndPreparePrisonerCandidates(
+                new List<RecruitmentCandidate>();
+            if (prisonerEnabled)
+            {
+                prisonerCandidates = SelectAndPreparePrisonerCandidates(
                     settlement,
                     out targetCount,
                     out readyCount,
                     out sold);
-            List<RecruitmentCandidate> candidates = pools == null
-                ? new List<RecruitmentCandidate>()
-                : pools.GetAvailableProfessionalOffers(settlement)
+            }
+
+            List<RecruitmentCandidate> candidates =
+                new List<RecruitmentCandidate>();
+            if (professionalEnabled && pools != null)
+            {
+                candidates.AddRange(
+                    pools.GetAvailableProfessionalOffers(settlement)
                     .Where(entry => entry.Key != null && entry.Value > 0)
                     .Select(entry => new RecruitmentCandidate(
                         entry.Key,
                         entry.Value,
-                        RecruitmentSource.ProfessionalProduction))
-                    .ToList();
+                        RecruitmentSource.ProfessionalProduction)));
+            }
             candidates.AddRange(prisonerCandidates);
             RecruitmentPlan plan = null;
             int recruited = 0;
@@ -240,7 +288,7 @@ namespace ModifiedArmy.Models
                     plan);
             }
 
-            if (initialPrisonerCount > 0 || sold > 0)
+            if (prisonerEnabled && (initialPrisonerCount > 0 || sold > 0))
             {
                 LogDailyResult(
                     town,
@@ -453,8 +501,15 @@ namespace ModifiedArmy.Models
         {
             Settlement settlement = town?.Settlement;
             MobileParty garrison = town?.GarrisonParty;
-            if (settlement == null || garrison == null ||
-                !town.GarrisonAutoRecruitmentIsEnabled ||
+            GarrisonRecruitFromPrisonersBehavior behavior = Campaign.Current
+                ?.GetCampaignBehavior<GarrisonRecruitFromPrisonersBehavior>();
+            bool professionalEnabled =
+                town?.GarrisonAutoRecruitmentIsEnabled == true;
+            bool prisonerEnabled = behavior
+                ?.IsPrisonerRecruitmentEnabled(settlement) ?? true;
+            if (settlement?.IsFortification != true || garrison == null ||
+                settlement.OwnerClan == null ||
+                (!professionalEnabled && !prisonerEnabled) ||
                 settlement.Party.MapEvent != null ||
                 settlement.Party.SiegeEvent != null)
             {
@@ -465,7 +520,7 @@ namespace ModifiedArmy.Models
                 new List<RecruitmentCandidate>();
             SettlementManpowerProductionBehavior pools = Campaign.Current
                 .GetCampaignBehavior<SettlementManpowerProductionBehavior>();
-            if (pools != null)
+            if (professionalEnabled && pools != null)
             {
                 candidates.AddRange(pools.GetPredictedProfessionalOffers(
                         settlement)
@@ -476,31 +531,34 @@ namespace ModifiedArmy.Models
                         RecruitmentSource.ProfessionalProduction)));
             }
 
-            foreach (TroopRosterElement element in
-                settlement.Party.PrisonRoster.GetTroopRoster())
+            if (prisonerEnabled)
             {
-                CharacterObject troop = element.Character;
-                if (troop == null || troop.IsHero || element.Number <= 0)
+                foreach (TroopRosterElement element in
+                    settlement.Party.PrisonRoster.GetTroopRoster())
                 {
-                    continue;
-                }
+                    CharacterObject troop = element.Character;
+                    if (troop == null || troop.IsHero || element.Number <= 0)
+                    {
+                        continue;
+                    }
 
-                int conformity = Campaign.Current.Models
-                    .PrisonerRecruitmentCalculationModel
-                    .GetConformityNeededToRecruitPrisoner(troop);
-                int ready = conformity <= 0
-                    ? element.Number
-                    : Math.Min(
-                        element.Number,
-                        settlement.Party.PrisonRoster.GetElementXp(troop) /
-                            conformity);
-                if (ready > 0)
-                {
-                    candidates.Add(new RecruitmentCandidate(
-                        troop,
-                        ready,
-                        RecruitmentSource.Prisoner,
-                        new PrisonerRecruitmentOffer(conformity)));
+                    int conformity = Campaign.Current.Models
+                        .PrisonerRecruitmentCalculationModel
+                        .GetConformityNeededToRecruitPrisoner(troop);
+                    int ready = conformity <= 0
+                        ? element.Number
+                        : Math.Min(
+                            element.Number,
+                            settlement.Party.PrisonRoster.GetElementXp(troop) /
+                                conformity);
+                    if (ready > 0)
+                    {
+                        candidates.Add(new RecruitmentCandidate(
+                            troop,
+                            ready,
+                            RecruitmentSource.Prisoner,
+                            new PrisonerRecruitmentOffer(conformity)));
+                    }
                 }
             }
 

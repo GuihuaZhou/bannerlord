@@ -78,6 +78,7 @@ namespace ModifiedArmy.Models.Fief
             base.ConstructContainerDefinition(
                 typeof(Dictionary<string, SettlementProfessionalPreferenceRecord>));
             base.ConstructContainerDefinition(typeof(Dictionary<string, int>));
+            base.ConstructContainerDefinition(typeof(Dictionary<string, bool>));
         }
     }
 

@@ -1,6 +1,7 @@
 using TaleWorlds.CampaignSystem;
 using TaleWorlds.CampaignSystem.Party;
 using TaleWorlds.CampaignSystem.Settlements;
+using ModifiedArmy.Models;
 
 namespace ModifiedArmy.Recruitment.Models
 {
@@ -48,8 +49,16 @@ namespace ModifiedArmy.Recruitment.Models
             // inside a settlement; HomeSettlement is the stable fallback used by
             // garrisons during transient campaign-state updates.
             Settlement home = party.CurrentSettlement ?? party.HomeSettlement;
-            return home != null && home.OwnerClan != Clan.PlayerClan &&
+            if (home == null || home.OwnerClan == Clan.PlayerClan)
+                return false;
+
+            bool professionalEnabled =
                 home.Town?.GarrisonAutoRecruitmentIsEnabled == true;
+            GarrisonRecruitFromPrisonersBehavior behavior = Campaign.Current
+                ?.GetCampaignBehavior<GarrisonRecruitFromPrisonersBehavior>();
+            bool prisonerEnabled = behavior
+                ?.IsPrisonerRecruitmentEnabled(home) ?? true;
+            return professionalEnabled || prisonerEnabled;
         }
 
         /// <summary>Applies the same filtering to a detached recruitment subject.</summary>
