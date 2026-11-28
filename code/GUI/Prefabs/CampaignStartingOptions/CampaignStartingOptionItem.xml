@@ -1,0 +1,120 @@
+<Prefab>
+  <Window>
+    <CampaignStartingOptionItemWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="50" Command.FocusBegin="ExecuteFocusBegin" Command.FocusEnd="ExecuteFocusEnd" BooleanOption="ListPanel\Option\BooleanOption" SliderOption="ListPanel\Option\SliderOption" SelectionOption="ListPanel\Option\SelectionOption" InputOption="ListPanel\Option\InputOption" IsHidden="@IsHidden">
+      <Children>
+
+        <ListPanel Id="ListPanel" DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+          <Children>
+
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="325" HorizontalAlignment="Right" Brush="SPOptions.OptionName.Text" Text="@Name" IsDisabled="@IsDisabled"/>
+
+            <DisabledAlphaChangerWidget Id="Option" DoNotAcceptEvents="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="40" IsDisabled="@IsDisabled" DisabledAlpha="0.3" UpdateChildrenAlphas="true" AnimationDuration="0">
+              <Children>
+
+                <!-- Boolean Option -->
+                <ValueBasedVisibilityWidget Id="BooleanOption" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IndexToWatch="@OptionType" IndexToBeVisible="0">
+                  <Children>
+
+                    <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\BoolButton" />
+                    <NavigationAutoScrollWidget TrackedWidget="..\BoolButton" AutoScrollTopOffset="90" AutoScrollBottomOffset="90" />
+
+                    <ButtonWidget Id="BoolButton" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" MarginLeft="172" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@ValueAsBoolean" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true">
+                      <Children>
+                        <BrushWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                        <HintWidget DataSource="{DescriptionHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                      </Children>
+                    </ButtonWidget>
+
+                    <HintWidget DataSource="{DescriptionHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+
+                  </Children>
+                </ValueBasedVisibilityWidget>
+
+                <!-- Slider Option -->
+                <ValueBasedVisibilityWidget Id="SliderOption" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IndexToWatch="@OptionType" IndexToBeVisible="1">
+                  <Children>
+
+                    <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\Slider\SliderHandle" />
+                    <NavigationAutoScrollWidget TrackedWidget="..\Slider\SliderHandle" AutoScrollTopOffset="90" AutoScrollBottomOffset="90" />
+
+                    <SliderWidget Id="Slider" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="338" SuggestedHeight="42" VerticalAlignment="Center" MarginLeft="20" DoNotUpdateHandleSize="true" Filler="Filler" Handle="SliderHandle" IsDiscrete="@IsDiscrete" MaxValueFloat="@MaxRange" MinValueFloat="@MinRange" ValueFloat="@ValueAsFloat">
+                      <Children>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="362" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_canvas" DoNotAcceptEvents="true" />
+                        <Widget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" ClipContents="true">
+                          <Children>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" HorizontalAlignment="Left" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_fill" />
+                          </Children>
+                        </Widget>
+                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="SPGeneral\SPOptions\standart_slider_frame" DoNotAcceptEvents="true" />
+                        <ImageWidget Id="SliderHandle" DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="38" HorizontalAlignment="Left" VerticalAlignment="Center" Brush="SPOptions.Slider.Handle" />
+
+                        <HintWidget DataSource="{DescriptionHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                      </Children>
+                    </SliderWidget>
+
+                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" MarginLeft="398" Brush="SPOptions.Slider.Value.Text" Text="@ValueAsString" />
+
+                  </Children>
+                </ValueBasedVisibilityWidget>
+
+                <!-- Selection Option -->
+                <ValueBasedVisibilityWidget Id="SelectionOption" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IndexToWatch="@OptionType" IndexToBeVisible="2">
+                  <Children>
+
+                    <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\SelectionOptionInner" />
+                    <NavigationAutoScrollWidget TrackedWidget="..\SelectionOptionInner" AutoScrollTopOffset="90" AutoScrollBottomOffset="90" />
+                    <Standard.DropdownWithHorizontalControl Id="SelectionOptionInner" VerticalAlignment="Center" Parameter.SelectorDataSource="{Selector}" Parameter.HintDataSource="{..\DescriptionHint}" />
+
+                  </Children>
+                </ValueBasedVisibilityWidget>
+
+                <!-- Input Option -->
+                <ValueBasedVisibilityWidget Id="InputOption" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IndexToWatch="@OptionType" IndexToBeVisible="3">
+                  <Children>
+
+                    <NavigationTargetSwitcher FromTarget="..\." ToTarget="..\InputOptionInner" />
+                    <NavigationAutoScrollWidget TrackedWidget="..\InputOptionInner" AutoScrollTopOffset="90" AutoScrollBottomOffset="90" />
+
+                    <IntegerInputTextWidget Id="InputOptionInner" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="384" SuggestedHeight="30" VerticalAlignment="Center" Brush="CustomBattle.SliderValue.Text" IntText="@ValueAsInt" MinInt="@MinInt" MaxInt="@MaxInt" EnableClamp="true">
+                      <Children>
+                        <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CustomBattle.SliderValue.Input"/>
+                        <!--<BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CampaignStartingOptions.InputField.Warning" IsHidden="@IsTextValid"/>-->
+
+                        <!--<Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="5" SuggestedHeight="20" HorizontalAlignment="Right" VerticalAlignment="Center" MarginRight="12" Sprite="General\Mission\Detection\exclamation" IsHidden="@IsTextValid"/>-->
+
+                        <!--<HintWidget DataSource="{TextInvalidHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />-->
+
+                        <HintWidget DataSource="{DescriptionHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                      </Children>
+                    </IntegerInputTextWidget>
+
+                    <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" VerticalAlignment="Center" MarginLeft="398" Brush="RandomButtonBrush" Command.Click="ExecuteRandomize" IsVisible="@AllowRandomization">
+                      <Children>
+                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsHidden="@IsDisabled">
+                          <Children>
+                            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsFocused">
+                              <Children>
+                                <InputKeyVisualWidget DataSource="{RandomizeInputKey}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" HorizontalAlignment="Center" VerticalAlignment="Center" PositionXOffset="15" PositionYOffset="-15" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                              </Children>
+                            </Widget>
+                          </Children>
+                        </Widget>
+                        <HintWidget DataSource="{RandomizeHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+                      </Children>
+                    </ButtonWidget>
+
+                  </Children>
+                </ValueBasedVisibilityWidget>
+
+              </Children>
+            </DisabledAlphaChangerWidget>
+
+          </Children>
+        </ListPanel>
+
+        <HintWidget DataSource="{DescriptionHint}" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false" />
+
+      </Children>
+    </CampaignStartingOptionItemWidget>
+  </Window>
+</Prefab>

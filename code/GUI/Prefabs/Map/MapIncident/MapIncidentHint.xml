@@ -1,0 +1,42 @@
+<Prefab>
+  <Window>
+    <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+      <Children>
+
+        <!-- Padding -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" IsVisible="@HasChance" />
+
+        <!-- Hint Text -->
+        <RichTextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="3" Brush="Map.Incident.Hint.Text" Text="@Text" IsVisible="@HasText" />
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="HorizontalLeftToRight" IsVisible="@HasChildHints">
+          <Children>
+
+            <!-- Indent -->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="15" IsVisible="@HasIndent" />
+            
+            <!-- Chance Indicator -->
+            <DimensionSyncWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="15" DimensionToSync="Vertical" WidgetToCopyHeightFrom="..\ChildHintsList" IsVisible="@HasChance">
+              <Children>
+                <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="23" SuggestedHeight="14" MarginRight="7" HorizontalAlignment="Right" VerticalAlignment="Center" Brush="Map.Incident.Hint.Chance.Text" Text="@ChanceText" />
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="2" MarginRight="3" MarginBottom="1" MarginTop="1" HorizontalAlignment="Right" Sprite="BlankWhiteSquare_9" Color="#F4E1C4FF" ColorFactor="0.6" ForcePixelPerfectRenderPlacement="true" />
+              </Children>
+            </DimensionSyncWidget>
+
+            <!-- Child Hints -->
+            <ListPanel Id="ChildHintsList" DataSource="{ChildHints}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MinHeight="20" StackLayout.LayoutMethod="VerticalTopToBottom">
+              <ItemTemplate>
+                <MapIncidentHint />
+              </ItemTemplate>
+            </ListPanel>
+
+          </Children>
+        </ListPanel>
+
+        <!-- Padding -->
+        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="2" IsVisible="@HasChance" />
+
+      </Children>
+    </ListPanel>
+  </Window>
+</Prefab>

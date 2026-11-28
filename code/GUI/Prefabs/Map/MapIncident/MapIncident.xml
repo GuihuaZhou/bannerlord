@@ -1,0 +1,177 @@
+<Prefab>
+  <Window>
+    <Widget Id="MapIncidentParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000FF" AlphaFactor="0.5">
+      <Children>
+
+        <NavigationForcedScopeCollectionTargeter CollectionID="MapIncidentCollection" CollectionParent="..\."/>
+
+        <!-- Popup Main List -->
+        <ListPanel Id="PopupContainer" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalBottomToTop" VerticalAlignment="Center" HorizontalAlignment="Center">
+          <Children>
+
+            <!-- Confirm Button -->
+            <NavigationScopeTargeter ScopeID="ConfirmButtonScope" ScopeParent="..\ConfirmButton" ScopeMovements="Vertical" />
+            <Standard.PopupCloseButton Id="ConfirmButton" HorizontalAlignment="Center" PositionYOffset="-18" Parameter.ButtonAction="ExecuteConfirm" Parameter.ButtonText="@ConfirmText" Parameter.IsEnabled="@CanConfirm" Parameter.InputKeyDataSource="{DoneInputKey}" Parameter.DisabledHintDataSource="{ConfirmHint}" />
+
+            <!-- Canvas -->
+            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" VerticalAlignment="Center" HorizontalAlignment="Center">
+              <Children>
+
+                <BrushWidget Id="Canvas" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="1050" VerticalAlignment="Center" HorizontalAlignment="Center" Brush="Map.Incident.Panel.Canvas">
+                  <Children>
+
+                    <!-- Main Panel -->
+                    <ListPanel Id="MainPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="30" MarginRight="30" MarginTop="30" MarginBottom="30">
+                      <Children>
+
+                        <!-- Left Panel -->
+                        <ListPanel Id="LeftPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MinHeight="455" StackLayout.LayoutMethod="VerticalSpaced">
+                          <Children>
+                            <!-- Title -->
+                            <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Map.Incident.Title.Text" Text="@Title" />
+
+                            <!-- Description -->
+                            <ScrollablePanel Id="DescriptionScrollablePanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="10" AutoHideScrollBars="true" ClipRect="DescriptionInnerContainer\ClipRect" InnerPanel="DescriptionInnerContainer\ClipRect\InnerPanel" VerticalScrollbar="DescriptionInnerContainer\ScrollbarDimensionSyncWidget\VerticalScrollbar">
+                              <Children>
+                                <ListPanel Id="DescriptionInnerContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                                  <Children>
+                                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" ClipContents="true" MaxHeight="300">
+                                      <Children>
+                                        <RichTextWidget Id="InnerPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="2" MarginBottom="2" Brush="Map.Incident.Description.Text" Text="@Description"/>
+                                      </Children>
+                                    </Widget>
+
+                                    <!-- Scrollbar -->
+                                    <DimensionSyncWidget Id="ScrollbarDimensionSyncWidget" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" HorizontalAlignment="Right" DimensionToSync="Vertical" WidgetToCopyHeightFrom="..\ClipRect" UpdateChildrenStates="true">
+                                      <Children>
+                                        <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" MarginTop="5" MarginBottom="5" MarginRight="5" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" IsVisible="false">
+                                          <Children>
+                                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.2" />
+                                            <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                                          </Children>
+                                        </ScrollbarWidget>
+                                      </Children>
+                                    </DimensionSyncWidget>
+                                  </Children>
+                                </ListPanel>
+                              </Children>
+                            </ScrollablePanel>
+
+                            <!-- Options Panel -->
+                            <ScrollablePanel Id="OptionsScrollablePanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="20" AutoHideScrollBars="true" ClipRect="OptionsInnerContainer\ClipRect" InnerPanel="OptionsInnerContainer\ClipRect\Options" VerticalScrollbar="OptionsInnerContainer\ScrollbarDimensionSyncWidget\VerticalScrollbar">
+                              <Children>
+                                <BrushListPanel Id="OptionsInnerContainer" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Map.Incident.Option.Panel">
+                                  <Children>
+                                    <!-- Options ClipRect -->
+                                    <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="2" MarginBottom="2" ClipContents="true" MaxHeight="350">
+                                      <Children>
+                                        <NavigationScopeTargeter ScopeID="OptionsScope" ScopeParent="..\Options" ScopeMovements="Vertical" />
+                                        <!-- Options -->
+                                        <NavigatableListPanel Id="Options" DataSource="{Options}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" >
+                                          <ItemTemplate>
+                                            <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" IsSelected="@IsSelected" Command.Click="ExecuteSelect" Command.HoverBegin="ExecuteFocus" Command.HoverEnd="ExecuteUnfocus" UseSiblingIndexForNavigation="true">
+                                              <Children>
+                                                <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="2" MarginBottom="2" MarginLeft="4" MarginRight="4" Brush="Map.Incident.Option.Tuple" UpdateChildrenStates="true" ClipContents="true">
+                                                  <Children>
+                                                    <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="20" VerticalAlignment="Center" Brush="Map.Incident.Option.Arrow"/>
+                                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="15" MarginRight="15" MarginTop="8" MarginBottom="8" VerticalAlignment="Center" Text="@Description" Brush="Map.Incident.Option.Text"/>
+                                                  </Children>
+                                                </BrushWidget>
+                                              </Children>
+                                            </ButtonWidget>
+                                          </ItemTemplate>
+                                        </NavigatableListPanel>
+                                      </Children>
+                                    </Widget>
+
+                                    <!-- Scrollbar -->
+                                    <DimensionSyncWidget Id="ScrollbarDimensionSyncWidget" DoNotAcceptEvents="true" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" HorizontalAlignment="Right" DimensionToSync="Vertical" WidgetToCopyHeightFrom="..\ClipRect" UpdateChildrenStates="true">
+                                      <Children>
+                                        <ScrollbarWidget Id="VerticalScrollbar" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="8" MarginTop="5" MarginBottom="5" MarginRight="5" AlignmentAxis="Vertical" Handle="VerticalScrollbarHandle" MaxValue="100" MinValue="0" IsVisible="false">
+                                          <Children>
+                                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="4" HorizontalAlignment="Center" Sprite="BlankWhiteSquare_9" Color="#5a4033FF" AlphaFactor="0.2" />
+                                            <ImageWidget Id="VerticalScrollbarHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedHeight="10" SuggestedWidth="8" HorizontalAlignment="Center" Brush="FaceGen.Scrollbar.Handle" />
+                                          </Children>
+                                        </ScrollbarWidget>
+                                      </Children>
+                                    </DimensionSyncWidget>
+                                  </Children>
+                                </BrushListPanel>
+                              </Children>
+                            </ScrollablePanel>
+
+                          </Children>
+                        </ListPanel>
+
+                        <!-- Right Panel -->
+                        <DimensionSyncWidget Id="RightPanel" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="275" MarginLeft="30" DimensionToSync="Vertical" WidgetToCopyHeightFrom="..\LeftPanel">
+                          <Children>
+                            
+                            <!-- Illustration -->
+                            <DefaultLayerSpriteChangerBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="275" SuggestedHeight="275" SpriteBrush="Map.Incident.Illustrations" SpriteBrushLayerName="@IncidentType" />
+
+                            <!-- Consequence Panel -->
+                            <MapIncidentConsequencePanelWidget Id="ConsequencePanel" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="150" VerticalAlignment="Bottom" ClipRect="ClipRect" InnerPanel="ClipRect\InnerPanel" OptionsList="..\..\LeftPanel\OptionsScrollablePanel\OptionsInnerContainer\ClipRect\Options" ScrollType="ByPixels" ScrollPixelsPerSecond="30" IdleTime="1.5" AutoScroll="true">
+                              <Children>
+                                <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Map.Incident.Option.Panel"/>
+
+                                <Widget Id="ClipRect" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="10" MarginRight="10" MarginBottom="2" MarginTop="2" ClipContents="true">
+                                  <Children>
+                                    <Widget Id="InnerPanel" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren">
+                                      <Children>
+                                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" MarginBottom="5" IsVisible="@ShowActiveHints">
+                                          <Children>
+                                            <!-- Active Hint -->
+                                            <MapIncidentHint DataSource="{ActiveHint}" />
+                                          </Children>
+                                        </Widget>
+                                      </Children>
+                                    </Widget>
+
+                                    <!-- Inactive Hint -->
+                                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="8" MarginBottom="8" Brush="Map.Incident.Hint.Text.Inactive" Text="@InactiveHint" IsHidden="@ShowActiveHints"/>
+
+                                  </Children>
+                                </Widget>
+                              </Children>
+                            </MapIncidentConsequencePanelWidget>
+
+                          </Children>
+                        </DimensionSyncWidget>
+
+                      </Children>
+                    </ListPanel>
+
+                    <!-- Consequence Connector -->
+                    <MapIncidentConnectorWidget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" IsVisible="@ShowActiveHints" OptionsList="..\MainPanel\LeftPanel\OptionsScrollablePanel\OptionsInnerContainer\ClipRect\Options" OptionsPanel="..\MainPanel\LeftPanel\OptionsScrollablePanel\OptionsInnerContainer" OptionsClipRect="..\MainPanel\LeftPanel\OptionsScrollablePanel\OptionsInnerContainer\ClipRect" ConsequencePanel="..\MainPanel\RightPanel\ConsequencePanel" OptionsLineClipRect="OptionsLineClipRect" OptionsLine="OptionsLineClipRect\OptionsLine" VerticalLine="VerticalLine" ConsequencesLine="ConsequencesLine" LineAnimationSpeed="20" LineMargin="0">
+                      <Children>
+                        <Widget Id="OptionsLineClipRect" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" ClipContents="true">
+                          <Children>
+                            <BrushWidget Id="OptionsLine" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Brush="Map.Incident.Option.Line"/>
+                          </Children>
+                        </Widget>
+
+                        <BrushWidget Id="VerticalLine" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Brush="Map.Incident.Option.Line"/>
+                        <BrushWidget Id="ConsequencesLine" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Brush="Map.Incident.Option.Line"/>
+                      </Children>
+                    </MapIncidentConnectorWidget>
+
+                  </Children>
+                </BrushWidget>
+
+                <!-- Frame -->
+                <DimensionSyncWidget DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" VerticalAlignment="Center" HorizontalAlignment="Center" DimensionToSync="HorizontalAndVertical" WidgetToCopyHeightFrom="..\Canvas" UpdateChildrenStates="true">
+                  <Children>
+                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="Map.Incident.Panel.Frame"/>
+                  </Children>
+                </DimensionSyncWidget>
+              </Children>
+            </Widget>
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

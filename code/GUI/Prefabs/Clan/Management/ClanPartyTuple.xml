@@ -1,0 +1,60 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Management.Slot.Width" BrushLayer="Default" BrushName="Clan.Management.Slot" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Slot.Height" BrushLayer="Default" BrushName="Clan.Management.Slot" BrushValueType="Height" />
+
+    <Constant Name="Clan.Item.Tuple.Width" BrushLayer="Default" BrushName="Clan.Item.Tuple" BrushValueType="Width" />
+    <Constant Name="Clan.Item.Tuple.Height" BrushLayer="Default" BrushName="Clan.Item.Tuple" BrushValueType="Height" />
+  </Constants>
+  <Window>
+    <ButtonWidget UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Clan.Item.Tuple.Width" SuggestedHeight="!Clan.Item.Tuple.Height" Brush="Clan.Item.Tuple" Command.Click="OnPartySelection" IsSelected="@IsSelected" >
+      <Children>
+        <BoolBrushChangerBrushWidget FalseBrush="Clan.Item.Tuple" TrueBrush="Clan.Item.Tuple.Inactive" BooleanCheck="@IsPendingPartyCreation" IsVisible="false"/>
+
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Party Leader Visual-->
+            <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="98" SuggestedHeight="73" VerticalAlignment="Center" Command.Click="ExecuteLink" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" >
+              <Children>
+                <ImageIdentifierWidget Id="Identifier" DataSource="{LeaderVisual}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="5" MarginRight="5" MarginTop="5" MarginBottom="5" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" IsDisabled="true" />
+                <BoolBrushChangerBrushWidget FalseBrush="DefaultBrush" TrueBrush="Clan.Party.Hero.Image" BooleanCheck="@IsPendingPartyCreation" TargetWidget="..\Identifier" IsVisible="false"/>
+              </Children>
+            </ButtonWidget>
+
+            <!--Name-->
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="126" Brush="Clan.Tuple.Name.Text" Brush.TextHorizontalAlignment="Left" Text="@Name">
+              <Children>
+                <BoolStateChangerBrushWidget FalseState="Default" TrueState="Inactive" TargetWidget="..\." BooleanCheck="@IsPendingPartyCreation" IsVisible="false"/>
+              </Children>
+            </TextWidget>
+
+            <!--In Army Icon-->
+            <Widget DoNotAcceptEvents="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="35" SuggestedHeight="30" VerticalAlignment="Center" MarginLeft="0" IsVisible="@IsInArmy" >
+              <Children>
+                <BrushWidget UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" Brush="SPClan.Members.InArmyIcon" >
+                  <Children>
+                    <BoolBrushChangerBrushWidget FalseBrush="SPClan.Members.InArmyIcon" TrueBrush="SPClan.Members.InArmyIcon.Inactive" TargetWidget="..\." BooleanCheck="@IsPendingPartyCreation" IsVisible="false"/>
+                    <HintWidget DataSource="{InArmyHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                  </Children>
+                </BrushWidget>
+              </Children>
+            </Widget>
+
+            <!--Party Location Label-->
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="194" MarginLeft="10" MarginRight="10" MarginTop="5" MarginBottom="5" Brush="Clan.Tuple.Name.Text" Brush.TextHorizontalAlignment="Center" Text="@PartyLocationText" />
+
+            <!--Party Size Label-->
+            <TextWidget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="103" Brush="Clan.Tuple.Name.Text" Brush.TextHorizontalAlignment="Center" Text="@PartySizeText" MarginRight="10">
+              <Children>
+                <BoolStateChangerBrushWidget FalseState="Default" TrueState="Inactive" TargetWidget="..\." BooleanCheck="@IsPendingPartyCreation" IsVisible="false"/>
+              </Children>
+            </TextWidget>
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </ButtonWidget>
+  </Window>
+</Prefab>

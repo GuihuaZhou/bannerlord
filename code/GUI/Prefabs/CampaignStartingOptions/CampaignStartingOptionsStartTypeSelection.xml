@@ -1,0 +1,127 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Popup.Width" Value="1300" />
+    <Constant Name="Popup.Height" Value="800" />
+    
+    <Constant Name="Card.Width" Value="460" />
+    <Constant Name="Card.Height" Value="600" />
+
+    <Constant Name="Popup.CloseButton.Width" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Width" />
+    <Constant Name="Popup.CloseButton.Height" BrushLayer="Default" BrushName="Popup.CloseButton" BrushValueType="Height" />
+
+    <Constant Name="Popup.CloseButton.MarginLeft" Value="!Popup.Width" Additive="-15" />
+    <Constant Name="Popup.CloseButton.MarginBottom" Value="!Popup.Height" Additive="-15" />
+
+    <Constant Name="Popup.ConfirmButton.MarginTop" Value="!Popup.Height" Additive="!Standard.DialogCloseButtons.DoneButton.Height" />
+
+    <Constant Name="Standard.DialogCloseButtons.DoneButton.Width" BrushLayer="Default" BrushName="Standard.DialogCloseButtons.DoneButton" BrushValueType="Width" />
+    <Constant Name="Standard.DialogCloseButtons.DoneButton.Height" BrushLayer="Default" BrushName="Standard.DialogCloseButtons.DoneButton" BrushValueType="Height" />
+  </Constants>
+  <VisualDefinitions>
+    <VisualDefinition Name="Card.Image" TransitionDuration="0.15" EaseType="EaseOut" EaseFunction="Quad">
+      <VisualState State="Default" MarginLeft="0" MarginRight="0" MarginTop="0" MarginBottom="0" />
+      <VisualState State="Hovered" MarginLeft="-2" MarginRight="-2" MarginTop="-2" MarginBottom="-2" />
+      <VisualState State="Pressed" MarginLeft="0" MarginRight="0" MarginTop="0" MarginBottom="0" />
+      <VisualState State="Selected" MarginLeft="-5" MarginRight="-5" MarginTop="-5" MarginBottom="-5" />
+    </VisualDefinition>
+  </VisualDefinitions>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+      <Children>
+
+        <!-- Cards -->
+        <NavigationScopeTargeter ScopeID="StartTypeSelectionScope" ScopeParent="..\Cards" ScopeMovements="Horizontal" />
+        <NavigatableListPanel Id="Cards" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.Width" SuggestedHeight="!Popup.Height" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Children>
+
+            <!-- Default Start -->
+            <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CampaignStartingOptions.Card" Command.Click="ExecuteSelectDefaultStart" IsSelected="@IsDefaultStartSelected" ClipContents="true">
+              <Children>
+                <BrushWidget VisualDefinition="Card.Image" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CampaignStartingOptions.Card.Image.Left"/>
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="300" ExtendLeft="10" ExtendRight="10" VerticalAlignment="Bottom" Sprite="scrollable_field_gradient_9" />
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginBottom="35" MarginLeft="15" MarginRight="15" Brush="CampaignStartingOptions.Card.Description" Text="@DefaultStartDescription" />
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" MarginLeft="15" MarginRight="15" Brush="CampaignStartingOptions.Card.Title" Text="@DefaultStartTitle" />
+              </Children>
+            </ButtonWidget>
+
+            <BrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="15" Brush="CampaignStartingOptions.Card.Separator" DoNotAcceptNavigation="true"/>
+
+            <!-- Advanced Starting Options -->
+            <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CampaignStartingOptions.Card" Command.Click="ExecuteSelectAdvancedStart" IsSelected="@IsAdvancedStartSelected" ClipContents="true">
+              <Children>
+                <BrushWidget VisualDefinition="Card.Image" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="CampaignStartingOptions.Card.Image.Right"/>
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="300" ExtendLeft="10" ExtendRight="10" VerticalAlignment="Bottom" Sprite="scrollable_field_gradient_9" />
+
+                <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="30" MarginLeft="15" MarginRight="15" Brush="CampaignStartingOptions.Card.Title" Text="@AdvancedStartTitle" />
+
+                <ListPanel UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" VerticalAlignment="Bottom" MarginBottom="35" MarginLeft="15" MarginRight="15" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="CampaignStartingOptions.Card.Description" Text="@AdvancedStartDescription" />
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginTop="5" MarginBottom="-10" Brush="CampaignStartingOptions.Card.SecondaryDescription" Text="@AdvancedStartSecondaryDescription" />
+                  </Children>
+                </ListPanel>
+              </Children>
+            </ButtonWidget>
+
+          </Children>
+        </NavigatableListPanel>
+
+        <!-- Confirm Button -->
+        <ButtonWidget DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Standard.DialogCloseButtons.DoneButton.Width" SuggestedHeight="!Standard.DialogCloseButtons.DoneButton.Height" HorizontalAlignment="Center" VerticalAlignment="Center" MarginTop="!Popup.ConfirmButton.MarginTop" Brush="CampaignStartingOptions.DoneButton" Command.Click="ExecuteConfirm" IsEnabled="@CanConfirmStartType">
+          <Children>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="200" MarginTop="20" MarginBottom="20" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-13" Brush="Standard.DialogCloseButtons.ButtonText" Text="@ConfirmLabel" IsHidden="@IsDefaultStartSelected">
+              <Children>
+                <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-44" IsVisible="@CanConfirmStartType">
+                  <Children>
+                    <InputKeyVisualWidget DataSource="{DoneInputKey}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="48" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                  </Children>
+                </Widget>
+              </Children>
+            </TextWidget>
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="200" MarginTop="20" MarginBottom="20" HorizontalAlignment="Center" VerticalAlignment="Center" PositionYOffset="-13" Brush="Standard.DialogCloseButtons.ButtonText" Text="@StartGameLabel" IsVisible="@IsDefaultStartSelected">
+              <Children>
+                <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-44" IsVisible="@CanConfirmStartType">
+                  <Children>
+                    <InputKeyVisualWidget DataSource="{DoneInputKey}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="48" SuggestedHeight="48" KeyID="@KeyID" IsVisible="@IsVisible"/>
+                  </Children>
+                </Widget>
+              </Children>
+            </TextWidget>
+          </Children>
+        </ButtonWidget>
+
+        <!-- Frame Border -->
+        <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.Width" SuggestedHeight="!Popup.Height" HorizontalAlignment="Center" VerticalAlignment="Center" Sprite="frame_9" ExtendLeft="18" ExtendTop="18" ExtendRight="18" ExtendBottom="18" />
+
+        <!-- Start Type Selection Checkboxes -->
+        <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.Width" SuggestedHeight="!Popup.Height" HorizontalAlignment="Center" VerticalAlignment="Center">
+          <Children>
+
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+              <Children>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="47" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionYOffset="15" Sprite="SPGeneral\GameMenu\companion_selected_check" Color="#F2DEB9FF" IsVisible="@IsDefaultStartSelected" />
+              </Children>
+            </Widget>
+
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="15"/>
+
+            <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent">
+              <Children>
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="47" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Bottom" PositionYOffset="15" Sprite="SPGeneral\GameMenu\companion_selected_check" Color="#F2DEB9FF" IsVisible="@IsAdvancedStartSelected" />
+              </Children>
+            </Widget>
+
+          </Children>
+        </ListPanel>
+
+        <!-- Close Button -->
+        <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="!Popup.CloseButton.Width" SuggestedHeight="!Popup.CloseButton.Height" Brush="Popup.CloseButton" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="!Popup.CloseButton.MarginLeft" MarginBottom="!Popup.CloseButton.MarginBottom" Command.Click="ExecuteClose">
+          <Children>
+            <InputKeyVisualWidget DataSource="{CancelInputKey}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="45" SuggestedHeight="45" HorizontalAlignment="Left" VerticalAlignment="Center" PositionXOffset="-10" KeyID="@KeyID" IsVisible="@IsVisible"/>
+          </Children>
+        </ButtonWidget>
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

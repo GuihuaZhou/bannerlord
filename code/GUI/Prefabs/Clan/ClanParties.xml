@@ -1,0 +1,53 @@
+<Prefab>
+  <Constants>
+    <Constant Name="Clan.Header.Width" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Width" />
+    <Constant Name="Clan.Header.Height" BrushLayer="Default" BrushName="Clan.Header" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.1.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.1" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.1.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.1" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.2.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.2" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.2.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.2" BrushValueType="Height" />
+
+    <Constant Name="Clan.Parties.Sort.3.Width" BrushLayer="Default" BrushName="Clan.Parties.Sort.3" BrushValueType="Width" />
+    <Constant Name="Clan.Parties.Sort.3.Height" BrushLayer="Default" BrushName="Clan.Parties.Sort.3" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.Collapser.Width" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Width" />
+    <Constant Name="Clan.Management.Collapser.Height" BrushLayer="Default" BrushName="Clan.Management.Collapser" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTuple.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTuple.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTuple" BrushValueType="Height" />
+
+    <Constant Name="Clan.Management.LeftTupleLocked.Width" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Width" />
+    <Constant Name="Clan.Management.LeftTupleLocked.Height" BrushLayer="Default" BrushName="Clan.Management.LeftTupleLocked" BrushValueType="Height" />
+
+    <Constant Name="Scroll.Header.Width" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Width" />
+    <Constant Name="Scroll.Header.Height" BrushLayer="Default" BrushName="Scroll.Header" BrushValueType="Height" />
+
+    <Constant Name="Kingdom.Item.Tuple.Width" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Width" />
+    <Constant Name="Kingdom.Item.Tuple.Height" BrushLayer="Default" BrushName="Kingdom.Item.Tuple" BrushValueType="Height" />
+
+    <Constant Name="Party.Toggle.ExpandIndicator.Width" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Width" />
+    <Constant Name="Party.Toggle.ExpandIndicator.Height" BrushLayer="Default" BrushName="Party.Toggle.ExpandIndicator" BrushValueType="Height" />
+
+  </Constants>
+
+  <Window>
+    <Widget Id="ClanPartiesWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsSelected" DoNotAcceptEvents="true">
+      <Children>
+        <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" StackLayout.LayoutMethod="HorizontalRightToLeft" DoNotAcceptEvents="true">
+          <Children>
+
+            <!--Right Panel-->
+            <ClanPartiesRightPanel />
+
+            <!--Left Panel-->
+            <ClanPartiesLeftPanel />
+
+          </Children>
+        </ListPanel>
+
+      </Children>
+    </Widget>
+  </Window>
+</Prefab>

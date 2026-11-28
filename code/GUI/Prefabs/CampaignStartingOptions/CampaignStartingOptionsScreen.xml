@@ -1,0 +1,16 @@
+<Prefab>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare_9" Color="#000000AA">
+      <Children>
+
+        <!-- Starting Options Popup - Stage 1: Start Type Selection -->
+        <CampaignStartingOptionsStartTypeSelection IsHidden="@IsASOShown" />
+
+        <!-- Starting Options Popup - Stage 2: Advanced Starting Options -->
+        <CampaignStartingOptionsAdvancedOptions IsVisible="@IsASOShown" />
+        
+      </Children>
+    </Widget>
+    
+  </Window>
+</Prefab>

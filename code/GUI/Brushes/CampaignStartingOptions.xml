@@ -1,0 +1,100 @@
+<Brushes>  
+  <Brush Name="CampaignStartingOptions.Title" Font="Galahad" TextHorizontalAlignment="Center">
+    <Styles>
+      <Style Name="Default" FontColor="#F4E1C4FF" TextOutlineAmount="0" TextGlowRadius="0" TextBlur="0" TextShadowOffset="0" FontSize="32" />
+    </Styles>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.InputField.Warning" BaseBrush="CustomBattle.SliderValue.Input">
+    <Layers>
+      <BrushLayer Name="Default" Color="#FF0000FF"/>
+    </Layers>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card">
+    <SoundProperties>
+      <EventSounds>
+        <EventSound EventName="Click" Audio="panels/next" />
+      </EventSounds>
+    </SoundProperties>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Image" TransitionDuration="0.15">
+    <Layers>
+      <BrushLayer Name="Default" ImageFit.Type="Cover" ImageFit.HorizontalAlignment="Center" ImageFit.VerticalAlignment="Bottom" />
+    </Layers>
+    <Styles>
+      <Style Name="Default">
+        <BrushLayer Name="Default" ColorFactor="0.7" SaturationFactor="-50" />
+      </Style>
+      <Style Name="Hovered">
+        <BrushLayer Name="Default" ColorFactor="1" />
+      </Style>
+      <Style Name="Pressed">
+        <BrushLayer Name="Default" ColorFactor="0.7" SaturationFactor="-10" />
+      </Style>
+      <Style Name="Selected">
+        <BrushLayer Name="Default" ColorFactor="1.2" />
+      </Style>
+    </Styles>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Image.Left" BaseBrush="CampaignStartingOptions.Card.Image">
+    <Layers>
+      <BrushLayer Name="Default" Sprite="encounter_empire" />
+    </Layers>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Image.Right" BaseBrush="CampaignStartingOptions.Card.Image">
+    <Layers>
+      <BrushLayer Name="Default" Sprite="vlandia_keep" />
+    </Layers>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Separator">
+    <Layers>
+      <BrushLayer Name="Default" Sprite="panel_dent_9" OverlayMethod="CoverWithTexture" OverlaySprite="stone_texture_continuous" />
+    </Layers>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Title" Font="FiraSansExtraCondensed-Regular" TransitionDuration="0.15">
+    <Styles>
+      <Style Name="Default" FontColor="#F4E1C4FF" FontSize="40" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.7" />
+      <Style Name="Hovered" FontColor="#F4E1C4FF" FontSize="40" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="1" />
+      <Style Name="Pressed" FontColor="#F4E1C4FF" FontSize="40" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.7" />
+      <Style Name="Selected" FontColor="#F4E1C4FF" FontSize="40" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="1" />
+    </Styles>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.Description" Font="Galahad" TransitionDuration="0.15">
+    <Styles>
+      <Style Name="Default" FontColor="#F2DEB9FF" FontSize="28" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.7" />
+      <Style Name="Hovered" FontColor="#F2DEB9FF" FontSize="28" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="1" />
+      <Style Name="Pressed" FontColor="#F2DEB9FF" FontSize="28" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.7" />
+      <Style Name="Selected" FontColor="#F2DEB9FF" FontSize="28" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="1" />
+    </Styles>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.Card.SecondaryDescription" Font="Galahad" TransitionDuration="0.15">
+    <Styles>
+      <Style Name="Default" FontColor="#F2DEB9FF" FontSize="20" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.5" />
+      <Style Name="Hovered" FontColor="#F2DEB9FF" FontSize="20" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.8" />
+      <Style Name="Pressed" FontColor="#F2DEB9FF" FontSize="20" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.5" />
+      <Style Name="Selected" FontColor="#F2DEB9FF" FontSize="20" TextGlowColor="#000000FF" TextGlowRadius="0" TextBlur="0.5" TextOutlineAmount="0.2" TextColorFactor="0.8" />
+    </Styles>
+  </Brush>
+
+  <Brush Name="CampaignStartingOptions.DoneButton" BaseBrush="Standard.DialogCloseButtons.DoneButton">
+    <Layers>
+      <BrushLayer Name="Default" VerticalFlip="true" />
+      <BrushLayer Name="Pressed" VerticalFlip="true" />
+      <BrushLayer Name="Hovered" VerticalFlip="true" />
+      <BrushLayer Name="Disabled" VerticalFlip="true" />
+    </Layers>
+    <SoundProperties>
+      <EventSounds>
+        <EventSound EventName="Click" Audio="panels/next" />
+      </EventSounds>
+    </SoundProperties>
+  </Brush>
+</Brushes>

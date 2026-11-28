@@ -1,0 +1,366 @@
+<Prefab>
+  <Constants>
+  </Constants>
+  <Window>
+    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" IsVisible="@IsAnyValidPartySelected" >
+      <Children>
+        <Widget DataSource="{CurrentSelectedParty}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" >
+          <Children>
+
+            <!--Lord Visual Model-->
+            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="465" SuggestedHeight="512" VerticalAlignment="Bottom">
+              <Children>
+                <!--Selected Character Tableau-->
+                <CharacterTableauWidget DataSource="{CharacterModel}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="600" SuggestedHeight="1000" VerticalAlignment="Bottom" PositionXOffset="-125" PositionYOffset="100" BannerCodeText="@BannerCodeText" BodyProperties="@BodyProperties" CharStringId="@CharStringId" ClipContents="false" EquipmentCode="@EquipmentCode" IsFemale="@IsFemale" MountCreationKey="@MountCreationKey" StanceIndex="@StanceIndex" ArmorColor1="@ArmorColor1" ArmorColor2="@ArmorColor2" Race="@Race" />
+                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="123" VerticalAlignment="Bottom" PositionYOffset="20" Sprite="Clan\clan_portrait_shadow" IsEnabled="false" />
+
+                <!--Change Leader Button-->
+                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="60" SuggestedHeight="60" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginBottom="50" IsVisible="@IsChangeLeaderVisible">
+                  <Children>
+                    <HintWidget DataSource="{ChangeLeaderHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+
+                    <NavigationScopeTargeter ScopeID="ClanPartiesChangeLeaderScope" ScopeParent="..\ChangeLeaderButton" ExtendDiscoveryAreaLeft="300" ExtendDiscoveryAreaRight="10" />
+                    <ButtonWidget Id="ChangeLeaderButton" DoNotPassEventsToChildren="true" UpdateChildrenStates="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.Click="ExecuteChangeLeader" Brush="SPClan.Parties.ChangePartyLeaderIcon" IsEnabled="@IsChangeLeaderEnabled" GamepadNavigationIndex="0">
+                      <Children>
+                        <HintWidget DataSource="{ChangeLeaderHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                      </Children>
+                    </ButtonWidget>
+                  </Children>
+                </Widget>
+
+              </Children>
+            </Widget>
+
+            <!--Name-->
+            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MaxWidth="700" HorizontalAlignment="Center" VerticalAlignment="Top" MarginTop="50" Brush="Clan.RightPanel.Name.Text" Brush.TextHorizontalAlignment="Center" Text="@Name" ClipContents="false" />
+
+            <!--Stats Vertical Container-->
+            <Widget Id="RightPanelContents" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginTop="125" MarginLeft="400" MarginRight="50" StackLayout.LayoutMethod="VerticalTopToBottom" >
+              <Children>
+
+                <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                  <Children>
+
+                    <!--In Army-->
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Clan.PartySize.Text" MarginBottom="10" Brush.TextHorizontalAlignment="Center" Text="@InArmyText" ClipContents="false" IsVisible="@IsInArmy"/>
+
+                    <!--Disbanding-->
+                    <TextWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" Brush="Clan.RightPanel.Name.SubText" MarginBottom="5" Brush.TextHorizontalAlignment="Center" Text="@DisbandingText" ClipContents="false" IsVisible="@IsDisbanding" />
+
+                    <!--If There Are Hero Members In This Party, Show Troop Details And Hero List-->
+                    <NavigationScopeTargeter ScopeID="ClanPartiesTroopCountScope" ScopeParent="..\TroopCountsParent\TroopCountsList" ScopeMovements="Horizontal" AlternateScopeMovements="Vertical" AlternateMovementStepSize="7" NavigateFromScopeEdges="true" RightNavigationScope="None" />
+                    <ListPanel Id="TroopCountsParent" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@HasHeroMembers" >
+                      <Children>
+                        <!--Troop Counts-->
+                        <ListPanel Id="TroopCountsList" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginBottom="0" StackLayout.LayoutMethod="HorizontalCentered">
+                          <Children>
+
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="32" MinWidth="80" DoNotPassEventsToChildren="true">
+                              <Children>
+                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginRight="4">
+                                  <Children>
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Sprite="General\TroopTypeIcons\icon_troop_type_infantry" GamepadNavigationIndex="0" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" IntText="@InfantryCount" VerticalAlignment="Center" Brush="Clan.TroopCount.Text" MarginLeft="4" />
+                                  </Children>
+                                </ListPanel>
+                                <HintWidget DataSource="{InfantryHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" DoNotAcceptEvents="true"/>
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="32" MinWidth="80" DoNotPassEventsToChildren="true">
+                              <Children>
+                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginRight="4">
+                                  <Children>
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Sprite="General\TroopTypeIcons\icon_troop_type_bow" GamepadNavigationIndex="1" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" IntText="@RangedCount" VerticalAlignment="Center" Brush="Clan.TroopCount.Text" MarginLeft="4" />
+                                  </Children>
+                                </ListPanel>
+                                <HintWidget DataSource="{RangedHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" DoNotAcceptEvents="true"/>
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="32" MinWidth="80" DoNotPassEventsToChildren="true">
+                              <Children>
+                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginRight="4">
+                                  <Children>
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Sprite="General\TroopTypeIcons\icon_troop_type_cavalry" GamepadNavigationIndex="2" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" IntText="@CavalryCount" VerticalAlignment="Center" Brush="Clan.TroopCount.Text" MarginLeft="4" />
+                                  </Children>
+                                </ListPanel>
+                                <HintWidget DataSource="{CavalryHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" DoNotAcceptEvents="true"/>
+                              </Children>
+                            </Widget>
+
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="32" MinWidth="80" DoNotPassEventsToChildren="true">
+                              <Children>
+                                <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginRight="4">
+                                  <Children>
+                                    <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="26" SuggestedHeight="26" VerticalAlignment="Center" Sprite="General\TroopTypeIcons\icon_troop_type_horse_archer" GamepadNavigationIndex="3" />
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" IntText="@HorseArcherCount" VerticalAlignment="Center" Brush="Clan.TroopCount.Text" MarginLeft="4" />
+                                  </Children>
+                                </ListPanel>
+                                <HintWidget DataSource="{HorseArcherHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" DoNotAcceptEvents="true"/>
+                              </Children>
+                            </Widget>
+
+                          </Children>
+                        </ListPanel>
+
+                        <!--Separator-->
+                        <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="2" HorizontalAlignment="Center" MarginTop="10" MarginBottom="10" Sprite="Clan\divider_mid" AlphaFactor="0.7" />
+
+                        <ListPanel WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="554" HorizontalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom" IsVisible="@IsMembersAndRolesVisible">
+                          <Children>
+
+                            <!--Roles Section For Parties With Companions-->
+                            <ListPanel WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" IsVisible="@HasCompanion" StackLayout.LayoutMethod="VerticalTopToBottom">
+                              <Children>
+
+                                <!--Name and Role Title Texts-->
+                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="85" MarginRight="85">
+                                  <Children>
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Brush="Clan.Subtitle.Text" HorizontalAlignment="Left" Brush.TextHorizontalAlignment="Left" Text="@RolesText"/>
+                                    <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="310" Brush="Clan.Subtitle.Text" HorizontalAlignment="Center" Brush.TextHorizontalAlignment="Center" Text="@AssigneesText"/>
+                                  </Children>
+                                </Widget>
+
+                                <!--Role Assignee Selection-->
+                                <Widget Id="RoleAssignmentWidget" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" UpdateChildrenStates="true">
+                                  <Children>
+
+                                    <NavigationScopeTargeter ScopeID="ClanPartyRoleSelectionScope" ScopeParent="..\RoleSelectionList" ScopeMovements="Vertical" IsScopeEnabled="@HasCompanion" RightNavigationScope="None" ExtendDiscoveryAreaRight="200" />
+                                    <NavigatableListPanel Id="RoleSelectionList" DoNotAcceptEvents="true" DataSource="{Roles}" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" MarginLeft="85" MarginRight="63" StackLayout.LayoutMethod="VerticalTopToBottom" UpdateChildrenStates="true">
+                                      <ItemTemplate>
+                                        <ListPanel DoNotAcceptEvents="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="47" MarginTop="5" MarginBottom="5" UpdateChildrenStates="true">
+                                          <Children>
+
+                                            <ListPanel DoNotAcceptEvents="true" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" HorizontalAlignment="Left" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                                              <Children>
+                                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MaxWidth="260" VerticalAlignment="Center" Brush="Clan.Role.Title.Text" Brush.TextHorizontalAlignment="Left" Brush.TextVerticalAlignment="Center" Text="@Name" />
+                                                <IconBrushWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="20" SuggestedHeight="9" VerticalAlignment="Center" MarginLeft="5" PositionYOffset="3" IconBrush="Clan.Member.Role.Icon" IconID="@RoleId" Brush.Color="#F4E1C4FF" />
+                                              </Children>
+                                            </ListPanel>
+
+                                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="70" MarginRight="5">
+                                              <Children>
+                                                <NavigationTargetSwitcher FromTarget="..\..\." ToTarget="..\SelectionToggle" />
+                                                <ButtonWidget Id="SelectionToggle" DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.Click="ExecuteToggleRoleSelection" UpdateChildrenStates="true" IsEnabled="@IsEnabled">
+                                                  <Children>
+                                                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.GoldFrame" />
+                                                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="TownManagement.GovernorPopup.Governor.Background" />
+                                                    <ImageIdentifierWidget DataSource="{EffectiveOwner\Visual}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="60" SuggestedHeight="44" HorizontalAlignment="Center" VerticalAlignment="Center" AdditionalArgs="@AdditionalArgs" ImageId="@Id" TextureProviderName="@TextureProviderName" />
+                                                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Sprite="BlankWhiteSquare" Color="#00000099" IsVisible="@IsNotAssigned"/>
+                                                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPClan.RoleSelectionButton.ReplaceBackground" />
+                                                    <BrushWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" MarginLeft="22" MarginRight="22" MarginTop="10" MarginBottom="10" Brush="SPClan.RoleSelectionButton.ReplaceIcon" />
+                                                  </Children>
+                                                </ButtonWidget>
+                                                <HintWidget DataSource="{DisabledHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true"/>
+                                              </Children>
+                                            </Widget>
+
+                                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="19" SuggestedHeight="12" VerticalAlignment="Center" IsEnabled="@IsNotAssigned" UpdateChildrenStates="true" DoNotPassEventsToChildren="true">
+                                              <Children>
+                                                <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" Sprite="Clan\party_leader_crown" IsVisible="@IsNotAssigned" Color="#FEC157FF"/>
+                                                <HintWidget DataSource="{NotAssignedHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" />
+                                              </Children>
+                                            </Widget>
+                                          </Children>
+                                        </ListPanel>
+                                      </ItemTemplate>
+                                    </NavigatableListPanel>
+
+                                  </Children>
+                                </Widget>
+
+                              </Children>
+                            </ListPanel>
+
+                            <!--Separator-->
+                            <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="2" HorizontalAlignment="Center" MarginTop="5" MarginBottom="5" Sprite="Clan\divider_mid" AlphaFactor="0.7" IsVisible="@HasCompanion" />
+
+                          </Children>
+                        </ListPanel>
+
+                      </Children>
+                    </ListPanel>
+
+                    <ListPanel Id="PartiesRightPanelControls" WidthSizePolicy="StretchToParent" HeightSizePolicy="CoverChildren" StackLayout.LayoutMethod="VerticalTopToBottom">
+                      <Children>
+
+                        <!--Auto Recruitment-->
+                        <NavigationScopeTargeter ScopeID="PartiesAutoRecruitmentButtonScope" ScopeParent="..\AutoRecruitmentParent" IsScopeEnabled="@IsAutoRecruitmentVisible" RightNavigationScope="None" ExtendDiscoveryAreaLeft="100" ExtendDiscoveryAreaRight="100" />
+                        <ListPanel Id="AutoRecruitmentParent" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="335" SuggestedHeight="40" HorizontalAlignment="Center" MarginTop="20" UpdateChildrenStates="true" IsVisible="@IsAutoRecruitmentVisible">
+                          <Children>
+                            <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="StretchToParent" SuggestedWidth="40" VerticalAlignment="Center" MarginLeft="10" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@AutoRecruitmentValue" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                              <Children>
+                                <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                              </Children>
+                            </ButtonWidget>
+                            <TextWidget WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="250" HorizontalAlignment="Center" VerticalAlignment="Center" MarginLeft="10" PositionYOffset="1" Brush="Clan.Party.Wage.Text" Text="@AutoRecruitmentText">
+                              <Children>
+                                <HintWidget DataSource="{AutoRecruitmentHint}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsEnabled="false"/>
+                              </Children>
+                            </TextWidget>
+                          </Children>
+                        </ListPanel>
+
+                        <!--Party Command Controls-->
+                        <NavigationScopeTargeter ScopeID="PartiesCommandControlsScope" ScopeParent="..\CommandControls" ScopeMovements="Vertical" IsScopeEnabled="@AreCommandControlsVisible" RightNavigationScope="None" ExtendDiscoveryAreaLeft="150" ExtendDiscoveryAreaRight="150"/>
+                        <ListPanel Id="CommandControls" WidthSizePolicy="Fixed" HeightSizePolicy="CoverChildren" SuggestedWidth="335" HorizontalAlignment="Center" IsVisible="@AreCommandControlsVisible" StackLayout.LayoutMethod="VerticalTopToBottom">
+                          <Children>
+
+                            <!--May Join Other Armies-->
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" MarginBottom="2" UpdateChildrenStates="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@MayJoinOtherArmies" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="0">
+                                  <Children>
+                                    <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                  </Children>
+                                </ButtonWidget>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="50" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" IsEnabled="@CanUseActions" Text="@MayJoinOtherArmiesText" />
+                                <HintWidget DataSource="{ActionsDisabledHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                              </Children>
+                            </Widget>
+
+                            <!--Allow Raiding-->
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" MarginBottom="2" UpdateChildrenStates="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@AllowRaiding" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+                                  <Children>
+                                    <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                  </Children>
+                                </ButtonWidget>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="50" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" IsEnabled="@CanUseActions" Text="@AllowRaidingText" />
+                                <HintWidget DataSource="{ActionsDisabledHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                              </Children>
+                            </Widget>
+
+                            <!--Donate Troops to Garrisons-->
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" MarginBottom="2" UpdateChildrenStates="true" StackLayout.LayoutMethod="HorizontalLeftToRight">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@DonateTroopsToGarrisons" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="2">
+                                  <Children>
+                                    <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                  </Children>
+                                </ButtonWidget>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="50" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" IsEnabled="@CanUseActions" Text="@DonateTroopsToGarrisonsText" />
+                                <HintWidget DataSource="{ActionsDisabledHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                              </Children>
+                            </Widget>
+
+                            <!--Has a Fleet-->
+                            <Widget WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="40" MarginBottom="2" UpdateChildrenStates="true" StackLayout.LayoutMethod="HorizontalLeftToRight" IsVisible="@AreNavalControlsVisible">
+                              <Children>
+                                <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" VerticalAlignment="Center" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@HasFleet" IsEnabled="@CanUseActions" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="3">
+                                  <Children>
+                                    <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                  </Children>
+                                </ButtonWidget>
+                                <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="50" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" IsEnabled="@CanUseActions" Text="@HasFleetText" />
+                                <HintWidget DataSource="{ActionsDisabledHint}" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                              </Children>
+                            </Widget>
+
+                          </Children>
+                        </ListPanel>
+
+                        <!--Separator-->
+                        <Widget DoNotAcceptEvents="true" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="500" SuggestedHeight="2" HorizontalAlignment="Center" MarginTop="10" MarginBottom="10" Sprite="Clan\divider_mid" AlphaFactor="0.7" IsVisible="@AreCommandControlsVisible" />
+
+                        <!--Party Size Summary-->
+                        <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="34" HorizontalAlignment="Center" MarginTop="10" IsHidden="@ShouldPartyHaveExpense">
+                          <Children>
+                            <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" VerticalAlignment="Center" Sprite="General\Icons\Party@2x" />
+                            <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginLeft="6" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" Text="@PartySizeText" />
+                          </Children>
+                        </ListPanel>
+
+                        <!--Wage Summary + Cap-->
+                        <NavigationScopeTargeter ScopeID="PartiesWageCapScope" ScopeParent="..\PartiesWageCapParent" ScopeMovements="Horizontal" IsScopeEnabled="@ShouldPartyHaveExpense" LeftNavigationScope="ClanPartiesScope" RightNavigationScope="None" />
+                        <Widget Id="PartiesWageCapParent" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" MarginTop="5" IsVisible="@ShouldPartyHaveExpense">
+                          <Children>
+
+                            <ListPanel DataSource="{ExpenseItem}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center">
+                              <Children>
+
+                                <ListPanel WidthSizePolicy="Fixed" SuggestedWidth="338" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" StackLayout.LayoutMethod="VerticalTopToBottom" >
+                                  <Children>
+
+                                    <!--Party Size Summary-->
+                                    <ListPanel DataSource="{..}" WidthSizePolicy="CoverChildren" HeightSizePolicy="Fixed" SuggestedHeight="34" HorizontalAlignment="Left" MarginTop="10" >
+                                      <Children>
+                                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" VerticalAlignment="Center" Sprite="General\Icons\Party@2x" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="StretchToParent" MarginLeft="6" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" Text="@PartySizeText" />
+                                      </Children>
+                                    </ListPanel>
+
+                                    <!--Wage Value (current/limit) with coin icon-->
+                                    <ListPanel WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Left" MarginBottom="2">
+                                      <Children>
+                                        <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="30" SuggestedHeight="30" VerticalAlignment="Center" Sprite="General\Icons\Coin@2x" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" MarginLeft="6" VerticalAlignment="Center" Brush="Clan.Party.Wage.Text" Text="@CurrentWageOverLimitText" />
+                                        <HintWidget DataSource="{CurrentWageTooltip}" WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true"/>
+                                      </Children>
+                                    </ListPanel>
+
+                                    <!--Wage Cap Slider-->
+                                    <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="Fixed" SuggestedHeight="42" VerticalAlignment="Center">
+                                      <Children>
+
+                                        <Widget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" IsEnabled="@IsEnabled">
+                                          <Children>
+                                            <SliderWidget WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" VerticalAlignment="Center" Filler="Filler" Handle="SliderHandle" MaxValueInt="@MaxWage" MinValueInt="@MinWage" ValueInt="@CurrentWageLimit" IsDiscrete="true" UpdateChildrenStates="true" IsDisabled="@IsUnlimitedWage" DoNotPassEventsToChildren="true" DoNotUpdateHandleSize="true">
+                                              <Children>
+                                                <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="362" SuggestedHeight="38" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="SPClan.Slider.Canvas" />
+                                                <ImageWidget Id="Filler" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" VerticalAlignment="Center" Brush="SPClan.Slider.Fill" ClipContents="true" UpdateChildrenStates="true">
+                                                  <Children>
+                                                    <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="345" SuggestedHeight="35" HorizontalAlignment="Left" VerticalAlignment="Center" Brush="SPClan.Slider.Fill"/>
+                                                  </Children>
+                                                </ImageWidget>
+                                                <ImageWidget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="400" SuggestedHeight="65" HorizontalAlignment="Center" VerticalAlignment="Center" Brush="SPClan.Slider.Frame" />
+                                                <ImageWidget Id="SliderHandle" WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="14" SuggestedHeight="38" HorizontalAlignment="Left" VerticalAlignment="Center" Brush="SPClan.Slider.Handle" DoNotAcceptEvents="true" GamepadNavigationIndex="0"/>
+                                              </Children>
+                                            </SliderWidget>
+                                          </Children>
+                                        </Widget>
+
+                                        <HintWidget DataSource="{WageLimitHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true"/>
+                                      </Children>
+                                    </Widget>
+
+                                  </Children>
+                                </ListPanel>
+
+                                <!--Toggle Unlimited Wage Cap Button-->
+                                <Widget WidthSizePolicy="Fixed" HeightSizePolicy="Fixed" SuggestedWidth="40" SuggestedHeight="40" HorizontalAlignment="Center" VerticalAlignment="Bottom" MarginLeft="30" >
+                                  <Children>
+                                    <ButtonWidget DoNotPassEventsToChildren="true" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Empty.Button" ButtonType="Toggle" IsSelected="@IsUnlimitedWage" IsEnabled="@IsEnabled" ToggleIndicator="ToggleIndicator" UpdateChildrenStates="true" GamepadNavigationIndex="1">
+                                      <Children>
+                                        <ImageWidget Id="ToggleIndicator" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Brush="SPOptions.Checkbox.Full.Button" />
+                                        <TextWidget WidthSizePolicy="CoverChildren" HeightSizePolicy="CoverChildren" HorizontalAlignment="Center" PositionYOffset="-35" Brush="Clan.Party.Wage.Text" Text="@UnlimitedWageText"/>
+                                      </Children>
+                                    </ButtonWidget>
+                                    <HintWidget DataSource="{..\ActionsDisabledHint}" WidthSizePolicy="StretchToParent" HeightSizePolicy="StretchToParent" Command.HoverBegin="ExecuteBeginHint" Command.HoverEnd="ExecuteEndHint" IsDisabled="true" />
+                                  </Children>
+                                </Widget>
+                              </Children>
+                            </ListPanel>
+
+                          </Children>
+                        </Widget>
+
+                      </Children>
+                    </ListPanel>
+
+                  </Children>
+                </ListPanel>
+              </Children>
+            </Widget>
+
+          </Children>
+        </Widget>
+      </Children>
+    </Widget>
+
+  </Window>
+</Prefab>
