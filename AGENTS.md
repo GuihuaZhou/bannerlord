@@ -47,6 +47,7 @@ Before any repository edit or code audit:
 - Record relevant file paths, tests, risks, any unverified constraints, and the final HEAD SHA in the handoff. Do not announce complete acceptance if required critical tests remain `BLOCKED`.
 - A blocked mandatory gate prevents advancing to a dependent phase unless the user explicitly accepts the *identified* risk. Do not demand repeated approval for routine edits inside an already authorized phase.
 - Do not commit, push, open PRs, or destructively rewrite history without an explicit user request. Never use `git reset --hard` to clean unrelated working-tree changes.
+- When a commit is explicitly requested, write the commit message in English and follow the repository's historical convention: `type(Module): imperative description` (for example, `fix(ModifiedArmy): rebalance capture garrison contributions`). Keep the type and module name consistent with the change; use `fix` for bug fixes, `feat` for new behavior, and concise imperative wording.
 
 ## 6. For ModifiedArmy work
 
