@@ -4,21 +4,6 @@ using TaleWorlds.CampaignSystem.CampaignBehaviors;
 namespace ModifiedArmy.Recruitment.Patches
 {
     /// <summary>
-    /// Stops the native daily maintenance that creates and upgrades volunteer
-    /// slots for settlement notables.
-    /// </summary>
-    [HarmonyPatch(
-        typeof(RecruitmentCampaignBehavior),
-        "UpdateVolunteersOfNotablesInSettlement")]
-    public static class NativeVolunteerMaintenancePatch
-    {
-        private static bool Prefix()
-        {
-            return false;
-        }
-    }
-
-    /// <summary>
     /// Hides the native Recruit Troops option from the town menu. Custom
     /// manpower access remains available through its own menu.
     /// </summary>

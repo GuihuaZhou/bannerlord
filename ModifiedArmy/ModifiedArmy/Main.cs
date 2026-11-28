@@ -171,6 +171,8 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new PartyPersonnelLossLogBehavior());
                 campaignStarter.AddBehavior(
+                    new PirateOverpopulationCleanupBehavior());
+                campaignStarter.AddBehavior(
                     new SupplyPartyBehavior());
                 campaignStarter.AddBehavior(
                     new GarrisonCaptureSupplyBehavior());
@@ -197,6 +199,7 @@ namespace ModifiedArmy
                 campaignStarter.AddModel(new NewSettlementMilitiaModel());
                 campaignStarter.AddModel(new NewSettlementGarrisonModel());
                 campaignStarter.AddModel(new NewPrisonerRecruitmentCalculationModel());
+                campaignStarter.AddModel(new DisabledNativeVolunteerModel());
                 //campaignStarter.AddModel(new FiefSettlementTaxModel());、
                 ////campaignStarter.AddModel(new DebugGarrisonMoraleModel());
                 ////campaignStarter.AddModel(new DebugDefaultPartyDesertionModel());

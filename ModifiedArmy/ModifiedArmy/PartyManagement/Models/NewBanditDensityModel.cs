@@ -5,8 +5,8 @@ using TaleWorlds.CampaignSystem.GameComponents;
 namespace ModifiedArmy.Models
 {
     /// <summary>
-    /// Reduces future bandit spawning pressure without mutating existing
-    /// parties, hideouts, rosters, or save data.
+    /// Keeps the native/DLC density model as the authority, then applies only
+    /// the bounded land-bandit policy owned by ModifiedArmy.
     /// </summary>
     public sealed class NewBanditDensityModel : DefaultBanditDensityModel
     {
@@ -16,38 +16,53 @@ namespace ModifiedArmy.Models
         private Clan _deserterClan;
 
         public override int NumberOfMinimumBanditPartiesInAHideoutToInfestIt
-            => 2;
+            => Math.Min(2, BaseModel.NumberOfMinimumBanditPartiesInAHideoutToInfestIt);
 
-        public override int NumberOfMaximumBanditPartiesInEachHideout => 2;
+        public override int NumberOfMaximumBanditPartiesInEachHideout
+            => Math.Min(2, BaseModel.NumberOfMaximumBanditPartiesInEachHideout);
 
-        public override int NumberOfMaximumBanditPartiesAroundEachHideout => 3;
+        public override int NumberOfMaximumBanditPartiesAroundEachHideout
+            => Math.Min(3, BaseModel.NumberOfMaximumBanditPartiesAroundEachHideout);
 
-        public override int NumberOfMaximumHideoutsAtEachBanditFaction => 7;
+        public override int NumberOfMaximumHideoutsAtEachBanditFaction
+            => Math.Min(7, BaseModel.NumberOfMaximumHideoutsAtEachBanditFaction);
 
-        public override int NumberOfInitialHideoutsAtEachBanditFaction => 5;
+        public override int NumberOfInitialHideoutsAtEachBanditFaction
+            => Math.Min(5, BaseModel.NumberOfInitialHideoutsAtEachBanditFaction);
 
         public override int GetMaxSupportedNumberOfLootersForClan(Clan clan)
         {
-            if (clan == null)
-            {
-                return SharedLooterAndDeserterBudget;
-            }
+            int baseLimit = clan == null
+                ? SharedLooterAndDeserterBudget
+                : BaseModel.GetMaxSupportedNumberOfLootersForClan(clan);
+            if (clan == null || baseLimit <= 0) return 0;
+            if (HasNavalNavigationCapability(clan)) return baseLimit;
 
             Clan deserters = GetDeserterClan();
             if (clan == deserters || clan.StringId == "deserters")
             {
-                return DeserterBudget;
+                return Math.Min(baseLimit, DeserterBudget);
             }
 
             if (clan.StringId == "looters" && deserters != null)
             {
-                return Math.Max(
-                    0,
+                return Math.Min(baseLimit, Math.Max(0,
                     SharedLooterAndDeserterBudget -
-                    deserters.WarPartyComponents.Count);
+                    (deserters?.WarPartyComponents.Count ?? 0)));
             }
 
-            return SharedLooterAndDeserterBudget;
+            return Math.Min(baseLimit, SharedLooterAndDeserterBudget);
+        }
+
+        public override bool IsPositionInsideNavalSafeZone(CampaignVec2 position)
+            => BaseModel.IsPositionInsideNavalSafeZone(position);
+
+        private static bool HasNavalNavigationCapability(Clan clan)
+        {
+            var property = clan?.GetType().GetProperty(
+                "HasNavalNavigationCapability");
+            return property?.PropertyType == typeof(bool) &&
+                (bool)property.GetValue(clan, null);
         }
 
         private Clan GetDeserterClan()
