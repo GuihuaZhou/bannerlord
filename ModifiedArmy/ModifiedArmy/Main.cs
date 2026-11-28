@@ -171,8 +171,6 @@ namespace ModifiedArmy
                 campaignStarter.AddBehavior(
                     new PartyPersonnelLossLogBehavior());
                 campaignStarter.AddBehavior(
-                    new PirateOverpopulationCleanupBehavior());
-                campaignStarter.AddBehavior(
                     new SupplyPartyBehavior());
                 campaignStarter.AddBehavior(
                     new GarrisonCaptureSupplyBehavior());
