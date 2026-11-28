@@ -114,21 +114,6 @@ namespace ModifiedArmy.ForceManagement.Behaviors
                     "EvaluationAccepted", day, task);
                 try
                 {
-                    GarrisonCaptureSupplyBehavior capture = Campaign.Current?
-                        .GetCampaignBehavior<GarrisonCaptureSupplyBehavior>();
-                    // The capture permit is queried without side effects and is
-                    // consumed only by the unified transaction below.
-                    if (capture?.CanDonateTroopsAfterCapture(
-                            party, settlement) == true)
-                    {
-                        ForceRecruitmentDiagnostics.LogVisit(
-                            party, settlement, eventName,
-                            "CaptureDonationSelected", day, task);
-                        Campaign.Current?.GetCampaignBehavior<
-                            AiForcePlanningBehavior>()?.ExecuteCaptureDonation(
-                                party, settlement, capture);
-                        return;
-                    }
                     ForceRecruitmentDiagnostics.LogVisit(
                         party, settlement, eventName,
                         "ForceTaskExecutionSelected", day, task);

@@ -293,21 +293,28 @@ namespace ModifiedArmy.Garrison.Behaviors
             int remaining = Math.Max(0,
                 target - garrison.MemberRoster.TotalRegulars);
             int transferred = 0;
-            foreach (MobileParty donor in leader.Army.Parties
+            var donors = leader.Army.Parties
                 .Where(x => x?.IsActive == true && x.IsLordParty &&
+                    !x.IsMainParty &&
                     !x.IsDisbanding &&
                     x.CurrentSettlement == settlement &&
                     IsSameKingdom(x, settlement))
-                .OrderByDescending(x => GarrisonTransferPolicyModel
-                    .GetAllowedCaptureContributionCount(x, int.MaxValue))
-                .ToList())
+                .OrderBy(x => x.StringId, StringComparer.Ordinal)
+                .ToList();
+            var capacities = donors.ToDictionary(x => x.StringId,
+                x => GarrisonTransferPolicyModel
+                    .GetAllowedCaptureContributionCount(x, remaining),
+                StringComparer.Ordinal);
+            var allocation = CaptureContributionAllocationModel.Allocate(
+                remaining, capacities);
+            foreach (MobileParty donor in donors)
             {
                 if (remaining <= 0) break;
-                int surplus = GarrisonTransferPolicyModel
-                    .GetAllowedCaptureContributionCount(donor, remaining);
-                if (surplus <= 0) continue;
+                int planned = allocation.TryGetValue(donor.StringId,
+                    out int value) ? value : 0;
+                if (planned <= 0) continue;
                 int moved = _captureTransfers.ExecuteCaptureContribution(
-                    donor, settlement, Math.Min(remaining, surplus))
+                    donor, settlement, Math.Min(remaining, planned))
                     .TransferredCount;
                 transferred += moved;
                 remaining -= moved;
@@ -411,7 +418,7 @@ namespace ModifiedArmy.Garrison.Behaviors
             if (settlement.IsUnderSiege) return "SiegeStateNotClearedYet";
             if (troops > 0 || food > 0) return "ContributionCommitted";
             if (inside <= 0) return "ArmyPartiesNotInsideSettlement";
-            if (available <= 0) return "NoTroopsAboveThirtyMemberFloor";
+            if (available <= 0) return "NoTroopsAboveCaptureMemberFloor";
             if (capacity <= 0) return "GarrisonHasNoTransferCapacity";
             return "TransferProducedNoCommit";
         }

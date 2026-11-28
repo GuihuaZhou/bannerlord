@@ -80,9 +80,6 @@ namespace ModifiedArmy.Garrison.Services
                 state = null;
                 return false;
             }
-            Campaign.Current?.GetCampaignBehavior<
-                GarrisonCaptureSupplyBehavior>()?
-                .TryConsumeTroopDonationPermit(party, settlement);
             if (party.ActualClan != settlement.OwnerClan)
             {
                 requested = Math.Min(

@@ -118,7 +118,7 @@ namespace ModifiedArmy.Garrison.Models
                 return 0;
             }
 
-            const int minimumFieldRegulars = 30;
+            const int minimumFieldRegulars = 75;
             int available = Math.Max(
                 0,
                 party.Party.NumberOfRegularMembers - minimumFieldRegulars);
